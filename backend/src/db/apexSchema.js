@@ -451,4 +451,6 @@ try {
 
 console.log('Apex jobs schema initialized');
 
+require('./dryingSchema'); // Initialize drying log tables
+
 module.exports = db;
