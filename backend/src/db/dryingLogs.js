@@ -118,6 +118,36 @@ const deleteEquipmentByVisit = db.prepare('DELETE FROM drying_equipment WHERE vi
 const getNotesByVisit = db.prepare('SELECT * FROM drying_visit_notes WHERE visit_id = ?');
 const insertNote = db.prepare('INSERT INTO drying_visit_notes (id, visit_id, content, photos) VALUES (?, ?, ?, ?)');
 
+// Logs - additional queries
+const getLogById = db.prepare('SELECT * FROM drying_logs WHERE id = ?');
+
+// Chambers - update/delete
+const getChamberById = db.prepare('SELECT * FROM drying_chambers WHERE id = ?');
+const updateChamberStmt = db.prepare("UPDATE drying_chambers SET name = ?, color = ?, position = ?, updated_at = datetime('now') WHERE id = ?");
+const deleteChamberStmt = db.prepare('DELETE FROM drying_chambers WHERE id = ?');
+
+// Rooms - update/delete + query by log
+const getRoomById = db.prepare('SELECT * FROM drying_rooms WHERE id = ?');
+const updateRoomStmt = db.prepare("UPDATE drying_rooms SET name = ?, position = ?, chamber_id = ?, updated_at = datetime('now') WHERE id = ?");
+const deleteRoomStmt = db.prepare('DELETE FROM drying_rooms WHERE id = ?');
+const getRoomsByLogId = db.prepare(`
+  SELECT r.* FROM drying_rooms r
+  JOIN drying_chambers c ON r.chamber_id = c.id
+  WHERE c.log_id = ?
+  ORDER BY c.position, r.position
+`);
+
+// Reference points - update
+const updateRefPointStmt = db.prepare('UPDATE drying_ref_points SET material_code = ?, label = ? WHERE id = ?');
+
+// Visits - delete + auto-number helper
+const deleteVisitStmt = db.prepare('DELETE FROM drying_visits WHERE id = ?');
+const getMaxVisitNumber = db.prepare('SELECT MAX(visit_number) as max_num FROM drying_visits WHERE log_id = ?');
+
+// Visit notes - delete + get by id
+const getNoteById = db.prepare('SELECT * FROM drying_visit_notes WHERE id = ?');
+const deleteNoteStmt = db.prepare('DELETE FROM drying_visit_notes WHERE id = ?');
+
 // ============================================
 // TRANSACTION FUNCTIONS
 // ============================================
@@ -286,4 +316,44 @@ module.exports = {
     insertNote.run(id, visitId, content || '', photos || '[]');
     return { id, visit_id: visitId, content: content || '', photos: photos || '[]' };
   },
+
+  // Log by ID (not job_id)
+  getLogById: (id) => getLogById.get(id),
+
+  // Chamber update/delete
+  getChamberById: (id) => getChamberById.get(id),
+  updateChamber: (id, data) => {
+    updateChamberStmt.run(data.name, data.color, data.position, id);
+    return getChamberById.get(id);
+  },
+  deleteChamber: (id) => deleteChamberStmt.run(id),
+
+  // Room update/delete + query by log
+  getRoomById: (id) => getRoomById.get(id),
+  updateRoom: (id, data) => {
+    updateRoomStmt.run(data.name, data.position, data.chamber_id, id);
+    return getRoomById.get(id);
+  },
+  deleteRoom: (id) => deleteRoomStmt.run(id),
+  getRoomsByLogId: (logId) => getRoomsByLogId.all(logId),
+
+  // Reference point update
+  updateRefPoint: (id, data) => {
+    updateRefPointStmt.run(data.material_code, data.label, id);
+    return getRefPointById.get(id);
+  },
+
+  // Visit delete + auto-number creation
+  deleteVisit: (id) => deleteVisitStmt.run(id),
+  createVisit: (logId, visitedAt) => {
+    const result = getMaxVisitNumber.get(logId);
+    const nextNum = (result?.max_num || 0) + 1;
+    const id = uuidv4();
+    insertVisit.run(id, logId, nextNum, visitedAt || new Date().toISOString());
+    return getVisitById.get(id);
+  },
+
+  // Visit note delete + get by id
+  getNoteById: (id) => getNoteById.get(id),
+  deleteNote: (id) => deleteNoteStmt.run(id),
 };
