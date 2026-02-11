@@ -707,6 +707,240 @@ const api = {
             body: { ready },
         });
     },
+
+    // ========================================
+    // DRYING LOGS
+    // ========================================
+
+    /**
+     * Drying: Get drying log for a job
+     */
+    async getDryingLog(jobId) {
+        return this.request(`/apex-jobs/${jobId}/drying/log`);
+    },
+
+    /**
+     * Drying: Create drying log for a job
+     */
+    async createDryingLog(jobId) {
+        return this.request(`/apex-jobs/${jobId}/drying/log`, {
+            method: 'POST',
+        });
+    },
+
+    /**
+     * Drying: Get all chambers for a job's drying log
+     */
+    async getDryingChambers(jobId) {
+        return this.request(`/apex-jobs/${jobId}/drying/chambers`);
+    },
+
+    /**
+     * Drying: Create a chamber
+     */
+    async createDryingChamber(jobId, data) {
+        return this.request(`/apex-jobs/${jobId}/drying/chambers`, {
+            method: 'POST',
+            body: data,
+        });
+    },
+
+    /**
+     * Drying: Update a chamber
+     */
+    async updateDryingChamber(jobId, chamberId, data) {
+        return this.request(`/apex-jobs/${jobId}/drying/chambers/${chamberId}`, {
+            method: 'PATCH',
+            body: data,
+        });
+    },
+
+    /**
+     * Drying: Delete a chamber
+     */
+    async deleteDryingChamber(jobId, chamberId) {
+        return this.request(`/apex-jobs/${jobId}/drying/chambers/${chamberId}`, {
+            method: 'DELETE',
+        });
+    },
+
+    /**
+     * Drying: Get all rooms for a job's drying log
+     * @param {string} chamberId - Optional chamber ID to filter by
+     */
+    async getDryingRooms(jobId, chamberId = null) {
+        const query = chamberId ? `?chamberId=${chamberId}` : '';
+        return this.request(`/apex-jobs/${jobId}/drying/rooms${query}`);
+    },
+
+    /**
+     * Drying: Create a room
+     */
+    async createDryingRoom(jobId, data) {
+        return this.request(`/apex-jobs/${jobId}/drying/rooms`, {
+            method: 'POST',
+            body: data,
+        });
+    },
+
+    /**
+     * Drying: Update a room
+     */
+    async updateDryingRoom(jobId, roomId, data) {
+        return this.request(`/apex-jobs/${jobId}/drying/rooms/${roomId}`, {
+            method: 'PATCH',
+            body: data,
+        });
+    },
+
+    /**
+     * Drying: Delete a room
+     */
+    async deleteDryingRoom(jobId, roomId) {
+        return this.request(`/apex-jobs/${jobId}/drying/rooms/${roomId}`, {
+            method: 'DELETE',
+        });
+    },
+
+    /**
+     * Drying: Get all reference points for a job's drying log
+     */
+    async getDryingRefPoints(jobId) {
+        return this.request(`/apex-jobs/${jobId}/drying/ref-points`);
+    },
+
+    /**
+     * Drying: Add a reference point (server auto-assigns ref_number)
+     */
+    async createDryingRefPoint(jobId, data) {
+        return this.request(`/apex-jobs/${jobId}/drying/ref-points`, {
+            method: 'POST',
+            body: data,
+        });
+    },
+
+    /**
+     * Drying: Update a reference point
+     */
+    async updateDryingRefPoint(jobId, rpId, data) {
+        return this.request(`/apex-jobs/${jobId}/drying/ref-points/${rpId}`, {
+            method: 'PATCH',
+            body: data,
+        });
+    },
+
+    /**
+     * Drying: Demolish a reference point
+     */
+    async demolishDryingRefPoint(jobId, rpId, visitId) {
+        return this.request(`/apex-jobs/${jobId}/drying/ref-points/${rpId}/demolish`, {
+            method: 'POST',
+            body: { visitId },
+        });
+    },
+
+    /**
+     * Drying: Get all baselines for a job's drying log
+     */
+    async getDryingBaselines(jobId) {
+        return this.request(`/apex-jobs/${jobId}/drying/baselines`);
+    },
+
+    /**
+     * Drying: Upsert a baseline (create or update by material_code)
+     */
+    async upsertDryingBaseline(jobId, data) {
+        return this.request(`/apex-jobs/${jobId}/drying/baselines`, {
+            method: 'PUT',
+            body: data,
+        });
+    },
+
+    /**
+     * Drying: Get all visits for a job's drying log
+     */
+    async getDryingVisits(jobId) {
+        return this.request(`/apex-jobs/${jobId}/drying/visits`);
+    },
+
+    /**
+     * Drying: Create a new visit (server auto-assigns visit_number)
+     */
+    async createDryingVisit(jobId, data = {}) {
+        return this.request(`/apex-jobs/${jobId}/drying/visits`, {
+            method: 'POST',
+            body: data,
+        });
+    },
+
+    /**
+     * Drying: Get a visit with all child data (atmospheric, moisture, equipment, notes)
+     */
+    async getDryingVisit(jobId, visitId) {
+        return this.request(`/apex-jobs/${jobId}/drying/visits/${visitId}`);
+    },
+
+    /**
+     * Drying: Bulk save visit data (atmospheric + moisture + equipment in one transaction)
+     * @param {object} data - { atmospheric: [...], moisture: [...], equipment: [...] }
+     */
+    async saveDryingVisit(jobId, visitId, data) {
+        return this.request(`/apex-jobs/${jobId}/drying/visits/${visitId}/save`, {
+            method: 'POST',
+            body: data,
+        });
+    },
+
+    /**
+     * Drying: Delete a visit
+     */
+    async deleteDryingVisit(jobId, visitId) {
+        return this.request(`/apex-jobs/${jobId}/drying/visits/${visitId}`, {
+            method: 'DELETE',
+        });
+    },
+
+    /**
+     * Drying: Get notes for a visit
+     */
+    async getDryingVisitNotes(jobId, visitId) {
+        return this.request(`/apex-jobs/${jobId}/drying/visits/${visitId}/notes`);
+    },
+
+    /**
+     * Drying: Add a note to a visit
+     */
+    async createDryingVisitNote(jobId, visitId, data) {
+        return this.request(`/apex-jobs/${jobId}/drying/visits/${visitId}/notes`, {
+            method: 'POST',
+            body: data,
+        });
+    },
+
+    /**
+     * Drying: Delete a visit note
+     */
+    async deleteDryingVisitNote(jobId, visitId, noteId) {
+        return this.request(`/apex-jobs/${jobId}/drying/visits/${visitId}/notes/${noteId}`, {
+            method: 'DELETE',
+        });
+    },
+
+    /**
+     * Drying: Upload photos (processed server-side with sharp)
+     * @param {string} jobId - Job ID
+     * @param {FileList|File[]} files - Files to upload
+     */
+    async uploadDryingPhotos(jobId, files) {
+        const formData = new FormData();
+        for (const file of files) {
+            formData.append('photos', file);
+        }
+        return this.request(`/apex-jobs/${jobId}/drying/photos`, {
+            method: 'POST',
+            body: formData,
+        });
+    },
 };
 
 // Make available globally
