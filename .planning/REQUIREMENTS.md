@@ -122,59 +122,59 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | DB-01 | Phase 1 | Pending |
-| DB-02 | Phase 1 | Pending |
-| DB-03 | Phase 1 | Pending |
-| DB-04 | Phase 1 | Pending |
 | DB-05 | Phase 1 | Pending |
-| DB-06 | Phase 1 | Pending |
-| SETUP-01 | Phase 2 | Pending |
-| SETUP-02 | Phase 2 | Pending |
-| SETUP-03 | Phase 2 | Pending |
-| SETUP-04 | Phase 2 | Pending |
-| SETUP-05 | Phase 2 | Pending |
-| SETUP-06 | Phase 2 | Pending |
-| SETUP-07 | Phase 2 | Pending |
-| SETUP-08 | Phase 2 | Pending |
-| SETUP-09 | Phase 2 | Pending |
-| VISIT-01 | Phase 3 | Pending |
-| VISIT-02 | Phase 3 | Pending |
-| VISIT-03 | Phase 3 | Pending |
-| VISIT-04 | Phase 3 | Pending |
-| VISIT-05 | Phase 3 | Pending |
-| VISIT-06 | Phase 3 | Pending |
-| VISIT-07 | Phase 3 | Pending |
-| VISIT-08 | Phase 3 | Pending |
-| VISIT-09 | Phase 3 | Pending |
-| VISIT-10 | Phase 3 | Pending |
-| VISIT-11 | Phase 3 | Pending |
-| VISIT-12 | Phase 3 | Pending |
-| VISIT-13 | Phase 3 | Pending |
-| VISIT-14 | Phase 3 | Pending |
-| DEMO-01 | Phase 3 | Pending |
-| DEMO-02 | Phase 3 | Pending |
-| DEMO-03 | Phase 3 | Pending |
-| DEMO-04 | Phase 3 | Pending |
-| DEMO-05 | Phase 3 | Pending |
-| COMP-01 | Phase 4 | Pending |
-| COMP-02 | Phase 4 | Pending |
-| COMP-03 | Phase 4 | Pending |
-| COMP-04 | Phase 4 | Pending |
-| COMP-05 | Phase 4 | Pending |
 | GPP-01 | Phase 1 | Pending |
-| GPP-02 | Phase 3 | Pending |
-| GPP-03 | Phase 3 | Pending |
 | GPP-04 | Phase 1 | Pending |
 | GPP-05 | Phase 1 | Pending |
-| TAB-01 | Phase 2 | Pending |
-| TAB-02 | Phase 3 | Pending |
-| TAB-03 | Phase 3 | Pending |
-| TAB-04 | Phase 3 | Pending |
+| DB-02 | Phase 2 | Pending |
+| DB-03 | Phase 2 | Pending |
+| DB-04 | Phase 2 | Pending |
+| DB-06 | Phase 2 | Pending |
+| TAB-01 | Phase 3 | Pending |
+| SETUP-01 | Phase 3 | Pending |
+| SETUP-02 | Phase 3 | Pending |
+| SETUP-03 | Phase 4 | Pending |
+| SETUP-04 | Phase 4 | Pending |
+| SETUP-05 | Phase 4 | Pending |
+| SETUP-06 | Phase 4 | Pending |
+| SETUP-07 | Phase 4 | Pending |
+| SETUP-08 | Phase 4 | Pending |
+| SETUP-09 | Phase 4 | Pending |
+| VISIT-01 | Phase 5 | Pending |
+| VISIT-02 | Phase 5 | Pending |
+| VISIT-03 | Phase 5 | Pending |
+| VISIT-04 | Phase 5 | Pending |
+| VISIT-05 | Phase 5 | Pending |
+| VISIT-06 | Phase 5 | Pending |
+| VISIT-07 | Phase 5 | Pending |
+| GPP-02 | Phase 5 | Pending |
+| GPP-03 | Phase 5 | Pending |
+| VISIT-08 | Phase 6 | Pending |
+| VISIT-09 | Phase 6 | Pending |
+| VISIT-10 | Phase 6 | Pending |
+| VISIT-12 | Phase 6 | Pending |
+| VISIT-13 | Phase 6 | Pending |
+| VISIT-14 | Phase 6 | Pending |
+| DEMO-01 | Phase 7 | Pending |
+| DEMO-02 | Phase 7 | Pending |
+| DEMO-03 | Phase 7 | Pending |
+| DEMO-04 | Phase 7 | Pending |
+| DEMO-05 | Phase 7 | Pending |
+| VISIT-11 | Phase 7 | Pending |
+| TAB-02 | Phase 8 | Pending |
+| TAB-03 | Phase 8 | Pending |
+| TAB-04 | Phase 8 | Pending |
+| COMP-01 | Phase 8 | Pending |
+| COMP-02 | Phase 8 | Pending |
+| COMP-03 | Phase 8 | Pending |
+| COMP-04 | Phase 8 | Pending |
+| COMP-05 | Phase 8 | Pending |
 
 **Coverage:**
-- v1 requirements: 44 total
-- Mapped to phases: 44
-- Unmapped: 0 ✓
+- v1 requirements: 48 total
+- Mapped to phases: 48
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-11*
-*Last updated: 2026-02-11 after initial definition*
+*Last updated: 2026-02-11 after roadmap creation*
