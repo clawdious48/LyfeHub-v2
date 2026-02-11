@@ -22,6 +22,7 @@ const uploadsRoutes = require('./routes/uploads');
 
 const apexJobsRoutes = require('./routes/apexJobs');
 const apiKeysRoutes = require('./routes/apiKeys');
+const dashboardRoutes = require('./routes/dashboard');
 
 
 const app = express();
@@ -57,6 +58,7 @@ app.use('/api/uploads', uploadsRoutes);
 
 app.use('/api/apex-jobs', apexJobsRoutes);
 app.use('/api/api-keys', apiKeysRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 
 // Health check endpoint

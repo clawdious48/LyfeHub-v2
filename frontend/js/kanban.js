@@ -91,23 +91,28 @@ const dashboard = {
 
     switchTab(tabName) {
         this.currentTab = tabName;
-        
+
         // Update tab buttons
         document.querySelectorAll('.tab').forEach(t => {
             t.classList.toggle('active', t.dataset.tab === tabName);
         });
-        
+
         // Update tab content
         document.querySelectorAll('.tab-content').forEach(c => {
             c.classList.toggle('active', c.dataset.tab === tabName);
         });
-        
+
         // Hide header add button on Tasks tab (has inline button)
         const addItemBtn = document.getElementById('add-item-btn');
         if (addItemBtn) {
             addItemBtn.style.display = tabName === 'tasks' ? 'none' : '';
         }
-        
+
+        // Load dashboard when switching to Dashboard tab
+        if (tabName === 'dashboard' && typeof dashboardHub !== 'undefined') {
+            dashboardHub.init();
+        }
+
         // Load tasks when switching to Tasks tab
         if (tabName === 'tasks' && typeof taskModal !== 'undefined') {
             taskModal.loadTasks();
@@ -572,6 +577,10 @@ const dashboard = {
 // Keep backward compatibility
 const kanban = dashboard;
 
-document.addEventListener('DOMContentLoaded', () => dashboard.init());
+document.addEventListener('DOMContentLoaded', () => {
+    dashboard.currentTab = 'dashboard';
+    dashboard.init();
+    if (typeof dashboardHub !== 'undefined') dashboardHub.init();
+});
 window.kanban = dashboard;
 window.dashboard = dashboard;
