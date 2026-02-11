@@ -8102,6 +8102,7 @@ body.column-dragging .base-table {
     gap: 1.5rem;
     padding: 1.5rem;
     overflow-y: auto;
+    overflow-x: hidden;
     flex: 1;
     min-height: 0;
 }
@@ -8131,6 +8132,7 @@ body.column-dragging .base-table {
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     padding: 1.25rem;
+    min-width: 0;
 }
 
 .job-section:hover {
@@ -8495,10 +8497,15 @@ body.column-dragging .base-table {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    min-width: 0;
 }
 
 .job-field-full {
     grid-column: 1 / -1;
+}
+
+.job-field-grow {
+    grid-column: span 2;
 }
 
 /* Field labels */
@@ -8525,6 +8532,7 @@ body.column-dragging .base-table {
     font-size: 0.875rem;
     color: var(--text-primary);
     transition: var(--transition);
+    min-width: 0;
 }
 
 .job-field input:focus,
@@ -8573,10 +8581,10 @@ body.column-dragging .base-table {
 .add-contact-btn {
     grid-column: 1 / -1;
     background: rgba(255, 255, 255, 0.03);
-    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border: 1px dashed rgba(0, 245, 212, 0.3);
     border-radius: 6px;
     padding: 0.5rem;
-    color: var(--text-muted);
+    color: rgba(0, 245, 212, 0.6);
     font-size: 0.8rem;
     cursor: pointer;
     transition: var(--transition);
@@ -8584,9 +8592,10 @@ body.column-dragging .base-table {
 }
 
 .add-contact-btn:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: var(--text-secondary);
+    background: rgba(0, 245, 212, 0.06);
+    border-color: rgba(0, 245, 212, 0.5);
+    color: var(--neon-cyan, #00f5d4);
+    box-shadow: 0 0 8px rgba(0, 245, 212, 0.15);
 }
 
 /* Additional contact group */
@@ -8608,7 +8617,7 @@ body.column-dragging .base-table {
     right: 0;
     background: none;
     border: none;
-    color: var(--text-muted);
+    color: rgba(255, 42, 109, 0.45);
     cursor: pointer;
     font-size: 1.1rem;
     padding: 0 0.25rem;
@@ -8619,6 +8628,7 @@ body.column-dragging .base-table {
 
 .remove-contact-btn:hover {
     color: var(--neon-pink, #ff2a6d);
+    text-shadow: 0 0 8px rgba(255, 42, 109, 0.4);
 }
 
 /* Urgent toggle in Loss section header */
@@ -8678,7 +8688,8 @@ body.column-dragging .base-table {
         grid-template-columns: 1fr;
     }
     
-    .job-field-half {
+    .job-field-half,
+    .job-field-grow {
         grid-column: 1;
     }
 }
