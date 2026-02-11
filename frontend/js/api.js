@@ -11,18 +11,25 @@ const api = {
      */
     async request(endpoint, options = {}) {
         const url = `${this.baseUrl}${endpoint}`;
-        
+
         const config = {
             ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers,
-            },
             credentials: 'include', // Include cookies for JWT
         };
 
-        if (options.body && typeof options.body === 'object') {
-            config.body = JSON.stringify(options.body);
+        if (options.body instanceof FormData) {
+            // FormData: let browser set Content-Type with multipart boundary
+            config.body = options.body;
+            config.headers = { ...options.headers };
+        } else {
+            // JSON: set Content-Type and stringify object bodies
+            config.headers = {
+                'Content-Type': 'application/json',
+                ...options.headers,
+            };
+            if (options.body && typeof options.body === 'object') {
+                config.body = JSON.stringify(options.body);
+            }
         }
 
         const response = await fetch(url, config);
