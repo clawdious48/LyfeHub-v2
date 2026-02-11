@@ -49,11 +49,11 @@ Plans:
   3. `api.request()` correctly handles FormData bodies (does not force Content-Type: application/json when body is FormData)
   4. Frontend `api.js` exposes methods for every drying endpoint (create log, CRUD chambers/rooms/points, save visit, upload photos)
   5. Photo uploads are processed server-side with sharp (resized, EXIF-normalized, thumbnails generated)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: Drying log REST API routes with bulk save
-- [ ] 02-02: Client API layer and photo upload pipeline
+- [ ] 02-01-PLAN.md -- Backend drying REST API routes with bulk save and photo upload pipeline
+- [ ] 02-02-PLAN.md -- Frontend api.js FormData fix and drying endpoint methods
 
 ### Phase 3: Tab Shell & Log Initialization
 **Goal**: A technician can see the Drying Logs tab on any Apex job, create a new drying log, and see rooms pre-populated from the job's Affected Rooms field
@@ -162,7 +162,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Schema & GPP Engine | 2/2 | ✓ Complete | 2026-02-11 |
-| 2. API Routes & Client Layer | 0/2 | Not started | - |
+| 2. API Routes & Client Layer | 0/2 | Planning complete | - |
 | 3. Tab Shell & Log Initialization | 0/2 | Not started | - |
 | 4. Structure Management | 0/3 | Not started | - |
 | 5. Atmospheric Readings & GPP Display | 0/3 | Not started | - |
@@ -172,4 +172,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 
 ---
 *Roadmap created: 2026-02-11*
-*Last updated: 2026-02-11 — Phase 1 complete*
+*Last updated: 2026-02-11 — Phase 2 planned*
