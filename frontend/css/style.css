@@ -8636,7 +8636,6 @@ body.column-dragging .base-table {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-left: auto;
     cursor: pointer;
 }
 
@@ -8655,6 +8654,38 @@ body.column-dragging .base-table {
 
 .urgent-toggle input:checked + .urgent-label {
     color: #ec4899;
+}
+
+.loss-header-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-left: auto;
+}
+
+.loss-flag-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.loss-flag-toggle input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--neon-cyan, #22d3ee);
+}
+
+.loss-flag-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.loss-flag-toggle input:checked + .loss-flag-label {
+    color: var(--neon-cyan, #22d3ee);
 }
 
 /* Same as client - visual highlighting */

@@ -7,7 +7,8 @@ const TYPE_CODES = {
   reconstruction: 'RPR',
   remodel: 'RMD',
   abatement: 'ABT',
-  remediation: 'REM'
+  remediation: 'REM',
+  fire: 'FR'
 };
 
 /**
@@ -51,14 +52,15 @@ function createJob(data, userId) {
       INSERT INTO apex_jobs (
         id, user_id, name, status,
         client_name, client_phone, client_email,
-        client_street, client_city, client_state, client_zip, client_relation,
+        client_street, client_city, client_state, client_zip, client_unit, client_relation,
         same_as_client,
-        prop_street, prop_city, prop_state, prop_zip, prop_type,
+        prop_street, prop_city, prop_state, prop_zip, prop_unit, prop_type, year_built,
         occ_name, occ_phone, occ_email, access_info,
         ins_carrier, ins_claim, ins_policy, deductible,
         adj_name, adj_phone, adj_email,
         loss_type, loss_date, water_category, damage_class,
         areas_affected, hazards, loss_description, scope_notes, urgent,
+        extraction_required, ongoing_intrusion, drywall_debris, content_manipulation,
         mitigation_pm, reconstruction_pm, estimator, project_coordinator, mitigation_techs,
         referral_source, how_heard, internal_notes,
         source, zoho_id,
@@ -66,14 +68,15 @@ function createJob(data, userId) {
       ) VALUES (
         ?, ?, ?, ?,
         ?, ?, ?,
-        ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?,
         ?,
-        ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?, ?,
         ?, ?, ?, ?,
         ?, ?, ?, ?,
         ?, ?, ?,
         ?, ?, ?, ?,
         ?, ?, ?, ?, ?,
+        ?, ?, ?, ?,
         ?, ?, ?, ?, ?,
         ?, ?, ?,
         ?, ?,
@@ -82,14 +85,15 @@ function createJob(data, userId) {
     `).run(
       id, userId, name, data.status || 'active',
       data.client_name, data.client_phone || '', data.client_email || '',
-      data.client_street || '', data.client_city || '', data.client_state || '', data.client_zip || '', data.client_relation || 'owner',
+      data.client_street || '', data.client_city || '', data.client_state || '', data.client_zip || '', data.client_unit || '', data.client_relation || 'owner',
       data.same_as_client ? 1 : 0,
-      data.prop_street || '', data.prop_city || '', data.prop_state || '', data.prop_zip || '', data.prop_type || 'residential',
+      data.prop_street || '', data.prop_city || '', data.prop_state || '', data.prop_zip || '', data.prop_unit || '', data.prop_type || 'residential', data.year_built || '',
       data.occ_name || '', data.occ_phone || '', data.occ_email || '', data.access_info || '',
       data.ins_carrier || '', data.ins_claim || '', data.ins_policy || '', data.deductible || 0,
       data.adj_name || '', data.adj_phone || '', data.adj_email || '',
       data.loss_type || '', data.loss_date || '', data.water_category || '', data.damage_class || '',
       data.areas_affected || '', data.hazards || '', data.loss_description || '', data.scope_notes || '', data.urgent ? 1 : 0,
+      data.extraction_required ? 1 : 0, data.ongoing_intrusion ? 1 : 0, data.drywall_debris ? 1 : 0, data.content_manipulation ? 1 : 0,
       ensureJsonString(data.mitigation_pm), ensureJsonString(data.reconstruction_pm),
       ensureJsonString(data.estimator), ensureJsonString(data.project_coordinator),
       ensureJsonString(data.mitigation_techs),
@@ -174,14 +178,15 @@ function updateJob(id, data, userId) {
   const allowedFields = [
     'name', 'status',
     'client_name', 'client_phone', 'client_email',
-    'client_street', 'client_city', 'client_state', 'client_zip', 'client_relation',
+    'client_street', 'client_city', 'client_state', 'client_zip', 'client_unit', 'client_relation',
     'same_as_client',
-    'prop_street', 'prop_city', 'prop_state', 'prop_zip', 'prop_type',
+    'prop_street', 'prop_city', 'prop_state', 'prop_zip', 'prop_unit', 'prop_type', 'year_built',
     'occ_name', 'occ_phone', 'occ_email', 'access_info',
     'ins_carrier', 'ins_claim', 'ins_policy', 'deductible',
     'adj_name', 'adj_phone', 'adj_email',
     'loss_type', 'loss_date', 'water_category', 'damage_class',
     'areas_affected', 'hazards', 'loss_description', 'scope_notes', 'urgent',
+    'extraction_required', 'ongoing_intrusion', 'drywall_debris', 'content_manipulation',
     'mitigation_pm', 'reconstruction_pm', 'estimator', 'project_coordinator', 'mitigation_techs',
     'referral_source', 'how_heard', 'internal_notes',
     'source', 'zoho_id',
@@ -200,7 +205,7 @@ function updateJob(id, data, userId) {
       updates.push(`${field} = ?`);
       if (jsonArrayFields.includes(field)) {
         values.push(ensureJsonString(data[field]));
-      } else if (field === 'same_as_client' || field === 'urgent') {
+      } else if (['same_as_client', 'urgent', 'extraction_required', 'ongoing_intrusion', 'drywall_debris', 'content_manipulation'].includes(field)) {
         values.push(data[field] ? 1 : 0);
       } else {
         values.push(data[field]);
@@ -385,8 +390,37 @@ function getNotesByJob(jobId, userId) {
   if (!job) return null;
 
   return db.prepare(
-    'SELECT * FROM apex_job_notes WHERE job_id = ? ORDER BY created_at DESC'
+    'SELECT n.*, u.name as author_name FROM apex_job_notes n LEFT JOIN users u ON n.author_id = u.id WHERE n.job_id = ? ORDER BY n.created_at DESC'
   ).all(jobId);
+}
+
+function getNoteById(noteId) {
+  return db.prepare('SELECT * FROM apex_job_notes WHERE id = ?').get(noteId);
+}
+
+function updateNote(noteId, data) {
+  const note = getNoteById(noteId);
+  if (!note) return null;
+
+  const allowedFields = ['subject', 'note_type', 'content'];
+  const updates = [];
+  const values = [];
+
+  for (const field of allowedFields) {
+    if (data[field] !== undefined) {
+      updates.push(`${field} = ?`);
+      values.push(data[field]);
+    }
+  }
+
+  if (updates.length === 0) return note;
+  values.push(noteId);
+
+  db.prepare(
+    `UPDATE apex_job_notes SET ${updates.join(', ')} WHERE id = ?`
+  ).run(...values);
+
+  return db.prepare('SELECT n.*, u.name as author_name FROM apex_job_notes n LEFT JOIN users u ON n.author_id = u.id WHERE n.id = ?').get(noteId);
 }
 
 function deleteNote(noteId, userId) {
@@ -565,8 +599,8 @@ function createLaborEntry(jobId, data, userId) {
   db.prepare(`
     INSERT INTO apex_job_labor (
       id, job_id, phase_id, employee_name, work_date, hours, hourly_rate,
-      work_category, description, billable
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      work_category, description, billable, author_id
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id, jobId,
     data.phase_id || null,
@@ -576,7 +610,8 @@ function createLaborEntry(jobId, data, userId) {
     data.hourly_rate || 0,
     data.work_category || 'other',
     data.description || '',
-    data.billable !== undefined ? (data.billable ? 1 : 0) : 1
+    data.billable !== undefined ? (data.billable ? 1 : 0) : 1,
+    data.author_id || userId
   );
 
   logActivity(jobId, {
@@ -674,8 +709,8 @@ function createReceipt(jobId, data, userId) {
   db.prepare(`
     INSERT INTO apex_job_receipts (
       id, job_id, phase_id, amount, expense_category, description,
-      vendor, paid_by, reimbursable, expense_date, file_path
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      vendor, paid_by, reimbursable, expense_date, file_path, author_id
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id, jobId,
     data.phase_id || null,
@@ -686,7 +721,8 @@ function createReceipt(jobId, data, userId) {
     data.paid_by || 'company_card',
     data.reimbursable ? 1 : 0,
     data.expense_date || null,
-    data.file_path || ''
+    data.file_path || '',
+    data.author_id || userId
   );
 
   logActivity(jobId, {
@@ -1155,6 +1191,48 @@ function toggleReadyToInvoice(jobId, ready, userId) {
   return getJobById(jobId, userId);
 }
 
+// ============================================
+// SINGLE-ENTRY LOOKUPS (for permission checks)
+// ============================================
+
+function getLaborEntryById(entryId) {
+  return db.prepare('SELECT * FROM apex_job_labor WHERE id = ?').get(entryId);
+}
+
+function getReceiptById(receiptId) {
+  return db.prepare('SELECT * FROM apex_job_receipts WHERE id = ?').get(receiptId);
+}
+
+/**
+ * Get assignment counts per user across all active (non-archived) jobs.
+ * Returns a map of lowercase user name → { mitigation_pm, reconstruction_pm, estimator, project_coordinator, mitigation_techs, total }
+ */
+function getAssignmentCounts() {
+  const jobs = db.prepare(
+    "SELECT mitigation_pm, reconstruction_pm, estimator, project_coordinator, mitigation_techs FROM apex_jobs WHERE status != 'archived'"
+  ).all();
+
+  const fields = ['mitigation_pm', 'reconstruction_pm', 'estimator', 'project_coordinator', 'mitigation_techs'];
+  const counts = {}; // keyed by lowercase name
+
+  for (const job of jobs) {
+    for (const field of fields) {
+      let arr = [];
+      try { arr = JSON.parse(job[field] || '[]'); } catch { arr = []; }
+      if (!Array.isArray(arr)) arr = [];
+      for (const name of arr) {
+        const key = (name || '').toLowerCase().trim();
+        if (!key) continue;
+        if (!counts[key]) counts[key] = { mitigation_pm: 0, reconstruction_pm: 0, estimator: 0, project_coordinator: 0, mitigation_techs: 0, total: 0 };
+        counts[key][field]++;
+        counts[key].total++;
+      }
+    }
+  }
+
+  return counts;
+}
+
 module.exports = {
   TYPE_CODES,
   generateJobNumber,
@@ -1171,6 +1249,8 @@ module.exports = {
   // Notes
   createNote,
   getNotesByJob,
+  getNoteById,
+  updateNote,
   deleteNote,
   // Estimates
   createEstimate,
@@ -1189,6 +1269,9 @@ module.exports = {
   getReceiptsByJob,
   updateReceipt,
   deleteReceipt,
+  // Single-entry lookups
+  getLaborEntryById,
+  getReceiptById,
   // Work Orders
   createWorkOrder,
   getWorkOrdersByJob,
@@ -1203,5 +1286,7 @@ module.exports = {
   // Dates
   updateJobDates,
   // Invoice
-  toggleReadyToInvoice
+  toggleReadyToInvoice,
+  // Team assignments
+  getAssignmentCounts
 };

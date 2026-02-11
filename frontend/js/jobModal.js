@@ -4,6 +4,133 @@
  * Phase C: Job Type Selection with multi-select
  */
 
+/**
+ * Shared custom dropdown component for team assignment fields.
+ * Renders a click-to-open dropdown with checkbox rows, filtered by role.
+ * Syncs selections to a hidden <select multiple> for FormData collection.
+ */
+const teamSelect = {
+    // Which roles are eligible for each assignment field
+    ROLE_MAP: {
+        mitigation_pm:       ['management', 'project_manager'],
+        reconstruction_pm:   ['management', 'project_manager'],
+        estimator:           ['management', 'estimator'],
+        project_coordinator: ['management', 'office_coordinator'],
+        mitigation_techs:    ['management', 'field_tech']
+    },
+
+    _listenersBound: false,
+
+    /** One-time document click listener to close open dropdowns */
+    initListeners() {
+        if (this._listenersBound) return;
+        this._listenersBound = true;
+        document.addEventListener('click', (e) => {
+            // If click is inside a .team-select, let the toggle handler deal with it
+            if (e.target.closest('.team-select')) return;
+            document.querySelectorAll('.team-select.open').forEach(el => el.classList.remove('open'));
+        });
+    },
+
+    /**
+     * Build the custom dropdown inside containerEl.
+     * @param {HTMLElement} containerEl  - the .team-select div
+     * @param {string} fieldName         - e.g. 'mitigation_pm'
+     * @param {Array} teamData           - full team array from API
+     * @param {Array} selectedValues     - array of pre-selected lowercase names
+     */
+    render(containerEl, fieldName, teamData, selectedValues) {
+        if (!containerEl) return;
+        const allowedRoles = this.ROLE_MAP[fieldName] || [];
+        const filtered = teamData.filter(t => allowedRoles.includes(t.role));
+        const selected = new Set((selectedValues || []).map(v => v.toLowerCase()));
+
+        // Find the sibling hidden select
+        const hiddenSelect = containerEl.parentElement.querySelector('select.team-select-hidden');
+
+        // Build trigger text
+        const displayNames = filtered.filter(t => selected.has(t.name.toLowerCase())).map(t => t.name);
+        const triggerText = displayNames.length > 0 ? displayNames.join(', ') : 'Select...';
+        const isPlaceholder = displayNames.length === 0;
+
+        const chevronSvg = '<svg class="team-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+
+        containerEl.innerHTML = `
+            <div class="team-select-trigger">
+                <span class="team-select-value${isPlaceholder ? ' placeholder' : ''}">${triggerText}</span>
+                ${chevronSvg}
+            </div>
+            <div class="team-select-dropdown">
+                ${filtered.map(t => {
+                    const val = t.name.toLowerCase();
+                    const count = t.assignments[fieldName] || 0;
+                    const checked = selected.has(val) ? 'checked' : '';
+                    return `<label class="team-select-option" data-value="${val}">
+                        <input type="checkbox" ${checked} value="${val}">
+                        <span>${t.name}</span>
+                        <span class="team-select-count">${count} job${count !== 1 ? 's' : ''}</span>
+                    </label>`;
+                }).join('')}
+                ${filtered.length === 0 ? '<div class="team-select-option" style="color:var(--text-muted);cursor:default;">No team members</div>' : ''}
+            </div>
+        `;
+
+        // Toggle open/close on trigger click
+        const trigger = containerEl.querySelector('.team-select-trigger');
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Close any other open dropdowns
+            document.querySelectorAll('.team-select.open').forEach(el => {
+                if (el !== containerEl) el.classList.remove('open');
+            });
+            containerEl.classList.toggle('open');
+        });
+
+        // Checkbox change handler
+        containerEl.querySelectorAll('.team-select-option input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('change', () => {
+                this._syncSelections(containerEl, hiddenSelect, fieldName, filtered);
+            });
+        });
+
+        // Initial sync to hidden select
+        this._syncSelections(containerEl, hiddenSelect, fieldName, filtered);
+    },
+
+    /** Sync checked state to hidden <select> and trigger text */
+    _syncSelections(containerEl, hiddenSelect, fieldName, filtered) {
+        const checked = [];
+        containerEl.querySelectorAll('.team-select-option input[type="checkbox"]:checked').forEach(cb => {
+            checked.push(cb.value);
+        });
+
+        // Update trigger display text
+        const valueEl = containerEl.querySelector('.team-select-value');
+        if (valueEl) {
+            const names = filtered.filter(t => checked.includes(t.name.toLowerCase())).map(t => t.name);
+            if (names.length > 0) {
+                valueEl.textContent = names.join(', ');
+                valueEl.classList.remove('placeholder');
+            } else {
+                valueEl.textContent = 'Select...';
+                valueEl.classList.add('placeholder');
+            }
+        }
+
+        // Update hidden select options
+        if (hiddenSelect) {
+            hiddenSelect.innerHTML = checked.map(v => `<option value="${v}" selected>${v}</option>`).join('');
+        }
+    },
+
+    /** Clean up a dropdown container */
+    destroy(containerEl) {
+        if (containerEl) containerEl.innerHTML = '';
+    }
+};
+
+window.teamSelect = teamSelect;
+
 const jobModal = {
     el: null,
     form: null,
@@ -28,7 +155,8 @@ const jobModal = {
         { client: "job-client-street", prop: "job-prop-street" },
         { client: "job-client-city", prop: "job-prop-city" },
         { client: "job-client-state", prop: "job-prop-state" },
-        { client: "job-client-zip", prop: "job-prop-zip" }
+        { client: "job-client-zip", prop: "job-prop-zip" },
+        { client: "job-client-unit", prop: "job-prop-unit" }
     ],
     
     // Job type definitions
@@ -55,6 +183,7 @@ const jobModal = {
         this.cacheFormElements();
         
         this.bindEvents();
+        teamSelect.initListeners();
         this.initialized = true;
         console.log("Job modal initialized");
     },
@@ -164,14 +293,14 @@ const jobModal = {
     /**
      * Open the new job modal
      */
-    open() {
+    async open() {
         // Ensure form elements are cached
         this.cacheFormElements();
-        
+
         // Reset job type selection
         this.selectedJobTypes.clear();
         this.el.querySelectorAll(".job-type-btn").forEach(btn => btn.classList.remove("active"));
-        
+
         this.isSameAsClient = false;
         if (this.sameToggle) {
             this.sameToggle.classList.remove("active");
@@ -181,6 +310,9 @@ const jobModal = {
         }
         this.enablePropertyFields();
         this.form.reset();
+
+        // Populate team assignment dropdowns dynamically
+        this.populateTeamAssignments();
 
         // Reset additional contact counters and containers
         this.additionalClientCount = 0;
@@ -324,6 +456,18 @@ const jobModal = {
 
         const group = document.createElement('div');
         group.className = 'additional-contact-group';
+        const relationField = type === 'site_contact' ? `
+            <div class="job-field">
+                <label>Relation</label>
+                <select name="${type}_relation_${index}">
+                    <option value="owner">Property Owner</option>
+                    <option value="tenant">Tenant</option>
+                    <option value="manager">Property Manager</option>
+                    <option value="agent">Insurance Agent</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>` : '';
+
         group.innerHTML = `
             <div class="job-field job-field-full">
                 <label>Name</label>
@@ -337,6 +481,7 @@ const jobModal = {
                 <label>Email</label>
                 <input type="email" name="${type}_email_${index}" placeholder="email@example.com">
             </div>
+            ${relationField}
             <button type="button" class="remove-contact-btn" title="Remove">&times;</button>
         `;
 
@@ -382,8 +527,11 @@ const jobModal = {
             }
         });
 
-        // Explicit urgent checkbox handling
-        data.urgent = !!document.getElementById("job-urgent")?.checked;
+        // Explicit checkbox handling for loss info flags
+        data.extraction_required = !!document.getElementById("job-extraction-required")?.checked;
+        data.ongoing_intrusion = !!document.getElementById("job-ongoing-intrusion")?.checked;
+        data.drywall_debris = !!document.getElementById("job-drywall-debris")?.checked;
+        data.content_manipulation = !!document.getElementById("job-content-manipulation")?.checked;
 
         // Add same_as_client flag
         data.same_as_client = this.isSameAsClient;
@@ -416,25 +564,45 @@ const jobModal = {
         const site0 = {
             name: document.getElementById('job-site-name-0')?.value || '',
             phone: document.getElementById('job-site-phone-0')?.value || '',
-            email: document.getElementById('job-site-email-0')?.value || ''
+            email: document.getElementById('job-site-email-0')?.value || '',
+            relation: document.getElementById('job-site-relation-0')?.value || 'owner'
         };
         if (site0.name || site0.phone || site0.email) {
             data.site_contacts.push(site0);
         }
         document.querySelectorAll('#additional-site-contacts .additional-contact-group').forEach(group => {
             const inputs = group.querySelectorAll('input');
-            const contact = { name: inputs[0]?.value || '', phone: inputs[1]?.value || '', email: inputs[2]?.value || '' };
+            const relationSelect = group.querySelector('select');
+            const contact = { name: inputs[0]?.value || '', phone: inputs[1]?.value || '', email: inputs[2]?.value || '', relation: relationSelect?.value || 'owner' };
             if (contact.name || contact.phone || contact.email) {
                 data.site_contacts.push(contact);
             }
         });
 
-        // Backward compat: map site contact 0 to occ fields
+        // Backward compat: map site contact 0 to occ fields and client_relation
         data.occ_name = site0.name;
         data.occ_phone = site0.phone;
         data.occ_email = site0.email;
+        data.client_relation = site0.relation;
 
         return data;
+    },
+
+    /**
+     * Fetch team assignments and populate all 5 custom dropdowns
+     */
+    async populateTeamAssignments() {
+        const fields = ['mitigation_pm', 'reconstruction_pm', 'estimator', 'project_coordinator', 'mitigation_techs'];
+        let team = [];
+        try {
+            team = await api.getTeamAssignments();
+        } catch (err) {
+            console.warn('Failed to load team assignments:', err);
+        }
+        for (const fieldName of fields) {
+            const container = this.el.querySelector(`.team-select[data-field="${fieldName}"]`);
+            teamSelect.render(container, fieldName, team, []);
+        }
     },
 
     /**

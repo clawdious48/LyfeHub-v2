@@ -60,22 +60,24 @@ const jobDetailModals = {
     // ========================================
     // 8.1 Edit Job Modal
     // ========================================
-    openEditJobModal(job, onSave) {
+    async openEditJobModal(job, onSave) {
         const esc = apexJobs.escapeHtml;
         this._pendingOnSave = onSave;
+
+        // Fetch team assignments for dynamic dropdowns
+        let team = [];
+        try { team = await api.getTeamAssignments(); } catch (err) { console.warn('Failed to load team assignments:', err); }
 
         // Helper to build <option> lists with current value pre-selected
         const opt = (val, label, current) =>
             `<option value="${esc(val)}" ${current === val ? 'selected' : ''}>${esc(label)}</option>`;
 
-        // Helper for multi-select assignment fields (stored as JSON arrays)
-        const multiSel = (fieldName, people) => {
+        // Parse current assignment values for pre-selection
+        const parseAssignment = (fieldName) => {
             let arr = [];
             try { arr = JSON.parse(job[fieldName] || '[]'); } catch { arr = []; }
             if (!Array.isArray(arr)) arr = [];
-            return people.map(p =>
-                `<option value="${esc(p)}" ${arr.includes(p) ? 'selected' : ''}>${esc(p.charAt(0).toUpperCase() + p.slice(1))}</option>`
-            ).join('');
+            return arr;
         };
 
         const states = ['AZ','CA','CO','NM','NV','TX','UT'];
@@ -107,8 +109,6 @@ const jobDetailModals = {
             {v:'google', l:'Google Search'}, {v:'facebook', l:'Facebook'}, {v:'nextdoor', l:'Nextdoor'},
             {v:'thumbtack', l:'Thumbtack'}, {v:'yelp', l:'Yelp'}, {v:'word-of-mouth', l:'Word of Mouth'}, {v:'other', l:'Other'}
         ];
-
-        const people = ['jake', 'sterling'];
 
         const html = `
             <form id="jdm-edit-job-form" class="jdm-edit-form">
@@ -286,27 +286,32 @@ const jobDetailModals = {
                 </div>
 
                 <div class="jdm-section">
-                    <h3 class="jdm-section-title">Assignment</h3>
+                    <h3 class="jdm-section-title">Team Assignment</h3>
                     <div class="jdm-field-grid">
                         <div class="jdm-field">
                             <label>Mitigation PM</label>
-                            <select class="jdm-select" name="mitigation_pm" multiple>${multiSel('mitigation_pm', people)}</select>
+                            <div class="team-select" data-field="mitigation_pm"></div>
+                            <select name="mitigation_pm" multiple class="team-select-hidden"></select>
                         </div>
                         <div class="jdm-field">
                             <label>Reconstruction PM</label>
-                            <select class="jdm-select" name="reconstruction_pm" multiple>${multiSel('reconstruction_pm', people)}</select>
+                            <div class="team-select" data-field="reconstruction_pm"></div>
+                            <select name="reconstruction_pm" multiple class="team-select-hidden"></select>
                         </div>
                         <div class="jdm-field">
                             <label>Estimator</label>
-                            <select class="jdm-select" name="estimator" multiple>${multiSel('estimator', people)}</select>
+                            <div class="team-select" data-field="estimator"></div>
+                            <select name="estimator" multiple class="team-select-hidden"></select>
                         </div>
                         <div class="jdm-field">
                             <label>Project Coordinator</label>
-                            <select class="jdm-select" name="project_coordinator" multiple>${multiSel('project_coordinator', people)}</select>
+                            <div class="team-select" data-field="project_coordinator"></div>
+                            <select name="project_coordinator" multiple class="team-select-hidden"></select>
                         </div>
                         <div class="jdm-field jdm-field-full">
                             <label>Mitigation Technician(s)</label>
-                            <select class="jdm-select" name="mitigation_techs" multiple>${multiSel('mitigation_techs', people)}</select>
+                            <div class="team-select" data-field="mitigation_techs"></div>
+                            <select name="mitigation_techs" multiple class="team-select-hidden"></select>
                         </div>
                     </div>
                 </div>
@@ -337,6 +342,16 @@ const jobDetailModals = {
         `;
 
         this.openModal('Edit Job', html);
+
+        // Initialize custom team dropdowns with current selections
+        const overlay = document.getElementById('job-detail-modal-overlay');
+        if (overlay) {
+            const fields = ['mitigation_pm', 'reconstruction_pm', 'estimator', 'project_coordinator', 'mitigation_techs'];
+            for (const fieldName of fields) {
+                const container = overlay.querySelector(`.team-select[data-field="${fieldName}"]`);
+                teamSelect.render(container, fieldName, team, parseAssignment(fieldName));
+            }
+        }
     },
 
     async _saveEditJob(jobId) {
@@ -684,6 +699,7 @@ const jobDetailModals = {
         if (!form) return;
         const data = Object.fromEntries(new FormData(form));
         data.amount = parseFloat(data.amount) || 0;
+        data.phase_id = window.apexJobs?.selectedPhaseId || null;
         try {
             await api.createApexJobPayment(jobId, data);
             this.closeModal();
@@ -776,6 +792,7 @@ const jobDetailModals = {
         data.hours = parseFloat(data.hours) || 0;
         data.hourly_rate = parseFloat(data.hourly_rate) || 0;
         data.billable = !!form.querySelector('[name="billable"]')?.checked;
+        data.phase_id = window.apexJobs?.selectedPhaseId || null;
         try {
             if (entryId) {
                 await api.updateApexJobLabor(jobId, entryId, data);
@@ -873,6 +890,7 @@ const jobDetailModals = {
         const data = Object.fromEntries(new FormData(form));
         data.amount = parseFloat(data.amount) || 0;
         data.reimbursable = !!form.querySelector('[name="reimbursable"]')?.checked;
+        data.phase_id = window.apexJobs?.selectedPhaseId || null;
         try {
             if (receiptId) {
                 await api.updateApexJobReceipt(jobId, receiptId, data);
@@ -954,6 +972,7 @@ const jobDetailModals = {
         if (!form) return;
         const data = Object.fromEntries(new FormData(form));
         data.budget_amount = parseFloat(data.budget_amount) || 0;
+        data.phase_id = window.apexJobs?.selectedPhaseId || null;
         try {
             if (woId) {
                 await api.updateApexJobWorkOrder(jobId, woId, data);

@@ -126,6 +126,82 @@ function getSafeUser(user) {
   return safeUser;
 }
 
+const VALID_ROLES = ['management', 'office_coordinator', 'project_manager', 'estimator', 'field_tech'];
+
+/**
+ * Get all users (without password_hash)
+ */
+function getAllUsers() {
+  return db.prepare('SELECT id, name, email, role, created_at FROM users ORDER BY created_at ASC').all();
+}
+
+/**
+ * Synchronous user creation for employee management
+ */
+function createUserSync({ email, password, name, role }) {
+  const id = uuidv4();
+  const now = new Date().toISOString();
+  const passwordHash = bcrypt.hashSync(password, BCRYPT_ROUNDS);
+
+  db.prepare(`
+    INSERT INTO users (id, email, password_hash, name, role, settings, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, '{}', ?, ?)
+  `).run(id, email.toLowerCase(), passwordHash, name, role || 'field_tech', now, now);
+
+  return { id, name, email: email.toLowerCase(), role: role || 'field_tech', created_at: now };
+}
+
+/**
+ * Update a user's role
+ */
+function updateUserRole(id, role) {
+  const now = new Date().toISOString();
+  db.prepare('UPDATE users SET role = ?, updated_at = ? WHERE id = ?').run(role, now, id);
+  return findUserById(id);
+}
+
+/**
+ * Reset a user's password (synchronous)
+ */
+function resetUserPassword(id, newPassword) {
+  const now = new Date().toISOString();
+  const passwordHash = bcrypt.hashSync(newPassword, BCRYPT_ROUNDS);
+  db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?').run(passwordHash, now, id);
+  return true;
+}
+
+/**
+ * Delete a user by ID.
+ * Nullifies user_id references in owned-data tables and removes the user.
+ * Uses a transaction to keep everything consistent.
+ */
+const deleteUserTx = db.transaction((id) => {
+  // Nullify ownership references so data isn't lost
+  const tables = ['tasks', 'task_items', 'calendars', 'people', 'people_groups',
+    'organizations', 'notes', 'projects', 'tags', 'apex_jobs',
+    'bases', 'base_records', 'task_lists'];
+  for (const table of tables) {
+    try { db.prepare(`UPDATE ${table} SET user_id = NULL WHERE user_id = ?`).run(id); } catch (_) {}
+  }
+  // Delete rows from tables with NOT NULL user_id + ON DELETE CASCADE
+  const cascadeTables = ['api_keys'];
+  for (const table of cascadeTables) {
+    try { db.prepare(`DELETE FROM ${table} WHERE user_id = ?`).run(id); } catch (_) {}
+  }
+  const result = db.prepare('DELETE FROM users WHERE id = ?').run(id);
+  return result.changes > 0;
+});
+
+function deleteUser(id) {
+  // Disable FK checks outside the transaction (PRAGMA can't change mid-transaction)
+  db.exec('PRAGMA foreign_keys = OFF');
+  try {
+    return deleteUserTx(id);
+  } finally {
+    db.exec('PRAGMA foreign_keys = ON');
+  }
+}
+
 module.exports = {
   findUserByEmail,
   findUserByEmailOrName,
@@ -134,5 +210,11 @@ module.exports = {
   verifyPassword,
   updateUser,
   changePassword,
-  getSafeUser
+  getSafeUser,
+  getAllUsers,
+  createUserSync,
+  updateUserRole,
+  resetUserPassword,
+  deleteUser,
+  VALID_ROLES
 };

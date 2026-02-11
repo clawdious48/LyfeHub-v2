@@ -116,6 +116,28 @@ const api = {
         });
     },
 
+    // Team Assignments
+    async getTeamAssignments() {
+        return this.request('/users/team-assignments');
+    },
+
+    // Employee Management
+    async getEmployees() {
+        return this.request('/users/employees');
+    },
+    async createEmployee(data) {
+        return this.request('/users/employees', { method: 'POST', body: data });
+    },
+    async updateEmployee(id, data) {
+        return this.request(`/users/employees/${id}`, { method: 'PATCH', body: data });
+    },
+    async deleteEmployee(id) {
+        return this.request(`/users/employees/${id}`, { method: 'DELETE' });
+    },
+    async bulkDeleteEmployees(ids) {
+        return this.request('/users/employees/bulk-delete', { method: 'POST', body: { ids } });
+    },
+
     /**
      * Profile: Change password
      */

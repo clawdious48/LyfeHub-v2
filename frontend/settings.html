@@ -111,6 +111,47 @@
                 <button type="button" class="btn btn-secondary" onclick="copyKey()">Copy to Clipboard</button>
             </div>
         </div>
+        <!-- Employee Management (management only) -->
+        <div class="profile-card" id="employee-section" style="display: none;">
+            <h2>Employee Management</h2>
+            <p class="text-muted" style="margin-bottom: 1rem;">Manage team members and their roles.</p>
+
+            <div id="employees-list" style="margin-bottom: 1rem;">
+                <p class="text-muted">Loading...</p>
+            </div>
+
+            <div style="border-top: 1px solid #333; padding-top: 1rem; margin-top: 1rem;">
+                <h3 style="font-size: 1rem; margin-bottom: 0.75rem;">Add Employee</h3>
+                <form id="add-employee-form">
+                    <div class="form-group">
+                        <label for="emp-name">Name</label>
+                        <input type="text" id="emp-name" placeholder="Full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="emp-email">Email</label>
+                        <input type="email" id="emp-email" placeholder="employee@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="emp-password">Temporary Password</label>
+                        <input type="password" id="emp-password" placeholder="At least 8 characters" minlength="8" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="emp-role">Role</label>
+                        <select id="emp-role" required>
+                            <option value="field_tech">Field Tech</option>
+                            <option value="estimator">Estimator</option>
+                            <option value="project_manager">Project Manager</option>
+                            <option value="office_coordinator">Office Coordinator</option>
+                            <option value="management">Management</option>
+                        </select>
+                    </div>
+                    <div id="emp-error" class="auth-error"></div>
+                    <div id="emp-success" class="auth-success"></div>
+                    <button type="submit" class="btn btn-primary">Add Employee</button>
+                </form>
+            </div>
+        </div>
+
         <div class="profile-card danger-zone">
             <h2>Session</h2>
             <p class="text-muted" style="margin-bottom: 1rem;">Sign out of your account on this device.</p>
@@ -129,8 +170,14 @@
         async function loadUser() {
             try {
                 const result = await api.getProfile();
+                window.currentUser = result.user || {};
                 document.getElementById('display-email').textContent = result.user.email;
                 document.getElementById('display-name').textContent = result.user.name;
+                // Show employee section for management only
+                if (result.user.role === 'management') {
+                    document.getElementById('employee-section').style.display = '';
+                    loadEmployees();
+                }
             } catch (err) {
                 window.location.href = '/login.html';
             }
@@ -177,6 +224,198 @@
             window.location.href = '/login.html';
         });
         
+        const roleLabels = {
+            field_tech: 'Field Tech',
+            estimator: 'Estimator',
+            project_manager: 'Project Manager',
+            office_coordinator: 'Office Coordinator',
+            management: 'Management'
+        };
+
+        // Track which employee checkboxes are selected
+        let selectedEmployeeIds = new Set();
+
+        async function loadEmployees() {
+            const container = document.getElementById('employees-list');
+            selectedEmployeeIds.clear();
+            updateBulkDeleteBtn();
+            try {
+                const res = await api.getEmployees();
+                const employees = res.employees || res || [];
+
+                if (!employees.length) {
+                    container.innerHTML = '<p class="text-muted">No employees yet.</p>';
+                    return;
+                }
+
+                // Filter out current user from the list (can't delete yourself)
+                const currentUserId = window.currentUser?.id;
+
+                container.innerHTML = `
+                    <div id="bulk-delete-bar" style="display: none; margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; background: rgba(255, 68, 68, 0.1); border: 1px solid rgba(255, 68, 68, 0.3); border-radius: 6px; display: none; align-items: center; gap: 0.75rem;">
+                        <span id="bulk-delete-count" style="font-size: 0.85rem;">0 selected</span>
+                        <button class="btn btn-danger" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; margin-left: auto;" onclick="bulkDeleteEmployees()">Delete Selected</button>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #333; text-align: left;">
+                                <th style="padding: 0.5rem; width: 32px;">
+                                    <input type="checkbox" id="emp-select-all" onchange="toggleAllEmployees(this.checked)" title="Select all">
+                                </th>
+                                <th style="padding: 0.5rem;">Name</th>
+                                <th style="padding: 0.5rem;">Email</th>
+                                <th style="padding: 0.5rem;">Role</th>
+                                <th style="padding: 0.5rem;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${employees.map(emp => {
+                                const isSelf = emp.id === currentUserId;
+                                return `
+                                <tr style="border-bottom: 1px solid #222;" data-emp-id="${escHtml(emp.id)}">
+                                    <td style="padding: 0.5rem;">
+                                        ${isSelf ? '' : `<input type="checkbox" class="emp-checkbox" data-id="${escHtml(emp.id)}" onchange="toggleEmployeeSelect('${escHtml(emp.id)}', this.checked)">`}
+                                    </td>
+                                    <td style="padding: 0.5rem;">${escHtml(emp.name || '')}${isSelf ? ' <span style="color: #888; font-size: 0.75rem;">(you)</span>' : ''}</td>
+                                    <td style="padding: 0.5rem; color: #888;">${escHtml(emp.email || '')}</td>
+                                    <td style="padding: 0.5rem;">
+                                        <select onchange="updateEmployeeRole('${escHtml(emp.id)}', this.value)" style="background: #1a1a2e; color: #fff; border: 1px solid #333; border-radius: 4px; padding: 0.25rem;">
+                                            ${Object.entries(roleLabels).map(([val, label]) =>
+                                                `<option value="${val}" ${emp.role === val ? 'selected' : ''}>${label}</option>`
+                                            ).join('')}
+                                        </select>
+                                    </td>
+                                    <td style="padding: 0.5rem;">
+                                        <button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; margin-right: 0.25rem;" onclick="resetEmployeePassword('${escHtml(emp.id)}', '${escHtml(emp.name || '')}')">Reset PW</button>
+                                        ${isSelf ? '' : `<button class="btn btn-danger" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="deleteEmployee('${escHtml(emp.id)}', '${escHtml(emp.name || '')}')">Delete</button>`}
+                                    </td>
+                                </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (err) {
+                container.innerHTML = '<p class="text-muted">Failed to load employees.</p>';
+            }
+        }
+
+        function escHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function toggleEmployeeSelect(empId, checked) {
+            if (checked) {
+                selectedEmployeeIds.add(empId);
+            } else {
+                selectedEmployeeIds.delete(empId);
+            }
+            updateBulkDeleteBtn();
+        }
+
+        function toggleAllEmployees(checked) {
+            selectedEmployeeIds.clear();
+            document.querySelectorAll('.emp-checkbox').forEach(cb => {
+                cb.checked = checked;
+                if (checked) selectedEmployeeIds.add(cb.dataset.id);
+            });
+            updateBulkDeleteBtn();
+        }
+
+        function updateBulkDeleteBtn() {
+            const bar = document.getElementById('bulk-delete-bar');
+            const countEl = document.getElementById('bulk-delete-count');
+            if (!bar) return;
+            if (selectedEmployeeIds.size > 0) {
+                bar.style.display = 'flex';
+                countEl.textContent = `${selectedEmployeeIds.size} selected`;
+            } else {
+                bar.style.display = 'none';
+            }
+        }
+
+        async function bulkDeleteEmployees() {
+            const count = selectedEmployeeIds.size;
+            if (count === 0) return;
+            if (!confirm(`Delete ${count} employee${count > 1 ? 's' : ''}? This cannot be undone.`)) return;
+            try {
+                const result = await api.bulkDeleteEmployees(Array.from(selectedEmployeeIds));
+                const deletedCount = result.deleted?.length || 0;
+                const skippedCount = result.skipped?.length || 0;
+                if (skippedCount > 0) {
+                    alert(`Deleted ${deletedCount}, skipped ${skippedCount} (${result.skipped.map(s => s.reason).join(', ')})`);
+                }
+                loadEmployees();
+            } catch (err) {
+                alert('Failed to delete employees: ' + (err.message || err));
+            }
+        }
+
+        async function updateEmployeeRole(empId, newRole) {
+            try {
+                await api.updateEmployee(empId, { role: newRole });
+            } catch (err) {
+                alert('Failed to update role: ' + (err.message || err));
+                loadEmployees();
+            }
+        }
+
+        async function resetEmployeePassword(empId, name) {
+            const newPw = prompt(`Enter new password for ${name} (min 8 chars):`);
+            if (!newPw || newPw.length < 8) {
+                if (newPw !== null) alert('Password must be at least 8 characters');
+                return;
+            }
+            try {
+                await api.updateEmployee(empId, { password: newPw });
+                alert('Password reset successfully');
+            } catch (err) {
+                alert('Failed to reset password: ' + (err.message || err));
+            }
+        }
+
+        async function deleteEmployee(empId, name) {
+            if (!confirm(`Delete employee "${name}"? This cannot be undone.`)) return;
+            try {
+                await api.deleteEmployee(empId);
+                loadEmployees();
+            } catch (err) {
+                alert('Failed to delete employee: ' + (err.message || err));
+            }
+        }
+
+        document.getElementById('add-employee-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorEl = document.getElementById('emp-error');
+            const successEl = document.getElementById('emp-success');
+            errorEl.textContent = '';
+            successEl.textContent = '';
+
+            const data = {
+                name: document.getElementById('emp-name').value,
+                email: document.getElementById('emp-email').value,
+                password: document.getElementById('emp-password').value,
+                role: document.getElementById('emp-role').value
+            };
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Adding...';
+
+            try {
+                await api.createEmployee(data);
+                successEl.textContent = 'Employee added successfully';
+                e.target.reset();
+                loadEmployees();
+            } catch (err) {
+                errorEl.textContent = err.message || 'Failed to add employee';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Add Employee';
+            }
+        });
+
         loadUser();
 
         // API Keys functions

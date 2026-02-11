@@ -3,6 +3,29 @@
  * Each function receives a job object and returns an HTML string.
  */
 
+function _relativeTime(dateStr) {
+    if (!dateStr) return '';
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins} min ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days}d ago`;
+    return new Date(dateStr).toLocaleDateString();
+}
+
+function _canModifyNote(note) {
+    const user = window.currentUser || {};
+    if (user.role === 'management') return true;
+    if (note.author_id && note.author_id === user.id) {
+        const age = Date.now() - new Date(note.created_at).getTime();
+        return age < 5 * 60 * 1000; // 5 minutes
+    }
+    return false;
+}
+
 const jobDetailTabs = {
 
     // ========================================
@@ -187,9 +210,10 @@ const jobDetailTabs = {
     // ========================================
     // Tab 4: Notes
     // ========================================
-    renderNotesTab(job) {
+    renderNotesTab(job, phaseId) {
         const esc = apexJobs.escapeHtml;
-        const notes = (job.notes || []).slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        const allNotes = (job.notes || []).filter(n => !phaseId || !n.phase_id || n.phase_id === phaseId);
+        const notes = allNotes.slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
         const typeBadgeColors = {
             general: 'rgba(128,128,128,0.3)',
@@ -231,13 +255,15 @@ const jobDetailTabs = {
                 const typeColor = typeBadgeColors[noteType] || typeBadgeColors.general;
                 const typeText = typeBadgeTextColors[noteType] || typeBadgeTextColors.general;
                 const typeLabel = noteType.replace(/_/g, ' ');
+                const authorName = note.author_name || note.author || '';
+                const canDelete = (window.currentUser?.role === 'management');
                 return `
                     <div class="jdt-note-item" style="border-left: 3px solid var(--neon-cyan)">
                         <div class="jdt-note-header">
-                            <span class="jdt-note-date">${note.created_at ? new Date(note.created_at).toLocaleDateString() : ''}</span>
-                            <span class="jdt-note-author">${esc(note.author || '')}</span>
+                            <span class="jdt-note-date" title="${note.created_at ? new Date(note.created_at).toLocaleString() : ''}">${_relativeTime(note.created_at)}</span>
+                            ${authorName ? `<span class="jdt-note-author">${esc(authorName)}</span>` : ''}
                             <span class="jdt-note-type-badge" style="background:${typeColor};color:${typeText}">${esc(typeLabel)}</span>
-                            <button class="jdt-note-delete" onclick="jobDetailTabs._deleteNote('${job.id}', '${note.id}')" title="Delete note">&times;</button>
+                            ${canDelete ? `<button class="jdt-note-delete" onclick="jobDetailTabs._deleteNote('${job.id}', '${note.id}')" title="Delete note">&times;</button>` : ''}
                         </div>
                         ${note.subject ? `<div class="jdt-note-subject">${esc(note.subject)}</div>` : ''}
                         <div class="jdt-note-content">${esc(note.content || '')}</div>
@@ -268,14 +294,15 @@ const jobDetailTabs = {
         const content = document.getElementById('jdt-note-content')?.value || '';
         if (!content.trim()) return;
 
+        const phase_id = window.apexJobs?.selectedPhaseId || null;
         try {
-            await api.createApexJobNote(jobId, { subject, note_type, content });
+            await api.createApexJobNote(jobId, { subject, note_type, content, phase_id });
             // Refresh notes by re-fetching and re-rendering
             const notes = await api.getApexJobNotes(jobId);
             if (window.apexJobs && window.apexJobs.currentJob) {
                 window.apexJobs.currentJob.notes = notes;
                 const container = document.getElementById('job-detail-tab-panel');
-                if (container) container.innerHTML = jobDetailTabs.renderNotesTab(window.apexJobs.currentJob);
+                if (container) container.innerHTML = jobDetailTabs.renderNotesTab(window.apexJobs.currentJob, phase_id);
             }
         } catch (err) {
             console.error('Failed to create note:', err);
@@ -289,8 +316,9 @@ const jobDetailTabs = {
             const notes = await api.getApexJobNotes(jobId);
             if (window.apexJobs && window.apexJobs.currentJob) {
                 window.apexJobs.currentJob.notes = notes;
+                const phaseId = window.apexJobs.selectedPhaseId || null;
                 const container = document.getElementById('job-detail-tab-panel');
-                if (container) container.innerHTML = jobDetailTabs.renderNotesTab(window.apexJobs.currentJob);
+                if (container) container.innerHTML = jobDetailTabs.renderNotesTab(window.apexJobs.currentJob, phaseId);
             }
         } catch (err) {
             console.error('Failed to delete note:', err);
@@ -300,13 +328,14 @@ const jobDetailTabs = {
     // ========================================
     // Tab 5: Expenses
     // ========================================
-    renderExpensesTab(job) {
+    renderExpensesTab(job, phaseId) {
         const esc = apexJobs.escapeHtml;
         const fmt = (amount) => `$${Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+        const phaseFilter = (item) => !phaseId || !item.phase_id || item.phase_id === phaseId;
 
-        const labor = job.labor || [];
-        const receipts = job.receipts || [];
-        const workOrders = job.work_orders || [];
+        const labor = (job.labor || []).filter(phaseFilter);
+        const receipts = (job.receipts || []).filter(phaseFilter);
+        const workOrders = (job.work_orders || []).filter(phaseFilter);
 
         const totalLabor = labor.reduce((s, e) => s + (e.hours || 0) * (e.hourly_rate || e.rate || 0), 0);
         const totalReceipts = receipts.reduce((s, r) => s + Number(r.amount || 0), 0);
@@ -481,10 +510,10 @@ jobDetailTabs.renderTab = function(tabName, job, phaseId, panel) {
     const renderers = {
         dates:     () => this.renderDatesTab(job),
         documents: () => this.renderDocumentsTab(job, phaseId),
-        tasks:     () => this.renderTasksTab(job),
-        notes:     () => this.renderNotesTab(job),
-        expenses:  () => this.renderExpensesTab(job),
-        drying:    () => this.renderDryingTab(job)
+        tasks:     () => this.renderTasksTab(job, phaseId),
+        notes:     () => this.renderNotesTab(job, phaseId),
+        expenses:  () => this.renderExpensesTab(job, phaseId),
+        drying:    () => this.renderDryingTab(job, phaseId)
     };
 
     const render = renderers[tabName];

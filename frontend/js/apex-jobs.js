@@ -3,8 +3,18 @@
  * Read-only view with Kanban, List, and Card views
  */
 
-const TYPE_CODE_TO_NAME = { MIT: 'mitigation', RPR: 'reconstruction', RMD: 'remodel', ABT: 'abatement', REM: 'remediation' };
-const TYPE_CODE_LABELS = { mitigation: 'Mitigation', reconstruction: 'Reconstruction', remodel: 'Remodel', abatement: 'Abatement', remediation: 'Remediation' };
+const TYPE_CODE_TO_NAME = { MIT: 'mitigation', RPR: 'reconstruction', RMD: 'remodel', ABT: 'abatement', REM: 'remediation', FR: 'fire' };
+const TYPE_CODE_LABELS = { mitigation: 'Mitigation', reconstruction: 'Reconstruction', remodel: 'Remodel', abatement: 'Abatement', remediation: 'Remediation', fire: 'Fire' };
+
+// Permission helpers
+function userHasRole(...roles) {
+    const role = window.currentUser?.role;
+    return role && roles.includes(role);
+}
+function canEditJob() { return userHasRole('management', 'office_coordinator'); }
+function canDeleteNote() { return userHasRole('management'); }
+function canAddEstimate() { return userHasRole('management', 'office_coordinator', 'estimator'); }
+function canRecordPayment() { return userHasRole('management', 'office_coordinator'); }
 
 const apexJobs = {
     jobs: [],
@@ -21,7 +31,15 @@ const apexJobs = {
         direction: 'asc'
     },
 
-    init() {
+    async init() {
+        // Fetch current user profile for permission-aware UI
+        try {
+            const profileData = await api.getProfile();
+            window.currentUser = profileData.user || {};
+        } catch(e) {
+            window.currentUser = {};
+        }
+
         this.bindEvents();
         // Auto-load if apex tab is active
         const apexTab = document.querySelector(".tab[data-tab=\"apex\"]");
@@ -461,14 +479,17 @@ const apexJobs = {
 
         try {
             // Fetch full job data + related data in parallel
-            const [fullJob, accounting, activity, notes, contacts, estimates] = await Promise.all([
+            const [fullJob, accounting, activity, notes, contacts, estimates, labor, receipts, workOrders] = await Promise.all([
                 api.getApexJob(job.id),
                 api.getApexJobAccounting(job.id).catch(() => ({})),
                 api.getApexJobActivity(job.id).catch(() => []),
                 api.getApexJobNotes(job.id).catch(() => []),
                 // Contacts — placeholder until People module integration
                 Promise.resolve([]),
-                api.getApexJobEstimates(job.id).catch(() => [])
+                api.getApexJobEstimates(job.id).catch(() => []),
+                api.getApexJobLabor(job.id).catch(() => []),
+                api.getApexJobReceipts(job.id).catch(() => []),
+                api.getApexJobWorkOrders(job.id).catch(() => [])
             ]);
 
             fullJob.accounting_summary = accounting;
@@ -476,6 +497,9 @@ const apexJobs = {
             fullJob.contacts = contacts || [];
             fullJob.notes = notes || [];
             fullJob.estimates = estimates || [];
+            fullJob.labor = labor || [];
+            fullJob.receipts = receipts || [];
+            fullJob.work_orders = workOrders || [];
             this.currentJob = fullJob;
 
             // Set initial phase and accounting type from first phase
@@ -574,6 +598,8 @@ const apexJobs = {
         const clientName = job.client_name || 'No client';
         const address = this.formatAddress(job);
         const statusLabel = this.formatStatus(job.status);
+        const activePhase = (job.phases || []).find(p => p.id === this.selectedPhaseId) || job.phases?.[0];
+        const jobNumber = activePhase?.job_number || '';
 
         return `
             <div class="job-detail-header">
@@ -583,6 +609,7 @@ const apexJobs = {
                             ${this.getDamageIcon(job.loss_type)}
                         </div>
                         <div class="job-detail-header-text">
+                            <div class="job-detail-number" id="job-detail-number">${jobNumber}</div>
                             <h1>${this.escapeHtml(job.name || job.job_number || 'Job Details')}</h1>
                             <div class="client-name">${this.escapeHtml(clientName)}</div>
                             ${address ? `<div class="address">
@@ -606,10 +633,10 @@ const apexJobs = {
                                 ).join('')}
                             </div>
                         </div>
-                        <button class="job-detail-edit-btn" id="job-edit-btn">
+                        ${canEditJob() ? `<button class="job-detail-edit-btn" id="job-edit-btn">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                             Edit
-                        </button>
+                        </button>` : ''}
                     </div>
                 </div>
             </div>
@@ -779,14 +806,14 @@ const apexJobs = {
                 </div>
                 ${this.renderEstimatesBreakdown(estimates, type)}
                 <div class="accounting-actions">
-                    <button class="accounting-action-btn" data-action="add-estimate">
+                    ${canAddEstimate() ? `<button class="accounting-action-btn" data-action="add-estimate">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         Estimate
-                    </button>
-                    <button class="accounting-action-btn" data-action="record-payment">
+                    </button>` : ''}
+                    ${canRecordPayment() ? `<button class="accounting-action-btn" data-action="record-payment">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                         Payment
-                    </button>
+                    </button>` : ''}
                     <button class="accounting-action-btn" data-action="add-labor">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                         Labor
@@ -1179,9 +1206,12 @@ const apexJobs = {
                 this.selectedPhaseId = btn.dataset.phaseId;
                 container.querySelectorAll('.job-detail-phase-bar .phase-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+                // Update job number display for selected phase
+                const phase = this.currentJob.phases?.find(p => p.id == this.selectedPhaseId);
+                const numberEl = document.getElementById('job-detail-number');
+                if (numberEl && phase) numberEl.textContent = phase.job_number || '';
                 this.renderActiveTabContent();
                 // Sync accounting sidebar with selected phase
-                const phase = this.currentJob.phases?.find(p => p.id == this.selectedPhaseId);
                 if (phase) {
                     this.selectedAccountingType = TYPE_CODE_TO_NAME[phase.job_type_code] || null;
                     this.refreshAccountingSidebar();

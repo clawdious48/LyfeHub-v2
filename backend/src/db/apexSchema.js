@@ -140,6 +140,22 @@ for (const col of dateColumns) {
 }
 
 // ============================================
+// ALTER apex_jobs — add loss info flag columns
+// ============================================
+const flagColumns = [
+  'extraction_required', 'ongoing_intrusion', 'drywall_debris', 'content_manipulation'
+];
+for (const col of flagColumns) {
+  const colExists = db.prepare(
+    `SELECT COUNT(*) as cnt FROM pragma_table_info('apex_jobs') WHERE name = ?`
+  ).get(col);
+  if (!colExists || colExists.cnt === 0) {
+    db.exec(`ALTER TABLE apex_jobs ADD COLUMN ${col} INTEGER DEFAULT 0`);
+    console.log(`Added column ${col} to apex_jobs`);
+  }
+}
+
+// ============================================
 // APEX JOB NOTES TABLE
 // ============================================
 const apexJobNotesTable = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='apex_job_notes'").get();
@@ -353,6 +369,82 @@ try {
 try {
   db.exec(`ALTER TABLE apex_jobs ADD COLUMN site_contacts TEXT DEFAULT '[]'`);
   console.log('Added site_contacts column to apex_jobs');
+} catch (e) {
+  // Column already exists, ignore
+}
+
+try {
+  db.exec('ALTER TABLE apex_jobs ADD COLUMN year_built TEXT DEFAULT ""');
+  console.log('Added year_built column to apex_jobs');
+} catch (e) {
+  // Column already exists, ignore
+}
+
+try {
+  db.exec('ALTER TABLE apex_jobs ADD COLUMN client_unit TEXT DEFAULT ""');
+  console.log('Added client_unit column to apex_jobs');
+} catch (e) {
+  // Column already exists, ignore
+}
+
+try {
+  db.exec('ALTER TABLE apex_jobs ADD COLUMN prop_unit TEXT DEFAULT ""');
+  console.log('Added prop_unit column to apex_jobs');
+} catch (e) {
+  // Column already exists, ignore
+}
+
+// ============================================
+// PHASE ASSIGNMENTS TABLE (RBAC — user-to-phase mapping)
+// ============================================
+const phaseAssignmentsTable = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='phase_assignments'").get();
+if (!phaseAssignmentsTable) {
+  console.log('Creating phase_assignments table...');
+  db.exec(`
+    CREATE TABLE phase_assignments (
+      id TEXT PRIMARY KEY,
+      phase_id TEXT NOT NULL REFERENCES apex_job_phases(id) ON DELETE CASCADE,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      assignment_role TEXT DEFAULT 'tech',
+      assigned_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(phase_id, user_id)
+    )
+  `);
+  db.exec(`CREATE INDEX idx_phase_assignments_phase_id ON phase_assignments(phase_id)`);
+  db.exec(`CREATE INDEX idx_phase_assignments_user_id ON phase_assignments(user_id)`);
+  console.log('Phase assignments table created');
+}
+
+// ============================================
+// ALTER apex_job_payments — add phase_id column
+// ============================================
+try {
+  db.exec("ALTER TABLE apex_job_payments ADD COLUMN phase_id TEXT");
+  console.log('Added phase_id column to apex_job_payments');
+} catch (e) {
+  // Column already exists, ignore
+}
+
+// ============================================
+// ALTER labor/receipts/work_orders — add author_id column
+// ============================================
+try {
+  db.exec("ALTER TABLE apex_job_labor ADD COLUMN author_id TEXT");
+  console.log('Added author_id column to apex_job_labor');
+} catch (e) {
+  // Column already exists, ignore
+}
+
+try {
+  db.exec("ALTER TABLE apex_job_receipts ADD COLUMN author_id TEXT");
+  console.log('Added author_id column to apex_job_receipts');
+} catch (e) {
+  // Column already exists, ignore
+}
+
+try {
+  db.exec("ALTER TABLE apex_job_work_orders ADD COLUMN author_id TEXT");
+  console.log('Added author_id column to apex_job_work_orders');
 } catch (e) {
   // Column already exists, ignore
 }

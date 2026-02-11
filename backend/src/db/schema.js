@@ -420,6 +420,30 @@ try {
   // Column already exists, ignore
 }
 
+// ============================================
+// ADD ROLE COLUMN TO USERS (RBAC migration)
+// ============================================
+try {
+  db.exec("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'field_tech'");
+  console.log('Added role column to users');
+} catch (e) {
+  // Column already exists, ignore
+}
+
+// Migrate first user to management role
+try {
+  const firstUser = db.prepare("SELECT id FROM users ORDER BY created_at ASC LIMIT 1").get();
+  if (firstUser) {
+    // Match NULL or field_tech — original migration missed NULL roles
+    db.prepare("UPDATE users SET role = 'management' WHERE id = ? AND (role IS NULL OR role = 'field_tech')").run(firstUser.id);
+  }
+} catch (e) {}
+
+// Ensure no users have NULL role (fills any remaining gaps)
+try {
+  db.prepare("UPDATE users SET role = 'field_tech' WHERE role IS NULL").run();
+} catch (e) {}
+
 console.log('Database initialized at', dbPath);
 
 

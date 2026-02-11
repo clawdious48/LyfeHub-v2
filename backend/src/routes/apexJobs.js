@@ -3,6 +3,7 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 const { authMiddleware } = require('../middleware/auth');
+const { requireRole, canEditEntry } = require('../middleware/permissions');
 const apexJobsDb = require('../db/apexJobs');
 
 // Helper: read Zoho JSON file
@@ -59,6 +60,9 @@ function formatDbJob(job) {
     additional_clients: (() => { try { return JSON.parse(job.additional_clients || '[]'); } catch { return []; } })(),
     additional_adjusters: (() => { try { return JSON.parse(job.additional_adjusters || '[]'); } catch { return []; } })(),
     site_contacts: (() => { try { return JSON.parse(job.site_contacts || '[]'); } catch { return []; } })(),
+    client_unit: job.client_unit,
+    prop_unit: job.prop_unit,
+    year_built: job.year_built,
     taskSummary: { total: 0, completed: 0 },
     tasks: [],
     phases: job.phases || [],
@@ -89,7 +93,7 @@ router.get('/', authMiddleware, (req, res) => {
 });
 
 // POST / - Create job
-router.post('/', authMiddleware, (req, res) => {
+router.post('/', authMiddleware, requireRole('management', 'office_coordinator'), (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
     const job = apexJobsDb.createJob(req.body, req.user.id);
@@ -114,7 +118,7 @@ router.get('/:id', authMiddleware, (req, res) => {
 });
 
 // PATCH /:id - Update job
-router.patch('/:id', authMiddleware, (req, res) => {
+router.patch('/:id', authMiddleware, requireRole('management', 'office_coordinator'), (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
     const job = apexJobsDb.updateJob(req.params.id, req.body, req.user.id);
@@ -214,7 +218,7 @@ router.get('/:id/notes', authMiddleware, (req, res) => {
 router.post('/:id/notes', authMiddleware, (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const note = apexJobsDb.createNote(req.params.id, req.body, req.user.id);
+    const note = apexJobsDb.createNote(req.params.id, { ...req.body, author_id: req.user.id }, req.user.id);
     if (!note) return res.status(404).json({ error: 'Job not found' });
     res.status(201).json(note);
   } catch (err) {
@@ -223,8 +227,24 @@ router.post('/:id/notes', authMiddleware, (req, res) => {
   }
 });
 
+// PATCH /:id/notes/:noteId
+router.patch('/:id/notes/:noteId', authMiddleware, (req, res) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
+    const existing = apexJobsDb.getNoteById(req.params.noteId);
+    if (!existing) return res.status(404).json({ error: 'Note not found' });
+    if (!canEditEntry(req, existing)) return res.status(403).json({ error: 'Insufficient permissions' });
+    const note = apexJobsDb.updateNote(req.params.noteId, req.body);
+    if (!note) return res.status(404).json({ error: 'Note not found' });
+    res.json(note);
+  } catch (err) {
+    console.error('Error updating note:', err);
+    res.status(500).json({ error: 'Failed to update note' });
+  }
+});
+
 // DELETE /:id/notes/:noteId
-router.delete('/:id/notes/:noteId', authMiddleware, (req, res) => {
+router.delete('/:id/notes/:noteId', authMiddleware, requireRole('management'), (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
     const success = apexJobsDb.deleteNote(req.params.noteId, req.user.id);
@@ -254,7 +274,7 @@ router.get('/:id/estimates', authMiddleware, (req, res) => {
 });
 
 // POST /:id/estimates
-router.post('/:id/estimates', authMiddleware, (req, res) => {
+router.post('/:id/estimates', authMiddleware, requireRole('management', 'office_coordinator', 'estimator'), (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
     const estimate = apexJobsDb.createEstimate(req.params.id, req.body, req.user.id);
@@ -267,7 +287,7 @@ router.post('/:id/estimates', authMiddleware, (req, res) => {
 });
 
 // PATCH /:id/estimates/:estId
-router.patch('/:id/estimates/:estId', authMiddleware, (req, res) => {
+router.patch('/:id/estimates/:estId', authMiddleware, requireRole('management', 'office_coordinator', 'estimator'), (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
     const estimate = apexJobsDb.updateEstimate(req.params.estId, req.body, req.user.id);
@@ -297,7 +317,7 @@ router.get('/:id/payments', authMiddleware, (req, res) => {
 });
 
 // POST /:id/payments
-router.post('/:id/payments', authMiddleware, (req, res) => {
+router.post('/:id/payments', authMiddleware, requireRole('management', 'office_coordinator'), (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
     const payment = apexJobsDb.createPayment(req.params.id, req.body, req.user.id);
@@ -327,10 +347,10 @@ router.get('/:id/labor', authMiddleware, (req, res) => {
 });
 
 // POST /:id/labor
-router.post('/:id/labor', authMiddleware, (req, res) => {
+router.post('/:id/labor', authMiddleware, requireRole('management', 'office_coordinator', 'project_manager', 'field_tech'), (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const entry = apexJobsDb.createLaborEntry(req.params.id, req.body, req.user.id);
+    const entry = apexJobsDb.createLaborEntry(req.params.id, { ...req.body, author_id: req.user.id }, req.user.id);
     if (!entry) return res.status(404).json({ error: 'Job not found' });
     res.status(201).json(entry);
   } catch (err) {
@@ -343,6 +363,9 @@ router.post('/:id/labor', authMiddleware, (req, res) => {
 router.patch('/:id/labor/:entryId', authMiddleware, (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
+    const existing = apexJobsDb.getLaborEntryById(req.params.entryId);
+    if (!existing) return res.status(404).json({ error: 'Labor entry not found' });
+    if (!canEditEntry(req, existing)) return res.status(403).json({ error: 'Insufficient permissions' });
     const entry = apexJobsDb.updateLaborEntry(req.params.entryId, req.body, req.user.id);
     if (!entry) return res.status(404).json({ error: 'Labor entry not found' });
     res.json(entry);
@@ -356,6 +379,9 @@ router.patch('/:id/labor/:entryId', authMiddleware, (req, res) => {
 router.delete('/:id/labor/:entryId', authMiddleware, (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
+    const existing = apexJobsDb.getLaborEntryById(req.params.entryId);
+    if (!existing) return res.status(404).json({ error: 'Labor entry not found' });
+    if (!canEditEntry(req, existing)) return res.status(403).json({ error: 'Insufficient permissions' });
     const success = apexJobsDb.deleteLaborEntry(req.params.entryId, req.user.id);
     if (!success) return res.status(404).json({ error: 'Labor entry not found' });
     res.json({ success: true });
@@ -386,7 +412,7 @@ router.get('/:id/receipts', authMiddleware, (req, res) => {
 router.post('/:id/receipts', authMiddleware, (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const receipt = apexJobsDb.createReceipt(req.params.id, req.body, req.user.id);
+    const receipt = apexJobsDb.createReceipt(req.params.id, { ...req.body, author_id: req.user.id }, req.user.id);
     if (!receipt) return res.status(404).json({ error: 'Job not found' });
     res.status(201).json(receipt);
   } catch (err) {
@@ -399,6 +425,9 @@ router.post('/:id/receipts', authMiddleware, (req, res) => {
 router.patch('/:id/receipts/:receiptId', authMiddleware, (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
+    const existing = apexJobsDb.getReceiptById(req.params.receiptId);
+    if (!existing) return res.status(404).json({ error: 'Receipt not found' });
+    if (!canEditEntry(req, existing)) return res.status(403).json({ error: 'Insufficient permissions' });
     const receipt = apexJobsDb.updateReceipt(req.params.receiptId, req.body, req.user.id);
     if (!receipt) return res.status(404).json({ error: 'Receipt not found' });
     res.json(receipt);
@@ -412,6 +441,9 @@ router.patch('/:id/receipts/:receiptId', authMiddleware, (req, res) => {
 router.delete('/:id/receipts/:receiptId', authMiddleware, (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
+    const existing = apexJobsDb.getReceiptById(req.params.receiptId);
+    if (!existing) return res.status(404).json({ error: 'Receipt not found' });
+    if (!canEditEntry(req, existing)) return res.status(403).json({ error: 'Insufficient permissions' });
     const success = apexJobsDb.deleteReceipt(req.params.receiptId, req.user.id);
     if (!success) return res.status(404).json({ error: 'Receipt not found' });
     res.json({ success: true });
@@ -439,7 +471,7 @@ router.get('/:id/work-orders', authMiddleware, (req, res) => {
 });
 
 // POST /:id/work-orders
-router.post('/:id/work-orders', authMiddleware, (req, res) => {
+router.post('/:id/work-orders', authMiddleware, requireRole('management', 'office_coordinator', 'project_manager'), (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
     const wo = apexJobsDb.createWorkOrder(req.params.id, req.body, req.user.id);
@@ -452,7 +484,7 @@ router.post('/:id/work-orders', authMiddleware, (req, res) => {
 });
 
 // PATCH /:id/work-orders/:woId
-router.patch('/:id/work-orders/:woId', authMiddleware, (req, res) => {
+router.patch('/:id/work-orders/:woId', authMiddleware, requireRole('management', 'office_coordinator', 'project_manager'), (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
     const wo = apexJobsDb.updateWorkOrder(req.params.woId, req.body, req.user.id);
@@ -465,7 +497,7 @@ router.patch('/:id/work-orders/:woId', authMiddleware, (req, res) => {
 });
 
 // DELETE /:id/work-orders/:woId
-router.delete('/:id/work-orders/:woId', authMiddleware, (req, res) => {
+router.delete('/:id/work-orders/:woId', authMiddleware, requireRole('management', 'office_coordinator'), (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
     const success = apexJobsDb.deleteWorkOrder(req.params.woId, req.user.id);

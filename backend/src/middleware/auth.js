@@ -13,10 +13,12 @@ function authMiddleware(req, res, next) {
       if (!keyData) {
         return res.status(401).json({ error: 'Invalid or expired API key', code: 'INVALID_API_KEY' });
       }
+      const db = require('../db/schema');
+      const userRow = db.prepare('SELECT role FROM users WHERE id = ?').get(keyData.userId);
       req.authMethod = 'api_key';
       req.apiKeyId = keyData.keyId;
       req.apiKeyName = keyData.keyName;
-      req.user = { id: keyData.userId, email: keyData.email, name: keyData.userName };
+      req.user = { id: keyData.userId, email: keyData.email, name: keyData.userName, role: userRow?.role || 'field_tech' };
       return next();
     }
     return res.status(401).json({ error: 'Invalid authorization token', code: 'INVALID_TOKEN' });
@@ -29,9 +31,11 @@ function authMiddleware(req, res, next) {
   
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    const db = require('../db/schema');
+    const user = db.prepare('SELECT role, name FROM users WHERE id = ?').get(decoded.userId);
     req.authMethod = 'jwt';
     req.sessionId = decoded.sessionId;
-    req.user = { id: decoded.userId, email: decoded.email };
+    req.user = { id: decoded.userId, email: decoded.email, role: user?.role || 'field_tech', name: user?.name || '' };
     next();
   } catch (err) {
     if (err.name === 'TokenExpiredError') {

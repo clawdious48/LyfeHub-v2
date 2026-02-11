@@ -1635,6 +1635,10 @@
                                         <span class="btn-name">Remediation</span>
                                         <span class="btn-code">(REM)</span>
                                     </button>
+                                    <button type="button" class="job-type-btn" data-type="fire" data-code="FR">
+                                        <span class="btn-name">Fire</span>
+                                        <span class="btn-code">(FR)</span>
+                                    </button>
                                 </div>
                             </div>
                             
@@ -1668,6 +1672,10 @@
                             <div class="job-field job-field-full">
                                 <label for="job-client-street">Street</label>
                                 <input type="text" id="job-client-street" name="client_street" placeholder="Street address">
+                            </div>
+                            <div class="job-field">
+                                <label for="job-client-unit">Unit #</label>
+                                <input type="text" id="job-client-unit" name="client_unit" placeholder="Apt, Suite, etc.">
                             </div>
                             <div class="job-field">
                                 <label for="job-client-city">City</label>
@@ -1749,9 +1757,26 @@
                             <button type="button" class="same-toggle-btn" id="same-as-client-btn">Same</button>
                         </div>
                         <div class="job-section-content job-fields" id="property-fields">
+                            <div class="job-field">
+                                <label for="job-year-built">Year Built</label>
+                                <input type="text" id="job-year-built" name="year_built" placeholder="e.g. 1998" maxlength="4">
+                            </div>
+                            <div class="job-field">
+                                <label for="job-prop-type">Property Type</label>
+                                <select id="job-prop-type" name="prop_type">
+                                    <option value="residential">Residential</option>
+                                    <option value="commercial">Commercial</option>
+                                    <option value="multi-family">Multi-Family</option>
+                                    <option value="industrial">Industrial</option>
+                                </select>
+                            </div>
                             <div class="job-field job-field-full">
                                 <label for="job-prop-street">Street</label>
                                 <input type="text" id="job-prop-street" name="prop_street" placeholder="Street address" class="prop-field">
+                            </div>
+                            <div class="job-field">
+                                <label for="job-prop-unit">Unit #</label>
+                                <input type="text" id="job-prop-unit" name="prop_unit" placeholder="Apt, Suite, etc." class="prop-field">
                             </div>
                             <div class="job-field">
                                 <label for="job-prop-city">City</label>
@@ -1775,23 +1800,8 @@
                                 <input type="text" id="job-prop-zip" name="prop_zip" placeholder="Zip" maxlength="10" class="prop-field">
                             </div>
                             <div class="job-field job-field-full">
-                                <label for="job-prop-type">Property Type</label>
-                                <select id="job-prop-type" name="prop_type">
-                                    <option value="residential">Residential</option>
-                                    <option value="commercial">Commercial</option>
-                                    <option value="multi-family">Multi-Family</option>
-                                    <option value="industrial">Industrial</option>
-                                </select>
-                            </div>
-                            <div class="job-field job-field-full">
-                                <label for="job-client-relation">Client Relation</label>
-                                <select id="job-client-relation" name="client_relation">
-                                    <option value="owner">Property Owner</option>
-                                    <option value="tenant">Tenant</option>
-                                    <option value="manager">Property Manager</option>
-                                    <option value="agent">Insurance Agent</option>
-                                    <option value="other">Other</option>
-                                </select>
+                                <label for="job-access-info">Access Info</label>
+                                <input type="text" id="job-access-info" name="access_info" placeholder="Gate code, lockbox, etc.">
                             </div>
                             <div class="job-field job-field-full job-field-divider">
                                 <span class="field-divider-text">Site Contacts</span>
@@ -1808,12 +1818,18 @@
                                 <label for="job-site-email-0">Email</label>
                                 <input type="email" id="job-site-email-0" name="site_contact_email_0" placeholder="email@example.com">
                             </div>
+                            <div class="job-field">
+                                <label for="job-site-relation-0">Relation</label>
+                                <select id="job-site-relation-0" name="site_contact_relation_0">
+                                    <option value="owner">Property Owner</option>
+                                    <option value="tenant">Tenant</option>
+                                    <option value="manager">Property Manager</option>
+                                    <option value="agent">Insurance Agent</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
                             <div id="additional-site-contacts" class="additional-contacts-container"></div>
                             <button type="button" class="add-contact-btn" id="add-site-contact-btn">+ Add Site Contact</button>
-                            <div class="job-field job-field-full">
-                                <label for="job-access-info">Access Info</label>
-                                <input type="text" id="job-access-info" name="access_info" placeholder="Gate code, lockbox, etc.">
-                            </div>
                         </div>
                     </div>
                     
@@ -1828,24 +1844,29 @@
                                 <polyline points="10 9 9 9 8 9"/>
                             </svg>
                             <h3>Loss Info</h3>
-                            <label class="urgent-toggle">
-                                <input type="checkbox" id="job-urgent" name="urgent">
-                                <span class="urgent-label">Urgent</span>
-                            </label>
+                            <div class="loss-header-toggles">
+                                <label class="loss-flag-toggle">
+                                    <input type="checkbox" id="job-extraction-required" name="extraction_required">
+                                    <span class="loss-flag-label">Extraction Required</span>
+                                </label>
+                                <label class="loss-flag-toggle">
+                                    <input type="checkbox" id="job-ongoing-intrusion" name="ongoing_intrusion">
+                                    <span class="loss-flag-label">Ongoing Intrusion</span>
+                                </label>
+                                <label class="loss-flag-toggle">
+                                    <input type="checkbox" id="job-drywall-debris" name="drywall_debris">
+                                    <span class="loss-flag-label">Drywall Debris</span>
+                                </label>
+                                <label class="loss-flag-toggle">
+                                    <input type="checkbox" id="job-content-manipulation" name="content_manipulation">
+                                    <span class="loss-flag-label">Content Manipulation</span>
+                                </label>
+                            </div>
                         </div>
                         <div class="job-section-content job-fields job-fields-wide">
                             <div class="job-field">
                                 <label for="job-loss-type">Source of Loss</label>
-                                <select id="job-loss-type" name="loss_type">
-                                    <option value="">Select...</option>
-                                    <option value="water">Water Damage</option>
-                                    <option value="fire">Fire Damage</option>
-                                    <option value="mold">Mold Remediation</option>
-                                    <option value="storm">Storm Damage</option>
-                                    <option value="sewage">Sewage Backup</option>
-                                    <option value="vandalism">Vandalism</option>
-                                    <option value="other">Other</option>
-                                </select>
+                                <input type="text" id="job-loss-type" name="loss_type" placeholder="e.g. Supply line break, roof leak...">
                             </div>
                             <div class="job-field">
                                 <label for="job-loss-date">Date of Loss</label>
@@ -1882,10 +1903,6 @@
                                 <label for="job-loss-desc">Description</label>
                                 <textarea id="job-loss-desc" name="loss_description" rows="2" placeholder="Brief description of the loss..."></textarea>
                             </div>
-                            <div class="job-field job-field-full">
-                                <label for="job-scope">Scope Notes</label>
-                                <textarea id="job-scope" name="scope_notes" rows="2" placeholder="Initial scope of work..."></textarea>
-                            </div>
                         </div>
                     </div>
                     
@@ -1898,43 +1915,33 @@
                                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
                                 <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                             </svg>
-                            <h3>Assignment</h3>
+                            <h3>Team Assignment</h3>
                         </div>
                         <div class="job-section-content job-fields">
                             <div class="job-field">
-                                <label for="job-mit-pm">Mitigation PM</label>
-                                <select id="job-mit-pm" name="mitigation_pm" multiple>
-                                    <option value="jake">Jake</option>
-                                    <option value="sterling">Sterling</option>
-                                </select>
+                                <label>Mitigation PM</label>
+                                <div class="team-select" data-field="mitigation_pm"></div>
+                                <select id="job-mit-pm" name="mitigation_pm" multiple class="team-select-hidden"></select>
                             </div>
                             <div class="job-field">
-                                <label for="job-recon-pm">Reconstruction PM</label>
-                                <select id="job-recon-pm" name="reconstruction_pm" multiple>
-                                    <option value="jake">Jake</option>
-                                    <option value="sterling">Sterling</option>
-                                </select>
+                                <label>Reconstruction PM</label>
+                                <div class="team-select" data-field="reconstruction_pm"></div>
+                                <select id="job-recon-pm" name="reconstruction_pm" multiple class="team-select-hidden"></select>
                             </div>
                             <div class="job-field">
-                                <label for="job-estimator">Estimator</label>
-                                <select id="job-estimator" name="estimator" multiple>
-                                    <option value="jake">Jake</option>
-                                    <option value="sterling">Sterling</option>
-                                </select>
+                                <label>Estimator</label>
+                                <div class="team-select" data-field="estimator"></div>
+                                <select id="job-estimator" name="estimator" multiple class="team-select-hidden"></select>
                             </div>
                             <div class="job-field">
-                                <label for="job-proj-coord">Project Coordinator</label>
-                                <select id="job-proj-coord" name="project_coordinator" multiple>
-                                    <option value="jake">Jake</option>
-                                    <option value="sterling">Sterling</option>
-                                </select>
+                                <label>Project Coordinator</label>
+                                <div class="team-select" data-field="project_coordinator"></div>
+                                <select id="job-proj-coord" name="project_coordinator" multiple class="team-select-hidden"></select>
                             </div>
                             <div class="job-field job-field-full">
-                                <label for="job-mit-techs">Mitigation Technician(s)</label>
-                                <select id="job-mit-techs" name="mitigation_techs" multiple>
-                                    <option value="jake">Jake</option>
-                                    <option value="sterling">Sterling</option>
-                                </select>
+                                <label>Mitigation Technician(s)</label>
+                                <div class="team-select" data-field="mitigation_techs"></div>
+                                <select id="job-mit-techs" name="mitigation_techs" multiple class="team-select-hidden"></select>
                             </div>
                         </div>
                     </div>
