@@ -33,11 +33,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. GPP calculation uses sea level atmospheric pressure (14.696 psia) by default and rounds to 1 decimal place
   4. Writing a moisture reading triggers server-side comparison against material baseline and stores whether the reading meets dry standard (within 4 percentage points)
   5. Schema migrations run safely on existing databases without data loss (try/catch ALTER TABLE pattern)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: Drying log database schema and migrations
-- [ ] 01-02: GPP calculation engine and dry-standard comparison logic
+- [ ] 01-01-PLAN.md -- Drying log database schema and migrations
+- [ ] 01-02-PLAN.md -- GPP calculation engine and dry-standard comparison logic
 
 ### Phase 2: API Routes & Client Layer
 **Goal**: The backend exposes complete REST endpoints for all drying data, and the frontend can call every endpoint including photo uploads
