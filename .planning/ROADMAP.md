@@ -12,7 +12,7 @@ This roadmap delivers the Apex Drying Logs feature in 8 phases, progressing from
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Schema & GPP Engine** - Database tables and server-side psychrometric calculation
+- [x] **Phase 1: Schema & GPP Engine** - Database tables and server-side psychrometric calculation
 - [ ] **Phase 2: API Routes & Client Layer** - REST endpoints, client API methods, photo upload infrastructure
 - [ ] **Phase 3: Tab Shell & Log Initialization** - Drying Logs tab in job detail, create action, room pre-population
 - [ ] **Phase 4: Structure Management** - Chambers, rooms, reference points, baselines, equipment setup
@@ -36,8 +36,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md -- Drying log database schema and migrations
-- [ ] 01-02-PLAN.md -- GPP calculation engine and dry-standard comparison logic
+- [x] 01-01-PLAN.md -- Drying log database schema and migrations
+- [x] 01-02-PLAN.md -- GPP calculation engine and dry-standard comparison logic
 
 ### Phase 2: API Routes & Client Layer
 **Goal**: The backend exposes complete REST endpoints for all drying data, and the frontend can call every endpoint including photo uploads
@@ -161,7 +161,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Schema & GPP Engine | 0/2 | Not started | - |
+| 1. Schema & GPP Engine | 2/2 | ✓ Complete | 2026-02-11 |
 | 2. API Routes & Client Layer | 0/2 | Not started | - |
 | 3. Tab Shell & Log Initialization | 0/2 | Not started | - |
 | 4. Structure Management | 0/3 | Not started | - |
@@ -172,4 +172,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 
 ---
 *Roadmap created: 2026-02-11*
-*Last updated: 2026-02-11*
+*Last updated: 2026-02-11 — Phase 1 complete*
