@@ -8564,6 +8564,63 @@ body.column-dragging .base-table {
     letter-spacing: 0.05em;
 }
 
+/* Additional contacts container */
+.additional-contacts-container {
+    grid-column: 1 / -1;
+}
+
+/* Add Contact button */
+.add-contact-btn {
+    grid-column: 1 / -1;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 0.25rem;
+}
+
+.add-contact-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--text-secondary);
+}
+
+/* Additional contact group */
+.additional-contact-group {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    margin-top: 0.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    position: relative;
+}
+
+/* Remove contact button */
+.remove-contact-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 0 0.25rem;
+    line-height: 1;
+    transition: var(--transition);
+    z-index: 1;
+}
+
+.remove-contact-btn:hover {
+    color: var(--neon-pink, #ff2a6d);
+}
+
 /* Urgent toggle in Loss section header */
 .urgent-toggle {
     display: flex;

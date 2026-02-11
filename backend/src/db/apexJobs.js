@@ -61,7 +61,8 @@ function createJob(data, userId) {
         areas_affected, hazards, loss_description, scope_notes, urgent,
         mitigation_pm, reconstruction_pm, estimator, project_coordinator, mitigation_techs,
         referral_source, how_heard, internal_notes,
-        source, zoho_id
+        source, zoho_id,
+        additional_clients, additional_adjusters, site_contacts
       ) VALUES (
         ?, ?, ?, ?,
         ?, ?, ?,
@@ -75,7 +76,8 @@ function createJob(data, userId) {
         ?, ?, ?, ?, ?,
         ?, ?, ?, ?, ?,
         ?, ?, ?,
-        ?, ?
+        ?, ?,
+        ?, ?, ?
       )
     `).run(
       id, userId, name, data.status || 'active',
@@ -92,7 +94,8 @@ function createJob(data, userId) {
       ensureJsonString(data.estimator), ensureJsonString(data.project_coordinator),
       ensureJsonString(data.mitigation_techs),
       data.referral_source || '', data.how_heard || '', data.internal_notes || '',
-      data.source || 'local', data.zoho_id || ''
+      data.source || 'local', data.zoho_id || '',
+      ensureJsonString(data.additional_clients), ensureJsonString(data.additional_adjusters), ensureJsonString(data.site_contacts)
     );
 
     // Create phases for each selected job type
@@ -181,11 +184,13 @@ function updateJob(id, data, userId) {
     'areas_affected', 'hazards', 'loss_description', 'scope_notes', 'urgent',
     'mitigation_pm', 'reconstruction_pm', 'estimator', 'project_coordinator', 'mitigation_techs',
     'referral_source', 'how_heard', 'internal_notes',
-    'source', 'zoho_id'
+    'source', 'zoho_id',
+    'additional_clients', 'additional_adjusters', 'site_contacts'
   ];
 
   // Assignment fields that need JSON handling
-  const jsonArrayFields = ['mitigation_pm', 'reconstruction_pm', 'estimator', 'project_coordinator', 'mitigation_techs'];
+  const jsonArrayFields = ['mitigation_pm', 'reconstruction_pm', 'estimator', 'project_coordinator', 'mitigation_techs',
+    'additional_clients', 'additional_adjusters', 'site_contacts'];
 
   const updates = [];
   const values = [];

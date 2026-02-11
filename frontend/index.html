@@ -1656,13 +1656,15 @@
                                 <input type="text" id="job-client-name" name="client_name" required placeholder="Full name">
                             </div>
                             <div class="job-field">
-                                <label for="job-client-phone">Phone</label>
-                                <input type="tel" id="job-client-phone" name="client_phone" placeholder="(555) 555-5555">
+                                <label for="job-client-phone">Phone <span class="required">*</span></label>
+                                <input type="tel" id="job-client-phone" name="client_phone" required placeholder="(555) 555-5555">
                             </div>
                             <div class="job-field">
                                 <label for="job-client-email">Email</label>
                                 <input type="email" id="job-client-email" name="client_email" placeholder="email@example.com">
                             </div>
+                            <div id="additional-clients" class="additional-contacts-container"></div>
+                            <button type="button" class="add-contact-btn" id="add-client-btn">+ Add Client</button>
                             <div class="job-field job-field-full">
                                 <label for="job-client-street">Street</label>
                                 <input type="text" id="job-client-street" name="client_street" placeholder="Street address">
@@ -1687,16 +1689,6 @@
                             <div class="job-field job-field-half">
                                 <label for="job-client-zip">Zip</label>
                                 <input type="text" id="job-client-zip" name="client_zip" placeholder="Zip" maxlength="10">
-                            </div>
-                            <div class="job-field job-field-full">
-                                <label for="job-client-relation">Relation</label>
-                                <select id="job-client-relation" name="client_relation">
-                                    <option value="owner">Property Owner</option>
-                                    <option value="tenant">Tenant</option>
-                                    <option value="manager">Property Manager</option>
-                                    <option value="agent">Insurance Agent</option>
-                                    <option value="other">Other</option>
-                                </select>
                             </div>
                         </div>
                     </div>
@@ -1741,6 +1733,8 @@
                                 <label for="job-adj-email">Email</label>
                                 <input type="email" id="job-adj-email" name="adj_email" placeholder="adjuster@email.com">
                             </div>
+                            <div id="additional-adjusters" class="additional-contacts-container"></div>
+                            <button type="button" class="add-contact-btn" id="add-adjuster-btn">+ Add Adjuster</button>
                         </div>
                     </div>
                     
@@ -1789,21 +1783,33 @@
                                     <option value="industrial">Industrial</option>
                                 </select>
                             </div>
+                            <div class="job-field job-field-full">
+                                <label for="job-client-relation">Client Relation</label>
+                                <select id="job-client-relation" name="client_relation">
+                                    <option value="owner">Property Owner</option>
+                                    <option value="tenant">Tenant</option>
+                                    <option value="manager">Property Manager</option>
+                                    <option value="agent">Insurance Agent</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
                             <div class="job-field job-field-full job-field-divider">
-                                <span class="field-divider-text">Occupant (if different)</span>
+                                <span class="field-divider-text">Site Contacts</span>
                             </div>
                             <div class="job-field job-field-full">
-                                <label for="job-occ-name">Occupant Name</label>
-                                <input type="text" id="job-occ-name" name="occ_name" placeholder="Full name">
+                                <label for="job-site-name-0">Name</label>
+                                <input type="text" id="job-site-name-0" name="site_contact_name_0" placeholder="Full name">
                             </div>
                             <div class="job-field">
-                                <label for="job-occ-phone">Phone</label>
-                                <input type="tel" id="job-occ-phone" name="occ_phone" placeholder="(555) 555-5555">
+                                <label for="job-site-phone-0">Phone</label>
+                                <input type="tel" id="job-site-phone-0" name="site_contact_phone_0" placeholder="(555) 555-5555">
                             </div>
                             <div class="job-field">
-                                <label for="job-occ-email">Email</label>
-                                <input type="email" id="job-occ-email" name="occ_email" placeholder="occupant@email.com">
+                                <label for="job-site-email-0">Email</label>
+                                <input type="email" id="job-site-email-0" name="site_contact_email_0" placeholder="email@example.com">
                             </div>
+                            <div id="additional-site-contacts" class="additional-contacts-container"></div>
+                            <button type="button" class="add-contact-btn" id="add-site-contact-btn">+ Add Site Contact</button>
                             <div class="job-field job-field-full">
                                 <label for="job-access-info">Access Info</label>
                                 <input type="text" id="job-access-info" name="access_info" placeholder="Gate code, lockbox, etc.">

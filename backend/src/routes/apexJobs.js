@@ -56,6 +56,9 @@ function formatDbJob(job) {
       adjusterName: job.adj_name,
       adjusterEmail: job.adj_email
     },
+    additional_clients: (() => { try { return JSON.parse(job.additional_clients || '[]'); } catch { return []; } })(),
+    additional_adjusters: (() => { try { return JSON.parse(job.additional_adjusters || '[]'); } catch { return []; } })(),
+    site_contacts: (() => { try { return JSON.parse(job.site_contacts || '[]'); } catch { return []; } })(),
     taskSummary: { total: 0, completed: 0 },
     tasks: [],
     phases: job.phases || [],

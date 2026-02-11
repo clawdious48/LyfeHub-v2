@@ -333,6 +333,30 @@ if (!apexJobActivityTable) {
   console.log('Apex job activity table created');
 }
 
+// ============================================
+// ALTER apex_jobs — add multi-contact JSON columns
+// ============================================
+try {
+  db.exec(`ALTER TABLE apex_jobs ADD COLUMN additional_clients TEXT DEFAULT '[]'`);
+  console.log('Added additional_clients column to apex_jobs');
+} catch (e) {
+  // Column already exists, ignore
+}
+
+try {
+  db.exec(`ALTER TABLE apex_jobs ADD COLUMN additional_adjusters TEXT DEFAULT '[]'`);
+  console.log('Added additional_adjusters column to apex_jobs');
+} catch (e) {
+  // Column already exists, ignore
+}
+
+try {
+  db.exec(`ALTER TABLE apex_jobs ADD COLUMN site_contacts TEXT DEFAULT '[]'`);
+  console.log('Added site_contacts column to apex_jobs');
+} catch (e) {
+  // Column already exists, ignore
+}
+
 console.log('Apex jobs schema initialized');
 
 module.exports = db;
