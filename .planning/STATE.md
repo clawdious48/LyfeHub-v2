@@ -9,29 +9,29 @@ See: .planning/PROJECT.md (updated 2026-02-11)
 
 ## Current Position
 
-Phase: 1 of 8 (Schema & GPP Engine)
-Plan: 1 of 2 in current phase
-Status: Executing
-Last activity: 2026-02-11 -- Completed 01-01 Drying Schema (10 tables, cascade deletes verified)
+Phase: 1 of 8 (Schema & GPP Engine) -- COMPLETE
+Plan: 2 of 2 in current phase
+Status: Phase Complete
+Last activity: 2026-02-11 -- Completed 01-02 GPP Engine (IAPWS calculation, CRUD functions, 15/15 IICRC pairs validated)
 
-Progress: [█░░░░░░░░░] 6%
+Progress: [█░░░░░░░░░] 13%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
+- Total plans completed: 2
 - Average duration: 3min
-- Total execution time: 0.05 hours
+- Total execution time: 0.10 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-schema-gpp-engine | 1 | 3min | 3min |
+| 01-schema-gpp-engine | 2 | 6min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (3min)
-- Trend: baseline
+- Last 5 plans: 01-01 (3min), 01-02 (3min)
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -48,6 +48,10 @@ Recent decisions affecting current work:
 - [01-01]: Load order via require chain: schema.js -> apexSchema.js -> dryingSchema.js
 - [01-01]: ON DELETE SET NULL for atmospheric_readings.chamber_id preserves readings on chamber reorganization
 - [01-01]: Foreign keys enabled by default in better-sqlite3 (no manual PRAGMA needed)
+- [01-02]: IAPWS formula with exact c8-c13 constants validated against 15/15 IICRC S500 reference pairs
+- [01-02]: Sea level pressure 14.696 psia as default, overridable for altitude
+- [01-02]: meetsDryStandard uses <= (not <) per IICRC S500: exactly baseline + 4 counts as dry
+- [01-02]: Bulk save pattern (delete + re-insert in transaction) for atmospheric/moisture/equipment
 
 ### Pending Todos
 
@@ -55,11 +59,11 @@ None yet.
 
 ### Blockers/Concerns
 
-- [Research]: GPP formula must be validated against 10+ IICRC S500 psychrometric reference pairs during Phase 1 implementation
+- [RESOLVED]: GPP formula validated against 15 IICRC S500 psychrometric reference pairs -- all pass within +/- 0.1 GPP
 - [Research]: Phase 5 (atmospheric readings + auto-save pattern) flagged for potential research-phase if mobile field data entry patterns need deeper investigation
 
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Completed 01-01-PLAN.md (Drying Schema)
+Stopped at: Completed 01-02-PLAN.md (GPP Engine) -- Phase 01 complete
 Resume file: None
