@@ -6,6 +6,16 @@ const { authMiddleware } = require('../middleware/auth');
 const { requireRole, canEditEntry } = require('../middleware/permissions');
 const apexJobsDb = require('../db/apexJobs');
 
+// Block guest access to all Apex routes
+router.use(authMiddleware, (req, res, next) => {
+  const roles = req.user?.roles || req.user?.role || [];
+  const rolesArr = Array.isArray(roles) ? roles : [roles];
+  if (rolesArr.length === 1 && rolesArr[0] === 'guest') {
+    return res.status(403).json({ error: 'Apex access requires a company role' });
+  }
+  next();
+});
+
 // Helper: read Zoho JSON file
 function readZohoJobs() {
   try {
@@ -596,5 +606,9 @@ router.patch('/:id/ready-to-invoice', authMiddleware, (req, res) => {
     res.status(500).json({ error: 'Failed to update invoice status' });
   }
 });
+
+// Drying log sub-routes
+const dryingRoutes = require('./drying');
+router.use('/:id/drying', dryingRoutes);
 
 module.exports = router;
