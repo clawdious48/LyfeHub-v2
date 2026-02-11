@@ -53,6 +53,10 @@ Recent decisions affecting current work:
 - [01-02]: Sea level pressure 14.696 psia as default, overridable for altitude
 - [01-02]: meetsDryStandard uses <= (not <) per IICRC S500: exactly baseline + 4 counts as dry
 - [01-02]: Bulk save pattern (delete + re-insert in transaction) for atmospheric/moisture/equipment
+- [02-01]: sharp .rotate() for auto-orient instead of deprecated .autoOrient()
+- [02-01]: Outer db.transaction() wrapping bulk save for atomicity across atmospheric + moisture + equipment
+- [02-01]: PATCH endpoints merge partial updates with existing values (not requiring full object)
+- [02-01]: Sub-router mergeParams: true + requireLog helper pattern for job-scoped drying routes
 - [02-02]: instanceof FormData check before body processing to let browser set multipart boundary
 - [02-02]: 25 drying methods follow existing naming convention: getDrying*, createDrying*, updateDrying*, deleteDrying*
 
