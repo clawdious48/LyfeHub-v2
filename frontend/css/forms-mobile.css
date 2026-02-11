@@ -1,0 +1,553 @@
+/**
+ * LyfeHub Mobile Form Optimizations
+ * ==================================
+ * Optimizes all forms for mobile devices (≤640px)
+ * 
+ * Features:
+ * - Single column layouts on mobile
+ * - Full-width inputs
+ * - Sticky submit buttons with backdrop blur
+ * - Native date/time picker enhancements
+ * - Safe area padding for devices with home indicators
+ */
+
+/* ==========================================================================
+   1. SINGLE COLUMN FORMS ON MOBILE (≤640px)
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  /* Generic form-row becomes single column */
+  .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem;
+  }
+
+  /* Job form fields - single column */
+  .job-section-content.job-fields {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Wide fields layout (like loss section) - single column */
+  .job-fields-wide {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Job field full width override */
+  .job-field,
+  .job-field-full,
+  .job-field-half {
+    grid-column: 1 !important;
+    width: 100%;
+  }
+
+  /* Task datetime fields stack vertically */
+  .task-datetime-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .task-datetime-field-wrapper {
+    width: 100%;
+  }
+
+  /* Task recurring presets wrap better */
+  .task-recurring-presets {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .task-recurring-preset {
+    flex: 1 1 auto;
+    min-width: 80px;
+  }
+}
+
+
+/* ==========================================================================
+   2. FULL-WIDTH INPUTS ON MOBILE
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  /* All form inputs become full width */
+  .form-group input,
+  .form-group select,
+  .form-group textarea,
+  .job-field input,
+  .job-field select,
+  .job-field textarea,
+  .modal-content input:not([type="checkbox"]):not([type="radio"]),
+  .modal-content select,
+  .modal-content textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  /* Modal title input full width */
+  .modal-title-input {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* List input add section */
+  .list-input-add {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .list-input-add input {
+    width: 100% !important;
+  }
+
+  .list-input-add .btn {
+    width: 100%;
+  }
+
+  /* Task item form sections */
+  .task-item-section input,
+  .task-item-section select,
+  .task-item-section textarea {
+    width: 100% !important;
+  }
+
+  /* Filter selects in view controls */
+  .view-filters {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .filter-select,
+  .apex-filter-select {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+}
+
+
+/* ==========================================================================
+   3. STICKY SUBMIT BUTTONS ON MOBILE
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  /* Modal footer becomes sticky at bottom */
+  .modal-footer,
+  .job-modal-footer {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    
+    /* Glassmorphic background with blur */
+    background: rgba(15, 15, 25, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    
+    /* Gradient overlay for visibility */
+    background: linear-gradient(
+      to bottom,
+      rgba(15, 15, 25, 0.85) 0%,
+      rgba(15, 15, 25, 0.98) 30%,
+      rgba(15, 15, 25, 1) 100%
+    );
+    
+    /* Border and shadow */
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+    
+    /* Padding with safe area */
+    padding: 1rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    
+    /* Ensure full width */
+    margin: 0 -1.5rem;
+    width: calc(100% + 3rem);
+  }
+
+  /* Modal body needs padding at bottom for sticky footer */
+  .modal-body {
+    padding-bottom: 100px;
+  }
+
+  /* Make buttons full width in footer */
+  .modal-footer .modal-actions,
+  .job-modal-footer .modal-actions {
+    flex-direction: column-reverse;
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .modal-footer .btn,
+  .job-modal-footer .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+  }
+
+  /* Delete button positioning */
+  .modal-footer #delete-task {
+    order: 3;
+    margin-top: 0.5rem;
+  }
+
+  /* Full-width modal content on mobile */
+  .modal-content {
+    max-width: 100%;
+    width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Modal body scrolls */
+  .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Task item modal footer */
+  .task-modal-footer {
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(15, 15, 25, 0.85) 0%,
+      rgba(15, 15, 25, 0.98) 30%,
+      rgba(15, 15, 25, 1) 100%
+    );
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+    padding: 1rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    z-index: 100;
+  }
+
+  /* Submit review button (if inside forms) */
+  .submit-review-btn {
+    position: sticky;
+    bottom: 0;
+    margin: 1rem -1.5rem 0 -1.5rem;
+    width: calc(100% + 3rem);
+    border-radius: 0;
+    padding: 1rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(
+      to bottom,
+      rgba(15, 15, 25, 0.9) 0%,
+      rgba(15, 15, 25, 0.98) 50%,
+      rgba(15, 15, 25, 1) 100%
+    );
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+  }
+}
+
+
+/* ==========================================================================
+   4. NATIVE MOBILE DATE/TIME INPUT ENHANCEMENTS
+   ========================================================================== */
+
+/* Ensure date and time inputs use native pickers on mobile */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  /* Enable native appearance on mobile */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  
+  /* Consistent styling */
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  color: var(--text-primary, #ffffff);
+  font-size: 1rem; /* Prevent iOS zoom */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="datetime-local"]:focus {
+  outline: none;
+  border-color: var(--neon-purple, #bf5af2);
+  box-shadow: 0 0 20px rgba(191, 90, 242, 0.2);
+}
+
+/* Calendar icon styling for webkit browsers */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+  cursor: pointer;
+  opacity: 0.7;
+  padding: 0.25rem;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+@media (max-width: 640px) {
+  /* Larger touch targets on mobile */
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"] {
+    min-height: 48px; /* Minimum touch target size */
+    font-size: 16px; /* Prevent iOS zoom on focus */
+  }
+
+  /* Task date/time fields on mobile */
+  .task-datetime-field {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .task-datetime-field input[type="date"],
+  .task-datetime-field input[type="time"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
+
+  /* Job loss date field */
+  #job-loss-date {
+    width: 100%;
+  }
+}
+
+
+/* ==========================================================================
+   5. FORM SECTION SPACING ON MOBILE
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  /* Better spacing between form groups */
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  /* Job sections get more breathing room */
+  .job-section {
+    padding: 1rem;
+  }
+
+  .job-section-header {
+    padding: 0.75rem 0;
+    margin-bottom: 0.75rem;
+  }
+
+  .job-section-content {
+    gap: 0.75rem;
+  }
+
+  /* Form labels */
+  .form-group label,
+  .job-field label {
+    font-size: 0.75rem;
+    margin-bottom: 0.375rem;
+  }
+
+  /* Better textarea sizing */
+  textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+}
+
+
+/* ==========================================================================
+   6. MODAL HEADER ADJUSTMENTS ON MOBILE
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  /* Modal header becomes more compact */
+  .modal-header {
+    padding: 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .modal-title-row {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .modal-header h2 {
+    font-size: 1rem;
+    max-width: calc(100% - 60px);
+  }
+
+  .modal-header-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  /* Close button larger for touch */
+  .modal-close {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+
+/* ==========================================================================
+   7. JOB TYPE BUTTONS ON MOBILE
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  .job-type-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .job-type-btn {
+    flex-direction: column;
+    padding: 0.75rem 0.5rem;
+    min-width: unset;
+    text-align: center;
+  }
+
+  .job-type-btn .btn-name {
+    font-size: 0.8rem;
+  }
+
+  .job-type-btn .btn-code {
+    font-size: 0.65rem;
+  }
+}
+
+
+/* ==========================================================================
+   8. CHECKBOX AND RADIO ENHANCEMENTS
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  /* Larger touch targets for checkboxes */
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-width: 24px;
+    min-height: 24px;
+    cursor: pointer;
+  }
+
+  /* Checkbox/radio labels */
+  .checkbox-label,
+  .radio-label,
+  label:has(input[type="checkbox"]),
+  label:has(input[type="radio"]) {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    cursor: pointer;
+    min-height: 44px; /* Touch target */
+  }
+
+  /* Task complete button */
+  .task-complete-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Criterion checkboxes */
+  .criterion-checkbox {
+    min-width: 32px;
+    min-height: 32px;
+  }
+}
+
+
+/* ==========================================================================
+   9. SELECT DROPDOWN ENHANCEMENTS
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  select {
+    /* Ensure native dropdown on mobile */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    
+    /* Custom dropdown arrow */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+    
+    /* Minimum touch target */
+    min-height: 48px;
+    font-size: 16px; /* Prevent iOS zoom */
+  }
+
+  /* Job field selects */
+  .job-field select {
+    min-height: 48px;
+  }
+}
+
+
+/* ==========================================================================
+   10. FOCUS STATES FOR ACCESSIBILITY
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  /* Enhanced focus states for touch devices */
+  input:focus,
+  select:focus,
+  textarea:focus,
+  button:focus {
+    outline: 2px solid var(--neon-purple, #bf5af2);
+    outline-offset: 2px;
+  }
+
+  /* Remove default focus ring for buttons (use custom) */
+  button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(191, 90, 242, 0.5);
+  }
+}
+
+
+/* ==========================================================================
+   11. SAFE AREA INSETS (NOTCHED DEVICES)
+   ========================================================================== */
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  @media (max-width: 640px) {
+    /* Modal content respects safe areas */
+    .modal-content {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* Sticky footers include safe area */
+    .modal-footer,
+    .job-modal-footer,
+    .task-modal-footer {
+      padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    }
+
+    /* Bottom navigation if any */
+    .bottom-nav,
+    .fab-container {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  }
+}

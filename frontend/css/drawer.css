@@ -1,0 +1,369 @@
+/**
+ * Mobile Drawer Component
+ * =======================
+ * Slide-out navigation drawer for mobile devices.
+ * Triggered by hamburger menu via drawer:toggle events.
+ * Uses the neon/glass design system from :root vars.
+ */
+
+/* ==========================================================================
+   Drawer Container
+   ========================================================================== */
+
+.mobile-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
+  
+  /* Glass morphism background */
+  background: rgba(10, 10, 15, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--glass-border);
+  box-shadow: 4px 0 30px rgba(0, 0, 0, 0.5);
+  
+  /* Slide animation */
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Layering */
+  z-index: 200;
+  
+  /* Content layout */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mobile-drawer.is-open {
+  transform: translateX(0);
+}
+
+/* Neon accent line on the right edge when open */
+.mobile-drawer.is-open::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    var(--neon-cyan) 0%,
+    var(--neon-purple) 50%,
+    var(--neon-pink) 100%
+  );
+  opacity: 0.8;
+  box-shadow: 0 0 15px var(--neon-purple);
+}
+
+
+/* ==========================================================================
+   Backdrop Overlay
+   ========================================================================== */
+
+.drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 199;
+}
+
+.drawer-backdrop.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+
+/* ==========================================================================
+   Drawer Header (User Info)
+   ========================================================================== */
+
+.drawer-header {
+  padding: 1.5rem 1.25rem;
+  border-bottom: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.drawer-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.drawer-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 20px rgba(191, 90, 242, 0.3);
+}
+
+.drawer-user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.drawer-user-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drawer-user-email {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* ==========================================================================
+   Drawer Navigation (Tab Links)
+   ========================================================================== */
+
+.drawer-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem 0;
+  
+  /* Custom scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: var(--glass-border) transparent;
+}
+
+.drawer-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.drawer-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.drawer-nav::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 2px;
+}
+
+.drawer-nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.drawer-nav-item {
+  padding: 0 0.75rem;
+}
+
+.drawer-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.875rem 1rem;
+  border-radius: 10px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+
+.drawer-nav-link:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.drawer-nav-link:active {
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(0.98);
+}
+
+/* Active tab state */
+.drawer-nav-link.is-active {
+  background: rgba(191, 90, 242, 0.12);
+  color: var(--neon-purple);
+  border-color: rgba(191, 90, 242, 0.25);
+  box-shadow: inset 0 0 20px rgba(191, 90, 242, 0.1);
+}
+
+.drawer-nav-link.is-active .drawer-nav-icon {
+  filter: drop-shadow(0 0 6px var(--neon-purple));
+}
+
+/* Icon styles */
+.drawer-nav-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.drawer-nav-link.is-active .drawer-nav-icon {
+  opacity: 1;
+}
+
+
+/* ==========================================================================
+   Drawer Footer (Settings & Logout)
+   ========================================================================== */
+
+.drawer-footer {
+  padding: 0.75rem;
+  border-top: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.drawer-footer-link {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+
+.drawer-footer-link:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.drawer-footer-link:active {
+  transform: scale(0.98);
+}
+
+/* Logout button special styling */
+.drawer-logout-btn {
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.drawer-logout-btn:hover {
+  color: var(--neon-pink);
+  background: rgba(255, 42, 109, 0.1);
+}
+
+.drawer-footer-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+
+/* ==========================================================================
+   Focus States (Accessibility)
+   ========================================================================== */
+
+.drawer-nav-link:focus-visible,
+.drawer-footer-link:focus-visible {
+  outline: 2px solid var(--neon-cyan);
+  outline-offset: 2px;
+}
+
+
+/* ==========================================================================
+   Body Scroll Lock
+   ========================================================================== */
+
+body.drawer-open {
+  overflow: hidden;
+  touch-action: none;
+}
+
+
+/* ==========================================================================
+   Desktop: Hide Drawer Components
+   ========================================================================== */
+
+@media (min-width: 769px) {
+  .mobile-drawer,
+  .drawer-backdrop {
+    display: none !important;
+  }
+  
+  body.drawer-open {
+    overflow: auto;
+    touch-action: auto;
+  }
+}
+
+
+/* ==========================================================================
+   Small Mobile Adjustments
+   ========================================================================== */
+
+@media (max-width: 360px) {
+  .mobile-drawer {
+    width: 260px;
+  }
+  
+  .drawer-header {
+    padding: 1.25rem 1rem;
+  }
+  
+  .drawer-avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 1.1rem;
+  }
+  
+  .drawer-nav-link {
+    padding: 0.75rem 0.875rem;
+    font-size: 0.9rem;
+  }
+}
+
+
+/* ==========================================================================
+   Reduced Motion
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-drawer,
+  .drawer-backdrop {
+    transition: none;
+  }
+  
+  .drawer-nav-link,
+  .drawer-footer-link {
+    transition: none;
+  }
+}

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Kanban Board</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/forms-mobile.css">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <h1>Kanban Board</h1>
+        
+        <!-- Tab Navigation -->
+        <div class="auth-tabs">
+            <button class="auth-tab active" data-tab="login">Sign In</button>
+            <button class="auth-tab" data-tab="signup">Sign Up</button>
+        </div>
+        
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form active">
+            <div class="form-group">
+                <label for="login-email">Email or Username</label>
+                <input 
+                    type="text" 
+                    id="login-email" 
+                    placeholder="you@example.com or username"
+                    autocomplete="username"
+                    required
+                >
+            </div>
+            <div class="form-group">
+                <label for="login-password">Password</label>
+                <input 
+                    type="password" 
+                    id="login-password" 
+                    placeholder="••••••••"
+                    autocomplete="current-password"
+                    required
+                >
+            </div>
+            <div class="form-group remember-me">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="remember-me" checked>
+                    <span class="checkmark"></span>
+                    Remember me
+                </label>
+            </div>
+            <div id="login-error" class="auth-error"></div>
+            <button type="submit" class="btn btn-primary btn-full">
+                Sign In
+            </button>
+        </form>
+        
+        <!-- Signup Form -->
+        <form id="signup-form" class="auth-form">
+            <div class="form-group">
+                <label for="signup-name">Name</label>
+                <input 
+                    type="text" 
+                    id="signup-name" 
+                    placeholder="Your name"
+                    autocomplete="name"
+                    required
+                >
+            </div>
+            <div class="form-group">
+                <label for="signup-email">Email</label>
+                <input 
+                    type="email" 
+                    id="signup-email" 
+                    placeholder="you@example.com"
+                    autocomplete="email"
+                    required
+                >
+            </div>
+            <div class="form-group">
+                <label for="signup-password">Password</label>
+                <input 
+                    type="password" 
+                    id="signup-password" 
+                    placeholder="At least 8 characters"
+                    autocomplete="new-password"
+                    minlength="8"
+                    required
+                >
+            </div>
+            <div class="form-group">
+                <label for="signup-confirm">Confirm Password</label>
+                <input 
+                    type="password" 
+                    id="signup-confirm" 
+                    placeholder="••••••••"
+                    autocomplete="new-password"
+                    required
+                >
+            </div>
+            <div id="signup-error" class="auth-error"></div>
+            <button type="submit" class="btn btn-primary btn-full">
+                Create Account
+            </button>
+        </form>
+    </div>
+    
+    <script src="js/particles.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        // Tab switching
+        const tabs = document.querySelectorAll('.auth-tab');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = tab.dataset.tab;
+                
+                // Update tab active state
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Show/hide forms
+                if (target === 'login') {
+                    loginForm.classList.add('active');
+                    signupForm.classList.remove('active');
+                } else {
+                    signupForm.classList.add('active');
+                    loginForm.classList.remove('active');
+                }
+                
+                // Clear errors
+                document.getElementById('login-error').textContent = '';
+                document.getElementById('signup-error').textContent = '';
+            });
+        });
+        
+        // Login form handler
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorEl = document.getElementById('login-error');
+            errorEl.textContent = '';
+            
+            const btn = loginForm.querySelector('button');
+            btn.disabled = true;
+            btn.textContent = 'Signing in...';
+
+            try {
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                const rememberMe = document.getElementById('remember-me').checked;
+                
+                await api.login(email, password, rememberMe);
+                window.location.href = '/'; // Existing users go to board
+            } catch (err) {
+                errorEl.textContent = err.message || 'Invalid email or password';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Sign In';
+            }
+        });
+        
+        // Signup form handler
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorEl = document.getElementById('signup-error');
+            errorEl.textContent = '';
+            
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const confirm = document.getElementById('signup-confirm').value;
+            
+            // Validate passwords match
+            if (password !== confirm) {
+                errorEl.textContent = 'Passwords do not match';
+                return;
+            }
+            
+            const btn = signupForm.querySelector('button');
+            btn.disabled = true;
+            btn.textContent = 'Creating account...';
+
+            try {
+                await api.signup(name, email, password);
+                window.location.href = '/about.html'; // New users go to About Me page
+            } catch (err) {
+                errorEl.textContent = err.message || 'Failed to create account';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Create Account';
+            }
+        });
+
+        // Check if already logged in
+        (async () => {
+            try {
+                const result = await api.checkAuth();
+                if (result.authenticated) {
+                    window.location.href = '/';
+                }
+            } catch (e) {
+                // Not logged in, stay on login page
+            }
+        })();
+    </script>
+</body>
+</html>

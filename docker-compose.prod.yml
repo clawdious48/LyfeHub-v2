@@ -1,0 +1,30 @@
+# Kanban Board - Production Docker Compose
+# Simplified for Hostinger MCP deployment
+
+services:
+  kanban:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kanban-board
+    restart: unless-stopped
+    ports:
+      - "3456:3000"
+    environment:
+      - KANBAN_PASSWORD=${KANBAN_PASSWORD}
+      - KANBAN_API_KEY=${KANBAN_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - NODE_ENV=production
+      - PORT=3000
+    volumes:
+      - kanban-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  kanban-data:
+    driver: local

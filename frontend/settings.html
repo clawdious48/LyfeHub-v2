@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Kanban Board</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/forms-mobile.css">
+</head>
+<body class="profile-page">
+    <div class="profile-container">
+        <!-- Header -->
+        <div class="profile-header">
+            <a href="/" class="back-link">
+                ← Back to Board
+            </a>
+            <h1 class="settings-title">Settings</h1>
+        </div>
+        
+        <!-- Account Info -->
+        <div class="profile-card">
+            <h2>Account</h2>
+            <div class="profile-info">
+                <div class="profile-field">
+                    <span class="profile-field-label">Email</span>
+                    <span id="display-email" class="profile-field-value">...</span>
+                </div>
+                <div class="profile-field">
+                    <span class="profile-field-label">Name</span>
+                    <span id="display-name" class="profile-field-value">...</span>
+                </div>
+            </div>
+            <div style="margin-top: 1rem;">
+                <a href="/about.html" class="btn btn-secondary">Edit Profile</a>
+            </div>
+        </div>
+        
+        <!-- Change Password -->
+        <div class="profile-card">
+            <h2>Change Password</h2>
+            
+            <form id="password-form">
+                <div class="form-group">
+                    <label for="current-password">Current Password</label>
+                    <input 
+                        type="password" 
+                        id="current-password" 
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="new-password">New Password</label>
+                    <input 
+                        type="password" 
+                        id="new-password" 
+                        placeholder="At least 8 characters"
+                        autocomplete="new-password"
+                        minlength="8"
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password">Confirm New Password</label>
+                    <input 
+                        type="password" 
+                        id="confirm-password" 
+                        autocomplete="new-password"
+                        required
+                    >
+                </div>
+                <div id="password-error" class="auth-error"></div>
+                <div id="password-success" class="auth-success"></div>
+                <button type="submit" class="btn btn-primary">
+                    Update Password
+                </button>
+            </form>
+        </div>
+        
+        <!-- Danger Zone -->
+        
+        <!-- API Keys -->
+        <div class="profile-card">
+            <h2>API Keys</h2>
+            <p class="text-muted" style="margin-bottom: 1rem;">Create API keys to connect external tools and agents.</p>
+            
+            <div id="api-keys-list" style="margin-bottom: 1rem;">
+                <p class="text-muted">Loading...</p>
+            </div>
+            
+            <div style="border-top: 1px solid #333; padding-top: 1rem; margin-top: 1rem;">
+                <h3 style="font-size: 1rem; margin-bottom: 0.75rem;">Create New Key</h3>
+                <form id="create-key-form">
+                    <div class="form-group">
+                        <label for="key-name">Key Name</label>
+                        <input type="text" id="key-name" placeholder="e.g., My Agent" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="key-expires">Expires (optional)</label>
+                        <input type="date" id="key-expires">
+                    </div>
+                    <div id="key-error" class="auth-error"></div>
+                    <button type="submit" class="btn btn-primary">Generate Key</button>
+                </form>
+            </div>
+            
+            <div id="new-key-display" style="display: none; margin-top: 1rem; padding: 1rem; background: #1a1a2e; border-radius: 8px; border: 1px solid #00aaff;">
+                <p style="color: #00aaff; font-weight: bold; margin-bottom: 0.5rem;">⚠️ Copy this key now - it won't be shown again!</p>
+                <code id="new-key-value" style="display: block; padding: 0.5rem; background: #000; border-radius: 4px; word-break: break-all; margin-bottom: 0.5rem;"></code>
+                <button type="button" class="btn btn-secondary" onclick="copyKey()">Copy to Clipboard</button>
+            </div>
+        </div>
+        <div class="profile-card danger-zone">
+            <h2>Session</h2>
+            <p class="text-muted" style="margin-bottom: 1rem;">Sign out of your account on this device.</p>
+            <button id="logout-btn" class="btn btn-danger">
+                Sign Out
+            </button>
+        </div>
+    </div>
+    
+        // API Keys functions loaded
+    <script src="js/particles.js"></script>
+        // API Keys functions loaded
+    <script src="js/api.js"></script>
+    <script>
+        // Load user info
+        async function loadUser() {
+            try {
+                const result = await api.getProfile();
+                document.getElementById('display-email').textContent = result.user.email;
+                document.getElementById('display-name').textContent = result.user.name;
+            } catch (err) {
+                window.location.href = '/login.html';
+            }
+        }
+        
+        // Change password form
+        document.getElementById('password-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorEl = document.getElementById('password-error');
+            const successEl = document.getElementById('password-success');
+            errorEl.textContent = '';
+            successEl.textContent = '';
+            
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (newPassword !== confirmPassword) {
+                errorEl.textContent = 'New passwords do not match';
+                return;
+            }
+            
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Updating...';
+            
+            try {
+                await api.changePassword(currentPassword, newPassword);
+                successEl.textContent = 'Password changed successfully';
+                e.target.reset();
+            } catch (err) {
+                errorEl.textContent = err.message || 'Failed to change password';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Update Password';
+            }
+        });
+        
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            try {
+                await api.logout();
+            } catch (e) {}
+            window.location.href = '/login.html';
+        });
+        
+        loadUser();
+
+        // API Keys functions
+        let currentNewKey = '';
+        
+        async function loadApiKeys() {
+            const container = document.getElementById('api-keys-list');
+            try {
+                const res = await fetch('/api/api-keys', { credentials: 'include' });
+                const data = await res.json();
+                
+                if (!data.keys || data.keys.length === 0) {
+                    container.innerHTML = '<p class="text-muted">No API keys yet.</p>';
+                    return;
+                }
+                
+                container.innerHTML = data.keys.map(key => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #1a1a2e; border-radius: 6px; margin-bottom: 0.5rem;">
+                        <div>
+                            <strong>${key.name}</strong>
+                            <span style="color: #666; margin-left: 0.5rem;">${key.keyPrefix}...</span>
+                            ${key.isExpired ? '<span style="color: #ff4444; margin-left: 0.5rem;">Expired</span>' : ''}
+                            ${key.expiresAt ? '<span style="color: #888; margin-left: 0.5rem;">Expires: ' + new Date(key.expiresAt).toLocaleDateString() + '</span>' : ''}
+                        </div>
+                        <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="revokeKey('${key.id}')">Revoke</button>
+                    </div>
+                `).join('');
+            } catch (err) {
+                container.innerHTML = '<p class="text-muted">Failed to load keys.</p>';
+            }
+        }
+        
+        document.getElementById('create-key-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorEl = document.getElementById('key-error');
+            errorEl.textContent = '';
+            
+            const name = document.getElementById('key-name').value;
+            const expires = document.getElementById('key-expires').value;
+            
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+            
+            try {
+                const res = await fetch('/api/api-keys', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ name, expiresAt: expires || null })
+                });
+                const data = await res.json();
+                
+                if (!res.ok) throw new Error(data.error);
+                
+                currentNewKey = data.key.key;
+                document.getElementById('new-key-value').textContent = currentNewKey;
+                document.getElementById('new-key-display').style.display = 'block';
+                e.target.reset();
+                loadApiKeys();
+            } catch (err) {
+                errorEl.textContent = err.message || 'Failed to create key';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Generate Key';
+            }
+        });
+        
+        async function revokeKey(keyId) {
+            if (!confirm('Revoke this API key? Any tools using it will stop working.')) return;
+            try {
+                await fetch('/api/api-keys/' + keyId, { method: 'DELETE', credentials: 'include' });
+                loadApiKeys();
+            } catch (err) {
+                alert('Failed to revoke key');
+            }
+        }
+        
+        function copyKey() {
+            navigator.clipboard.writeText(currentNewKey);
+            alert('Key copied to clipboard!');
+        }
+        
+        loadApiKeys();
+        // API Keys functions loaded
+    </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Me - Kanban Board</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/forms-mobile.css">
+</head>
+<body class="profile-page">
+    <div class="profile-container">
+        <!-- Header -->
+        <div class="profile-header">
+            <a href="/" class="back-link">
+                ← Back to Board
+            </a>
+            <a href="/settings.html" class="btn btn-icon" title="Settings">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+            </a>
+        </div>
+        
+        <!-- About Me Card -->
+        <div class="profile-card about-card">
+            <div class="about-header">
+                <div class="profile-avatar" id="user-avatar">?</div>
+                <div class="about-welcome">
+                    <h1>Welcome, <span id="user-name">...</span>!</h1>
+                    <p class="text-muted" id="user-email">...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Edit Profile Card -->
+        <div class="profile-card">
+            <h2>Edit Profile</h2>
+            
+            <form id="edit-profile-form">
+                <div class="form-group">
+                    <label for="edit-name">Display Name</label>
+                    <input 
+                        type="text" 
+                        id="edit-name" 
+                        required
+                    >
+                </div>
+                <div id="edit-error" class="auth-error"></div>
+                <div id="edit-success" class="auth-success"></div>
+                <button type="submit" class="btn btn-primary">
+                    Save Changes
+                </button>
+            </form>
+        </div>
+        
+        <!-- Quick Stats (placeholder for future) -->
+        <div class="profile-card">
+            <h2>Your Activity</h2>
+            <div class="profile-info">
+                <div class="profile-field">
+                    <span class="profile-field-label">Member since</span>
+                    <span id="member-since" class="profile-field-value">...</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Get Started -->
+        <div class="get-started">
+            <a href="/" class="btn btn-primary btn-full">
+                Go to My Board →
+            </a>
+        </div>
+    </div>
+    
+    <script src="js/particles.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        let currentUser = null;
+        
+        // Load user profile
+        async function loadProfile() {
+            try {
+                const result = await api.getProfile();
+                currentUser = result.user;
+                
+                // Update display
+                document.getElementById('user-name').textContent = currentUser.name;
+                document.getElementById('user-email').textContent = currentUser.email;
+                document.getElementById('user-avatar').textContent = currentUser.name.charAt(0).toUpperCase();
+                document.getElementById('edit-name').value = currentUser.name;
+                document.getElementById('member-since').textContent = 
+                    new Date(currentUser.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+            } catch (err) {
+                window.location.href = '/login.html';
+            }
+        }
+        
+        // Edit profile form
+        document.getElementById('edit-profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorEl = document.getElementById('edit-error');
+            const successEl = document.getElementById('edit-success');
+            errorEl.textContent = '';
+            successEl.textContent = '';
+            
+            const name = document.getElementById('edit-name').value.trim();
+            
+            if (!name) {
+                errorEl.textContent = 'Name is required';
+                return;
+            }
+            
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            
+            try {
+                const result = await api.updateProfile({ name });
+                currentUser = result.user;
+                
+                document.getElementById('user-name').textContent = currentUser.name;
+                document.getElementById('user-avatar').textContent = currentUser.name.charAt(0).toUpperCase();
+                successEl.textContent = 'Profile updated!';
+                
+                setTimeout(() => { successEl.textContent = ''; }, 2000);
+            } catch (err) {
+                errorEl.textContent = err.message || 'Failed to update';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Save Changes';
+            }
+        });
+        
+        loadProfile();
+    </script>
+</body>
+</html>

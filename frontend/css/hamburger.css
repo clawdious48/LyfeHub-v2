@@ -1,0 +1,123 @@
+/**
+ * Hamburger Menu Button
+ * =====================
+ * CSS-only hamburger icon that animates to X when active.
+ * Uses design system colors from :root in style.css.
+ * Only visible on mobile (≤768px) via .mobile-only class.
+ */
+
+/* --------------------------------------
+   Hamburger Button Container
+   -------------------------------------- */
+.hamburger-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  margin-right: 0.75rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 110; /* Above header (100) */
+  
+  /* Touch-friendly tap target */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.hamburger-btn:focus {
+  outline: none;
+}
+
+.hamburger-btn:focus-visible {
+  outline: 2px solid var(--neon-cyan);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* --------------------------------------
+   Hamburger Icon (3 Lines)
+   -------------------------------------- */
+.hamburger-icon {
+  position: relative;
+  width: 24px;
+  height: 18px;
+}
+
+.hamburger-icon span {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--neon-cyan);
+  border-radius: 2px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 8px var(--neon-cyan);
+}
+
+/* Top line */
+.hamburger-icon span:nth-child(1) {
+  top: 0;
+}
+
+/* Middle line */
+.hamburger-icon span:nth-child(2) {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Bottom line */
+.hamburger-icon span:nth-child(3) {
+  bottom: 0;
+}
+
+/* --------------------------------------
+   Hover State
+   -------------------------------------- */
+.hamburger-btn:hover .hamburger-icon span {
+  background: var(--text-primary);
+  box-shadow: 0 0 12px var(--neon-cyan);
+}
+
+/* --------------------------------------
+   Active/Open State (X Animation)
+   -------------------------------------- */
+.hamburger-btn.is-active .hamburger-icon span:nth-child(1) {
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.hamburger-btn.is-active .hamburger-icon span:nth-child(2) {
+  opacity: 0;
+  transform: translateY(-50%) scaleX(0);
+}
+
+.hamburger-btn.is-active .hamburger-icon span:nth-child(3) {
+  bottom: 50%;
+  transform: translateY(50%) rotate(-45deg);
+}
+
+/* Active state glow */
+.hamburger-btn.is-active .hamburger-icon span {
+  background: var(--neon-pink);
+  box-shadow: 0 0 12px var(--neon-pink);
+}
+
+/* --------------------------------------
+   Mobile Header Adjustment
+   Ensure hamburger + tabs fit properly
+   -------------------------------------- */
+@media (max-width: 768px) {
+  .header {
+    padding: 0.5rem 1rem;
+  }
+  
+  /* Flex container for hamburger and header content */
+  .header-left {
+    display: flex;
+    align-items: center;
+  }
+}

@@ -1,0 +1,583 @@
+/**
+ * Table-to-Card Transformation Styles
+ * =====================================
+ * Transforms the Apex Jobs table into mobile-friendly cards.
+ * Uses MobileUtils breakpoints for dynamic switching.
+ * 
+ * Breakpoints:
+ *   Mobile:  ≤640px  → Card view (stacked)
+ *   Tablet:  641-1024px → 2-column card grid OR table with scroll
+ *   Desktop: >1024px → Standard table
+ */
+
+/* ==========================================================================
+   Mobile Card Container (≤640px)
+   ========================================================================== */
+
+.apex-mobile-cards {
+    display: none;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+}
+
+/* Show cards, hide table on mobile */
+@media (max-width: 640px) {
+    .apex-mobile-cards {
+        display: flex !important;
+    }
+    
+    .apex-list-view .apex-task-table {
+        display: none !important;
+    }
+    
+    .apex-list-view {
+        padding: 0;
+    }
+}
+
+/* ==========================================================================
+   Job Card Styles (Mobile)
+   ========================================================================== */
+
+.apex-job-mobile-card {
+    background: rgba(20, 20, 35, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Glowing top accent bar based on status */
+.apex-job-mobile-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    opacity: 0.8;
+}
+
+.apex-job-mobile-card.status-active::before {
+    background: linear-gradient(90deg, var(--neon-green), transparent);
+    box-shadow: 0 0 10px var(--neon-green);
+}
+
+.apex-job-mobile-card.status-pending_insurance::before {
+    background: linear-gradient(90deg, var(--neon-yellow), transparent);
+    box-shadow: 0 0 10px var(--neon-yellow);
+}
+
+.apex-job-mobile-card.status-complete::before {
+    background: linear-gradient(90deg, var(--neon-blue), transparent);
+    box-shadow: 0 0 10px var(--neon-blue);
+}
+
+/* Tap/hover effects */
+.apex-job-mobile-card:active {
+    transform: scale(0.98);
+}
+
+@media (hover: hover) {
+    .apex-job-mobile-card:hover {
+        background: rgba(30, 30, 50, 0.95);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+}
+
+/* Card Header - Job Name prominent */
+.apex-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.apex-card-job-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+    flex: 1;
+    /* Gradient text like the app theme */
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Status Badge */
+.apex-card-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.apex-card-status.status-active {
+    background: rgba(5, 255, 161, 0.15);
+    color: var(--neon-green);
+    box-shadow: 0 0 8px rgba(5, 255, 161, 0.2);
+}
+
+.apex-card-status.status-pending_insurance {
+    background: rgba(255, 230, 109, 0.15);
+    color: var(--neon-yellow);
+    box-shadow: 0 0 8px rgba(255, 230, 109, 0.2);
+}
+
+.apex-card-status.status-complete {
+    background: rgba(0, 170, 255, 0.15);
+    color: var(--neon-blue);
+    box-shadow: 0 0 8px rgba(0, 170, 255, 0.2);
+}
+
+/* Card Body - Key Fields */
+.apex-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.apex-card-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.apex-card-field-label {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    min-width: 50px;
+}
+
+.apex-card-field-value {
+    color: var(--text-secondary);
+    flex: 1;
+}
+
+/* Client name styling */
+.apex-card-client {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.apex-card-client-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+}
+
+.apex-card-client-name {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Address styling */
+.apex-card-address {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.apex-card-address-icon {
+    width: 14px;
+    height: 14px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+/* Loss Type Badge */
+.apex-card-loss-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.apex-card-loss-badge.loss-water {
+    background: rgba(0, 170, 255, 0.2);
+    color: var(--neon-blue);
+    border: 1px solid rgba(0, 170, 255, 0.3);
+}
+
+.apex-card-loss-badge.loss-fire {
+    background: rgba(255, 107, 53, 0.2);
+    color: var(--neon-orange);
+    border: 1px solid rgba(255, 107, 53, 0.3);
+}
+
+.apex-card-loss-badge.loss-mold {
+    background: rgba(5, 255, 161, 0.2);
+    color: var(--neon-green);
+    border: 1px solid rgba(5, 255, 161, 0.3);
+}
+
+.apex-card-loss-badge.loss-storm,
+.apex-card-loss-badge.loss-wind {
+    background: rgba(191, 90, 242, 0.2);
+    color: var(--neon-purple);
+    border: 1px solid rgba(191, 90, 242, 0.3);
+}
+
+.apex-card-loss-badge.loss-unknown {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Card Footer */
+.apex-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.apex-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.apex-card-owner {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.apex-card-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.apex-card-progress-bar {
+    width: 40px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.apex-card-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue));
+    border-radius: inherit;
+    box-shadow: 0 0 8px rgba(0, 170, 255, 0.5);
+}
+
+/* Expand indicator */
+.apex-card-expand {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: transform 0.3s ease;
+}
+
+.apex-job-mobile-card.expanded .apex-card-expand {
+    transform: rotate(180deg);
+}
+
+/* ==========================================================================
+   Expanded Card State
+   ========================================================================== */
+
+.apex-card-expanded-content {
+    display: none;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.apex-job-mobile-card.expanded .apex-card-expanded-content {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.apex-card-expanded-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.apex-card-expanded-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.apex-card-expanded-field.full-width {
+    grid-column: 1 / -1;
+}
+
+.apex-card-expanded-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.apex-card-expanded-value {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+/* Phase badges in expanded view */
+.apex-card-phases {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-top: 0.25rem;
+}
+
+/* ==========================================================================
+   Tablet View (641-1024px)
+   ========================================================================== */
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    /* Option 1: Table with clear horizontal scroll affordance */
+    .apex-list-view {
+        position: relative;
+    }
+    
+    /* Horizontal scroll container */
+    .apex-task-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.5rem;
+    }
+    
+    /* Scroll shadow indicators */
+    .apex-list-view::before,
+    .apex-list-view::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 30px;
+        pointer-events: none;
+        z-index: 10;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .apex-list-view::after {
+        right: 0;
+        background: linear-gradient(to left, rgba(10, 10, 15, 0.9), transparent);
+    }
+    
+    .apex-list-view.has-scroll-right::after {
+        opacity: 1;
+    }
+    
+    /* Minimum column widths for readability */
+    .apex-task-table th,
+    .apex-task-table td {
+        min-width: 100px;
+    }
+    
+    .apex-task-table th:first-child,
+    .apex-task-table td:first-child {
+        min-width: 180px;
+        position: sticky;
+        left: 0;
+        background: rgba(15, 15, 25, 0.98);
+        z-index: 5;
+    }
+    
+    /* Option 2: 2-column card grid (alternative) */
+    .apex-mobile-cards.tablet-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .apex-mobile-cards.tablet-grid .apex-job-mobile-card {
+        height: fit-content;
+    }
+}
+
+/* ==========================================================================
+   Desktop View Adjustments (>1024px)
+   ========================================================================== */
+
+@media (min-width: 1025px) {
+    .apex-mobile-cards {
+        display: none !important;
+    }
+    
+    .apex-list-view .apex-task-table {
+        display: table !important;
+    }
+}
+
+/* ==========================================================================
+   Touch-Friendly Enhancements
+   ========================================================================== */
+
+@media (pointer: coarse) {
+    .apex-job-mobile-card {
+        /* Larger touch targets */
+        padding: 1.25rem;
+    }
+    
+    /* Ripple effect on tap */
+    .apex-job-mobile-card::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.4s ease, height 0.4s ease, opacity 0.4s ease;
+        pointer-events: none;
+        opacity: 0;
+    }
+    
+    .apex-job-mobile-card:active::after {
+        width: 200%;
+        height: 200%;
+        opacity: 1;
+    }
+}
+
+/* ==========================================================================
+   Empty State (Mobile)
+   ========================================================================== */
+
+.apex-mobile-cards-empty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 3rem 1.5rem;
+    font-size: 0.9rem;
+}
+
+.apex-mobile-cards-empty-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 1rem;
+    color: var(--text-muted);
+    opacity: 0.5;
+}
+
+/* ==========================================================================
+   View Toggle for Mobile
+   ========================================================================== */
+
+@media (max-width: 640px) {
+    /* Hide the list view button on mobile when in card mode */
+    .apex-view-btn[data-view="list"] .apex-view-label {
+        display: none;
+    }
+    
+    /* Adjust view controls layout */
+    .apex-view-controls {
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 0.75rem;
+    }
+    
+    .apex-view-toggle {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .apex-view-filters {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .apex-filter-select {
+        flex: 1;
+        min-width: 100px;
+    }
+    
+    .apex-sync-info {
+        width: 100%;
+        text-align: center;
+        margin: 0;
+    }
+}
+
+/* ==========================================================================
+   Loading State
+   ========================================================================== */
+
+.apex-card-skeleton {
+    background: rgba(20, 20, 35, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 1rem;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.apex-card-skeleton-line {
+    height: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.apex-card-skeleton-line.short {
+    width: 60%;
+}
+
+.apex-card-skeleton-line.medium {
+    width: 80%;
+}

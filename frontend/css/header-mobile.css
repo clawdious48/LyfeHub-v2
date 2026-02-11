@@ -1,0 +1,277 @@
+/**
+ * Header Mobile Adjustments
+ * =========================
+ * Mobile-first responsive header styling:
+ *   - Hide tab bar on mobile (≤768px), navigation via drawer
+ *   - Hamburger left, logo center, settings right
+ *   - Keyboard handling for virtual keyboards
+ *   - Sticky behavior with scroll shadow
+ *   - Tablet: tabs visible with horizontal scroll
+ *
+ * Dependencies: responsive.css, hamburger.css
+ */
+
+/* ==========================================================================
+   Mobile Header Layout (≤768px)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  /* Hide tab navigation on mobile - drawer handles navigation */
+  .header .tabs {
+    display: none !important;
+  }
+  
+  /* Header becomes a compact single row */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    min-height: 56px; /* Touch-friendly height */
+    gap: 0.5rem;
+  }
+  
+  /* Left section: hamburger button */
+  .hamburger-btn {
+    flex-shrink: 0;
+    order: 1;
+  }
+  
+  /* Center section: app logo/title (if present) */
+  .header-logo,
+  .header-title {
+    flex: 1;
+    order: 2;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  /* Right section: quick-access icons */
+  .header-right {
+    flex-shrink: 0;
+    order: 3;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  
+  /* Hide logout button on mobile (available in drawer) */
+  .header-right #logout-btn {
+    display: none;
+  }
+  
+  /* Hide refresh indicator on mobile (less clutter) */
+  .header-right .refresh-indicator {
+    display: none;
+  }
+  
+  /* Settings icon sizing for mobile */
+  .header-right .btn-icon {
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .header-right .btn-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+
+/* ==========================================================================
+   Tablet Header Layout (769px - 1024px)
+   ========================================================================== */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .header {
+    padding: 0.5rem 1rem;
+  }
+  
+  /* Tabs container: horizontal scroll for many tabs */
+  .header .tabs {
+    display: flex;
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 0.125rem;
+    margin: 0 0.5rem;
+    padding-bottom: 2px; /* Space for scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--neon-purple) transparent;
+    
+    /* Smooth momentum scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
+    
+    /* Hide scrollbar visually but keep functionality */
+    -ms-overflow-style: none;
+  }
+  
+  .header .tabs::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  .header .tabs::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .header .tabs::-webkit-scrollbar-thumb {
+    background: rgba(191, 90, 242, 0.3);
+    border-radius: 2px;
+  }
+  
+  .header .tabs::-webkit-scrollbar-thumb:hover {
+    background: rgba(191, 90, 242, 0.5);
+  }
+  
+  /* Compact tabs for tablet */
+  .header .tabs .tab {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  
+  /* Compact header-right for tablet */
+  .header-right {
+    gap: 0.5rem;
+  }
+  
+  .header-right #logout-btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}
+
+
+/* ==========================================================================
+   Sticky Header with Scroll Shadow
+   ========================================================================== */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+/* Scrolled state - add shadow for depth */
+.header.is-scrolled {
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    0 0 1px rgba(191, 90, 242, 0.3);
+  border-bottom-color: rgba(191, 90, 242, 0.2);
+}
+
+/* Extra shadow enhancement for mobile */
+@media (max-width: 768px) {
+  .header.is-scrolled {
+    box-shadow: 
+      0 2px 12px rgba(0, 0, 0, 0.5),
+      0 0 1px rgba(191, 90, 242, 0.4);
+  }
+}
+
+
+/* ==========================================================================
+   Virtual Keyboard Handling
+   ========================================================================== */
+
+/* When virtual keyboard opens, prevent header from obscuring content */
+@supports (height: 100dvh) {
+  /* Use dynamic viewport height when available */
+  .header {
+    /* Header position adapts to visual viewport */
+    position: sticky;
+    top: 0;
+  }
+}
+
+/* For browsers supporting keyboard-inset */
+@supports (padding-bottom: env(keyboard-inset-height, 0px)) {
+  /* Main content adjustment when keyboard is open */
+  body.keyboard-open .tab-content {
+    padding-bottom: env(keyboard-inset-height, 0px);
+  }
+}
+
+/* Fallback: JavaScript will add this class when keyboard opens */
+body.keyboard-open .header {
+  /* Optionally make header more compact or hide on keyboard */
+  /* Currently keeping visible for orientation */
+}
+
+/* Input focus scroll padding to ensure field is visible */
+@media (max-width: 768px) {
+  input:focus,
+  textarea:focus,
+  select:focus {
+    scroll-padding-top: 60px; /* Account for header height */
+  }
+  
+  /* Ensure focused elements aren't hidden behind header */
+  .tab-content {
+    scroll-padding-top: 60px;
+  }
+}
+
+
+/* ==========================================================================
+   Header Logo (Optional - Add to HTML if needed)
+   ========================================================================== */
+
+.header-logo {
+  display: none; /* Hidden by default on desktop */
+}
+
+@media (max-width: 768px) {
+  .header-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  
+  .header-logo img {
+    height: 28px;
+    width: auto;
+  }
+  
+  .header-logo-text {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+
+/* ==========================================================================
+   Safe Area Insets (Notch/Home Indicator)
+   ========================================================================== */
+
+@supports (padding-top: env(safe-area-inset-top)) {
+  .header {
+    /* Account for notch on modern phones */
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+  }
+  
+  @media (max-width: 768px) {
+    .header {
+      padding-top: max(0.5rem, env(safe-area-inset-top));
+    }
+  }
+}

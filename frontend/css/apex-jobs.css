@@ -1,0 +1,3456 @@
+/* ========================================
+   Apex - Orange Theme Styling
+   
+   Uses apex-theme.css variables (--apex-primary, --apex-secondary, etc.)
+   to give the Apex section a distinct orange/amber color scheme
+   separate from the rest of the app's neon green/blue/purple.
+   
+   BREAKPOINTS STANDARDIZED (2025-06-30)
+   640px (sm), 768px (md), 1024px (lg), 1280px (xl)
+   ======================================== */
+
+/* Sub-tabs navigation */
+.projects-subtabs {
+    display: flex;
+    gap: 0.25rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.25rem;
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+    margin-right: auto;
+}
+
+.subtab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.subtab-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.subtab-btn.active {
+    background: linear-gradient(135deg, var(--apex-primary-muted), var(--apex-secondary-muted));
+    color: var(--apex-primary);
+    box-shadow: var(--apex-glow-sm);
+}
+
+/* Apex content container */
+.apex-content {
+    display: none;
+}
+
+.apex-content.active {
+    display: block;
+}
+
+.dev-projects-content {
+    display: block;
+}
+
+.dev-projects-content.hidden {
+    display: none;
+}
+
+/* Apex View Controls */
+.apex-view-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: rgba(10, 10, 15, 0.5);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.apex-view-toggle {
+    display: flex;
+    gap: 0.25rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.25rem;
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+}
+
+.apex-view-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.apex-view-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.apex-view-btn.active {
+    background: linear-gradient(135deg, var(--apex-primary-muted), var(--apex-secondary-muted));
+    color: var(--apex-primary);
+    box-shadow: var(--apex-glow-sm);
+}
+
+.apex-view-filters {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.apex-sync-info {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-right: 1rem;
+}
+
+.apex-filter-select {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.apex-filter-select:hover,
+.apex-filter-select:focus {
+    border-color: var(--apex-primary);
+    outline: none;
+    box-shadow: var(--apex-glow-sm);
+}
+
+.apex-filter-select option {
+    background: #0a0a0f;
+}
+
+/* Apex View Containers */
+.apex-view-container {
+    display: none;
+}
+
+.apex-view-container.active {
+    display: block;
+}
+
+/* ========================================
+   Apex Kanban View - Glowing Borders
+   ======================================== */
+.apex-board {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 1.5rem 2rem;
+    overflow-x: auto;
+}
+
+.apex-column {
+    background: var(--glass-bg);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition);
+}
+
+/* Glowing column borders on hover */
+.apex-column:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.apex-column-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 16px 16px 0 0;
+    position: relative;
+}
+
+/* Glowing bottom border for column headers */
+.apex-column-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+}
+
+/* Active column - Orange glow */
+.apex-column-header.active {
+    background: var(--apex-primary-muted);
+}
+
+.apex-column-header.active h2 {
+    color: var(--apex-primary);
+    text-shadow: 0 0 20px rgba(var(--apex-primary-rgb), 0.5);
+}
+
+.apex-column-header.active::after {
+    background: linear-gradient(90deg, var(--apex-primary), transparent);
+    box-shadow: 0 0 10px var(--apex-primary);
+}
+
+/* Pending column - Amber glow */
+.apex-column-header.pending_insurance {
+    background: var(--apex-secondary-muted);
+}
+
+.apex-column-header.pending_insurance h2 {
+    color: var(--apex-secondary);
+    text-shadow: 0 0 20px rgba(var(--apex-secondary-rgb), 0.5);
+}
+
+.apex-column-header.pending_insurance::after {
+    background: linear-gradient(90deg, var(--apex-secondary), transparent);
+    box-shadow: 0 0 10px var(--apex-secondary);
+}
+
+/* Complete column - Teal glow */
+.apex-column-header.complete {
+    background: var(--apex-tertiary-muted);
+}
+
+.apex-column-header.complete h2 {
+    color: var(--apex-tertiary);
+    text-shadow: 0 0 20px rgba(74, 144, 164, 0.5);
+}
+
+.apex-column-header.complete::after {
+    background: linear-gradient(90deg, var(--apex-tertiary), transparent);
+    box-shadow: 0 0 10px var(--apex-tertiary);
+}
+
+.apex-column-header h2 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.apex-task-count {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.apex-column-tasks {
+    flex: 1;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow-y: auto;
+    max-height: calc(100vh - 300px);
+}
+
+/* Apex Job Cards (Kanban) */
+.apex-job-card {
+    background: rgba(20, 20, 35, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 0.875rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.apex-job-card:hover {
+    background: rgba(30, 30, 50, 0.7);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.apex-job-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.apex-job-title {
+    font-weight: 500;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.apex-job-client {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+.apex-job-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    gap: 0.5rem;
+}
+
+.apex-job-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.apex-owner {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Loss Type Badges with Glow */
+.apex-loss-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.apex-loss-badge.loss-water {
+    background: var(--apex-loss-water-bg);
+    color: var(--apex-loss-water);
+    border: 1px solid rgba(14, 165, 233, 0.3);
+    box-shadow: 0 0 8px rgba(14, 165, 233, 0.2);
+}
+
+.apex-loss-badge.loss-fire {
+    background: var(--apex-loss-fire-bg);
+    color: var(--apex-loss-fire);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.2);
+}
+
+.apex-loss-badge.loss-mold {
+    background: var(--apex-loss-mold-bg);
+    color: var(--apex-loss-mold);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+}
+
+.apex-loss-badge.loss-smoke {
+    background: rgba(128, 128, 128, 0.2);
+    color: #aaa;
+    border: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+.apex-loss-badge.loss-storm,
+.apex-loss-badge.loss-wind {
+    background: var(--apex-loss-storm-bg);
+    color: var(--apex-loss-storm);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.2);
+}
+
+.apex-loss-badge.loss-unknown {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    border: 1px solid var(--glass-border);
+}
+
+/* Status indicators with glow animation */
+.apex-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { opacity: 0.8; }
+    to { opacity: 1; }
+}
+
+.apex-status-dot.status-active {
+    background: var(--apex-primary);
+    box-shadow: 0 0 12px var(--apex-primary), 0 0 24px var(--apex-primary);
+}
+
+.apex-status-dot.status-pending_insurance {
+    background: var(--apex-secondary);
+    box-shadow: 0 0 10px var(--apex-secondary);
+}
+
+.apex-status-dot.status-complete {
+    background: var(--apex-tertiary);
+    box-shadow: 0 0 8px var(--apex-tertiary);
+}
+
+.apex-status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.apex-status-badge.status-active {
+    background: var(--apex-primary-muted);
+    color: var(--apex-primary);
+}
+
+.apex-status-badge.status-pending_insurance {
+    background: var(--apex-secondary-muted);
+    color: var(--apex-secondary);
+}
+
+.apex-status-badge.status-complete {
+    background: var(--apex-tertiary-muted);
+    color: var(--apex-tertiary);
+}
+
+/* Progress bar */
+.apex-task-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar.large {
+    height: 6px;
+    border-radius: 3px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--apex-gradient-primary);
+    border-radius: inherit;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 8px rgba(var(--apex-primary-rgb), 0.5);
+}
+
+.progress-text {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.progress-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+/* ========================================
+   Apex List View - Sortable Table
+   ======================================== */
+.apex-list-view {
+    padding: 1.5rem 2rem;
+}
+
+.apex-task-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: rgba(15, 15, 25, 0.4);
+    backdrop-filter: blur(8px);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+}
+
+.apex-task-table thead {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.apex-task-table th {
+    padding: 1rem 1.25rem;
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.apex-task-table th.sortable {
+    cursor: pointer;
+    transition: var(--transition);
+    user-select: none;
+}
+
+.apex-task-table th.sortable:hover {
+    color: var(--apex-primary-light);
+}
+
+.apex-task-table th.sortable.sorted-asc::after {
+    content: ' ↑';
+    color: var(--apex-primary);
+}
+
+.apex-task-table th.sortable.sorted-desc::after {
+    content: ' ↓';
+    color: var(--apex-primary);
+}
+
+.apex-task-table tbody tr {
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.apex-task-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.apex-task-table td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    font-size: 0.875rem;
+}
+
+.apex-task-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.apex-task-table .title-cell {
+    font-weight: 500;
+}
+
+/* ========================================
+   Apex Card View - Glassmorphic Grid
+   ======================================== */
+.apex-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+    padding: 1.5rem 2rem;
+}
+
+.apex-project-card {
+    background: rgba(20, 20, 35, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.apex-project-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    opacity: 0.8;
+}
+
+.apex-project-card.loss-border-water::before { 
+    background: linear-gradient(90deg, var(--apex-info), transparent);
+    box-shadow: 0 0 10px var(--apex-info);
+}
+.apex-project-card.loss-border-fire::before { 
+    background: linear-gradient(90deg, var(--apex-primary), transparent);
+    box-shadow: 0 0 10px var(--apex-primary);
+}
+.apex-project-card.loss-border-mold::before { 
+    background: linear-gradient(90deg, var(--apex-success), transparent);
+    box-shadow: 0 0 10px var(--apex-success);
+}
+.apex-project-card.loss-border-smoke::before { 
+    background: linear-gradient(90deg, #888, transparent);
+}
+.apex-project-card.loss-border-storm::before,
+.apex-project-card.loss-border-wind::before { 
+    background: linear-gradient(90deg, var(--apex-secondary), transparent);
+    box-shadow: 0 0 10px var(--apex-secondary);
+}
+
+.apex-project-card:hover {
+    background: rgba(30, 30, 50, 0.7);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.apex-project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.apex-project-title {
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.3;
+    flex: 1;
+    margin-right: 0.75rem;
+}
+
+.apex-project-client {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.apex-address {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.apex-project-progress {
+    margin-bottom: 1rem;
+}
+
+.apex-project-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ========================================
+   Apex Job Modal
+   ======================================== */
+#apex-job-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+#apex-job-modal.open {
+    display: flex;
+}
+
+#apex-job-modal .modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+}
+
+#apex-job-modal .modal-content {
+    position: relative;
+    background: rgba(15, 15, 25, 0.95);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 
+        0 0 60px rgba(191, 90, 242, 0.1),
+        0 0 100px rgba(0, 170, 255, 0.05);
+}
+
+#apex-job-modal .modal-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#apex-job-modal .modal-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+}
+
+#apex-job-modal .modal-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    background: var(--apex-gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+#apex-job-modal .modal-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    line-height: 1;
+    transition: var(--transition);
+}
+
+#apex-job-modal .modal-close:hover {
+    color: var(--text-primary);
+}
+
+#apex-job-modal .modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    max-height: calc(90vh - 180px);
+}
+
+.apex-modal-section {
+    margin-bottom: 1.5rem;
+}
+
+.apex-modal-section:last-child {
+    margin-bottom: 0;
+}
+
+.apex-section-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--apex-primary);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--apex-border-active);
+}
+
+.apex-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.apex-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.apex-detail-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.apex-detail-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.apex-detail-value {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+/* Tasks list in modal */
+.apex-tasks-container {
+    max-height: 300px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 0.5rem;
+}
+
+.apex-task-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    transition: var(--transition);
+}
+
+.apex-task-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.apex-task-item.completed {
+    opacity: 0.6;
+}
+
+.apex-task-item.completed .apex-task-name {
+    text-decoration: line-through;
+}
+
+.apex-task-checkbox {
+    font-size: 1rem;
+    color: var(--apex-primary);
+}
+
+.apex-task-name {
+    flex: 1;
+    font-size: 0.85rem;
+}
+
+.apex-task-assignees {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.no-tasks {
+    color: var(--text-muted);
+    text-align: center;
+    padding: 2rem;
+    font-style: italic;
+}
+
+/* Refresh indicator */
+#apex-refresh-indicator {
+    font-size: 1rem;
+    opacity: 0.5;
+    cursor: default;
+    transition: var(--transition);
+}
+
+#apex-refresh-indicator.spinning {
+    animation: spin 1s linear infinite;
+    opacity: 1;
+    color: var(--apex-primary);
+}
+
+/* Empty states */
+.apex-empty-message {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 4rem 2rem;
+    font-size: 1rem;
+}
+
+/* Responsive */
+/* Breakpoints standardized: 640px (sm), 768px (md), 1024px (lg), 1280px (xl) */
+@media (max-width: 1280px) {
+    .apex-board {
+        grid-template-columns: repeat(3, minmax(280px, 1fr));
+    }
+}
+
+@media (max-width: 1024px) {
+    .apex-board {
+        grid-template-columns: 1fr;
+    }
+    
+    .apex-detail-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .apex-card-grid {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+}
+
+/* Tablet portrait (768px-1024px) - Controls row wraps to 2 rows */
+@media (max-width: 1024px) and (min-width: 641px) {
+    .apex-view-controls {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        padding: 1rem 1.5rem;
+    }
+    
+    /* Ensure New Job button doesn't compress */
+    #new-job-btn {
+        min-width: max-content;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    
+    /* Left group: button + view toggle stay together */
+    .apex-view-toggle {
+        flex-shrink: 0;
+    }
+    
+    /* Filters wrap to second row on tablet portrait */
+    .apex-view-filters {
+        flex: 1 1 100%;
+        justify-content: flex-start;
+        gap: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        margin-top: 0.25rem;
+    }
+    
+    /* Filter dropdowns get reasonable sizing */
+    .apex-filter-select {
+        flex: 1 1 auto;
+        min-width: 120px;
+        max-width: 180px;
+    }
+    
+    /* Sync info stays compact */
+    .apex-sync-info {
+        flex-shrink: 0;
+    }
+}
+
+/* Narrower tablet portrait (~768-900px) - more compact filters */
+@media (max-width: 900px) and (min-width: 641px) {
+    .apex-view-controls {
+        padding: 1rem;
+    }
+    
+    .apex-view-filters {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        padding-bottom: 0.25rem;
+    }
+    
+    .apex-filter-select {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.75rem;
+        min-width: 100px;
+        max-width: 150px;
+        flex-shrink: 0;
+    }
+    
+    .apex-view-btn span {
+        display: none;
+    }
+    
+    .apex-view-btn {
+        padding: 0.5rem 0.75rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .apex-view-controls {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .apex-view-toggle {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .apex-view-filters {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .apex-list-view {
+        padding: 1rem;
+        overflow-x: auto;
+    }
+}
+
+/* ========================================
+   Phase Badges
+   ======================================== */
+.apex-phase-badges {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+}
+
+.apex-phase-badge {
+    padding: 0.125rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+}
+
+.apex-phase-badge.phase-mit {
+    background: var(--apex-phase-mit-bg);
+    color: var(--apex-phase-mit);
+    border: 1px solid rgba(14, 165, 233, 0.3);
+}
+
+.apex-phase-badge.phase-rpr {
+    background: var(--apex-phase-rpr-bg);
+    color: var(--apex-phase-rpr);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.apex-phase-badge.phase-rmd {
+    background: var(--apex-phase-rmd-bg);
+    color: var(--apex-phase-rmd);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.apex-phase-badge.phase-abt {
+    background: var(--apex-phase-abt-bg);
+    color: var(--apex-phase-abt);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.apex-phase-badge.phase-rem {
+    background: rgba(255, 107, 53, 0.2);
+    color: var(--apex-primary);
+    border: 1px solid rgba(255, 107, 53, 0.3);
+}
+
+/* ========================================
+   Phase Tabs (Detail Modal)
+   ======================================== */
+.apex-phase-tabs {
+    display: flex;
+    gap: 0.25rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid var(--glass-border);
+    overflow-x: auto;
+    margin: 0 -1.5rem;
+    padding: 0 1.5rem;
+}
+
+.apex-phase-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: var(--transition);
+}
+
+.apex-phase-tab:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.apex-phase-tab.active {
+    color: var(--apex-primary);
+    border-bottom-color: var(--apex-primary);
+}
+
+.apex-phase-tab .phase-tab-number {
+    font-size: 0.7rem;
+    opacity: 0.7;
+}
+
+.apex-phase-panel {
+    display: none;
+    padding: 1.25rem 0;
+}
+
+.apex-phase-panel.active {
+    display: block;
+}
+
+.apex-phase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.apex-phase-job-number {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--apex-primary);
+    font-family: monospace;
+}
+
+/* Phase status badges */
+.phase-status-not_started {
+    background: rgba(128, 128, 128, 0.15);
+    color: var(--text-muted);
+}
+
+.phase-status-in_progress {
+    background: rgba(5, 255, 161, 0.15);
+    color: var(--apex-success);
+}
+
+.phase-status-pending_approval {
+    background: rgba(255, 230, 109, 0.15);
+    color: var(--apex-warning);
+}
+
+.phase-status-approved {
+    background: rgba(0, 170, 255, 0.15);
+    color: var(--apex-info);
+}
+
+.phase-status-complete {
+    background: rgba(191, 90, 242, 0.15);
+    color: var(--apex-secondary);
+}
+
+/* Phase sections within panels */
+.apex-phase-section {
+    margin-bottom: 1.25rem;
+}
+
+.apex-phase-section:last-child {
+    margin-bottom: 0;
+}
+
+.apex-phase-section-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.apex-empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 1.5rem;
+    font-size: 0.85rem;
+    font-style: italic;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    border: 1px dashed rgba(255, 255, 255, 0.05);
+}
+
+/* Wider modal for tabbed view */
+#apex-job-modal .modal-content {
+    max-width: 900px;
+}
+
+/* =====================================================
+   Legacy Task List (Zoho jobs)
+   ===================================================== */
+.apex-task-check {
+    font-size: 1rem;
+    color: var(--apex-primary);
+}
+
+/* =====================================================
+   NEW JOB MODAL - Wide Grid Layout
+   ===================================================== */
+
+/* =====================================================
+   FULL-PAGE JOB DETAIL VIEW
+   ===================================================== */
+
+/* 1. Detail View Container */
+#apex-job-detail {
+    width: 100%;
+    padding: 1.5rem 2rem;
+}
+
+.job-detail-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    margin-bottom: 1rem;
+    transition: var(--transition);
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.job-detail-back:hover {
+    color: var(--apex-primary);
+}
+
+.job-detail-back svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* 2. Detail Grid Layout */
+.job-detail-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+    width: 100%;
+    align-items: start;
+}
+
+.job-detail-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.job-detail-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+    overflow-x: hidden;
+}
+
+/* 3. Header Card */
+.job-detail-header {
+    background: rgba(15, 15, 25, 0.7);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+}
+
+.job-detail-header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.job-detail-header-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.job-detail-damage-icon {
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.job-detail-damage-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.job-detail-header-text h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--apex-secondary), var(--apex-primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 0.25rem 0;
+    line-height: 1.3;
+}
+
+.job-detail-header-text .client-name {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.job-detail-header-text .address {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.job-detail-header-text .address svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.job-detail-header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.job-detail-status-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: var(--transition);
+    color: var(--text-primary);
+    position: relative;
+}
+
+.job-detail-status-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.job-detail-status-btn svg {
+    width: 14px;
+    height: 14px;
+    color: var(--text-muted);
+}
+
+.job-detail-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    transition: var(--transition);
+}
+
+.job-detail-edit-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.job-detail-edit-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* 4. Info Cards Row */
+.job-detail-info-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.job-info-card {
+    background: rgba(15, 15, 25, 0.7);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1rem;
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    min-width: 0;
+}
+
+.job-info-card-title {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 0.5rem;
+}
+
+.job-info-card p {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    margin: 0.25rem 0;
+    line-height: 1.4;
+}
+
+.job-info-card p.font-medium {
+    font-weight: 500;
+}
+
+.job-info-card .info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin: 0.25rem 0;
+}
+
+.job-info-card .info-row .info-label {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.job-info-card .info-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--apex-primary);
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.job-info-card .info-link:hover {
+    text-decoration: underline;
+    color: var(--apex-info);
+}
+
+.job-info-card .info-link svg {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+}
+
+.job-info-card .text-muted {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+/* 5. Phase Bar */
+.job-detail-phase-bar {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.5rem;
+    border-radius: 12px;
+}
+
+.job-detail-phase-bar .phase-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.job-detail-phase-bar .phase-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.job-detail-phase-bar .phase-btn.active {
+    border-color: var(--apex-primary);
+    background: var(--apex-primary-muted);
+    color: var(--apex-primary);
+    box-shadow: var(--apex-glow-sm);
+}
+
+.job-detail-phase-bar .phase-btn .phase-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.job-detail-phase-bar .phase-btn .phase-number {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    font-family: monospace;
+}
+
+/* 6. Content Tabs */
+.job-detail-tabs {
+    display: flex;
+    gap: 0.25rem;
+    border-bottom: 1px solid var(--glass-border);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.job-detail-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.job-detail-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.75rem 1rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: var(--transition);
+}
+
+.job-detail-tab-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.job-detail-tab-btn.active {
+    color: var(--apex-primary);
+    border-bottom-color: var(--apex-primary);
+}
+
+.job-detail-tab-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* 7. Tab Content Panel */
+.job-detail-tab-content {
+    padding: 1.25rem 0;
+    min-height: 300px;
+}
+
+/* 8. Dates Tab */
+.dates-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.date-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.date-field .date-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.date-field .date-value {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    padding: 0.35rem 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.date-field .date-value:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.date-field.highlighted .date-value {
+    border: 1px solid rgba(0, 245, 212, 0.3);
+    background: rgba(0, 245, 212, 0.05);
+}
+
+/* 9. Notes Tab */
+.notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.note-form {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.note-form textarea {
+    width: 100%;
+    min-height: 80px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    padding: 0.75rem;
+    font-size: 0.85rem;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.note-form textarea:focus {
+    outline: none;
+    border-color: var(--apex-primary);
+}
+
+.note-form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.75rem;
+}
+
+.note-form-actions select {
+    padding: 0.35rem 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.8rem;
+}
+
+.note-item {
+    border-left: 3px solid var(--apex-primary);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 0 8px 8px 0;
+}
+
+.note-item .note-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.35rem;
+}
+
+.note-item .note-subject {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.note-item .note-date {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.note-item .note-content {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.note-type-badge {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.note-type-badge.type-general {
+    background: rgba(128, 128, 128, 0.2);
+    color: #aaa;
+}
+
+.note-type-badge.type-call {
+    background: rgba(0, 170, 255, 0.2);
+    color: var(--apex-info);
+}
+
+.note-type-badge.type-email {
+    background: rgba(191, 90, 242, 0.2);
+    color: var(--apex-secondary);
+}
+
+.note-type-badge.type-site_visit {
+    background: rgba(5, 255, 161, 0.2);
+    color: var(--apex-success);
+}
+
+.note-type-badge.type-documentation {
+    background: rgba(255, 107, 53, 0.2);
+    color: var(--apex-primary);
+}
+
+/* 10. Expenses Tab */
+.expenses-section {
+    margin-bottom: 1rem;
+}
+
+.expenses-summary-bar {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.expenses-summary-bar .summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.expenses-summary-bar .summary-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.expenses-summary-bar .summary-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.expense-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    transition: var(--transition);
+    margin-bottom: 0.25rem;
+}
+
+.expense-group-header:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.expense-group-header .group-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.expense-group-header .group-total {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--apex-primary);
+}
+
+.expense-group-content {
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.expense-group-content.collapsed {
+    max-height: 0;
+}
+
+.expense-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    font-size: 0.85rem;
+}
+
+.expense-item:last-child {
+    border-bottom: none;
+}
+
+.expense-item .expense-desc {
+    flex: 1;
+    color: var(--text-secondary);
+}
+
+.expense-item .expense-amount {
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.category-badge {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.category-badge.cat-labor {
+    background: rgba(0, 170, 255, 0.2);
+    color: var(--apex-info);
+}
+
+.category-badge.cat-materials {
+    background: rgba(5, 255, 161, 0.2);
+    color: var(--apex-success);
+}
+
+.category-badge.cat-equipment {
+    background: rgba(191, 90, 242, 0.2);
+    color: var(--apex-secondary);
+}
+
+.category-badge.cat-subcontractor {
+    background: rgba(255, 107, 53, 0.2);
+    color: var(--apex-primary);
+}
+
+.category-badge.cat-other {
+    background: rgba(128, 128, 128, 0.2);
+    color: #aaa;
+}
+
+/* 11. Accounting Sidebar */
+.job-accounting {
+    background: rgba(15, 15, 25, 0.7);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1.25rem;
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+}
+
+.job-accounting h3 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin: 0 0 1rem 0;
+}
+
+.accounting-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.accounting-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.accounting-metric .metric-label {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.accounting-metric .metric-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.accounting-metric.full-width {
+    grid-column: 1 / -1;
+}
+
+.accounting-metric .metric-value.balance-due {
+    color: var(--apex-warning);
+    text-shadow: 0 0 10px rgba(255, 230, 109, 0.3);
+}
+
+.accounting-metric .metric-value.balance-paid {
+    color: var(--apex-success);
+}
+
+.accounting-metric .metric-value.gp-good {
+    color: var(--apex-success);
+}
+
+.accounting-metric .metric-value.gp-warn {
+    color: var(--apex-warning);
+}
+
+.accounting-metric .metric-value.gp-bad {
+    color: #ff4444;
+}
+
+.accounting-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.accounting-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.accounting-action-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    border-color: var(--apex-primary);
+}
+
+.accounting-action-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.accounting-invoice-toggle {
+    width: 100%;
+    padding: 0.6rem;
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    transition: var(--transition);
+    margin-bottom: 1rem;
+}
+
+.accounting-invoice-toggle.ready {
+    background: rgba(5, 255, 161, 0.15);
+    color: var(--apex-success);
+    border-color: rgba(5, 255, 161, 0.3);
+}
+
+.accounting-invoice-toggle.not-ready {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-muted);
+}
+
+.accounting-invoice-toggle:hover {
+    opacity: 0.85;
+}
+
+.accounting-breakdown {
+    margin-top: 0.75rem;
+}
+
+.accounting-breakdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.5rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    transition: var(--transition);
+}
+
+.accounting-breakdown-header:hover {
+    color: var(--text-primary);
+}
+
+.accounting-breakdown-content {
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.accounting-breakdown-content.collapsed {
+    max-height: 0;
+}
+
+.accounting-breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.3rem 0;
+    font-size: 0.8rem;
+}
+
+.accounting-breakdown-row .breakdown-label {
+    color: var(--text-muted);
+}
+
+.accounting-breakdown-row .breakdown-value {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* 12. Activity Sidebar */
+.job-activity {
+    background: rgba(15, 15, 25, 0.7);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1.25rem;
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+}
+
+.job-activity h3 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin: 0 0 0.75rem 0;
+}
+
+.activity-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+}
+
+.activity-filter-btn {
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--glass-border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.activity-filter-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+}
+
+.activity-filter-btn.active {
+    background: var(--apex-primary-muted);
+    color: var(--apex-primary);
+    border-color: var(--apex-border-active);
+}
+
+.activity-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-event {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.35rem 0;
+}
+
+.activity-event .event-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 0.35rem;
+    flex-shrink: 0;
+}
+
+.activity-event .event-dot.dot-status { background: var(--apex-tertiary); }
+.activity-event .event-dot.dot-payment { background: var(--apex-success); }
+.activity-event .event-dot.dot-estimate { background: var(--apex-secondary); }
+.activity-event .event-dot.dot-note { background: var(--apex-primary); }
+.activity-event .event-dot.dot-contact { background: var(--apex-primary-light); }
+.activity-event .event-dot.dot-default { background: var(--apex-text-muted); }
+
+.activity-event .event-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-event .event-date {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-bottom: 0.1rem;
+}
+
+.activity-event .event-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.activity-event .event-amount {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* 13. Contacts Section */
+.job-contacts {
+    background: rgba(15, 15, 25, 0.7);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1.25rem;
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+}
+
+.job-contacts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.job-contacts-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.job-contacts-header-left svg {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+}
+
+.job-contacts-header-left h3 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.job-contacts-header-left .contact-count {
+    font-size: 0.65rem;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    color: var(--text-muted);
+}
+
+.job-contacts-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid var(--glass-border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.job-contacts-add-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    border-color: var(--apex-primary);
+}
+
+.job-contacts-add-btn svg {
+    width: 12px;
+    height: 12px;
+}
+
+.contacts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
+.contact-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: var(--transition);
+}
+
+.contact-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.contact-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.25rem;
+}
+
+.contact-card .contact-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.contact-card .contact-role {
+    font-weight: 400;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.contact-card .msa-badge {
+    display: inline-block;
+    padding: 0.1rem 0.35rem;
+    background: rgba(0, 170, 255, 0.2);
+    color: var(--apex-info);
+    border: 1px solid rgba(0, 170, 255, 0.3);
+    font-size: 0.6rem;
+    font-weight: 700;
+    border-radius: 999px;
+}
+
+.contact-card .contact-org {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 0.35rem;
+}
+
+.contact-card-actions {
+    display: flex;
+    gap: 0.35rem;
+}
+
+.contact-card-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    color: var(--text-muted);
+    transition: var(--transition);
+}
+
+.contact-card-actions a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--apex-primary);
+}
+
+.contact-card-actions a svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* 14. Detail Modal Overlay */
+#job-detail-modal-overlay,
+.job-detail-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1100;
+    display: none;
+}
+
+.job-detail-modal-overlay.open {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.job-detail-modal-overlay .modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+}
+
+.job-detail-modal-overlay .modal-content {
+    position: relative;
+    background: rgba(15, 15, 25, 0.95);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 85vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    box-shadow:
+        0 0 60px rgba(191, 90, 242, 0.1),
+        0 0 100px rgba(0, 170, 255, 0.05);
+}
+
+.job-detail-modal-overlay .modal-form-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.job-detail-modal-overlay .modal-form-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    background: linear-gradient(135deg, var(--apex-secondary), var(--apex-primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.job-detail-modal-overlay .modal-form-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.job-detail-modal-overlay .form-group {
+    margin-bottom: 1rem;
+}
+
+.job-detail-modal-overlay .form-group label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.35rem;
+}
+
+.job-detail-modal-overlay .form-group input,
+.job-detail-modal-overlay .form-group select,
+.job-detail-modal-overlay .form-group textarea {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-family: inherit;
+    transition: var(--transition);
+}
+
+.job-detail-modal-overlay .form-group input:focus,
+.job-detail-modal-overlay .form-group select:focus,
+.job-detail-modal-overlay .form-group textarea:focus {
+    outline: none;
+    border-color: var(--apex-primary);
+}
+
+.job-detail-modal-overlay .form-group input.currency-input {
+    text-align: right;
+}
+
+.job-detail-modal-overlay .modal-form-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 15. Status Dropdown */
+.status-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 0.5rem;
+    background: rgba(15, 15, 25, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    min-width: 160px;
+    overflow: hidden;
+    backdrop-filter: blur(16px);
+}
+
+.status-dropdown button {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    text-align: left;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.status-dropdown button:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* 16. Responsive Breakpoints */
+@media (max-width: 1024px) {
+    .job-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .job-detail-info-row {
+        grid-template-columns: 1fr;
+    }
+
+    .job-detail-sidebar {
+        order: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    #apex-job-detail {
+        padding: 1rem;
+    }
+
+    .job-detail-info-row {
+        grid-template-columns: 1fr;
+    }
+
+    .dates-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .contacts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .job-detail-header-inner {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .job-detail-header-right {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 640px) {
+    .dates-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .accounting-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .accounting-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =====================================================
+   JDT-* CLASSES (jobDetailTabs.js)
+   ===================================================== */
+
+/* Dates Tab */
+.jdt-dates-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .jdt-dates-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+    .jdt-dates-grid { grid-template-columns: 1fr; }
+}
+
+.jdt-date-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.jdt-date-highlight {
+    border: 1px solid rgba(0, 245, 212, 0.2);
+    background: rgba(0, 245, 212, 0.04);
+    border-radius: 8px;
+    padding: 0.5rem;
+}
+
+.jdt-date-display {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    padding: 0.35rem 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.jdt-date-display:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.jdt-date-input {
+    padding: 0.35rem 0.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-family: inherit;
+}
+
+.jdt-date-input:focus {
+    outline: none;
+    border-color: var(--apex-primary);
+}
+
+/* Documents Tab */
+.jdt-file-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    font-size: 0.85rem;
+}
+
+.jdt-file-row:last-child {
+    border-bottom: none;
+}
+
+.jdt-file-icon {
+    font-size: 1.1rem;
+}
+
+.jdt-icon-image { color: var(--apex-info); }
+.jdt-icon-pdf { color: #ff4444; }
+.jdt-icon-excel { color: var(--apex-success); }
+
+.jdt-file-name {
+    flex: 1;
+    color: var(--text-primary);
+}
+
+.jdt-file-size {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.jdt-file-date {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.jdt-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.4rem 0.75rem;
+    margin-top: 0.75rem;
+    border-radius: 6px;
+    border: 1px dashed var(--glass-border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.jdt-upload-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    border-color: var(--apex-primary);
+}
+
+/* Tasks Tab */
+.jdt-task-check {
+    accent-color: var(--apex-primary);
+}
+
+.jdt-task-completed-date {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-left: auto;
+}
+
+/* Notes Tab */
+.jdt-note-form-toggle {
+    margin-bottom: 0.75rem;
+}
+
+.jdt-add-note-btn,
+.jdt-submit-btn {
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid var(--glass-border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.jdt-add-note-btn:hover,
+.jdt-submit-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    border-color: var(--apex-primary);
+}
+
+.jdt-submit-btn {
+    background: rgba(0, 245, 212, 0.15);
+    color: var(--apex-primary);
+    border-color: rgba(0, 245, 212, 0.3);
+    margin-top: 0.5rem;
+}
+
+.jdt-note-form {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.jdt-input,
+.jdt-select,
+.jdt-textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-family: inherit;
+}
+
+.jdt-input:focus,
+.jdt-select:focus,
+.jdt-textarea:focus {
+    outline: none;
+    border-color: var(--apex-primary);
+}
+
+.jdt-textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.jdt-notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.jdt-note-item {
+    padding: 0.75rem 1rem;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 0 8px 8px 0;
+}
+
+.jdt-note-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.jdt-note-date {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.jdt-note-author {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.jdt-note-type-badge {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.jdt-note-delete {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0 0.25rem;
+    transition: var(--transition);
+}
+
+.jdt-note-delete:hover {
+    color: #ff4444;
+}
+
+.jdt-note-subject {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.jdt-note-content {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* Expenses Tab */
+.jdt-expenses-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.jdt-expense-total {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.jdt-expense-amount {
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.jdt-expense-breakdown {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.jdt-collapsible-section {
+    margin-bottom: 0.5rem;
+}
+
+.jdt-collapsible-section.collapsed .jdt-section-body {
+    display: none;
+}
+
+.jdt-collapsible-section.collapsed .jdt-section-arrow {
+    transform: rotate(-90deg);
+}
+
+.jdt-section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.jdt-section-header:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.jdt-section-arrow {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    transition: transform 0.2s ease;
+}
+
+.jdt-section-meta {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.jdt-section-body {
+    padding: 0.25rem 0.75rem;
+}
+
+.jdt-expense-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.jdt-expense-row:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.jdt-expense-row:last-child {
+    border-bottom: none;
+}
+
+.jdt-expense-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.jdt-expense-desc {
+    flex: 1;
+    color: var(--text-secondary);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.jdt-expense-paid {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: capitalize;
+}
+
+.jdt-expense-date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.jdt-category-badge {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    background: rgba(128, 128, 128, 0.2);
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.jdt-reimburse-flag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255, 107, 53, 0.2);
+    color: var(--apex-primary);
+    font-size: 0.6rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.jdt-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.4rem 0.75rem;
+    margin-top: 0.5rem;
+    border-radius: 6px;
+    border: 1px dashed var(--glass-border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.jdt-add-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    border-color: var(--apex-primary);
+}
+
+/* =====================================================
+   JDM-* CLASSES (jobDetailModals.js)
+   ===================================================== */
+
+.jdm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1200;
+    align-items: center;
+    justify-content: center;
+}
+
+.jdm-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+}
+
+.jdm-card {
+    position: relative;
+    background: rgba(15, 15, 25, 0.95);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 720px;
+    max-height: 85vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    box-shadow:
+        0 0 60px rgba(191, 90, 242, 0.1),
+        0 0 100px rgba(0, 170, 255, 0.05);
+}
+
+.jdm-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.jdm-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    background: linear-gradient(135deg, var(--apex-secondary), var(--apex-primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.jdm-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: var(--transition);
+}
+
+.jdm-close:hover {
+    color: var(--text-primary);
+}
+
+.jdm-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.jdm-input,
+.jdm-select,
+.jdm-textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.jdm-input:focus,
+.jdm-select:focus,
+.jdm-textarea:focus {
+    outline: none;
+    border-color: var(--apex-primary);
+}
+
+.jdm-textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.jdm-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 1rem 0 0 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 1rem;
+}
+
+.jdm-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.jdm-btn-cancel {
+    background: transparent;
+    color: var(--text-muted);
+}
+
+.jdm-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.jdm-btn-action {
+    background: rgba(0, 245, 212, 0.15);
+    color: var(--apex-primary);
+    border-color: rgba(0, 245, 212, 0.3);
+}
+
+.jdm-btn-action:hover {
+    background: rgba(0, 245, 212, 0.25);
+}
+
+.jdm-btn-danger {
+    background: rgba(255, 68, 68, 0.15);
+    color: #ff4444;
+    border-color: rgba(255, 68, 68, 0.3);
+    margin-right: auto;
+}
+
+.jdm-btn-danger:hover {
+    background: rgba(255, 68, 68, 0.25);
+}
+
+.jdm-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.jdm-checkbox-label input[type="checkbox"] {
+    accent-color: var(--apex-primary);
+    width: auto;
+}
+
+/* Edit Job Modal - Section Layout */
+.jdm-edit-form {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+.jdm-section {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.jdm-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+.jdm-section-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--apex-primary);
+    margin: 0 0 0.75rem 0;
+}
+.jdm-field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem 0.75rem;
+}
+.jdm-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.jdm-field label {
+    font-size: 0.75rem;
+    color: var(--text-muted, #999);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.jdm-field-full {
+    grid-column: 1 / -1;
+}
+.jdm-field-half {
+    grid-column: auto;
+}
+.jdm-field-divider {
+    grid-column: 1 / -1;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted, #888);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 0.6rem;
+    margin-top: 0.25rem;
+}
+
+/* Estimate Modal Helper Text */
+.jdm-est-helper {
+    font-size: 11px;
+    margin-top: 4px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* =====================================================
+   ACCOUNTING PHASE TABS & ESTIMATES BREAKDOWN
+   ===================================================== */
+
+/* Accounting Phase Tabs (small pills below "Accounting" h3) */
+.acct-phase-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.acct-phase-tab {
+    padding: 4px 10px;
+    font-size: 11px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.acct-phase-tab:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.acct-phase-tab.active {
+    border-color: #00aaff;
+    box-shadow: 0 0 8px rgba(0, 170, 255, 0.3);
+    color: #fff;
+}
+
+/* Estimates Breakdown (collapsible section) */
+.estimates-breakdown {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 12px;
+    padding-top: 12px;
+}
+
+.estimates-breakdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 6px 0;
+    user-select: none;
+}
+
+.estimates-breakdown-header h4 {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.estimates-breakdown-header .breakdown-total {
+    font-size: 13px;
+    color: #05ffa1;
+}
+
+.estimates-breakdown-header .collapse-icon {
+    transition: transform 0.2s;
+    width: 14px;
+    height: 14px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.estimates-breakdown.collapsed .breakdown-content {
+    display: none;
+}
+
+.estimates-breakdown.collapsed .collapse-icon {
+    transform: rotate(-90deg);
+}
+
+/* Estimate Type Tabs (ALL mode sub-tabs) */
+.estimates-type-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.est-tab {
+    padding: 4px 10px;
+    font-size: 11px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.est-tab:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.est-tab.active {
+    border-color: #00aaff;
+    box-shadow: 0 0 8px rgba(0, 170, 255, 0.3);
+    color: #fff;
+}
+
+/* Estimate Current / Summary */
+.estimate-current {
+    padding: 8px 0;
+}
+
+.estimate-current .current-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+.estimate-current .current-label {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.estimate-current .current-value {
+    color: #fff;
+    font-weight: 500;
+}
+
+/* Reduction Display */
+.estimate-reduction {
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+.reduction-green {
+    color: #05ffa1;
+}
+
+.reduction-yellow {
+    color: #ffd700;
+}
+
+.reduction-orange {
+    color: #ff8c00;
+}
+
+.reduction-red {
+    color: #ff4444;
+}
+
+/* Estimate Type Section Header */
+.est-type-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 6px;
+}
+
+.est-type-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.est-type-total {
+    font-size: 12px;
+    font-weight: 600;
+    color: #05ffa1;
+}
+
+/* Estimate Summary Rows (current/original/reduction) */
+.est-summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    padding: 2px 0;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Estimate Version List */
+.est-version-list {
+    margin-top: 8px;
+}
+
+.est-version-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 11px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.est-version-row:last-child {
+    border-bottom: none;
+}
+
+.est-ver-num {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+    min-width: 32px;
+}
+
+.est-original-tag {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 400;
+}
+
+.est-ver-amount {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.est-ver-delta {
+    font-size: 10px;
+}
+
+.est-ver-delta.delta-neg {
+    color: #05ffa1;
+}
+
+.est-ver-delta.delta-pos {
+    color: #ff4444;
+}
+
+/* Estimate Status Badges */
+.est-status-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 500;
+    margin-left: auto;
+}
+
+.est-status-badge.est-draft {
+    background: rgba(102, 102, 102, 0.2);
+    color: #666;
+}
+
+.est-status-badge.est-submitted {
+    background: var(--apex-info-muted);
+    color: var(--apex-info);
+}
+
+.est-status-badge.est-approved {
+    background: var(--apex-success-muted);
+    color: var(--apex-success);
+}
+
+.est-status-badge.est-revision {
+    background: var(--apex-warning-muted);
+    color: var(--apex-warning);
+}
+
+.est-status-badge.est-denied {
+    background: var(--apex-danger-muted);
+    color: var(--apex-danger);
+}
+
+/* Reduction Preview (in modal) */
+.reduction-preview {
+    margin-top: 6px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.03);
+    font-size: 12px;
+}
+
+.original-amount-display {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 4px;
+}
+
+/* ========================================
+   Apex-Specific Button Overrides
+   Orange/Amber theme for Apex section buttons
+   ======================================== */
+
+/* Primary button in Apex context */
+.apex-content .btn-primary,
+#new-job-btn,
+[data-tab="apex"] .btn-primary {
+    background: var(--apex-gradient-primary) !important;
+    border: none !important;
+    color: var(--apex-text-primary) !important;
+    box-shadow: var(--apex-btn-glow) !important;
+    transition: var(--apex-transition) !important;
+}
+
+.apex-content .btn-primary:hover,
+#new-job-btn:hover,
+[data-tab="apex"] .btn-primary:hover {
+    box-shadow: var(--apex-btn-glow-hover) !important;
+    transform: translateY(-2px);
+}
+
+/* Secondary/outline button in Apex context */
+.apex-content .btn-secondary,
+.apex-job-modal .btn-secondary {
+    background: transparent;
+    color: var(--apex-primary);
+    border: 1px solid var(--apex-primary);
+}
+
+.apex-content .btn-secondary:hover,
+.apex-job-modal .btn-secondary:hover {
+    background: var(--apex-primary-muted);
+    border-color: var(--apex-primary-light);
+}
+
+/* Apex kanban card hover glow */
+.apex-job-card:hover {
+    border-color: var(--apex-border-hover);
+    box-shadow: var(--apex-shadow-md), var(--apex-glow-sm);
+}
+
+/* Apex column hover glow */
+.apex-column:hover {
+    border-color: var(--apex-border-hover);
+    box-shadow: var(--apex-glow-sm);
+}
+
+/* Focus states for inputs in Apex modals */
+.apex-job-modal input:focus,
+.apex-job-modal select:focus,
+.apex-job-modal textarea:focus,
+#new-job-modal input:focus,
+#new-job-modal select:focus,
+#new-job-modal textarea:focus {
+    border-color: var(--apex-primary) !important;
+    box-shadow: 0 0 0 3px var(--apex-primary-muted) !important;
+    outline: none;
+}
+
+/* Apex links */
+.apex-content a:hover,
+.job-detail-panel a:hover {
+    color: var(--apex-primary-light);
+}

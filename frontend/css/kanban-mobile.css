@@ -1,0 +1,327 @@
+/**
+ * Kanban Mobile Responsive Styles
+ * ================================
+ * Mobile-first approach for Kanban board navigation.
+ * 
+ * Breakpoints:
+ *   ≤640px  → Single column view with swipe navigation
+ *   641-1024px → 2-3 columns with snap scrolling
+ *   >1024px → Full 6-column grid (handled in style.css)
+ */
+
+/* ==========================================================================
+   Mobile Column Navigation UI
+   ========================================================================== */
+
+.kanban-mobile-nav {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(10, 10, 15, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--glass-border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.kanban-column-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.kanban-column-title {
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-primary);
+  min-width: 160px;
+}
+
+/* Navigation arrows */
+.kanban-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.kanban-nav-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--neon-purple);
+  border-color: var(--neon-purple);
+}
+
+.kanban-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.kanban-nav-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Dot indicators */
+.kanban-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.kanban-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.kanban-dot:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.kanban-dot.active {
+  background: var(--neon-purple);
+  box-shadow: 0 0 10px var(--neon-purple);
+}
+
+/* Column-specific dot colors when active */
+.kanban-dot.active[data-status="planned"] {
+  background: var(--neon-purple);
+  box-shadow: 0 0 10px var(--neon-purple);
+}
+
+.kanban-dot.active[data-status="ready"] {
+  background: var(--neon-blue);
+  box-shadow: 0 0 10px var(--neon-blue);
+}
+
+.kanban-dot.active[data-status="in_progress"] {
+  background: var(--neon-orange);
+  box-shadow: 0 0 10px var(--neon-orange);
+}
+
+.kanban-dot.active[data-status="blocked"] {
+  background: var(--neon-pink);
+  box-shadow: 0 0 10px var(--neon-pink);
+}
+
+.kanban-dot.active[data-status="review"] {
+  background: var(--neon-yellow);
+  box-shadow: 0 0 10px var(--neon-yellow);
+}
+
+.kanban-dot.active[data-status="done"] {
+  background: var(--neon-green);
+  box-shadow: 0 0 10px var(--neon-green);
+}
+
+
+/* ==========================================================================
+   Tablet View (641px - 1024px): Snap Scrolling
+   ========================================================================== */
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .kanban-mobile-nav {
+    display: none; /* Hide nav on tablet */
+  }
+
+  .view-container[data-view="kanban"] {
+    padding: 1rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+  }
+
+  .board {
+    display: flex;
+    gap: 1rem;
+    min-height: calc(100vh - 200px);
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .board .column {
+    flex: 0 0 45%; /* Show ~2 columns */
+    min-width: 280px;
+    max-width: 350px;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  /* Hint shadow for scroll indication */
+  .view-container[data-view="kanban"]::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 40px;
+    background: linear-gradient(to left, rgba(10, 10, 15, 0.9), transparent);
+    pointer-events: none;
+  }
+}
+
+
+/* ==========================================================================
+   Mobile View (≤640px): Single Column with Swipe
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  /* Show navigation UI */
+  .kanban-mobile-nav {
+    display: flex;
+  }
+
+  /* Hide scrollbar and set up swipe container */
+  .view-container[data-view="kanban"] {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .board {
+    display: flex;
+    transition: transform 0.3s ease-out;
+    will-change: transform;
+    min-height: calc(100vh - 280px);
+    touch-action: pan-y pinch-zoom; /* Allow vertical scroll, prevent horizontal browser nav */
+  }
+
+  /* Each column takes full width */
+  .board .column {
+    flex: 0 0 100%;
+    width: 100%;
+    min-width: 100%;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  /* Column header adjustments for mobile */
+  .board .column-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .board .column-header h2 {
+    font-size: 0.75rem;
+  }
+
+  /* Column tasks area */
+  .board .column-tasks {
+    padding: 0.75rem;
+    max-height: calc(100vh - 350px);
+    overflow-y: auto;
+  }
+
+  /* Task cards */
+  .board .task-card {
+    padding: 1rem;
+  }
+
+  /* Swipe visual feedback during drag */
+  .board.swiping {
+    transition: none;
+  }
+
+  /* Swipe hint animation on first load */
+  @keyframes swipeHint {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-20px); }
+    75% { transform: translateX(10px); }
+  }
+
+  .board.swipe-hint {
+    animation: swipeHint 1.5s ease-in-out 1;
+  }
+}
+
+
+/* ==========================================================================
+   Apex Jobs Board - Same Treatment
+   ========================================================================== */
+
+/* Navigation for Apex board (if using same pattern) */
+.apex-kanban-mobile-nav {
+  display: none;
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .apex-board {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 1rem;
+  }
+
+  .apex-board .apex-column {
+    flex: 0 0 45%;
+    min-width: 280px;
+    scroll-snap-align: start;
+  }
+}
+
+@media (max-width: 640px) {
+  .apex-kanban-mobile-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(10, 10, 15, 0.7);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .apex-view-container[data-view="kanban"] {
+    overflow: hidden;
+  }
+
+  .apex-board {
+    display: flex;
+    transition: transform 0.3s ease-out;
+    min-height: calc(100vh - 280px);
+  }
+
+  .apex-board .apex-column {
+    flex: 0 0 100%;
+    width: 100%;
+    min-width: 100%;
+  }
+}
+
+
+/* ==========================================================================
+   Touch Feedback States
+   ========================================================================== */
+
+/* Visual feedback when column is being dragged */
+.board.dragging-active {
+  cursor: grabbing;
+}
+
+.board.dragging-active .column {
+  pointer-events: none;
+}
+
+/* Prevent text selection during swipe */
+.board.swiping * {
+  user-select: none;
+  -webkit-user-select: none;
+}

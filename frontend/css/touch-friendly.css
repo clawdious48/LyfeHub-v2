@@ -1,0 +1,446 @@
+/**
+ * Touch-Friendly Controls
+ * Fixes hover-only controls for touch devices
+ * 
+ * Uses .touch-device class added by MobileUtils on touch-capable devices
+ */
+
+/* ==========================================================================
+   MINIMUM TOUCH TARGETS (44px)
+   ========================================================================== */
+
+.touch-device button,
+.touch-device [role="button"],
+.touch-device .btn,
+.touch-device .action-btn,
+.touch-device .tab,
+.touch-device .nav-item,
+.touch-device a[href] {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* Buttons with specific sizing constraints - add padding for touch */
+.touch-device .prop-menu-btn,
+.touch-device .row-delete-btn,
+.touch-device .add-column-btn,
+.touch-device .calendar-edit-btn {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ==========================================================================
+   TABLE HEADER CONTROLS - .prop-menu-btn
+   Was: opacity: 0; shows on .base-th:hover
+   ========================================================================== */
+
+.touch-device .prop-menu-btn {
+    opacity: 0.5;
+}
+
+.touch-device .prop-menu-btn:active,
+.touch-device .prop-menu-btn:focus {
+    opacity: 1;
+}
+
+/* ==========================================================================
+   ROW DELETE BUTTON - .row-delete-btn
+   Was: opacity: 0; shows on .base-row:hover
+   ========================================================================== */
+
+.touch-device .row-delete-btn {
+    opacity: 0.5;
+}
+
+.touch-device .row-delete-btn:active,
+.touch-device .row-delete-btn:focus {
+    opacity: 1;
+    color: var(--neon-pink);
+}
+
+/* ==========================================================================
+   COLUMN RESIZER - .prop-resizer
+   Was: transparent; shows purple on hover
+   Make more visible and easier to grab on touch
+   ========================================================================== */
+
+.touch-device .prop-resizer {
+    width: 12px;
+    right: -4px;
+    background: rgba(191, 90, 242, 0.3);
+}
+
+.touch-device .prop-resizer:active,
+.touch-device .prop-resizer.resizing {
+    background: var(--neon-purple);
+}
+
+/* ==========================================================================
+   CALENDAR CONTROLS
+   Various opacity: 0 patterns in calendar.css
+   ========================================================================== */
+
+/* Calendar edit buttons */
+.touch-device .calendar-edit-btn {
+    display: flex !important;
+    opacity: 0.5;
+}
+
+.touch-device .calendar-edit-btn:active,
+.touch-device .calendar-edit-btn:focus {
+    opacity: 1;
+}
+
+/* Calendar list items that use opacity for deselected state */
+.touch-device .calendar-list-item:not(.selected) {
+    opacity: 0.6;
+}
+
+.touch-device .calendar-list-item:not(.selected):active {
+    opacity: 0.9;
+}
+
+/* Calendar event drag handles / action buttons */
+.touch-device .calendar-event-actions,
+.touch-device .event-delete-btn,
+.touch-device .event-edit-btn {
+    opacity: 0.5;
+}
+
+.touch-device .calendar-event-actions:active,
+.touch-device .event-delete-btn:active,
+.touch-device .event-edit-btn:active,
+.touch-device .calendar-event-actions:focus,
+.touch-device .event-delete-btn:focus,
+.touch-device .event-edit-btn:focus {
+    opacity: 1;
+}
+
+/* ==========================================================================
+   TASK CARD ACTIONS
+   Any hidden action buttons on task cards
+   ========================================================================== */
+
+.touch-device .task-card .task-actions,
+.touch-device .task-card [class*="-actions"],
+.touch-device .task-card button[class*="delete"],
+.touch-device .task-card button[class*="edit"],
+.touch-device .task-card button[class*="menu"] {
+    opacity: 0.5;
+}
+
+.touch-device .task-card .task-actions:active,
+.touch-device .task-card [class*="-actions"]:active,
+.touch-device .task-card button[class*="delete"]:active,
+.touch-device .task-card button[class*="edit"]:active,
+.touch-device .task-card button[class*="menu"]:active {
+    opacity: 1;
+}
+
+/* ==========================================================================
+   PROJECT CARD ACTIONS
+   ========================================================================== */
+
+.touch-device .project-card .project-actions,
+.touch-device .project-card button[class*="menu"],
+.touch-device .project-card button[class*="delete"] {
+    opacity: 0.5;
+}
+
+.touch-device .project-card .project-actions:active,
+.touch-device .project-card button[class*="menu"]:active,
+.touch-device .project-card button[class*="delete"]:active {
+    opacity: 1;
+}
+
+/* ==========================================================================
+   GENERAL HIDDEN CONTROLS PATTERN
+   Catch-all for elements that hide via opacity and show on parent hover
+   ========================================================================== */
+
+.touch-device [class*="-actions"],
+.touch-device [class*="-menu-btn"],
+.touch-device [class*="-delete-btn"],
+.touch-device [class*="-edit-btn"] {
+    opacity: 0.5 !important;
+}
+
+.touch-device [class*="-actions"]:active,
+.touch-device [class*="-menu-btn"]:active,
+.touch-device [class*="-delete-btn"]:active,
+.touch-device [class*="-edit-btn"]:active,
+.touch-device [class*="-actions"]:focus,
+.touch-device [class*="-menu-btn"]:focus,
+.touch-device [class*="-delete-btn"]:focus,
+.touch-device [class*="-edit-btn"]:focus {
+    opacity: 1 !important;
+}
+
+/* ==========================================================================
+   DROPDOWN MENUS
+   Make sure dropdowns work on touch without hover
+   ========================================================================== */
+
+.touch-device .dropdown-toggle,
+.touch-device .my-lists-dropdown > button {
+    min-height: 44px;
+}
+
+/* ==========================================================================
+   FOCUS STATES
+   Improve focus visibility for accessibility
+   ========================================================================== */
+
+.touch-device button:focus-visible,
+.touch-device a:focus-visible,
+.touch-device [role="button"]:focus-visible {
+    outline: 2px solid var(--neon-purple);
+    outline-offset: 2px;
+}
+
+/* ==========================================================================
+   SCROLLABLE AREAS
+   Improve scroll behavior on touch
+   ========================================================================== */
+
+.touch-device .base-table-wrapper,
+.touch-device .tasks-cards,
+.touch-device .calendar-sidebar,
+.touch-device .modal-body {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* ==========================================================================
+   TAP HIGHLIGHT
+   Provide visual feedback on tap
+   ========================================================================== */
+
+.touch-device button,
+.touch-device a,
+.touch-device [role="button"] {
+    -webkit-tap-highlight-color: rgba(191, 90, 242, 0.2);
+}
+
+/* ==========================================================================
+   SWIPE-TO-REVEAL ACTIONS
+   Slide row content left to reveal action buttons
+   ========================================================================== */
+
+/* Container setup for swipeable rows */
+.touch-device .base-row:not(.add-row),
+.touch-device .base-list-row,
+.touch-device .task-item,
+.touch-device .task-card,
+.touch-device .people-list-row,
+.touch-device .person-card,
+.touch-device .project-card {
+    position: relative;
+    overflow: hidden;
+    will-change: transform;
+}
+
+/* During active swipe - show real-time movement */
+.touch-device .touch-swiping {
+    transform: translateX(var(--swipe-translate, 0));
+    transition: none !important;
+}
+
+/* When swiped open - animate to final position */
+.touch-device .touch-swiped {
+    transform: translateX(var(--swipe-offset, 0));
+    transition: transform 0.2s ease-out;
+}
+
+/* Action buttons container - positioned on right */
+.touch-swipe-actions {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: stretch;
+    transform: translateX(100%);
+    z-index: 10;
+}
+
+.touch-swiped .touch-swipe-actions,
+.touch-swiping .touch-swipe-actions {
+    transform: translateX(0);
+}
+
+/* Individual action buttons */
+.touch-swipe-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 70px;
+    padding: 0.5rem;
+    border: none;
+    cursor: pointer;
+    color: white;
+    font-size: 0.75rem;
+    gap: 4px;
+    transition: background-color 0.15s;
+}
+
+.touch-swipe-action-btn .touch-action-icon {
+    font-size: 1.25rem;
+}
+
+.touch-swipe-action-btn .touch-action-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Action button colors */
+.touch-swipe-action-btn.touch-action-edit {
+    background: var(--neon-purple, #a855f7);
+}
+
+.touch-swipe-action-btn.touch-action-edit:active {
+    background: #9333ea;
+}
+
+.touch-swipe-action-btn.touch-action-delete {
+    background: var(--neon-pink, #ec4899);
+}
+
+.touch-swipe-action-btn.touch-action-delete:active {
+    background: #db2777;
+}
+
+.touch-swipe-action-btn.touch-action-star {
+    background: var(--accent-yellow, #eab308);
+}
+
+.touch-swipe-action-btn.touch-action-star:active {
+    background: #ca8a04;
+}
+
+.touch-swipe-action-btn.touch-action-view {
+    background: var(--neon-blue, #00aaff);
+}
+
+.touch-swipe-action-btn.touch-action-view:active {
+    background: #0088cc;
+}
+
+/* ==========================================================================
+   LONG-PRESS CONTEXT MENU
+   Floating menu near touch point
+   ========================================================================== */
+
+.touch-context-menu {
+    position: fixed;
+    z-index: 10000;
+    min-width: 150px;
+    background: var(--bg-secondary, #1a1a2e);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 
+                0 0 0 1px rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.touch-context-menu.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.touch-context-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-primary, #fff);
+    font-size: 0.95rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.touch-context-item:not(:last-child) {
+    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
+}
+
+.touch-context-item:active {
+    background: var(--neon-purple-faded, rgba(168, 85, 247, 0.2));
+}
+
+.touch-context-icon {
+    font-size: 1.1rem;
+    width: 24px;
+    text-align: center;
+}
+
+.touch-context-label {
+    flex: 1;
+}
+
+/* Color variants for context menu items */
+.touch-context-item.touch-action-delete {
+    color: var(--neon-pink, #ec4899);
+}
+
+.touch-context-item.touch-action-star {
+    color: var(--accent-yellow, #eab308);
+}
+
+/* Highlight source row during context menu */
+.touch-context-active {
+    background: var(--neon-purple-faded, rgba(168, 85, 247, 0.15)) !important;
+}
+
+/* ==========================================================================
+   HIDE DEFAULT HOVER ACTIONS ON TOUCH (use swipe/long-press instead)
+   ========================================================================== */
+
+/* Hide row delete button - use swipe instead */
+.touch-device .base-row:not(.add-row) .row-delete-btn {
+    display: none;
+}
+
+/* Hide list row actions - use swipe instead */
+.touch-device .base-list-row .base-row-edit,
+.touch-device .base-list-row .base-row-delete {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Show hint that row is swipeable */
+.touch-device .base-row:not(.add-row)::after,
+.touch-device .task-item::after {
+    content: '';
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background: linear-gradient(
+        to left,
+        rgba(168, 85, 247, 0.3) 0%,
+        transparent 100%
+    );
+    border-radius: 2px;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Hide hint when swiped */
+.touch-device .touch-swiped::after,
+.touch-device .touch-swiping::after {
+    opacity: 0;
+}
