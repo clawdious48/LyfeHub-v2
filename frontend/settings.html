@@ -174,7 +174,8 @@
                 document.getElementById('display-email').textContent = result.user.email;
                 document.getElementById('display-name').textContent = result.user.name;
                 // Show employee section for management only
-                if (result.user.role === 'management') {
+                const roles = Array.isArray(result.user.role) ? result.user.role : [result.user.role];
+                if (roles.includes('management')) {
                     document.getElementById('employee-section').style.display = '';
                     loadEmployees();
                 }
