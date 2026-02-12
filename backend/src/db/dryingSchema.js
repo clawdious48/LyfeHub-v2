@@ -20,6 +20,7 @@ if (!dryingLogsTable) {
   db.exec(`CREATE UNIQUE INDEX idx_drying_logs_job_id ON drying_logs(job_id)`);
   console.log('Drying logs table created');
 }
+try { db.exec("ALTER TABLE drying_logs ADD COLUMN setup_complete INTEGER DEFAULT 0"); } catch(e) {}
 
 // ============================================
 // DRYING CHAMBERS TABLE (containment zones within a log)
