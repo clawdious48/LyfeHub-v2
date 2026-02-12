@@ -93,6 +93,25 @@ router.post('/log', (req, res) => {
   }
 });
 
+// PATCH /log - Update drying log properties (e.g. setup_complete)
+router.patch('/log', (req, res) => {
+    try {
+        const log = requireLog(req.params.id);
+        if (!log) return res.status(404).json({ error: 'No drying log for this job' });
+
+        if (req.body.setup_complete !== undefined) {
+            const value = req.body.setup_complete ? 1 : 0;
+            dryingLogs.updateSetupComplete(log.id, value);
+        }
+
+        const updated = dryingLogs.getLogByJobId(req.params.id);
+        res.json(updated);
+    } catch (err) {
+        console.error('Error updating drying log:', err);
+        res.status(500).json({ error: 'Failed to update drying log' });
+    }
+});
+
 // ============================================
 // CHAMBER ROUTES
 // ============================================
@@ -294,6 +313,20 @@ router.patch('/ref-points/:rpId', (req, res) => {
   } catch (err) {
     console.error('Error updating reference point:', err);
     res.status(500).json({ error: 'Failed to update reference point' });
+  }
+});
+
+// DELETE /ref-points/:rpId - Delete a reference point (only before any visits reference it)
+router.delete('/ref-points/:rpId', (req, res) => {
+  try {
+    const existing = dryingLogs.getRefPointById(req.params.rpId);
+    if (!existing) return res.status(404).json({ error: 'Reference point not found' });
+
+    dryingLogs.deleteRefPoint(req.params.rpId);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error deleting reference point:', err);
+    res.status(500).json({ error: 'Failed to delete reference point' });
   }
 });
 

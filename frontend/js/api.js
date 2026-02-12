@@ -729,6 +729,16 @@ const api = {
     },
 
     /**
+     * Drying: Update drying log properties (e.g. setup_complete)
+     */
+    async updateDryingLog(jobId, data) {
+        return this.request(`/apex-jobs/${jobId}/drying/log`, {
+            method: 'PATCH',
+            body: data,
+        });
+    },
+
+    /**
      * Drying: Get all chambers for a job's drying log
      */
     async getDryingChambers(jobId) {
@@ -826,6 +836,15 @@ const api = {
         return this.request(`/apex-jobs/${jobId}/drying/ref-points/${rpId}`, {
             method: 'PATCH',
             body: data,
+        });
+    },
+
+    /**
+     * Drying: Delete a reference point (during setup, before visits reference it)
+     */
+    async deleteDryingRefPoint(jobId, rpId) {
+        return this.request(`/apex-jobs/${jobId}/drying/ref-points/${rpId}`, {
+            method: 'DELETE',
         });
     },
 

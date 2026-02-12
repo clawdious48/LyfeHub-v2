@@ -73,6 +73,7 @@ const insertLog = db.prepare('INSERT INTO drying_logs (id, job_id, status, next_
 const updateLogStatus = db.prepare("UPDATE drying_logs SET status = ?, completed_at = ?, updated_at = datetime('now') WHERE id = ?");
 const getNextRefNumber = db.prepare('SELECT next_ref_number FROM drying_logs WHERE id = ?');
 const incrementRefNumber = db.prepare("UPDATE drying_logs SET next_ref_number = next_ref_number + 1, updated_at = datetime('now') WHERE id = ?");
+const updateSetupCompleteStmt = db.prepare("UPDATE drying_logs SET setup_complete = ?, updated_at = datetime('now') WHERE id = ?");
 
 // Chambers
 const getChambersByLogId = db.prepare('SELECT * FROM drying_chambers WHERE log_id = ? ORDER BY position');
@@ -137,8 +138,9 @@ const getRoomsByLogId = db.prepare(`
   ORDER BY c.position, r.position
 `);
 
-// Reference points - update
+// Reference points - update + delete
 const updateRefPointStmt = db.prepare('UPDATE drying_ref_points SET material_code = ?, label = ? WHERE id = ?');
+const deleteRefPointStmt = db.prepare('DELETE FROM drying_ref_points WHERE id = ?');
 
 // Visits - delete + auto-number helper
 const deleteVisitStmt = db.prepare('DELETE FROM drying_visits WHERE id = ?');
@@ -285,6 +287,7 @@ module.exports = {
   createDryingLogWithRooms,
   getLogByJobId: (jobId) => getLogByJobId.get(jobId),
   updateLogStatus: (logId, status, completedAt) => updateLogStatus.run(status, completedAt || null, logId),
+  updateSetupComplete: (logId, value) => updateSetupCompleteStmt.run(value, logId),
 
   // Chambers
   getChambersByLogId: (logId) => getChambersByLogId.all(logId),
@@ -367,11 +370,12 @@ module.exports = {
   deleteRoom: (id) => deleteRoomStmt.run(id),
   getRoomsByLogId: (logId) => getRoomsByLogId.all(logId),
 
-  // Reference point update
+  // Reference point update + delete
   updateRefPoint: (id, data) => {
     updateRefPointStmt.run(data.material_code, data.label, id);
     return getRefPointById.get(id);
   },
+  deleteRefPoint: (id) => deleteRefPointStmt.run(id),
 
   // Visit delete + auto-number creation
   deleteVisit: (id) => deleteVisitStmt.run(id),

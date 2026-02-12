@@ -491,18 +491,22 @@ const jobDetailTabs = {
     _dryingRefPoints: [],
     _dryingBaselines: [],
 
-    async _loadDryingState(jobId) {
-        if (apexJobs.activeTab !== 'drying') return;
+    async _loadDryingState(jobId, force = false) {
+        if (!force && apexJobs.activeTab !== 'drying') return;
         const container = document.getElementById('drying-tab-content');
         if (!container) return;
 
         try {
             const log = await api.getDryingLog(jobId);
-            if (apexJobs.activeTab !== 'drying') return;
-
             jobDetailTabs._dryingLog = log;
 
-            // Fetch all related data in parallel
+            // State 2: Log exists but setup not complete — show Start Job (resume)
+            if (!log.setup_complete) {
+                container.innerHTML = jobDetailTabs._renderStartJobButton(jobId);
+                return;
+            }
+
+            // State 3: Log exists and setup complete — show full view
             const [chambers, rooms, visits, refPoints, baselines] = await Promise.all([
                 api.getDryingChambers(jobId),
                 api.getDryingRooms(jobId),
@@ -510,8 +514,6 @@ const jobDetailTabs = {
                 api.getDryingRefPoints(jobId),
                 api.getDryingBaselines(jobId)
             ]);
-
-            if (apexJobs.activeTab !== 'drying') return;
 
             jobDetailTabs._dryingChambers = chambers;
             jobDetailTabs._dryingRooms = rooms;
@@ -521,9 +523,10 @@ const jobDetailTabs = {
 
             container.innerHTML = jobDetailTabs._renderDryingLogView(log, jobId, visits, refPoints, baselines, chambers);
         } catch (err) {
-            if (apexJobs.activeTab !== 'drying') return;
+            if (!force && apexJobs.activeTab !== 'drying') return;
             if (err.message && (err.message.includes('404') || err.message.includes('No drying log'))) {
-                container.innerHTML = jobDetailTabs._renderCreateDryingButton(jobId);
+                // State 1: No log — show Start Job
+                container.innerHTML = jobDetailTabs._renderStartJobButton(jobId);
             } else {
                 container.innerHTML = `<div class="apex-empty-state">Failed to load drying log. Please try again.</div>`;
                 console.error('Failed to load drying state:', err);
@@ -531,33 +534,33 @@ const jobDetailTabs = {
         }
     },
 
-    _renderCreateDryingButton(jobId) {
+    _renderStartJobButton(jobId) {
         return `
             <div class="apex-empty-state">
-                <p style="margin-bottom:12px;">No drying log exists for this job.</p>
-                <button class="dry-btn dry-btn-primary" id="create-drying-btn"
-                    onclick="jobDetailTabs._createDryingLog('${jobId}')">
-                    Create Drying Logs
+                <p style="margin-bottom:12px;">Set up drying logs for this job.</p>
+                <button class="dry-btn dry-btn-primary" id="start-drying-btn"
+                    onclick="jobDetailTabs._startDryingJob('${jobId}')">
+                    Start Job
                 </button>
             </div>
         `;
     },
 
-    async _createDryingLog(jobId) {
-        const btn = document.getElementById('create-drying-btn');
-        if (btn) { btn.disabled = true; btn.textContent = 'Creating...'; }
+    async _startDryingJob(jobId) {
+        const btn = document.getElementById('start-drying-btn');
+        if (btn) { btn.disabled = true; btn.textContent = 'Starting...'; }
 
         try {
             await api.createDryingLog(jobId);
-            jobDetailTabs._loadDryingState(jobId);
         } catch (err) {
-            if (err.message && (err.message.includes('409') || err.message.includes('already exists'))) {
-                jobDetailTabs._loadDryingState(jobId);
-            } else {
+            // 409 = log already exists, that's fine
+            if (!err.message || (!err.message.includes('409') && !err.message.includes('already exists'))) {
                 console.error('Failed to create drying log:', err);
-                if (btn) { btn.disabled = false; btn.textContent = 'Create Drying Logs'; }
+                if (btn) { btn.disabled = false; btn.textContent = 'Start Job'; }
+                return;
             }
         }
+        dryingSetup.open(jobId);
     },
 
     _renderDryingLogView(log, jobId, visits, refPoints, baselines, chambers) {
@@ -607,12 +610,12 @@ const jobDetailTabs = {
             </div>
 
             <div class="dry-action-bar">
-                <button class="dry-btn dry-btn-secondary dry-btn-sm" onclick="dryingSetup.open('${jobId}')">
-                    Setup Wizard
-                </button>
                 <button class="dry-btn dry-btn-primary dry-btn-sm" onclick="dryingVisit.open('${jobId}')">
                     + Add Visit
                 </button>
+                ${typeof userHasRole === 'function' && userHasRole('management', 'project_manager', 'office_coordinator') ? `<button class="dry-btn dry-btn-secondary dry-btn-sm" onclick="jobDetailTabs._editDryingSetup('${jobId}')">
+                    Edit Job
+                </button>` : ''}
                 <button class="dry-btn dry-btn-sm ${canComplete ? 'dry-btn-success' : ''}"
                     ${!canComplete ? 'disabled' : ''}
                     onclick="jobDetailTabs._completeDrying('${jobId}')"
@@ -623,7 +626,7 @@ const jobDetailTabs = {
 
             <div class="dry-visit-list">
                 <h4 class="apex-section-title" style="margin-bottom:8px;">Visit History</h4>
-                ${visits.length > 0 ? visitCards : '<div class="apex-empty-state">No visits yet. Run the Setup Wizard to create your first visit.</div>'}
+                ${visits.length > 0 ? visitCards : '<div class="apex-empty-state">No visits yet. Click "+ Add Visit" to record your first drying visit.</div>'}
             </div>
         `;
     },
@@ -642,6 +645,15 @@ const jobDetailTabs = {
             jobDetailTabs._loadDryingState(jobId);
         } catch (err) {
             console.error('Failed to complete drying:', err);
+        }
+    },
+
+    async _editDryingSetup(jobId) {
+        try {
+            await api.updateDryingLog(jobId, { setup_complete: 0 });
+            dryingSetup.open(jobId);
+        } catch (err) {
+            console.error('Failed to reopen setup:', err);
         }
     }
 };
