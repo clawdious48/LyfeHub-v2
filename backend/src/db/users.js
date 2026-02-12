@@ -123,6 +123,10 @@ function getSafeUser(user) {
   if (typeof safeUser.settings === 'string') {
     safeUser.settings = JSON.parse(safeUser.settings);
   }
+  if (typeof safeUser.role === 'string') {
+    try { safeUser.role = JSON.parse(safeUser.role); } catch { safeUser.role = [safeUser.role]; }
+  }
+  if (!Array.isArray(safeUser.role)) safeUser.role = ['field_tech'];
   return safeUser;
 }
 

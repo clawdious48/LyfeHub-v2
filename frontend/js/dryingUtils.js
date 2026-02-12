@@ -27,18 +27,35 @@ function meetsDryStandard(readingValue, baselineValue) {
 
 // ── Material Codes ──────────────────────────────────────────────────
 const MATERIAL_CODES = [
+  // Wall
   { code: 'D', label: 'Drywall', category: 'Wall' },
   { code: 'I', label: 'Insulation', category: 'Wall' },
   { code: 'PNL', label: 'Paneling', category: 'Wall' },
+  // Floor
   { code: 'C', label: 'Carpet', category: 'Floor' },
   { code: 'TL', label: 'Tile', category: 'Floor' },
   { code: 'SF', label: 'Subfloor', category: 'Floor' },
   { code: 'WF', label: 'Wood Floor', category: 'Floor' },
+  // Structure
   { code: 'FRM', label: 'Framing', category: 'Structure' },
   { code: 'CJST', label: 'Ceiling Joist', category: 'Structure' },
   { code: 'FJST', label: 'Floor Joist', category: 'Structure' },
+  // Sheeting
+  { code: 'OSB', label: 'OSB', category: 'Sheeting' },
+  { code: 'PB', label: 'Particle Board', category: 'Sheeting' },
+  { code: 'PBU', label: 'Particle Board Underlayment', category: 'Sheeting' },
+  { code: 'PLY', label: 'Plywood', category: 'Sheeting' },
+  // Trim & Millwork
+  { code: 'MDFB', label: 'MDF (Baseboard)', category: 'Trim & Millwork' },
+  { code: 'MDFC', label: 'MDF (Casing)', category: 'Trim & Millwork' },
+  { code: 'WDB', label: 'Wood (Baseboard)', category: 'Trim & Millwork' },
+  { code: 'WDC', label: 'Wood (Casing)', category: 'Trim & Millwork' },
+  { code: 'CAB', label: 'Cabinetry', category: 'Trim & Millwork' },
+  // Concrete
   { code: 'CW', label: 'Concrete Wall', category: 'Concrete' },
-  { code: 'TK', label: 'Tack Strip', category: 'Other' }
+  { code: 'CF', label: 'Concrete Floor', category: 'Concrete' },
+  // Other
+  { code: 'TK', label: 'Tack Strip', category: 'Other' },
 ];
 
 // ── Chamber Colors (neon palette) ───────────────────────────────────
@@ -53,14 +70,30 @@ const CHAMBER_COLORS = [
   { name: 'Blue', hex: '#4361ee' }
 ];
 
+// ── Surface Types (location of reference point) ────────────────────
+const SURFACE_TYPES = [
+  { key: 'wall', label: 'Wall' },
+  { key: 'ceiling', label: 'Ceiling' },
+  { key: 'floor', label: 'Floor' },
+  { key: 'cabinetry', label: 'Cabinetry' }
+];
+
+// Materials available per surface type
+const SURFACE_MATERIALS = {
+  wall: ['D', 'I', 'PNL', 'FRM', 'OSB', 'PB', 'PLY', 'CW', 'MDFB', 'MDFC', 'WDB', 'WDC'],
+  ceiling: ['D', 'I', 'CJST', 'FRM', 'OSB', 'PLY'],
+  floor: ['C', 'TL', 'SF', 'WF', 'CF', 'TK', 'FJST', 'OSB', 'PB', 'PBU', 'PLY'],
+  cabinetry: ['CAB', 'PNL', 'TK']
+};
+
 // ── Equipment Types ─────────────────────────────────────────────────
 const EQUIPMENT_TYPES = [
-  { type: 'air_mover', label: 'Air Movers', shortLabel: 'AM' },
-  { type: 'dehumidifier', label: 'Dehumidifiers', shortLabel: 'DH' },
-  { type: 'air_scrubber', label: 'Air Scrubbers', shortLabel: 'AS' },
-  { type: 'fan', label: 'NAFAN Fans', shortLabel: 'NAFAN' },
-  { type: 'heater', label: 'Heaters', shortLabel: 'HTR' },
-  { type: 'specialty', label: 'Specialty Equipment', shortLabel: 'SPEC' }
+  { type: 'dehumidifier', label: 'Dehumidifiers', shortLabel: 'DH', category: 'equipment' },
+  { type: 'air_mover', label: 'Air Movers', shortLabel: 'AM', category: 'equipment' },
+  { type: 'negative_air', label: 'Negative Air Machines', shortLabel: 'NAM', category: 'equipment' },
+  { type: 'injectidry', label: 'Injectidry System', shortLabel: 'INJ', category: 'specialty' },
+  { type: 'multi_port', label: 'Multi-port Attachments', shortLabel: 'MPA', category: 'specialty' },
+  { type: 'heated_air_mover', label: 'Heated Air Movers', shortLabel: 'HAM', category: 'specialty' },
 ];
 
 // ── Format GPP ──────────────────────────────────────────────────────
@@ -114,6 +147,40 @@ function buildMaterialSelect(selectedCode, name, id) {
   return html;
 }
 
+// ── Build Surface Type Select ──────────────────────────────────────
+function buildSurfaceSelect(selectedKey, id) {
+  let html = `<select class="dry-input" id="${escapeHtml(id)}">`;
+  html += `<option value="">Surface type...</option>`;
+  for (const st of SURFACE_TYPES) {
+    const sel = st.key === selectedKey ? ' selected' : '';
+    html += `<option value="${escapeHtml(st.key)}"${sel}>${escapeHtml(st.label)}</option>`;
+  }
+  html += `</select>`;
+  return html;
+}
+
+// ── Build Filtered Material Select (by surface type) ───────────────
+function buildFilteredMaterialSelect(surfaceKey, selectedCode, id) {
+  const codes = SURFACE_MATERIALS[surfaceKey] || [];
+  const disabled = !surfaceKey ? ' disabled' : '';
+  let html = `<select class="dry-input" name="material_code" id="${escapeHtml(id)}"${disabled}>`;
+  html += `<option value="">Select material...</option>`;
+  for (const code of codes) {
+    const m = MATERIAL_CODES.find(mc => mc.code === code);
+    if (!m) continue;
+    const sel = m.code === selectedCode ? ' selected' : '';
+    html += `<option value="${escapeHtml(m.code)}"${sel}>${escapeHtml(m.label)}</option>`;
+  }
+  html += `</select>`;
+  return html;
+}
+
+// ── Get surface key from label ─────────────────────────────────────
+function getSurfaceKeyFromLabel(label) {
+  const st = SURFACE_TYPES.find(s => s.label === label);
+  return st ? st.key : null;
+}
+
 // ── Build Color Picker ──────────────────────────────────────────────
 function buildColorPicker(selectedHex) {
   let html = '<div class="dry-color-picker">';
@@ -132,9 +199,14 @@ window.dryingUtils = {
   MATERIAL_CODES,
   CHAMBER_COLORS,
   EQUIPMENT_TYPES,
+  SURFACE_TYPES,
+  SURFACE_MATERIALS,
   formatGPP,
   formatDelta,
   buildMaterialSelect,
+  buildSurfaceSelect,
+  buildFilteredMaterialSelect,
+  getSurfaceKeyFromLabel,
   buildColorPicker,
   escapeHtml
 };

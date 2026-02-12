@@ -3,6 +3,11 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
 const COOKIE_NAME = 'kanban_session';
 
+function parseRoles(roleStr) {
+  if (!roleStr) return ['field_tech'];
+  try { const r = JSON.parse(roleStr); return Array.isArray(r) ? r : [r]; } catch { return [roleStr]; }
+}
+
 function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -18,7 +23,8 @@ function authMiddleware(req, res, next) {
       req.authMethod = 'api_key';
       req.apiKeyId = keyData.keyId;
       req.apiKeyName = keyData.keyName;
-      req.user = { id: keyData.userId, email: keyData.email, name: keyData.userName, role: userRow?.role || 'field_tech' };
+      const roles = parseRoles(userRow?.role);
+      req.user = { id: keyData.userId, email: keyData.email, name: keyData.userName, role: roles, roles };
       return next();
     }
     return res.status(401).json({ error: 'Invalid authorization token', code: 'INVALID_TOKEN' });
@@ -35,7 +41,8 @@ function authMiddleware(req, res, next) {
     const user = db.prepare('SELECT role, name FROM users WHERE id = ?').get(decoded.userId);
     req.authMethod = 'jwt';
     req.sessionId = decoded.sessionId;
-    req.user = { id: decoded.userId, email: decoded.email, role: user?.role || 'field_tech', name: user?.name || '' };
+    const roles = parseRoles(user?.role);
+    req.user = { id: decoded.userId, email: decoded.email, role: roles, roles, name: user?.name || '' };
     next();
   } catch (err) {
     if (err.name === 'TokenExpiredError') {

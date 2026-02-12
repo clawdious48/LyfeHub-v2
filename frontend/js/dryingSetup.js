@@ -13,46 +13,36 @@ const dryingSetup = {
         rooms: [],
         refPoints: [],
         baselines: [],
-        dehuCounts: {},   // chamberId -> count
-        equipment: {},    // roomId -> { AM: 0, NAFAN: 0, DEHU: 0, SPEC: 0 }
-        atmospheric: {},  // key -> { tempF, rhPercent }
-        moisture: {}      // refPointId -> readingValue
+        activeRoomId: null, // currently selected room tab in ref points step
+        previewRoomId: null  // currently selected room tab in preview step
     },
 
     _overlay: null,
 
     STEP_TITLES: [
-        'Rooms Review',
         'Create Chambers',
+        'Rooms Review',
         'Assign Rooms to Chambers',
-        'Dehumidifiers per Chamber',
         'Reference Points',
         'Baselines',
-        'Equipment per Room',
-        'Atmospheric Readings',
-        'Moisture Readings'
+        'Preview'
     ],
 
-    TOTAL_STEPS: 9,
+    TOTAL_STEPS: 6,
 
     // ── Public API ───────────────────────────────────────────────────
 
     async open(jobId) {
         this._state.jobId = jobId;
         this._state.currentStep = 0;
-        this._state.dehuCounts = {};
-        this._state.equipment = {};
-        this._state.atmospheric = {};
-        this._state.moisture = {};
 
         try {
             // Fetch existing data to detect partial setup
-            const [chambers, rooms, refPoints, baselines, visits] = await Promise.all([
+            const [chambers, rooms, refPoints, baselines] = await Promise.all([
                 api.getDryingChambers(jobId),
                 api.getDryingRooms(jobId),
                 api.getDryingRefPoints(jobId),
-                api.getDryingBaselines(jobId),
-                api.getDryingVisits(jobId)
+                api.getDryingBaselines(jobId)
             ]);
 
             this._state.chambers = chambers || [];
@@ -60,28 +50,25 @@ const dryingSetup = {
             this._state.refPoints = refPoints || [];
             this._state.baselines = baselines || [];
 
-            // Initialize dehu counts from existing chambers
+            // Auto-assign colors to chambers that don't have one
+            const usedColors = new Set(this._state.chambers.filter(c => c.color).map(c => c.color));
             for (const ch of this._state.chambers) {
-                if (!this._state.dehuCounts[ch.id]) {
-                    this._state.dehuCounts[ch.id] = 1;
+                if (!ch.color) {
+                    const available = dryingUtils.CHAMBER_COLORS.filter(c => !usedColors.has(c.hex));
+                    const pick = available.length > 0 ? available[Math.floor(Math.random() * available.length)] : dryingUtils.CHAMBER_COLORS[0];
+                    ch.color = pick.hex;
+                    usedColors.add(pick.hex);
+                    api.updateDryingChamber(jobId, ch.id, { color: pick.hex }).catch(() => {});
                 }
             }
 
-            // Initialize equipment from existing rooms
-            for (const rm of this._state.rooms) {
-                if (!this._state.equipment[rm.id]) {
-                    this._state.equipment[rm.id] = { AM: 0, NAFAN: 0, DEHU: 0, SPEC: 0 };
-                }
-            }
-
-            // If visits exist, setup is already complete — don't re-open wizard
-            if (visits && visits.length > 0) {
-                console.log('Setup already complete — visits exist');
-                return;
-            }
-
-            // Auto-advance to first incomplete step
-            this._state.currentStep = this._detectFirstIncompleteStep();
+            // Always start at step 0 — user should review rooms even if pre-populated.
+            // Only auto-advance if resuming a partially-completed wizard
+            // (i.e., user has already created ref points or extra chambers beyond Default).
+            const hasManualSetup = this._state.refPoints.length > 0 ||
+                this._state.chambers.length > 1 ||
+                this._state.baselines.length > 0;
+            this._state.currentStep = hasManualSetup ? this._detectFirstIncompleteStep() : 0;
 
         } catch (err) {
             console.error('Failed to load drying setup data:', err);
@@ -109,44 +96,100 @@ const dryingSetup = {
             <div class="dry-wizard-backdrop"></div>
             <div class="dry-wizard-card">
                 <div class="dry-wizard-header">
-                    <h3 class="dry-wizard-title"></h3>
+                    <div class="dry-wizard-nav"></div>
                     <div class="dry-step-indicator"></div>
-                    <button class="jdm-close" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:1.4rem;cursor:pointer;padding:0.25rem;">&times;</button>
                 </div>
                 <div class="dry-wizard-progress"><div class="dry-wizard-progress-fill"></div></div>
                 <div class="dry-wizard-body"></div>
-                <div class="dry-wizard-footer"></div>
             </div>
         `;
         document.body.appendChild(this._overlay);
 
         // Close on backdrop click
         this._overlay.querySelector('.dry-wizard-backdrop').addEventListener('click', () => this.close());
-        // Close button
-        this._overlay.querySelector('.jdm-close').addEventListener('click', () => this.close());
+
+        // Hover tooltip for step dots
+        const tooltip = document.createElement('div');
+        tooltip.className = 'dry-dot-tooltip';
+        this._overlay.querySelector('.dry-step-indicator').appendChild(tooltip);
+        this._dotTooltipEl = tooltip;
+        this._dotTooltipVisible = false;
+        this._dotShowTimer = null;
+        this._dotHideTimer = null;
+
+        const indicator = this._overlay.querySelector('.dry-step-indicator');
+        let currentDot = null;
+
+        indicator.addEventListener('mouseover', (e) => {
+            const dot = e.target.closest('.dry-step-dot');
+            if (!dot || dot === currentDot) return;
+            currentDot = dot;
+            clearTimeout(this._dotHideTimer);
+
+            const stepIdx = parseInt(dot.dataset.step);
+            const name = this.STEP_TITLES[stepIdx];
+            const containerRect = indicator.getBoundingClientRect();
+            const dotRect = dot.getBoundingClientRect();
+            const left = dotRect.left - containerRect.left + dotRect.width / 2;
+
+            if (this._dotTooltipVisible) {
+                tooltip.textContent = name;
+                tooltip.style.left = left + 'px';
+            } else {
+                clearTimeout(this._dotShowTimer);
+                this._dotShowTimer = setTimeout(() => {
+                    tooltip.textContent = name;
+                    tooltip.style.left = left + 'px';
+                    tooltip.classList.add('visible');
+                    this._dotTooltipVisible = true;
+                }, 100);
+            }
+        });
+
+        indicator.addEventListener('mouseout', (e) => {
+            const dot = e.target.closest('.dry-step-dot');
+            if (!dot) return;
+            const related = e.relatedTarget?.closest('.dry-step-dot');
+            if (related) return;
+            currentDot = null;
+            clearTimeout(this._dotShowTimer);
+            this._dotHideTimer = setTimeout(() => {
+                tooltip.classList.remove('visible');
+                this._dotTooltipVisible = false;
+            }, 60);
+        });
+
+        indicator.addEventListener('click', (e) => {
+            const dot = e.target.closest('.dry-step-dot');
+            if (!dot) return;
+            const stepIdx = parseInt(dot.dataset.step);
+            if (!isNaN(stepIdx)) this._goToStep(stepIdx);
+        });
     },
 
     // ── Rendering ────────────────────────────────────────────────────
 
     _render() {
         const step = this._state.currentStep;
-        const title = this._overlay.querySelector('.dry-wizard-title');
-        title.textContent = `Step ${step + 1}: ${this.STEP_TITLES[step]}`;
 
+        this._renderNavButtons();
         this._renderStepIndicator();
         this._renderProgressBar();
 
         const body = this._overlay.querySelector('.dry-wizard-body');
         const stepRenderers = [
-            '_renderStep0', '_renderStep1', '_renderStep2', '_renderStep3',
-            '_renderStep4', '_renderStep5', '_renderStep6', '_renderStep7',
-            '_renderStep8'
+            '_renderStep3', '_renderStep0', '_renderStep4',
+            '_renderStep1', '_renderStep2', '_renderStep5'
         ];
         body.innerHTML = this[stepRenderers[step]]();
-        this._renderNavButtons();
 
         // Attach step-specific event listeners after DOM is rendered
         this._attachStepListeners(step);
+
+        // Auto-populate default baselines when entering step 4
+        if (step === 4) {
+            this._ensureDefaultBaselines();
+        }
     },
 
     _renderStepIndicator() {
@@ -156,7 +199,7 @@ const dryingSetup = {
             let cls = 'dry-step-dot';
             if (i === this._state.currentStep) cls += ' active';
             else if (i < this._state.currentStep) cls += ' completed';
-            html += `<div class="${cls}"></div>`;
+            html += `<div class="${cls}" data-step="${i}"></div>`;
         }
         container.innerHTML = html;
     },
@@ -168,31 +211,50 @@ const dryingSetup = {
     },
 
     _renderNavButtons() {
-        const footer = this._overlay.querySelector('.dry-wizard-footer');
+        const nav = this._overlay.querySelector('.dry-wizard-nav');
         const step = this._state.currentStep;
+        const disabled = this._isNextDisabled(step) ? ' disabled' : '';
 
         let html = '';
         if (step > 0) {
-            html += `<button class="dry-btn dry-btn-secondary dry-wizard-back">Back</button>`;
+            html += `<button class="dry-btn dry-btn-secondary dry-btn-sm dry-wizard-back">Back</button>`;
         } else {
             html += `<div></div>`;
         }
 
+        html += `<h3 class="dry-wizard-title">Step ${step + 1}: ${this.STEP_TITLES[step]}</h3>`;
+
+        html += `<div style="display:flex;gap:0.5rem;align-items:center">`;
         if (step < this.TOTAL_STEPS - 1) {
-            html += `<button class="dry-btn dry-btn-primary dry-wizard-next">Next</button>`;
+            html += `<button class="dry-btn dry-btn-primary dry-btn-sm dry-wizard-next"${disabled}>Next</button>`;
         } else {
-            html += `<button class="dry-btn dry-btn-primary dry-wizard-save">Save &amp; Complete Setup</button>`;
+            html += `<button class="dry-btn dry-btn-secondary dry-btn-sm dry-wizard-edit">Edit</button>`;
+            html += `<button class="dry-btn dry-btn-confirm dry-btn-sm dry-wizard-confirm">Confirm Setup</button>`;
         }
+        html += `<button class="dry-wizard-close" title="Close">&times;</button>`;
+        html += `</div>`;
 
-        footer.innerHTML = html;
+        nav.innerHTML = html;
 
-        const backBtn = footer.querySelector('.dry-wizard-back');
-        const nextBtn = footer.querySelector('.dry-wizard-next');
-        const saveBtn = footer.querySelector('.dry-wizard-save');
+        const backBtn = nav.querySelector('.dry-wizard-back');
+        const nextBtn = nav.querySelector('.dry-wizard-next');
+        const editBtn = nav.querySelector('.dry-wizard-edit');
+        const confirmBtn = nav.querySelector('.dry-wizard-confirm');
+        const closeBtn = nav.querySelector('.dry-wizard-close');
 
         if (backBtn) backBtn.addEventListener('click', () => this._prevStep());
         if (nextBtn) nextBtn.addEventListener('click', () => this._nextStep());
-        if (saveBtn) saveBtn.addEventListener('click', () => this._saveAndComplete());
+        if (editBtn) editBtn.addEventListener('click', () => this._goToStep(0));
+        if (confirmBtn) confirmBtn.addEventListener('click', () => this._confirmSetup());
+        if (closeBtn) closeBtn.addEventListener('click', () => this.close());
+    },
+
+    _isNextDisabled(step) {
+        if (step === 3) {
+            const { rooms, refPoints } = this._state;
+            return rooms.some(r => !refPoints.some(rp => rp.room_id === r.id));
+        }
+        return false;
     },
 
     // ── Navigation ───────────────────────────────────────────────────
@@ -225,54 +287,21 @@ const dryingSetup = {
 
     _detectFirstIncompleteStep() {
         const { chambers, rooms, refPoints, baselines } = this._state;
-        // Step 0: rooms — always let user review
-        if (!rooms.length) return 0;
-        // Step 1: chambers
-        if (!chambers.length) return 1;
-        // Step 2: assign rooms — check if any room lacks a chamber
+        if (!chambers.length || chambers.length <= 1) return 0;
+        if (!rooms.length) return 1;
         const hasUnassigned = rooms.some(r => !r.chamber_id);
         if (hasUnassigned) return 2;
-        // Step 3: dehu counts (local state, always incomplete on fresh open)
-        // Step 4: ref points
-        if (!refPoints.length) return 4;
-        // Step 5: baselines
+        if (!refPoints.length) return 3;
         const usedCodes = [...new Set(refPoints.map(rp => rp.material_code))];
         const baselineCodes = new Set(baselines.map(b => b.material_code));
-        const missingBaselines = usedCodes.some(c => !baselineCodes.has(c));
-        if (missingBaselines) return 5;
-        // Steps 6-8 are always local-state; start at step 6 if everything else is done
-        return 6;
+        if (usedCodes.some(c => !baselineCodes.has(c))) return 4;
+        return 5;
     },
 
     // ── Collect current step state from inputs ───────────────────────
 
     _collectCurrentStepState() {
-        const step = this._state.currentStep;
-        const body = this._overlay.querySelector('.dry-wizard-body');
-
-        if (step === 3) {
-            // Dehu counts
-            const inputs = body.querySelectorAll('[data-dehu-chamber]');
-            inputs.forEach(inp => {
-                const chamberId = inp.dataset.dehuChamber;
-                this._state.dehuCounts[chamberId] = parseInt(inp.value, 10) || 1;
-            });
-        } else if (step === 6) {
-            // Equipment
-            const inputs = body.querySelectorAll('[data-equip-room]');
-            inputs.forEach(inp => {
-                const roomId = inp.dataset.equipRoom;
-                const type = inp.dataset.equipType;
-                if (!this._state.equipment[roomId]) {
-                    this._state.equipment[roomId] = { AM: 0, NAFAN: 0, DEHU: 0, SPEC: 0 };
-                }
-                this._state.equipment[roomId][type] = parseInt(inp.value, 10) || 0;
-            });
-        } else if (step === 7) {
-            this._collectAtmosphericFromInputs();
-        } else if (step === 8) {
-            this._collectMoistureFromInputs();
-        }
+        // No equipment/atmospheric/moisture to collect during setup anymore
     },
 
     // ── Step Renderers ───────────────────────────────────────────────
@@ -288,7 +317,7 @@ const dryingSetup = {
         for (const room of rooms) {
             html += `
                 <div class="dry-room-item" data-room-id="${esc(room.id)}">
-                    <input type="text" class="dry-input dry-room-name" value="${esc(room.name)}"
+                    <input type="text" class="dry-input dry-room-name" value="${esc(room.name)}" placeholder="New Room"
                            data-room-id="${esc(room.id)}" style="flex:1" />
                     <button class="dry-btn dry-btn-sm dry-btn-secondary dry-room-rename"
                             data-room-id="${esc(room.id)}" title="Save name">Rename</button>
@@ -301,8 +330,116 @@ const dryingSetup = {
         return html;
     },
 
-    // Step 1: Create Chambers
+    // Step 1: Reference Points per Room (tabbed, two-step: surface → material)
     _renderStep1() {
+        const { rooms, refPoints, chambers } = this._state;
+        const esc = dryingUtils.escapeHtml;
+
+        // Default to first room if no active room selected
+        if (!this._state.activeRoomId || !rooms.find(r => r.id === this._state.activeRoomId)) {
+            this._state.activeRoomId = rooms.length ? rooms[0].id : null;
+        }
+        const activeId = this._state.activeRoomId;
+
+        let html = `<p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0 0 0.75rem">
+            Add moisture reference points for each room. Pick a surface type, then a material.
+        </p>`;
+
+        // Room tabs (sorted by chamber)
+        const sortedRooms = [...rooms].sort((a, b) => {
+            const ai = chambers.findIndex(c => c.id === a.chamber_id);
+            const bi = chambers.findIndex(c => c.id === b.chamber_id);
+            return ai - bi;
+        });
+        html += `<div class="dry-room-tabs">`;
+        for (const room of sortedRooms) {
+            const isActive = room.id === activeId;
+            const chamber = chambers.find(c => c.id === room.chamber_id);
+            const borderColor = chamber && chamber.color ? chamber.color : 'var(--apex-primary)';
+            const rpCount = refPoints.filter(rp => rp.room_id === room.id).length;
+            html += `<button class="dry-room-tab${isActive ? ' active' : ''}" data-room-tab="${esc(room.id)}"
+                style="border-color:${borderColor}">
+                ${esc(room.name)}${rpCount ? ` <span style="opacity:0.5;font-size:0.75rem">(${rpCount})</span>` : ''}
+            </button>`;
+        }
+        html += `</div>`;
+
+        // Active room content
+        if (activeId) {
+            const roomRPs = refPoints.filter(rp => rp.room_id === activeId);
+
+            html += `<div class="dry-room-content active" style="padding:0.75rem 0">`;
+            if (roomRPs.length) {
+                // Group ref points by surface type (stored in label)
+                const bySurface = {};
+                for (const rp of roomRPs) {
+                    const surface = rp.label || 'Other';
+                    if (!bySurface[surface]) bySurface[surface] = [];
+                    bySurface[surface].push(rp);
+                }
+                html += `<div class="dry-room-list" style="margin-bottom:0.75rem">`;
+                for (const [surface, items] of Object.entries(bySurface)) {
+                    html += `<div class="dry-rp-category-label">${esc(surface)}</div>`;
+                    for (const rp of items) {
+                        const mat = dryingUtils.MATERIAL_CODES.find(m => m.code === rp.material_code) || { label: rp.material_code };
+                        html += `<div class="dry-room-item dry-rp-item" data-rp-id="${esc(rp.id)}">
+                            <span class="dry-rp-number">#${rp.ref_number}</span>
+                            <span class="dry-rp-material" data-rp-id="${esc(rp.id)}" data-current-code="${esc(rp.material_code)}" data-surface="${esc(rp.label || '')}" title="Click to change material">${esc(mat.label)}</span>
+                            <button class="dry-rp-delete" data-rp-delete="${esc(rp.id)}" title="Delete">&times;</button>
+                        </div>`;
+                    }
+                }
+                html += `</div>`;
+            }
+            // Inline surface type → material chips (multi-select)
+            html += `<div class="dry-rp-selectors">`;
+            html += `<div class="dry-surface-chips">`;
+            for (const st of dryingUtils.SURFACE_TYPES) {
+                html += `<button class="dry-chip dry-chip-surface" data-surface="${esc(st.key)}">${esc(st.label)}</button>`;
+            }
+            html += `</div>`;
+            html += `<div class="dry-material-chips"></div>`;
+            html += `<button class="dry-btn dry-btn-primary dry-btn-sm dry-add-selected" style="display:none;align-self:flex-start;margin-top:0.25rem" disabled>Add</button>`;
+            html += `</div>`;
+            html += `</div>`;
+        }
+
+        return html;
+    },
+
+    // Step 2: Baselines
+    _renderStep2() {
+        const { refPoints, baselines } = this._state;
+        const esc = dryingUtils.escapeHtml;
+        // Find unique material codes used
+        const usedCodes = [...new Set(refPoints.map(rp => rp.material_code))];
+        const baselineMap = {};
+        for (const b of baselines) baselineMap[b.material_code] = b.baseline_value;
+
+        let html = `<p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0 0 1rem">
+            Set baseline (unaffected) moisture values for each material type in use.
+        </p>`;
+
+        if (!usedCodes.length) {
+            html += `<p style="color:rgba(255,255,255,0.4);font-size:0.85rem;">No reference points added yet. Go back to the Reference Points step to add some.</p>`;
+            return html;
+        }
+
+        for (const code of usedCodes) {
+            const mat = dryingUtils.MATERIAL_CODES.find(m => m.code === code) || { label: code };
+            const val = baselineMap[code] !== undefined ? baselineMap[code] : '';
+            html += `
+                <div class="dry-equipment-row">
+                    <span class="dry-equipment-label">${esc(mat.label)} (${esc(code)})</span>
+                    <input type="number" class="dry-equipment-input" step="0.1" min="0" max="100" value="${val}"
+                           data-baseline-code="${esc(code)}" placeholder="e.g. 12" />
+                </div>`;
+        }
+        return html;
+    },
+
+    // Step 3: Create Chambers
+    _renderStep3() {
         const { chambers } = this._state;
         const esc = dryingUtils.escapeHtml;
         let html = `<p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0 0 1rem">
@@ -326,17 +463,39 @@ const dryingSetup = {
         return html;
     },
 
-    // Step 2: Assign Rooms to Chambers
-    _renderStep2() {
+    // Step 4: Assign Rooms to Chambers
+    _renderStep4() {
         const { rooms, chambers } = this._state;
         const esc = dryingUtils.escapeHtml;
+
+        const sorted = [...rooms].sort((a, b) => {
+            const ai = chambers.findIndex(c => c.id === a.chamber_id);
+            const bi = chambers.findIndex(c => c.id === b.chamber_id);
+            return ai - bi;
+        });
+
         let html = `<p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0 0 1rem">
             Assign each room to a chamber. Use the dropdown to select which chamber a room belongs to.
         </p>`;
         html += `<div class="dry-room-list">`;
-        for (const room of rooms) {
+
+        let lastChamberId = null;
+        for (const room of sorted) {
+            const chamber = chambers.find(c => c.id === room.chamber_id);
+            const borderColor = chamber && chamber.color ? chamber.color : 'var(--apex-primary)';
+
+            if (room.chamber_id !== lastChamberId) {
+                if (chamber) {
+                    html += `<div class="dry-chamber-divider">
+                        <span class="dry-chamber-dot" style="background:${borderColor}"></span>
+                        <span style="color:${borderColor}">${esc(chamber.name)}</span>
+                    </div>`;
+                }
+                lastChamberId = room.chamber_id;
+            }
+
             html += `
-                <div class="dry-room-item">
+                <div class="dry-room-item" data-room-id="${esc(room.id)}" style="border-color:${borderColor}">
                     <span class="dry-room-name">${esc(room.name)}</span>
                     <select class="dry-input dry-room-chamber-select" data-room-id="${esc(room.id)}" style="width:180px">`;
             for (const ch of chambers) {
@@ -349,239 +508,114 @@ const dryingSetup = {
         return html;
     },
 
-    // Step 3: Dehumidifiers per Chamber
-    _renderStep3() {
-        const { chambers, dehuCounts } = this._state;
-        const esc = dryingUtils.escapeHtml;
-        let html = `<p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0 0 1rem">
-            How many dehumidifiers are in each chamber? This determines atmospheric reading rows.
-        </p>`;
-        for (const ch of chambers) {
-            const count = dehuCounts[ch.id] || 1;
-            const colorDot = ch.color ? `<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${ch.color};margin-right:0.4rem;vertical-align:middle;"></span>` : '';
-            html += `
-                <div class="dry-equipment-row">
-                    <span class="dry-equipment-label">${colorDot}${esc(ch.name)}</span>
-                    <input type="number" class="dry-equipment-input" min="1" max="20" value="${count}"
-                           data-dehu-chamber="${esc(ch.id)}" />
-                </div>`;
-        }
-        return html;
-    },
-
-    // Step 4: Reference Points per Room
-    _renderStep4() {
-        const { rooms, refPoints } = this._state;
-        const esc = dryingUtils.escapeHtml;
-        let html = `<p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0 0 1rem">
-            Add moisture reference points for each room. Select the material type for each point.
-        </p>`;
-        for (const room of rooms) {
-            const roomRPs = refPoints.filter(rp => rp.room_id === room.id);
-            html += `<div class="dry-chamber-card" data-room-id="${esc(room.id)}">
-                <div class="dry-chamber-header"><span>${esc(room.name)}</span></div>`;
-            if (roomRPs.length) {
-                html += `<div class="dry-room-list" style="margin-bottom:0.5rem">`;
-                for (const rp of roomRPs) {
-                    const materialLabel = (dryingUtils.MATERIAL_CODES.find(m => m.code === rp.material_code) || {}).label || rp.material_code;
-                    html += `<div class="dry-room-item">
-                        <span style="color:var(--apex-primary);font-weight:600;min-width:30px">#${rp.ref_number}</span>
-                        <span style="flex:1">${esc(materialLabel)} (${esc(rp.material_code)})</span>
-                    </div>`;
-                }
-                html += `</div>`;
-            }
-            html += `<div style="display:flex;gap:0.5rem;align-items:center">
-                ${dryingUtils.buildMaterialSelect('', 'material_code', 'dry-mat-' + room.id)}
-                <button class="dry-btn dry-btn-sm dry-btn-primary dry-rp-add" data-room-id="${esc(room.id)}">+ Add</button>
-            </div></div>`;
-        }
-        return html;
-    },
-
-    // Step 5: Baselines
+    // Step 5: Preview — read-only mockup of the Add Visit layout
     _renderStep5() {
-        const { refPoints, baselines } = this._state;
-        const esc = dryingUtils.escapeHtml;
-        // Find unique material codes used
-        const usedCodes = [...new Set(refPoints.map(rp => rp.material_code))];
-        const baselineMap = {};
-        for (const b of baselines) baselineMap[b.material_code] = b.baseline_value;
-
-        let html = `<p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0 0 1rem">
-            Set baseline (unaffected) moisture values for each material type in use.
-        </p>`;
-
-        if (!usedCodes.length) {
-            html += `<p style="color:rgba(255,255,255,0.4);font-size:0.85rem;">No reference points added yet. Go back to Step 5 to add some.</p>`;
-            return html;
-        }
-
-        for (const code of usedCodes) {
-            const mat = dryingUtils.MATERIAL_CODES.find(m => m.code === code) || {};
-            const val = baselineMap[code] !== undefined ? baselineMap[code] : '';
-            html += `
-                <div class="dry-equipment-row">
-                    <span class="dry-equipment-label">${esc(mat.label || code)} (${esc(code)})</span>
-                    <input type="number" class="dry-equipment-input" step="0.1" min="0" max="100" value="${val}"
-                           data-baseline-code="${esc(code)}" placeholder="e.g. 12" />
-                    <button class="dry-btn dry-btn-sm dry-btn-primary dry-baseline-save"
-                            data-baseline-code="${esc(code)}">Save</button>
-                </div>`;
-        }
-        return html;
-    },
-
-    // Step 6: Equipment per Room
-    _renderStep6() {
-        const { rooms, equipment } = this._state;
-        const esc = dryingUtils.escapeHtml;
-        const types = [
-            { key: 'AM', label: 'Air Movers' },
-            { key: 'NAFAN', label: 'Neg Air / Fan' },
-            { key: 'DEHU', label: 'Dehumidifier' },
-            { key: 'SPEC', label: 'Specialty' }
-        ];
-
-        let html = `<p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0 0 1rem">
-            Enter equipment quantities placed in each room.
-        </p>`;
-
-        for (const room of rooms) {
-            const eq = equipment[room.id] || { AM: 0, NAFAN: 0, DEHU: 0, SPEC: 0 };
-            html += `<div class="dry-chamber-card">
-                <div class="dry-chamber-header"><span>${esc(room.name)}</span></div>`;
-            for (const t of types) {
-                html += `
-                    <div class="dry-equipment-row">
-                        <span class="dry-equipment-label">${t.label}</span>
-                        <input type="number" class="dry-equipment-input" min="0" max="99"
-                               value="${eq[t.key]}" data-equip-room="${esc(room.id)}" data-equip-type="${t.key}" />
-                    </div>`;
-            }
-            html += `</div>`;
-        }
-        return html;
-    },
-
-    // Step 7: First Atmospheric Readings
-    _renderStep7() {
-        const { chambers, dehuCounts, atmospheric } = this._state;
+        const { rooms, chambers, refPoints, baselines } = this._state;
         const esc = dryingUtils.escapeHtml;
 
-        const _val = (key, field) => {
-            const v = (atmospheric[key] || {})[field];
-            return v !== undefined && v !== null ? v : '';
-        };
-        const _gpp = (key) => {
-            const entry = atmospheric[key] || {};
-            const t = parseFloat(entry.tempF);
-            const r = parseFloat(entry.rhPercent);
-            if (!isNaN(t) && !isNaN(r)) return dryingUtils.formatGPP(dryingUtils.calculateGPP(t, r));
-            return '--';
-        };
+        let html = `<div class="dry-wizard-preview">`;
 
-        let html = `<p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0 0 1rem">
-            Record atmospheric conditions. GPP is auto-calculated.
-        </p>`;
-
-        // Job-level readings
-        html += `<div class="dry-atmo-section"><h4>Job-Level Readings</h4>`;
+        // ── Atmospheric Preview ──
+        html += `<div class="dry-atmo-section"><h4>Atmospheric Readings</h4>`;
         html += `<div class="dry-atmo-table">`;
-        // Unaffected
-        html += this._atmoRow('unaffected', 'Unaffected Area', _val, _gpp);
-        // Outside
-        html += this._atmoRow('outside', 'Outside', _val, _gpp);
+        html += `<div class="dry-atmo-row" style="background:rgba(255,255,255,0.04);">
+            <div class="dry-atmo-label" style="font-weight:600;color:rgba(255,255,255,0.5);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;">Location</div>
+            <div class="dry-atmo-cell" style="font-weight:600;color:rgba(255,255,255,0.5);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;text-align:center;">Temp / RH</div>
+            <div class="dry-atmo-cell" style="font-weight:600;color:rgba(255,255,255,0.5);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;text-align:center;">GPP</div>
+        </div>`;
+        html += this._previewAtmoRow('Unaffected Area');
+        html += this._previewAtmoRow('Outside');
+        for (const ch of chambers) {
+            const color = ch.color || 'var(--apex-primary)';
+            html += `<div class="dry-atmo-row" style="background:rgba(255,255,255,0.05);border-left:3px solid ${color};">
+                <div class="dry-atmo-label" style="grid-column:1/-1;font-weight:600;color:${color};font-size:0.8rem;">${esc(ch.name)}</div>
+            </div>`;
+            html += this._previewAtmoRow('Intake');
+            html += this._previewAtmoRow('Dehu Exhaust #1');
+        }
         html += `</div></div>`;
 
-        // Per-chamber readings
-        for (const ch of chambers) {
-            const count = dehuCounts[ch.id] || 1;
-            const colorDot = ch.color ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${ch.color};margin-right:0.3rem;vertical-align:middle;"></span>` : '';
-            html += `<div class="dry-atmo-section"><h4>${colorDot}${esc(ch.name)}</h4>`;
-            html += `<div class="dry-atmo-table">`;
-            // Intake
-            const intakeKey = `intake_${ch.id}`;
-            html += this._atmoRow(intakeKey, 'Intake', _val, _gpp);
-            // Dehu exhausts
-            for (let d = 1; d <= count; d++) {
-                const dehuKey = `dehu_${ch.id}_${d}`;
-                html += this._atmoRow(dehuKey, `Dehu Exhaust #${d}`, _val, _gpp);
-            }
-            html += `</div></div>`;
+        // ── Room Tabs (non-interactive) ──
+        const sortedRooms = [...rooms].sort((a, b) => {
+            const ai = chambers.findIndex(c => c.id === a.chamber_id);
+            const bi = chambers.findIndex(c => c.id === b.chamber_id);
+            return ai - bi;
+        });
+        if (!this._state.previewRoomId || !sortedRooms.find(r => r.id === this._state.previewRoomId)) {
+            this._state.previewRoomId = sortedRooms.length ? sortedRooms[0].id : null;
         }
+        const previewRoomId = this._state.previewRoomId;
+
+        html += `<div class="dry-room-tabs">`;
+        for (const room of sortedRooms) {
+            const isActive = room.id === previewRoomId;
+            const chamber = chambers.find(c => c.id === room.chamber_id);
+            const borderColor = chamber && chamber.color ? chamber.color : 'var(--apex-primary)';
+            html += `<button class="dry-room-tab${isActive ? ' active' : ''}" data-room-id="${esc(room.id)}" style="border-color:${borderColor}">${esc(room.name)}</button>`;
+        }
+        html += `</div>`;
+
+        // ── Moisture Table Preview for first room ──
+        if (previewRoomId) {
+            const roomRPs = refPoints.filter(rp => rp.room_id === previewRoomId);
+            const baselineMap = {};
+            for (const b of baselines) baselineMap[b.material_code] = b.baseline_value;
+
+            html += `<div class="dry-moisture-table">`;
+            html += `<div class="dry-moisture-header">
+                <div class="dry-moisture-cell">Ref #</div>
+                <div class="dry-moisture-cell">Material</div>
+                <div class="dry-moisture-cell">Baseline</div>
+                <div class="dry-moisture-cell">Today</div>
+                <div class="dry-moisture-cell">Progress</div>
+            </div>`;
+            for (const rp of roomRPs) {
+                const mat = dryingUtils.MATERIAL_CODES.find(m => m.code === rp.material_code) || { label: rp.material_code };
+                const bl = baselineMap[rp.material_code];
+                html += `<div class="dry-moisture-row">
+                    <div class="dry-moisture-cell">${esc(String(rp.ref_number))}</div>
+                    <div class="dry-moisture-cell">${esc(mat.label)}</div>
+                    <div class="dry-moisture-cell">${bl != null ? bl : '--'}</div>
+                    <div class="dry-moisture-cell" style="opacity:0.3">--</div>
+                    <div class="dry-moisture-cell" style="opacity:0.3">--</div>
+                </div>`;
+            }
+            html += `</div>`;
+
+            // ── Equipment Preview (2-column) ──
+            html += `<div class="dry-equipment-section">`;
+            const equipTypes = dryingUtils.EQUIPMENT_TYPES.filter(et => et.category === 'equipment');
+            const specTypes = dryingUtils.EQUIPMENT_TYPES.filter(et => et.category === 'specialty');
+            html += `<div class="dry-equipment-grid">`;
+            html += `<div class="dry-equipment-col"><h4>Equipment</h4>`;
+            for (const et of equipTypes) {
+                html += `<div class="dry-equipment-row">
+                    <div class="dry-equipment-label">${esc(et.label)}</div>
+                    <span style="font-size:0.85rem;color:rgba(255,255,255,0.3);">0</span>
+                </div>`;
+            }
+            html += `</div>`;
+            html += `<div class="dry-equipment-col"><h4>Specialty Equipment</h4>`;
+            for (const et of specTypes) {
+                html += `<div class="dry-equipment-row">
+                    <div class="dry-equipment-label">${esc(et.label)}</div>
+                    <span style="font-size:0.85rem;color:rgba(255,255,255,0.3);">0</span>
+                </div>`;
+            }
+            html += `</div></div></div>`;
+        }
+
+        html += `</div>`;
         return html;
     },
 
-    _atmoRow(key, label, valFn, gppFn) {
+    _previewAtmoRow(label) {
         const esc = dryingUtils.escapeHtml;
         return `<div class="dry-atmo-row">
             <div class="dry-atmo-label">${esc(label)}</div>
-            <div class="dry-atmo-cell">
-                <input type="number" step="0.1" class="dry-atmo-input" placeholder="Temp °F"
-                       data-atmo-key="${esc(key)}" data-atmo-field="tempF" value="${valFn(key, 'tempF')}" />
-            </div>
-            <div class="dry-atmo-cell">
-                <input type="number" step="0.1" class="dry-atmo-input" placeholder="RH %"
-                       data-atmo-key="${esc(key)}" data-atmo-field="rhPercent" value="${valFn(key, 'rhPercent')}" />
-            </div>
-            <div class="dry-gpp-value dry-gpp-auto" data-gpp-key="${esc(key)}">${gppFn(key)}</div>
+            <div class="dry-atmo-cell"><span style="opacity:0.3">--</span></div>
+            <div class="dry-atmo-cell"><span style="opacity:0.3">--</span></div>
         </div>`;
-    },
-
-    // Step 8: First Moisture Readings
-    _renderStep8() {
-        const { rooms, refPoints, baselines, moisture } = this._state;
-        const esc = dryingUtils.escapeHtml;
-        const baselineMap = {};
-        for (const b of baselines) baselineMap[b.material_code] = b.baseline_value;
-
-        let html = `<p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0 0 1rem">
-            Enter the first moisture reading for each reference point.
-        </p>`;
-
-        for (const room of rooms) {
-            const roomRPs = refPoints.filter(rp => rp.room_id === room.id);
-            if (!roomRPs.length) continue;
-
-            html += `<div class="dry-chamber-card">
-                <div class="dry-chamber-header"><span>${esc(room.name)}</span></div>
-                <div class="dry-moisture-table">
-                    <div class="dry-moisture-header">
-                        <div class="dry-moisture-cell">Ref #</div>
-                        <div class="dry-moisture-cell">Material</div>
-                        <div class="dry-moisture-cell">Baseline</div>
-                        <div class="dry-moisture-cell">Reading</div>
-                        <div class="dry-moisture-cell">Status</div>
-                    </div>`;
-
-            for (const rp of roomRPs) {
-                const mat = dryingUtils.MATERIAL_CODES.find(m => m.code === rp.material_code) || {};
-                const bl = baselineMap[rp.material_code];
-                const val = moisture[rp.id] !== undefined ? moisture[rp.id] : '';
-                const numVal = parseFloat(val);
-                const isDry = !isNaN(numVal) && bl !== undefined && dryingUtils.meetsDryStandard(numVal, bl);
-                const rowCls = isDry ? 'dry-moisture-row dry-moisture-dry' : 'dry-moisture-row';
-
-                html += `<div class="${rowCls}" data-rp-id="${esc(rp.id)}">
-                    <div class="dry-moisture-cell" style="font-weight:600;color:var(--apex-primary)">#${rp.ref_number}</div>
-                    <div class="dry-moisture-cell">${esc(mat.label || rp.material_code)}</div>
-                    <div class="dry-moisture-cell">${bl !== undefined ? bl : '--'}</div>
-                    <div class="dry-moisture-cell">
-                        <input type="number" step="0.1" min="0" max="100" value="${val}"
-                               data-moisture-rp="${esc(rp.id)}" class="dry-atmo-input" />
-                    </div>
-                    <div class="dry-moisture-cell dry-moisture-status" data-status-rp="${esc(rp.id)}">${isDry ? '<span style="color:var(--apex-success);font-weight:600">DRY</span>' : '--'}</div>
-                </div>`;
-            }
-            html += `</div></div>`;
-        }
-
-        if (!refPoints.length) {
-            html += `<p style="color:rgba(255,255,255,0.4);font-size:0.85rem;">No reference points added. Go back to Step 5 to add some.</p>`;
-        }
-
-        return html;
     },
 
     // ── Event Listeners per Step ─────────────────────────────────────
@@ -590,10 +624,33 @@ const dryingSetup = {
         const body = this._overlay.querySelector('.dry-wizard-body');
 
         if (step === 0) {
-            // Add Room
+            // Step 0: Create Chambers
+            const addBtn = body.querySelector('.dry-chamber-add');
+            if (addBtn) addBtn.addEventListener('click', () => this._addChamber());
+            body.querySelectorAll('.dry-chamber-delete').forEach(btn => {
+                btn.addEventListener('click', () => this._deleteChamber(btn.dataset.chamberId));
+            });
+            body.querySelectorAll('.dry-chamber-name').forEach(input => {
+                input.addEventListener('change', () => {
+                    const chamberId = input.dataset.chamberId;
+                    this._updateChamber(chamberId, { name: input.value.trim() });
+                });
+            });
+            body.querySelectorAll('.dry-chamber-color').forEach(container => {
+                const chamberId = container.dataset.chamberId;
+                container.querySelectorAll('.dry-color-swatch').forEach(swatch => {
+                    swatch.addEventListener('click', () => {
+                        const color = swatch.dataset.color;
+                        container.querySelectorAll('.dry-color-swatch').forEach(s => s.classList.remove('selected', 'dry-color-selected'));
+                        swatch.classList.add('selected', 'dry-color-selected');
+                        this._updateChamber(chamberId, { color });
+                    });
+                });
+            });
+        } else if (step === 1) {
+            // Step 1: Rooms Review
             const addBtn = body.querySelector('.dry-room-add');
             if (addBtn) addBtn.addEventListener('click', () => this._addRoom());
-            // Rename buttons
             body.querySelectorAll('.dry-room-rename').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const roomId = btn.dataset.roomId;
@@ -601,118 +658,144 @@ const dryingSetup = {
                     if (input) this._renameRoom(roomId, input.value.trim());
                 });
             });
-            // Delete buttons
             body.querySelectorAll('.dry-room-delete').forEach(btn => {
                 btn.addEventListener('click', () => this._deleteRoom(btn.dataset.roomId));
             });
-        } else if (step === 1) {
-            // Add Chamber
-            const addBtn = body.querySelector('.dry-chamber-add');
-            if (addBtn) addBtn.addEventListener('click', () => this._addChamber());
-            // Delete buttons
-            body.querySelectorAll('.dry-chamber-delete').forEach(btn => {
-                btn.addEventListener('click', () => this._deleteChamber(btn.dataset.chamberId));
-            });
-            // Rename on blur
-            body.querySelectorAll('.dry-chamber-name').forEach(input => {
-                input.addEventListener('change', () => {
-                    const chamberId = input.dataset.chamberId;
-                    this._updateChamber(chamberId, { name: input.value.trim() });
-                });
-            });
-            // Color picker clicks
-            body.querySelectorAll('.dry-chamber-color').forEach(container => {
-                const chamberId = container.dataset.chamberId;
-                container.querySelectorAll('.dry-color-swatch').forEach(swatch => {
-                    swatch.addEventListener('click', () => {
-                        const color = swatch.dataset.color;
-                        // Update selected state visually
-                        container.querySelectorAll('.dry-color-swatch').forEach(s => s.classList.remove('selected', 'dry-color-selected'));
-                        swatch.classList.add('selected', 'dry-color-selected');
-                        this._updateChamber(chamberId, { color });
-                    });
+            // Enter key creates next room
+            body.querySelectorAll('.dry-room-name').forEach(input => {
+                input.addEventListener('keydown', async (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const roomId = input.dataset.roomId;
+                        const name = input.value.trim();
+                        if (name) {
+                            await this._renameRoom(roomId, name);
+                        }
+                        await this._addRoom();
+                    }
                 });
             });
         } else if (step === 2) {
-            // Assign rooms to chambers
+            // Step 2: Assign Rooms to Chambers
             body.querySelectorAll('.dry-room-chamber-select').forEach(sel => {
                 sel.addEventListener('change', () => {
                     this._assignRoomToChamber(sel.dataset.roomId, sel.value);
                 });
             });
+        } else if (step === 3) {
+            // Step 3: Reference Points
+            body.querySelectorAll('.dry-room-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    this._collectCurrentStepState();
+                    this._state.activeRoomId = tab.dataset.roomTab;
+                    this._render();
+                });
+            });
+            const addBtn = body.querySelector('.dry-add-selected');
+            const matContainer = body.querySelector('.dry-material-chips');
+
+            const updateAddBtn = () => {
+                if (!addBtn || !matContainer) return;
+                const count = matContainer.querySelectorAll('.dry-chip-material.active').length;
+                if (count > 0) {
+                    addBtn.style.display = 'inline-flex';
+                    addBtn.disabled = false;
+                    addBtn.textContent = `Add (${count})`;
+                } else {
+                    addBtn.style.display = 'none';
+                    addBtn.disabled = true;
+                }
+            };
+
+            body.querySelectorAll('.dry-chip-surface').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    body.querySelectorAll('.dry-chip-surface').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    const surfaceKey = chip.dataset.surface;
+                    const codes = dryingUtils.SURFACE_MATERIALS[surfaceKey] || [];
+                    let matHtml = '';
+                    for (const code of codes) {
+                        const m = dryingUtils.MATERIAL_CODES.find(mc => mc.code === code);
+                        if (m) matHtml += `<button class="dry-chip dry-chip-material" data-mat-code="${dryingUtils.escapeHtml(m.code)}">${dryingUtils.escapeHtml(m.label)}</button>`;
+                    }
+                    matContainer.innerHTML = matHtml;
+                    updateAddBtn();
+                    matContainer.querySelectorAll('.dry-chip-material').forEach(matChip => {
+                        matChip.addEventListener('click', () => {
+                            matChip.classList.toggle('active');
+                            updateAddBtn();
+                        });
+                    });
+                });
+            });
+
+            if (addBtn) {
+                addBtn.addEventListener('click', async () => {
+                    const surfaceChip = body.querySelector('.dry-chip-surface.active');
+                    if (!surfaceChip || !matContainer) return;
+                    const surfaceKey = surfaceChip.dataset.surface;
+                    const surfaceLabel = (dryingUtils.SURFACE_TYPES.find(s => s.key === surfaceKey) || {}).label || surfaceKey;
+                    const selectedCodes = [...matContainer.querySelectorAll('.dry-chip-material.active')].map(c => c.dataset.matCode);
+                    if (!selectedCodes.length) return;
+                    addBtn.disabled = true;
+                    addBtn.textContent = 'Adding...';
+                    for (const code of selectedCodes) {
+                        await api.createDryingRefPoint(this._state.jobId, { room_id: this._state.activeRoomId, material_code: code, label: surfaceLabel });
+                    }
+                    this._state.refPoints = await api.getDryingRefPoints(this._state.jobId);
+                    this._render();
+                });
+            }
+            body.querySelectorAll('.dry-rp-material').forEach(span => {
+                span.style.cursor = 'pointer';
+                span.addEventListener('click', () => {
+                    const rpId = span.dataset.rpId;
+                    const currentCode = span.dataset.currentCode;
+                    const surfaceLabel = span.dataset.surface;
+                    const surfaceKey = dryingUtils.getSurfaceKeyFromLabel(surfaceLabel);
+                    const wrapper = document.createElement('span');
+                    if (surfaceKey) {
+                        wrapper.innerHTML = dryingUtils.buildFilteredMaterialSelect(surfaceKey, currentCode, '_chg_' + rpId);
+                    } else {
+                        wrapper.innerHTML = dryingUtils.buildMaterialSelect(currentCode, '_change_mat', '_chg_' + rpId);
+                    }
+                    const sel = wrapper.querySelector('select');
+                    sel.style.maxWidth = '220px';
+                    span.replaceWith(sel);
+                    sel.focus();
+                    const commit = () => {
+                        if (sel.value && sel.value !== currentCode) {
+                            this._updateRefPointMaterial(rpId, sel.value);
+                        } else {
+                            this._render();
+                        }
+                    };
+                    sel.addEventListener('change', commit);
+                    sel.addEventListener('blur', () => { setTimeout(() => this._render(), 150); });
+                });
+            });
+            body.querySelectorAll('.dry-rp-delete').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this._deleteRefPoint(btn.dataset.rpDelete);
+                });
+            });
         } else if (step === 4) {
-            // Add ref point buttons
-            body.querySelectorAll('.dry-rp-add').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const roomId = btn.dataset.roomId;
-                    const select = body.querySelector(`#dry-mat-${roomId}`);
-                    if (select && select.value) {
-                        this._addRefPoint(roomId, select.value);
+            // Step 4: Baselines
+            body.querySelectorAll('input[data-baseline-code]').forEach(inp => {
+                inp.addEventListener('change', () => {
+                    const code = inp.dataset.baselineCode;
+                    if (inp.value !== '') {
+                        this._saveBaseline(code, parseFloat(inp.value));
                     }
                 });
             });
         } else if (step === 5) {
-            // Save baseline buttons
-            body.querySelectorAll('.dry-baseline-save').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const code = btn.dataset.baselineCode;
-                    const input = body.querySelector(`input[data-baseline-code="${code}"]`);
-                    if (input && input.value !== '') {
-                        this._saveBaseline(code, parseFloat(input.value));
-                    }
-                });
-            });
-        } else if (step === 7) {
-            // Atmospheric GPP auto-calc
-            body.querySelectorAll('.dry-atmo-input').forEach(input => {
-                input.addEventListener('input', () => {
-                    const key = input.dataset.atmoKey;
-                    const field = input.dataset.atmoField;
-                    if (!this._state.atmospheric[key]) {
-                        this._state.atmospheric[key] = {};
-                    }
-                    this._state.atmospheric[key][field] = input.value;
-
-                    // Recalculate GPP
-                    const entry = this._state.atmospheric[key];
-                    const t = parseFloat(entry.tempF);
-                    const r = parseFloat(entry.rhPercent);
-                    const gppEl = body.querySelector(`[data-gpp-key="${key}"]`);
-                    if (gppEl) {
-                        if (!isNaN(t) && !isNaN(r)) {
-                            gppEl.textContent = dryingUtils.formatGPP(dryingUtils.calculateGPP(t, r));
-                        } else {
-                            gppEl.textContent = '--';
-                        }
-                    }
-                });
-            });
-        } else if (step === 8) {
-            // Moisture reading with live dry-standard check
-            const baselineMap = {};
-            for (const b of this._state.baselines) baselineMap[b.material_code] = b.baseline_value;
-
-            body.querySelectorAll('[data-moisture-rp]').forEach(input => {
-                input.addEventListener('input', () => {
-                    const rpId = input.dataset.moistureRp;
-                    this._state.moisture[rpId] = input.value;
-
-                    // Check dry standard
-                    const rp = this._state.refPoints.find(r => r.id === rpId);
-                    if (!rp) return;
-                    const bl = baselineMap[rp.material_code];
-                    const val = parseFloat(input.value);
-                    const isDry = !isNaN(val) && bl !== undefined && dryingUtils.meetsDryStandard(val, bl);
-
-                    const row = input.closest('.dry-moisture-row');
-                    const statusEl = body.querySelector(`[data-status-rp="${rpId}"]`);
-                    if (isDry) {
-                        if (row) row.classList.add('dry-moisture-dry');
-                        if (statusEl) statusEl.innerHTML = '<span style="color:var(--apex-success);font-weight:600">DRY</span>';
-                    } else {
-                        if (row) row.classList.remove('dry-moisture-dry');
-                        if (statusEl) statusEl.textContent = '--';
-                    }
+            // Step 5: Preview — clickable room tabs
+            body.querySelectorAll('.dry-room-tab[data-room-id]').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    this._state.previewRoomId = tab.dataset.roomId;
+                    this._render();
                 });
             });
         }
@@ -729,15 +812,13 @@ const dryingSetup = {
             return;
         }
         try {
-            await api.createDryingRoom(jobId, { chamber_id: chamberId, name: 'New Room' });
+            await api.createDryingRoom(jobId, { chamber_id: chamberId, name: '' });
             this._state.rooms = await api.getDryingRooms(jobId);
-            // Init equipment for new rooms
-            for (const rm of this._state.rooms) {
-                if (!this._state.equipment[rm.id]) {
-                    this._state.equipment[rm.id] = { AM: 0, NAFAN: 0, DEHU: 0, SPEC: 0 };
-                }
-            }
             this._render();
+            setTimeout(() => {
+                const inputs = this._overlay.querySelectorAll('.dry-room-name');
+                if (inputs.length) inputs[inputs.length - 1].focus();
+            }, 50);
         } catch (err) {
             console.error('Failed to add room:', err);
         }
@@ -748,7 +829,6 @@ const dryingSetup = {
             await api.deleteDryingRoom(this._state.jobId, roomId);
             this._state.rooms = await api.getDryingRooms(this._state.jobId);
             this._state.refPoints = await api.getDryingRefPoints(this._state.jobId);
-            delete this._state.equipment[roomId];
             this._render();
         } catch (err) {
             console.error('Failed to delete room:', err);
@@ -776,10 +856,6 @@ const dryingSetup = {
                 color: nextColor.hex
             });
             this._state.chambers = await api.getDryingChambers(this._state.jobId);
-            // Init dehu count for new chamber
-            for (const ch of this._state.chambers) {
-                if (!this._state.dehuCounts[ch.id]) this._state.dehuCounts[ch.id] = 1;
-            }
             this._render();
         } catch (err) {
             console.error('Failed to add chamber:', err);
@@ -792,7 +868,6 @@ const dryingSetup = {
             await api.deleteDryingChamber(this._state.jobId, chamberId);
             this._state.chambers = await api.getDryingChambers(this._state.jobId);
             this._state.rooms = await api.getDryingRooms(this._state.jobId);
-            delete this._state.dehuCounts[chamberId];
             this._render();
         } catch (err) {
             console.error('Failed to delete chamber:', err);
@@ -809,21 +884,120 @@ const dryingSetup = {
     },
 
     async _assignRoomToChamber(roomId, chamberId) {
+        if (this._flipAnimating) return;
+        this._flipAnimating = true;
+
+        const body = this._overlay.querySelector('.dry-wizard-body');
+
+        // FIRST: capture current positions by room ID
+        const firstRects = {};
+        body.querySelectorAll('.dry-room-item[data-room-id]').forEach(el => {
+            firstRects[el.dataset.roomId] = el.getBoundingClientRect();
+        });
+
+        // Update backend + refresh state
         try {
             await api.updateDryingRoom(this._state.jobId, roomId, { chamber_id: chamberId });
             this._state.rooms = await api.getDryingRooms(this._state.jobId);
         } catch (err) {
             console.error('Failed to assign room to chamber:', err);
+            this._flipAnimating = false;
+            return;
         }
+
+        // LAST: re-render with new sort order + colors
+        body.innerHTML = this._renderStep4();
+        this._attachStepListeners(2);
+
+        // INVERT + PLAY
+        body.querySelectorAll('.dry-room-item[data-room-id]').forEach(el => {
+            const oldRect = firstRects[el.dataset.roomId];
+            if (!oldRect) return;
+
+            const newRect = el.getBoundingClientRect();
+            const deltaX = oldRect.left - newRect.left;
+            const deltaY = oldRect.top - newRect.top;
+            if (deltaX === 0 && deltaY === 0) return;
+
+            // Invert: place at old position instantly
+            el.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+            el.style.transition = 'none';
+            el.offsetHeight; // force reflow
+
+            // Play: animate to new position
+            el.style.transition = 'transform 350ms cubic-bezier(0.4, 0, 0.2, 1)';
+            el.style.transform = '';
+
+            el.addEventListener('transitionend', () => {
+                el.style.transition = '';
+                el.style.transform = '';
+            }, { once: true });
+        });
+
+        // Fade in chamber dividers
+        body.querySelectorAll('.dry-chamber-divider').forEach(div => {
+            div.style.opacity = '0';
+            div.offsetHeight;
+            div.style.transition = 'opacity 250ms ease 100ms';
+            div.style.opacity = '1';
+            div.addEventListener('transitionend', () => {
+                div.style.transition = '';
+            }, { once: true });
+        });
+
+        setTimeout(() => { this._flipAnimating = false; }, 400);
     },
 
-    async _addRefPoint(roomId, materialCode) {
+    async _addRefPoint(roomId, materialCode, label) {
         try {
-            await api.createDryingRefPoint(this._state.jobId, { room_id: roomId, material_code: materialCode });
+            await api.createDryingRefPoint(this._state.jobId, { room_id: roomId, material_code: materialCode, label: label || '' });
             this._state.refPoints = await api.getDryingRefPoints(this._state.jobId);
             this._render();
         } catch (err) {
             console.error('Failed to add ref point:', err);
+        }
+    },
+
+    async _updateRefPointMaterial(rpId, newCode) {
+        try {
+            await api.updateDryingRefPoint(this._state.jobId, rpId, { material_code: newCode });
+            this._state.refPoints = await api.getDryingRefPoints(this._state.jobId);
+            this._render();
+        } catch (err) {
+            console.error('Failed to update ref point:', err);
+        }
+    },
+
+    async _deleteRefPoint(rpId) {
+        try {
+            await api.deleteDryingRefPoint(this._state.jobId, rpId);
+            this._state.refPoints = await api.getDryingRefPoints(this._state.jobId);
+            this._render();
+        } catch (err) {
+            console.error('Failed to delete ref point:', err);
+        }
+    },
+
+    _getDefaultBaseline(code) {
+        if (code === 'D') return 11;
+        return Math.floor(Math.random() * 4) + 6; // 6, 7, 8, or 9
+    },
+
+    async _ensureDefaultBaselines() {
+        const { refPoints, baselines, jobId } = this._state;
+        const usedCodes = [...new Set(refPoints.map(rp => rp.material_code))];
+        const existingCodes = new Set(baselines.map(b => b.material_code));
+        let changed = false;
+        for (const code of usedCodes) {
+            if (!existingCodes.has(code)) {
+                const val = this._getDefaultBaseline(code);
+                await api.upsertDryingBaseline(jobId, { material_code: code, baseline_value: val });
+                changed = true;
+            }
+        }
+        if (changed) {
+            this._state.baselines = await api.getDryingBaselines(jobId);
+            this._render(); // re-render to show populated values
         }
     },
 
@@ -840,159 +1014,20 @@ const dryingSetup = {
         }
     },
 
-    async _saveAndComplete() {
-        // Collect final state from inputs
-        this._collectCurrentStepState();
-
-        const saveBtn = this._overlay.querySelector('.dry-wizard-save');
-        if (saveBtn) {
-            saveBtn.disabled = true;
-            saveBtn.textContent = 'Saving...';
-        }
-
+    async _confirmSetup() {
+        const btn = this._overlay.querySelector('.dry-wizard-confirm');
+        if (btn) { btn.disabled = true; btn.textContent = 'Confirming...'; }
         try {
-            const jobId = this._state.jobId;
-
-            // 1. Create first visit
-            const visit = await api.createDryingVisit(jobId);
-            const visitId = visit.id;
-
-            // 2. Build bulk save payload
-            const atmospheric = this._buildAtmosphericPayload();
-            const moisture = this._buildMoisturePayload();
-            const equipment = this._buildEquipmentPayload();
-
-            // 3. Bulk save
-            await api.saveDryingVisit(jobId, visitId, { atmospheric, moisture, equipment });
-
-            // 4. Close wizard
+            await api.updateDryingLog(this._state.jobId, { setup_complete: 1 });
             this.close();
-
-            // 5. Refresh drying tab
             if (typeof jobDetailTabs !== 'undefined' && jobDetailTabs._loadDryingState) {
-                jobDetailTabs._loadDryingState(jobId);
+                apexJobs.activeTab = 'drying';
+                jobDetailTabs._loadDryingState(this._state.jobId, true);
             }
         } catch (err) {
-            console.error('Failed to save and complete setup:', err);
-            if (saveBtn) {
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = 'Save &amp; Complete Setup';
-            }
+            console.error('Failed to confirm setup:', err);
+            if (btn) { btn.disabled = false; btn.textContent = 'Confirm Setup'; }
         }
-    },
-
-    // ── Payload Builders ─────────────────────────────────────────────
-
-    _collectAtmosphericFromInputs() {
-        const body = this._overlay.querySelector('.dry-wizard-body');
-        if (!body) return;
-        body.querySelectorAll('.dry-atmo-input').forEach(input => {
-            const key = input.dataset.atmoKey;
-            const field = input.dataset.atmoField;
-            if (!this._state.atmospheric[key]) this._state.atmospheric[key] = {};
-            this._state.atmospheric[key][field] = input.value;
-        });
-    },
-
-    _collectMoistureFromInputs() {
-        const body = this._overlay.querySelector('.dry-wizard-body');
-        if (!body) return;
-        body.querySelectorAll('[data-moisture-rp]').forEach(input => {
-            this._state.moisture[input.dataset.moistureRp] = input.value;
-        });
-    },
-
-    _buildAtmosphericPayload() {
-        const { atmospheric, chambers, dehuCounts } = this._state;
-        const rows = [];
-
-        // Unaffected
-        const ua = atmospheric['unaffected'] || {};
-        if (ua.tempF || ua.rhPercent) {
-            rows.push({
-                readingType: 'unaffected',
-                chamberId: null,
-                dehuNumber: null,
-                tempF: parseFloat(ua.tempF) || 0,
-                rhPercent: parseFloat(ua.rhPercent) || 0
-            });
-        }
-
-        // Outside
-        const out = atmospheric['outside'] || {};
-        if (out.tempF || out.rhPercent) {
-            rows.push({
-                readingType: 'outside',
-                chamberId: null,
-                dehuNumber: null,
-                tempF: parseFloat(out.tempF) || 0,
-                rhPercent: parseFloat(out.rhPercent) || 0
-            });
-        }
-
-        // Per-chamber
-        for (const ch of chambers) {
-            // Intake
-            const intakeKey = `intake_${ch.id}`;
-            const intake = atmospheric[intakeKey] || {};
-            if (intake.tempF || intake.rhPercent) {
-                rows.push({
-                    readingType: 'chamber_intake',
-                    chamberId: ch.id,
-                    dehuNumber: null,
-                    tempF: parseFloat(intake.tempF) || 0,
-                    rhPercent: parseFloat(intake.rhPercent) || 0
-                });
-            }
-
-            // Dehu exhausts
-            const count = dehuCounts[ch.id] || 1;
-            for (let d = 1; d <= count; d++) {
-                const dehuKey = `dehu_${ch.id}_${d}`;
-                const dehu = atmospheric[dehuKey] || {};
-                if (dehu.tempF || dehu.rhPercent) {
-                    rows.push({
-                        readingType: 'chamber_dehu_exhaust',
-                        chamberId: ch.id,
-                        dehuNumber: d,
-                        tempF: parseFloat(dehu.tempF) || 0,
-                        rhPercent: parseFloat(dehu.rhPercent) || 0
-                    });
-                }
-            }
-        }
-
-        return rows;
-    },
-
-    _buildMoisturePayload() {
-        const { moisture } = this._state;
-        const rows = [];
-        for (const [refPointId, val] of Object.entries(moisture)) {
-            const v = parseFloat(val);
-            if (!isNaN(v)) {
-                rows.push({ refPointId, readingValue: v });
-            }
-        }
-        return rows;
-    },
-
-    _buildEquipmentPayload() {
-        const { equipment } = this._state;
-        const typeMap = { AM: 'AM', NAFAN: 'NAFAN', DEHU: 'DEHU', SPEC: 'SPEC' };
-        const rows = [];
-        for (const [roomId, eq] of Object.entries(equipment)) {
-            for (const [key, qty] of Object.entries(eq)) {
-                if (qty > 0) {
-                    rows.push({
-                        roomId,
-                        equipmentType: typeMap[key] || key,
-                        quantity: qty
-                    });
-                }
-            }
-        }
-        return rows;
     }
 };
 
