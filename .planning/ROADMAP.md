@@ -64,11 +64,10 @@ Plans:
   2. When no drying log exists for a job, the tab shows a "Create Drying Logs" button
   3. Clicking "Create Drying Logs" initializes a drying log and pre-populates rooms from the job's Affected Rooms field
   4. Pre-populated rooms are editable, deletable, and the technician can add new rooms not in the original list
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 03-01: Drying Logs tab integration with job detail view
-- [ ] 03-02: Log initialization and room pre-population
+- [ ] 03-01-PLAN.md -- Backend log initialization with room pre-population + frontend drying tab shell with room CRUD
 
 ### Phase 4: Structure Management
 **Goal**: A technician can fully define the drying structure -- chambers with colors, rooms assigned to chambers, reference points with materials, baselines per material type, dehumidifiers per chamber, and equipment per room
@@ -163,7 +162,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 |-------|----------------|--------|-----------|
 | 1. Schema & GPP Engine | 2/2 | ✓ Complete | 2026-02-11 |
 | 2. API Routes & Client Layer | 2/2 | ✓ Complete | 2026-02-11 |
-| 3. Tab Shell & Log Initialization | 0/2 | Not started | - |
+| 3. Tab Shell & Log Initialization | 0/1 | Not started | - |
 | 4. Structure Management | 0/3 | Not started | - |
 | 5. Atmospheric Readings & GPP Display | 0/3 | Not started | - |
 | 6. Moisture Readings & Room Workflow | 0/3 | Not started | - |
