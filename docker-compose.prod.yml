@@ -1,15 +1,12 @@
-# Kanban Board - Production Docker Compose
-# Simplified for Hostinger MCP deployment
-
 services:
-  kanban:
+  lyfehub-v2:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: kanban-board
+    container_name: lyfehub-v2-production
     restart: unless-stopped
     ports:
-      - "3456:3000"
+      - "4000:3000"
     environment:
       - KANBAN_PASSWORD=${KANBAN_PASSWORD}
       - KANBAN_API_KEY=${KANBAN_API_KEY}
@@ -17,14 +14,10 @@ services:
       - NODE_ENV=production
       - PORT=3000
     volumes:
-      - kanban-data:/data
+      - /root/lyfehub-v2-production-data:/data
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 10s
-
-volumes:
-  kanban-data:
-    driver: local

@@ -322,6 +322,17 @@ function searchPeople(userId, query) {
   return stmt.all(userId, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
 }
 
+/**
+ * Find a person by email address
+ */
+function findByEmail(userId, email) {
+  const stmt = db.prepare(`
+    SELECT * FROM people
+    WHERE user_id = ? AND (LOWER(email) = LOWER(?) OR LOWER(email_secondary) = LOWER(?))
+  `);
+  return stmt.get(userId, email, email);
+}
+
 module.exports = {
   getAllPeople,
   getPersonById,
@@ -329,5 +340,6 @@ module.exports = {
   updatePerson,
   deletePerson,
   getPeopleCount,
-  searchPeople
+  searchPeople,
+  findByEmail
 };

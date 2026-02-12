@@ -189,6 +189,21 @@ router.get('/', (req, res) => {
   }
 });
 
+// GET /api/people/by-email/:email - Find person by email
+router.get("/by-email/:email", (req, res) => {
+  try {
+    const email = decodeURIComponent(req.params.email);
+    const person = peopleDb.findByEmail(req.user.id, email);
+    if (!person) {
+      return res.status(404).json({ error: "Person not found", found: false });
+    }
+    res.json({ ...person, found: true });
+  } catch (error) {
+    console.error("Error finding person by email:", error);
+    res.status(500).json({ error: "Failed to find person" });
+  }
+});
+
 // POST /api/people - Create new person
 router.post('/', (req, res) => {
   try {

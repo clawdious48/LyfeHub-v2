@@ -690,3 +690,54 @@ db.exec(`CREATE INDEX IF NOT EXISTS idx_task_items_status ON task_items(status)`
 db.exec(`CREATE INDEX IF NOT EXISTS idx_task_items_priority ON task_items(priority)`);
 db.exec(`CREATE INDEX IF NOT EXISTS idx_task_items_snooze_date ON task_items(snooze_date)`);
 db.exec(`CREATE INDEX IF NOT EXISTS idx_task_items_project_id ON task_items(project_id)`);
+
+// ============================================
+// CRM ENRICHMENT COLUMNS (OpenClaw-style)
+// ============================================
+
+// Add score column to people
+try {
+  db.exec(`ALTER TABLE people ADD COLUMN score INTEGER DEFAULT 0`);
+  console.log('Added score column to people');
+} catch (e) { /* Column exists */ }
+
+// Add exchange_count column to people
+try {
+  db.exec(`ALTER TABLE people ADD COLUMN exchange_count INTEGER DEFAULT 0`);
+  console.log('Added exchange_count column to people');
+} catch (e) { /* Column exists */ }
+
+// Add meeting_count column to people
+try {
+  db.exec(`ALTER TABLE people ADD COLUMN meeting_count INTEGER DEFAULT 0`);
+  console.log('Added meeting_count column to people');
+} catch (e) { /* Column exists */ }
+
+// Add last_email_date column to people
+try {
+  db.exec(`ALTER TABLE people ADD COLUMN last_email_date TEXT`);
+  console.log('Added last_email_date column to people');
+} catch (e) { /* Column exists */ }
+
+// Add last_meeting_date column to people
+try {
+  db.exec(`ALTER TABLE people ADD COLUMN last_meeting_date TEXT`);
+  console.log('Added last_meeting_date column to people');
+} catch (e) { /* Column exists */ }
+
+// Add source column to people (how they were added)
+try {
+  db.exec(`ALTER TABLE people ADD COLUMN source TEXT DEFAULT 'manual'`);
+  console.log('Added source column to people');
+} catch (e) { /* Column exists */ }
+
+// Add ai_notes column to people
+try {
+  db.exec(`ALTER TABLE people ADD COLUMN ai_notes TEXT DEFAULT ''`);
+  console.log('Added ai_notes column to people');
+} catch (e) { /* Column exists */ }
+
+// Create indexes for CRM enrichment queries
+db.exec(`CREATE INDEX IF NOT EXISTS idx_people_score ON people(score)`);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_people_source ON people(source)`);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_people_email ON people(email)`);
