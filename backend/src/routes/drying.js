@@ -73,15 +73,20 @@ router.get('/log', (req, res) => {
   }
 });
 
-// POST /log - Create a drying log for this job
+// POST /log - Create a drying log for this job (with rooms pre-populated from areas_affected)
 router.post('/log', (req, res) => {
   try {
     // Check if log already exists
     const existing = requireLog(req.params.id);
     if (existing) return res.status(409).json({ error: 'Drying log already exists for this job', log: existing });
 
-    const log = dryingLogs.createDryingLog(req.params.id);
-    res.status(201).json(log);
+    // Read the job's areas_affected field and parse into room names
+    const job = db.prepare('SELECT areas_affected FROM apex_jobs WHERE id = ?').get(req.params.id);
+    const areasText = (job && job.areas_affected) || '';
+    const roomNames = areasText.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
+
+    const result = dryingLogs.createDryingLogWithRooms(req.params.id, roomNames);
+    res.status(201).json(result);
   } catch (err) {
     console.error('Error creating drying log:', err);
     res.status(500).json({ error: 'Failed to create drying log' });
