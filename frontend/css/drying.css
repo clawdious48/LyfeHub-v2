@@ -28,9 +28,17 @@
     box-shadow: 0 0 0 2px rgba(191, 90, 242, 0.2);
 }
 
-.dry-select option {
-    background: #0a0a0f;
+.dry-select option,
+.dry-input option {
+    background: #1a1a2e;
     color: rgba(255, 255, 255, 0.95);
+}
+
+.dry-select optgroup,
+.dry-input optgroup {
+    background: #12121f;
+    color: var(--apex-primary);
+    font-weight: 600;
 }
 
 .dry-textarea {
@@ -288,32 +296,47 @@
 
 .dry-wizard-header {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.5rem;
+    flex-direction: column;
+    padding: 0.75rem 1.25rem 0.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.dry-wizard-header h3 {
+.dry-wizard-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.dry-wizard-nav h3 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.95);
+    flex: 1;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.dry-wizard-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 0.15rem 0.3rem;
+    line-height: 1;
+    transition: color 0.15s ease;
+}
+
+.dry-wizard-close:hover {
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .dry-wizard-body {
     flex: 1;
     overflow-y: auto;
     padding: 1.5rem;
-}
-
-.dry-wizard-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    gap: 0.75rem;
 }
 
 .dry-wizard-progress {
@@ -362,6 +385,56 @@
     box-shadow: 0 0 6px rgba(5, 255, 161, 0.3);
 }
 
+/* Error dot — neon orange pulsing */
+.dry-step-dot.error {
+    background: var(--neon-orange);
+    border-color: var(--neon-orange);
+    box-shadow: 0 0 8px rgba(255, 107, 53, 0.5);
+    transform: scale(1.3);
+    animation: dot-error-pulse 2s ease-in-out infinite;
+}
+
+@keyframes dot-error-pulse {
+    0%, 100% { transform: scale(1.3); box-shadow: 0 0 8px rgba(255, 107, 53, 0.4); }
+    50% { transform: scale(1.55); box-shadow: 0 0 16px rgba(255, 107, 53, 0.7); }
+}
+
+/* Dot hover enlargement */
+.dry-step-dot:hover {
+    transform: scale(1.5);
+    cursor: pointer;
+}
+
+/* Prevent hover scale from fighting error pulse animation */
+.dry-step-dot.error:hover {
+    animation: none;
+    transform: scale(1.6);
+    box-shadow: 0 0 14px rgba(255, 107, 53, 0.6);
+}
+
+/* Hover tooltip (positioned above dots) */
+.dry-step-indicator {
+    position: relative;
+}
+
+.dry-dot-tooltip {
+    position: absolute;
+    top: -22px;
+    transform: translateX(-50%);
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 120ms ease;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.dry-dot-tooltip.visible {
+    opacity: 1;
+}
+
 /* ── 6. Wizard Step Content ───────────────────────────────────────── */
 
 .dry-step-content {
@@ -398,6 +471,31 @@
     flex: 1;
     font-size: 0.85rem;
     color: rgba(255, 255, 255, 0.95);
+}
+
+/* Chamber group divider (step 2) */
+.dry-chamber-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.75rem 0.1rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 0.25rem;
+}
+
+.dry-chamber-divider:first-child {
+    margin-top: 0;
+}
+
+.dry-chamber-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
 }
 
 .dry-chamber-card {
@@ -442,6 +540,71 @@
 .dry-color-swatch.selected {
     border-color: #fff;
     box-shadow: 0 0 10px currentColor;
+}
+
+/* Reference point category labels and items */
+.dry-rp-category-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--apex-secondary);
+    padding: 0.5rem 0.75rem 0.2rem;
+    margin-top: 0.25rem;
+    border-bottom: 1px solid rgba(0, 170, 255, 0.12);
+}
+
+.dry-rp-category-label:first-child {
+    margin-top: 0;
+}
+
+.dry-rp-item {
+    padding-left: 1rem;
+}
+
+.dry-rp-number {
+    color: var(--apex-primary);
+    font-weight: 600;
+    min-width: 32px;
+}
+
+.dry-rp-code {
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.78rem;
+    min-width: 40px;
+    margin-right: 0.4rem;
+}
+
+.dry-rp-material {
+    flex: 1;
+    cursor: pointer;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.dry-rp-material:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--apex-primary-light);
+}
+
+.dry-rp-delete {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.25);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    line-height: 1;
+    transition: color 0.15s, background 0.15s;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.dry-rp-delete:hover {
+    color: var(--apex-danger);
+    background: rgba(255, 42, 109, 0.1);
 }
 
 .dry-assign-grid {
@@ -652,6 +815,65 @@
     display: block;
 }
 
+/* ── 9b. Inline Chips (surface type + material selection) ────────── */
+
+.dry-rp-selectors {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.dry-surface-chips,
+.dry-material-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.dry-chip {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1rem;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 0.35rem 0.8rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.dry-chip:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.85);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.dry-chip-surface.active {
+    background: rgba(191, 90, 242, 0.15);
+    border-color: var(--apex-primary);
+    color: var(--apex-primary);
+}
+
+.dry-chip-material {
+    font-size: 0.78rem;
+    padding: 0.28rem 0.65rem;
+    background: rgba(0, 170, 255, 0.06);
+    border-color: rgba(0, 170, 255, 0.12);
+}
+
+.dry-chip-material:hover {
+    background: rgba(0, 170, 255, 0.15);
+    border-color: var(--apex-secondary);
+    color: var(--apex-secondary);
+}
+
+.dry-chip-material.active {
+    background: rgba(0, 170, 255, 0.2);
+    border-color: var(--apex-secondary);
+    color: var(--apex-secondary);
+    box-shadow: 0 0 6px rgba(0, 170, 255, 0.15);
+}
+
 /* ── 10. Moisture Table ───────────────────────────────────────────── */
 
 .dry-moisture-table {
@@ -790,6 +1012,21 @@
     outline: none;
     border-color: var(--apex-primary);
     box-shadow: 0 0 0 2px rgba(191, 90, 242, 0.15);
+}
+
+.dry-equipment-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.dry-equipment-col h4 {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.75);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 /* ── 12. Notes Section ────────────────────────────────────────────── */
@@ -964,7 +1201,55 @@
     background: rgba(255, 255, 255, 0.04);
 }
 
-/* ── 15. Responsive ───────────────────────────────────────────────── */
+/* ── 16. Wizard Preview Step ─────────────────────────────────────── */
+
+.dry-wizard-preview {
+    opacity: 0.85;
+}
+
+.dry-wizard-preview .dry-atmo-input,
+.dry-wizard-preview .dry-moisture-cell input,
+.dry-wizard-preview .dry-equipment-input,
+.dry-wizard-preview select {
+    pointer-events: none;
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.04);
+}
+
+.dry-wizard-preview h4 {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Confirm Setup button (neon green) */
+.dry-btn-confirm {
+    background: linear-gradient(135deg, #05ffa1 0%, #00d68f 100%);
+    color: #0a0a0f;
+    font-weight: 600;
+    box-shadow: 0 0 15px rgba(5, 255, 161, 0.3);
+}
+
+.dry-btn-confirm:hover:not(:disabled) {
+    box-shadow: 0 0 25px rgba(5, 255, 161, 0.5);
+    transform: translateY(-1px);
+}
+
+.dry-btn-confirm:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Success button variant */
+.dry-btn-success {
+    background: rgba(5, 255, 161, 0.15);
+    color: var(--apex-success);
+    border: 1px solid var(--apex-success);
+}
+
+.dry-btn-success:hover:not(:disabled) {
+    background: rgba(5, 255, 161, 0.25);
+}
+
+/* ── 17. Responsive ───────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
     .dry-wizard-card {
@@ -1017,7 +1302,6 @@
     }
 
     .dry-wizard-header,
-    .dry-wizard-footer,
     .dry-visit-header,
     .dry-visit-footer {
         padding: 0.75rem 1rem;
@@ -1075,6 +1359,10 @@
     }
 
     .dry-assign-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dry-equipment-grid {
         grid-template-columns: 1fr;
     }
 

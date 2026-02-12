@@ -5,7 +5,9 @@ const db = require('../db/schema');
  */
 function requireRole(...allowedRoles) {
   return (req, res, next) => {
-    if (!req.user?.role || !allowedRoles.includes(req.user.role)) {
+    const userRoles = req.user?.roles || req.user?.role || [];
+    const rolesArr = Array.isArray(userRoles) ? userRoles : [userRoles];
+    if (!rolesArr.some(r => allowedRoles.includes(r))) {
       return res.status(403).json({ error: 'Insufficient permissions' });
     }
     next();
@@ -18,7 +20,9 @@ function requireRole(...allowedRoles) {
  *  - otherwise, author_id must match and entry must be < 5 minutes old
  */
 function canEditEntry(req, entry) {
-  if (req.user?.role === 'management' || req.user?.role === 'office_coordinator') return true;
+  const roles = req.user?.roles || req.user?.role || [];
+  const rolesArr = Array.isArray(roles) ? roles : [roles];
+  if (rolesArr.includes('management') || rolesArr.includes('office_coordinator')) return true;
   if (entry.author_id === req.user?.id) {
     const created = new Date(entry.created_at + 'Z');
     const now = new Date();
@@ -38,8 +42,9 @@ const checkPhaseAssignment = db.prepare(
  *  - otherwise checks phase_assignments table
  */
 function requirePhaseAccess(req, phaseId) {
-  const role = req.user?.role;
-  if (role === 'management' || role === 'office_coordinator') return true;
+  const roles2 = req.user?.roles || req.user?.role || [];
+  const rolesArr2 = Array.isArray(roles2) ? roles2 : [roles2];
+  if (rolesArr2.includes('management') || rolesArr2.includes('office_coordinator')) return true;
   return !!checkPhaseAssignment.get(phaseId, req.user?.id);
 }
 

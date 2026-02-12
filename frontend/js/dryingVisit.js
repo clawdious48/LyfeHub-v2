@@ -516,23 +516,35 @@ const dryingVisit = {
         const isInput = mode !== 'readonly';
         const esc = dryingUtils.escapeHtml;
 
-        let html = '<div class="dry-equipment-section"><h4>Equipment</h4>';
-        for (const et of dryingUtils.EQUIPMENT_TYPES) {
-            const key = `${roomId}|${et.type}`;
-            const qty = this._state.equipment[key] != null ? this._state.equipment[key] : 0;
-            if (isInput) {
-                html += `<div class="dry-equipment-row">
-                    <div class="dry-equipment-label">${esc(et.label)}</div>
-                    <input type="number" min="0" class="dry-equipment-input dv-equip-input" data-room-id="${esc(roomId)}" data-equip-type="${esc(et.type)}" value="${qty}">
-                </div>`;
-            } else {
-                html += `<div class="dry-equipment-row">
-                    <div class="dry-equipment-label">${esc(et.label)}</div>
-                    <span style="font-size:0.85rem;color:rgba(255,255,255,0.85);">${qty}</span>
-                </div>`;
+        const equipTypes = dryingUtils.EQUIPMENT_TYPES.filter(et => et.category === 'equipment');
+        const specTypes = dryingUtils.EQUIPMENT_TYPES.filter(et => et.category === 'specialty');
+
+        const renderCol = (types, title) => {
+            let col = `<div class="dry-equipment-col"><h4>${esc(title)}</h4>`;
+            for (const et of types) {
+                const key = `${roomId}|${et.type}`;
+                const qty = this._state.equipment[key] != null ? this._state.equipment[key] : 0;
+                if (isInput) {
+                    col += `<div class="dry-equipment-row">
+                        <div class="dry-equipment-label">${esc(et.label)}</div>
+                        <input type="number" min="0" class="dry-equipment-input dv-equip-input" data-room-id="${esc(roomId)}" data-equip-type="${esc(et.type)}" value="${qty}">
+                    </div>`;
+                } else {
+                    col += `<div class="dry-equipment-row">
+                        <div class="dry-equipment-label">${esc(et.label)}</div>
+                        <span style="font-size:0.85rem;color:rgba(255,255,255,0.85);">${qty}</span>
+                    </div>`;
+                }
             }
-        }
-        html += '</div>';
+            col += '</div>';
+            return col;
+        };
+
+        let html = '<div class="dry-equipment-section">';
+        html += '<div class="dry-equipment-grid">';
+        html += renderCol(equipTypes, 'Equipment');
+        html += renderCol(specTypes, 'Specialty Equipment');
+        html += '</div></div>';
         return html;
     },
 
@@ -1016,13 +1028,30 @@ const dryingVisit = {
     },
 
     _getDehuCount(chamberId) {
+        // Check current visit's atmospheric readings first
+        const currentDehus = Object.keys(this._state.atmospheric).filter(key => {
+            const [type, chId] = key.split('|');
+            return type === 'chamber_dehu_exhaust' && chId === chamberId;
+        });
+        if (currentDehus.length > 0) return currentDehus.length;
+
+        // Fall back to prior visit
         if (this._state.priorVisit && this._state.priorVisit.atmospheric) {
             const dehus = this._state.priorVisit.atmospheric.filter(
                 r => r.reading_type === 'chamber_dehu_exhaust' && r.chamber_id === chamberId
             );
             if (dehus.length > 0) return dehus.length;
         }
-        return 1; // default
+
+        // Fall back to equipment count
+        const eqDehus = Object.keys(this._state.equipment).filter(key => {
+            const [roomId, type] = key.split('|');
+            return type === 'DEHU' && this._state.rooms.some(r => r.id === roomId && r.chamber_id === chamberId);
+        });
+        const eqTotal = eqDehus.reduce((sum, key) => sum + (this._state.equipment[key] || 0), 0);
+        if (eqTotal > 0) return eqTotal;
+
+        return 1; // absolute default
     },
 
     _materialLabel(code) {
