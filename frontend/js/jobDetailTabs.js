@@ -18,7 +18,9 @@ function _relativeTime(dateStr) {
 
 function _canModifyNote(note) {
     const user = window.currentUser || {};
-    if (user.role === 'management') return true;
+    const roles = user.roles || user.role || [];
+    const rolesArr = Array.isArray(roles) ? roles : [roles];
+    if (rolesArr.includes('management')) return true;
     if (note.author_id && note.author_id === user.id) {
         const age = Date.now() - new Date(note.created_at).getTime();
         return age < 5 * 60 * 1000; // 5 minutes
@@ -256,7 +258,9 @@ const jobDetailTabs = {
                 const typeText = typeBadgeTextColors[noteType] || typeBadgeTextColors.general;
                 const typeLabel = noteType.replace(/_/g, ' ');
                 const authorName = note.author_name || note.author || '';
-                const canDelete = (window.currentUser?.role === 'management');
+                const _delRoles = window.currentUser?.roles || window.currentUser?.role || [];
+                const _delArr = Array.isArray(_delRoles) ? _delRoles : [_delRoles];
+                const canDelete = _delArr.includes('management');
                 return `
                     <div class="jdt-note-item" style="border-left: 3px solid var(--neon-cyan)">
                         <div class="jdt-note-header">
@@ -471,37 +475,159 @@ const jobDetailTabs = {
     // Tab 6: Drying
     // ========================================
     renderDryingTab(job) {
-        const isMit = (job.phases || []).some(p => p.job_type_code === 'MIT');
-
-        if (!isMit) {
-            return `
-                <div class="apex-modal-section">
-                    <h3 class="apex-section-title">Structural Drying</h3>
-                    <div class="apex-empty-state">Drying monitoring is only available for Mitigation (MIT) phases</div>
-                </div>
-            `;
-        }
+        // Render a loading placeholder, then async-load the real state
+        setTimeout(() => jobDetailTabs._loadDryingState(job.id), 0);
 
         return `
-            <div class="apex-modal-section">
+            <div class="apex-modal-section" id="drying-tab-content">
                 <h3 class="apex-section-title">Structural Drying</h3>
-
-                <div class="apex-phase-section">
-                    <h4 class="apex-phase-section-title">Equipment Tracking</h4>
-                    <div class="apex-empty-state">No equipment tracked yet. Place equipment to begin monitoring.</div>
-                </div>
-
-                <div class="apex-phase-section">
-                    <h4 class="apex-phase-section-title">Daily Readings</h4>
-                    <div class="apex-empty-state">No daily readings recorded yet.</div>
-                </div>
-
-                <div class="apex-phase-section">
-                    <h4 class="apex-phase-section-title">Moisture Levels</h4>
-                    <div class="apex-empty-state">No moisture level data recorded yet.</div>
-                </div>
+                <div class="apex-empty-state">Loading drying log status...</div>
             </div>
         `;
+    },
+
+    async _loadDryingState(jobId) {
+        // Race condition guard: if user switched away from drying tab, abort
+        if (apexJobs.activeTab !== 'drying') return;
+
+        const container = document.getElementById('drying-tab-content');
+        if (!container) return;
+
+        try {
+            const log = await api.getDryingLog(jobId);
+            // Check again after async call
+            if (apexJobs.activeTab !== 'drying') return;
+            container.innerHTML = jobDetailTabs._renderDryingLogView(log, jobId);
+            jobDetailTabs._loadDryingRooms(jobId);
+        } catch (err) {
+            if (apexJobs.activeTab !== 'drying') return;
+            if (err.message.includes('404') || err.message.includes('No drying log')) {
+                container.innerHTML = jobDetailTabs._renderCreateDryingButton(jobId);
+            } else {
+                container.innerHTML = `
+                    <h3 class="apex-section-title">Structural Drying</h3>
+                    <div class="apex-empty-state">Failed to load drying log. Please try again.</div>
+                `;
+                console.error('Failed to load drying state:', err);
+            }
+        }
+    },
+
+    _renderCreateDryingButton(jobId) {
+        return `
+            <h3 class="apex-section-title">Structural Drying</h3>
+            <div class="apex-empty-state">
+                <p>No drying log exists for this job.</p>
+                <button class="jdt-add-btn" id="create-drying-btn"
+                    onclick="jobDetailTabs._createDryingLog('${jobId}')">
+                    Create Drying Logs
+                </button>
+            </div>
+        `;
+    },
+
+    async _createDryingLog(jobId) {
+        const btn = document.getElementById('create-drying-btn');
+        if (btn) { btn.disabled = true; btn.textContent = 'Creating...'; }
+
+        try {
+            await api.createDryingLog(jobId);
+            // Success -- re-load to show room list
+            jobDetailTabs._loadDryingState(jobId);
+        } catch (err) {
+            // 409 means log already exists -- treat as success
+            if (err.message.includes('409') || err.message.includes('already exists')) {
+                jobDetailTabs._loadDryingState(jobId);
+            } else {
+                console.error('Failed to create drying log:', err);
+                if (btn) { btn.disabled = false; btn.textContent = 'Create Drying Logs'; }
+            }
+        }
+    },
+
+    _renderDryingLogView(log, jobId) {
+        const statusClass = log.status === 'active' ? 'in_progress' : 'complete';
+        const statusLabel = log.status === 'active' ? 'Active' : 'Complete';
+        return `
+            <h3 class="apex-section-title">Structural Drying</h3>
+            <div style="margin-bottom: 12px;">
+                <span class="apex-status-badge phase-status-${statusClass}">${statusLabel}</span>
+            </div>
+            <div class="apex-phase-section">
+                <h4 class="apex-phase-section-title">Rooms</h4>
+                <div id="drying-rooms-list"><div class="apex-empty-state">Loading rooms...</div></div>
+                <button class="jdt-add-btn" onclick="jobDetailTabs._addRoom('${jobId}')">+ Add Room</button>
+            </div>
+        `;
+    },
+
+    async _loadDryingRooms(jobId) {
+        const listEl = document.getElementById('drying-rooms-list');
+        if (!listEl) return;
+
+        try {
+            const rooms = await api.getDryingRooms(jobId);
+            if (apexJobs.activeTab !== 'drying') return;
+
+            if (!rooms || rooms.length === 0) {
+                listEl.innerHTML = '<div class="apex-empty-state">No rooms yet. Add rooms to get started.</div>';
+            } else {
+                listEl.innerHTML = rooms.map(room => `
+                    <div class="jdt-expense-row" data-room-id="${room.id}" style="justify-content: space-between; padding: 8px 12px;">
+                        <span class="drying-room-name">${apexJobs.escapeHtml(room.name)}</span>
+                        <span>
+                            <button class="jdt-note-delete" onclick="jobDetailTabs._renameRoom('${jobId}', '${room.id}', this)" title="Rename" style="margin-right:8px;">&#9998;</button>
+                            <button class="jdt-note-delete" onclick="jobDetailTabs._deleteRoom('${jobId}', '${room.id}')" title="Delete">&times;</button>
+                        </span>
+                    </div>
+                `).join('');
+            }
+        } catch (err) {
+            console.error('Failed to load drying rooms:', err);
+            listEl.innerHTML = '<div class="apex-empty-state">Failed to load rooms.</div>';
+        }
+    },
+
+    async _addRoom(jobId) {
+        const name = prompt('Enter room name:');
+        if (!name || !name.trim()) return;
+
+        try {
+            const chambers = await api.getDryingChambers(jobId);
+            if (!chambers.length) return;
+
+            await api.createDryingRoom(jobId, { chamber_id: chambers[0].id, name: name.trim() });
+            jobDetailTabs._loadDryingRooms(jobId);
+        } catch (err) {
+            console.error('Failed to add room:', err);
+        }
+    },
+
+    async _renameRoom(jobId, roomId, btnEl) {
+        const row = btnEl.closest('[data-room-id]');
+        const nameEl = row.querySelector('.drying-room-name');
+        const current = nameEl.textContent;
+
+        const newName = prompt('Rename room:', current);
+        if (!newName || !newName.trim() || newName.trim() === current) return;
+
+        try {
+            await api.updateDryingRoom(jobId, roomId, { name: newName.trim() });
+            nameEl.textContent = newName.trim();
+        } catch (err) {
+            console.error('Failed to rename room:', err);
+        }
+    },
+
+    async _deleteRoom(jobId, roomId) {
+        if (!confirm('Delete this room?')) return;
+
+        try {
+            await api.deleteDryingRoom(jobId, roomId);
+            jobDetailTabs._loadDryingRooms(jobId);
+        } catch (err) {
+            console.error('Failed to delete room:', err);
+        }
     }
 };
 
