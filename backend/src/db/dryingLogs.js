@@ -164,6 +164,35 @@ function createDryingLog(jobId) {
 }
 
 /**
+ * Create a drying log with a default chamber and pre-populated rooms in a single transaction.
+ * @param {string} jobId - The apex_jobs.id to associate with
+ * @param {string[]} roomNames - Array of room names to pre-populate (from areas_affected)
+ * @returns {object} Composite result: { log, chambers, rooms }
+ */
+const createDryingLogWithRooms = db.transaction((jobId, roomNames) => {
+  const logId = uuidv4();
+  insertLog.run(logId, jobId, 'active', 1);
+
+  // Always create a default chamber (rooms require a parent chamber_id)
+  const chamberId = uuidv4();
+  insertChamber.run(chamberId, logId, 'Default', '', 0);
+
+  const rooms = [];
+  roomNames.forEach((name, i) => {
+    const roomId = uuidv4();
+    insertRoom.run(roomId, chamberId, name, i);
+    rooms.push({ id: roomId, chamber_id: chamberId, name, position: i });
+  });
+
+  const log = getLogByJobId.get(jobId);
+  return {
+    log,
+    chambers: [{ id: chamberId, log_id: logId, name: 'Default', color: '', position: 0 }],
+    rooms
+  };
+});
+
+/**
  * Add a reference point with atomic ref_number assignment.
  * Reads next_ref_number, inserts ref point, then increments -- all in a transaction.
  *
@@ -253,6 +282,7 @@ module.exports = {
 
   // Drying log CRUD
   createDryingLog,
+  createDryingLogWithRooms,
   getLogByJobId: (jobId) => getLogByJobId.get(jobId),
   updateLogStatus: (logId, status, completedAt) => updateLogStatus.run(status, completedAt || null, logId),
 
