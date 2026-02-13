@@ -13,9 +13,9 @@
 /* FAB Container */
 .fab-container {
     position: fixed;
-    bottom: 80px; /* Above bottom nav area */
+    bottom: 90px; /* Above bottom nav area */
     right: 20px;
-    z-index: 1000;
+    z-index: 1001;
 }
 
 /* Main FAB Button */
@@ -173,4 +173,22 @@
 
 .fab-btn.pressing {
     animation: fab-pulse 0.5s ease;
+}
+
+/* Landscape adjustments - smaller FAB, tighter positioning */
+@media (max-height: 500px) and (orientation: landscape) {
+    .fab-container {
+        bottom: 70px;
+        right: 16px;
+    }
+    
+    .fab-btn {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .fab-btn .fab-icon {
+        width: 20px;
+        height: 20px;
+    }
 }
