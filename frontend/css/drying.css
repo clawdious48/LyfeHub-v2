@@ -791,35 +791,30 @@
     display: flex;
     align-items: center;
     gap: 0.35rem;
-    padding: 0.45rem 0.85rem;
+    padding: 0.55rem 1.1rem;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1.5px solid var(--tab-chamber-color, rgba(255, 255, 255, 0.1));
     border-bottom: none;
     border-radius: 8px 8px 0 0;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 0.8rem;
-    font-weight: 500;
+    color: var(--tab-chamber-color, rgba(255, 255, 255, 0.5));
+    font-size: 0.88rem;
+    font-weight: 600;
     cursor: pointer;
     transition: var(--apex-transition-fast);
     white-space: nowrap;
-    border-left: 3px solid transparent;
 }
 
 .dry-room-tab:hover {
-    color: rgba(255, 255, 255, 0.8);
-    background: rgba(255, 255, 255, 0.03);
+    color: #fff;
+    background: color-mix(in srgb, var(--tab-chamber-color, #fff) 12%, transparent);
 }
 
 .dry-room-tab.active {
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.95);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: color-mix(in srgb, var(--tab-chamber-color, #fff) 15%, transparent);
+    color: #fff;
+    border-color: var(--tab-chamber-color, rgba(255, 255, 255, 0.3));
     border-bottom: none;
-}
-
-/* Chamber color coding via border-left */
-.dry-room-tab[data-color] {
-    border-left-color: var(--tab-chamber-color, transparent);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--tab-chamber-color, transparent) 30%, transparent);
 }
 
 .dry-room-content {
