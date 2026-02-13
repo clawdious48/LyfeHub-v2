@@ -816,7 +816,8 @@ const dryingSetup = {
             return;
         }
         try {
-            await api.createDryingRoom(jobId, { chamber_id: chamberId, name: '' });
+            const roomNum = this._state.rooms.length + 1;
+            await api.createDryingRoom(jobId, { chamber_id: chamberId, name: `Room ${roomNum}` });
             this._state.rooms = await api.getDryingRooms(jobId);
             this._render();
             setTimeout(() => {
