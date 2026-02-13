@@ -607,9 +607,8 @@ const dryingVisit = {
     // ── Save Bar ────────────────────────────
 
     _renderSaveBar() {
-        const canSave = this._canSave();
         return `<div class="dry-save-bar">
-            <button class="dry-save-btn" id="dv-save-btn" ${canSave ? '' : 'disabled'}>Save Visit</button>
+            <button class="dry-save-btn" id="dv-save-btn">Save Visit</button>
         </div>`;
     },
 
@@ -1001,10 +1000,7 @@ const dryingVisit = {
     },
 
     _updateSaveBtn() {
-        const btn = this._overlay.querySelector('#dv-save-btn');
-        if (btn) {
-            btn.disabled = !this._canSave();
-        }
+        // Save is always enabled — partial data is fine
     },
 
     // ========================================
