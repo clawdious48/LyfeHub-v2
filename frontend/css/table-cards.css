@@ -376,7 +376,7 @@
    Tablet View (641-1024px)
    ========================================================================== */
 
-@media (min-width: 641px) and (max-width: 1024px) {
+@media (min-width: 641px) and (max-width: 768px) {
     /* Option 1: Table with clear horizontal scroll affordance */
     .apex-list-view {
         position: relative;
@@ -444,7 +444,7 @@
    Desktop View Adjustments (>1024px)
    ========================================================================== */
 
-@media (min-width: 1025px) {
+@media (min-width: 769px) {
     .apex-mobile-cards {
         display: none !important;
     }

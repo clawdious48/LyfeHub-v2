@@ -156,7 +156,7 @@
    Tablet View (641px - 1024px): Snap Scrolling with arrows
    ========================================================================== */
 
-@media (min-width: 641px) and (max-width: 1024px) {
+@media (min-width: 641px) and (max-width: 768px) {
   .kanban-mobile-nav {
     display: none; /* Hide nav on tablet - use native scroll */
   }
@@ -335,7 +335,7 @@
   display: none;
 }
 
-@media (min-width: 641px) and (max-width: 1024px) {
+@media (min-width: 641px) and (max-width: 768px) {
   .apex-board {
     display: flex;
     gap: 1rem;

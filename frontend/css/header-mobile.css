@@ -91,67 +91,6 @@
    Tablet Header Layout (769px - 1024px)
    ========================================================================== */
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  .header {
-    padding: 0.5rem 1rem;
-  }
-  
-  /* Tabs container: horizontal scroll for many tabs */
-  .header .tabs {
-    display: flex;
-    flex: 1;
-    overflow-x: auto;
-    overflow-y: hidden;
-    gap: 0.125rem;
-    margin: 0 0.5rem;
-    padding-bottom: 2px; /* Space for scrollbar */
-    scrollbar-width: thin;
-    scrollbar-color: var(--neon-purple) transparent;
-    
-    /* Smooth momentum scrolling on iOS */
-    -webkit-overflow-scrolling: touch;
-    
-    /* Hide scrollbar visually but keep functionality */
-    -ms-overflow-style: none;
-  }
-  
-  .header .tabs::-webkit-scrollbar {
-    height: 4px;
-  }
-  
-  .header .tabs::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
-  .header .tabs::-webkit-scrollbar-thumb {
-    background: rgba(191, 90, 242, 0.3);
-    border-radius: 2px;
-  }
-  
-  .header .tabs::-webkit-scrollbar-thumb:hover {
-    background: rgba(191, 90, 242, 0.5);
-  }
-  
-  /* Compact tabs for tablet */
-  .header .tabs .tab {
-    padding: 0.6rem 1rem;
-    font-size: 0.85rem;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  
-  /* Compact header-right for tablet */
-  .header-right {
-    gap: 0.5rem;
-  }
-  
-  .header-right #logout-btn {
-    padding: 0.4rem 0.75rem;
-    font-size: 0.8rem;
-  }
-}
-
-
 /* ==========================================================================
    Sticky Header with Scroll Shadow
    ========================================================================== */

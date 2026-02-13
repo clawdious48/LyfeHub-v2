@@ -1,47 +1,21 @@
 /**
  * LyfeHub Responsive Breakpoint System
  * =====================================
- * Standardized breakpoints and visibility utilities for mobile-first responsive design.
- * Import this file BEFORE style.css so app styles can override when needed.
+ * iPad shows desktop layout. Only ≤768px gets mobile.
  *
  * Breakpoint Scale:
  *   sm (640px)  - Mobile phones (landscape)
- *   md (768px)  - Tablets (portrait)
- *   lg (1024px) - Tablets (landscape) / Small laptops
- *   xl (1280px) - Desktops
+ *   md (768px)  - Mobile / Desktop boundary
+ *   xl (1280px) - Wide desktops
  */
 
-/* ==========================================================================
-   CSS Custom Properties (Breakpoint Values)
-   ========================================================================== */
-
 :root {
-  /* Breakpoint values - use in calc() or reference in documentation */
-  --bp-sm: 640px;   /* Mobile landscape */
-  --bp-md: 768px;   /* Tablet portrait */
-  --bp-lg: 1024px;  /* Tablet landscape */
-  --bp-xl: 1280px;  /* Desktop */
+  --bp-sm: 640px;
+  --bp-md: 768px;
+  --bp-xl: 1280px;
 }
 
-
-/* ==========================================================================
-   Visibility Utility Classes
-   ========================================================================== 
-   
-   Usage:
-     .mobile-only   → Visible only on screens ≤768px
-     .tablet-only   → Visible only on screens 769px-1024px
-     .desktop-only  → Visible only on screens >1024px
-     
-     .hide-mobile   → Hidden on screens ≤768px
-     .hide-tablet   → Hidden on screens 769px-1024px
-     .hide-desktop  → Hidden on screens >1024px
-*/
-
-/* --------------------------------------
-   Mobile Only (≤768px)
-   Visible by default, hidden on larger screens
-   -------------------------------------- */
+/* Mobile Only (≤768px) */
 .mobile-only {
   display: block;
 }
@@ -52,76 +26,40 @@
   }
 }
 
-
-/* --------------------------------------
-   Tablet Only (769px - 1024px)
-   Hidden by default, shown only in tablet range
-   -------------------------------------- */
+/* Tablet Only - DISABLED (tablet now shows desktop) */
 .tablet-only {
   display: none;
 }
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  .tablet-only {
-    display: block !important;
-  }
-}
-
-
-/* --------------------------------------
-   Desktop Only (>1024px)
-   Hidden by default, shown on large screens
-   -------------------------------------- */
+/* Desktop Only (>768px) - was >1024px */
 .desktop-only {
   display: none;
 }
 
-@media (min-width: 1025px) {
+@media (min-width: 769px) {
   .desktop-only {
     display: block !important;
   }
 }
 
-
-/* --------------------------------------
-   Hide on Mobile (≤768px)
-   Visible by default, hidden on mobile
-   -------------------------------------- */
+/* Hide on Mobile (≤768px) */
 @media (max-width: 768px) {
   .hide-mobile {
     display: none !important;
   }
 }
 
+/* Hide on Tablet - DISABLED (tablet is desktop now) */
+/* .hide-tablet no longer hides anything */
 
-/* --------------------------------------
-   Hide on Tablet (769px - 1024px)
-   Visible by default, hidden in tablet range
-   -------------------------------------- */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .hide-tablet {
-    display: none !important;
-  }
-}
-
-
-/* --------------------------------------
-   Hide on Desktop (>1024px)
-   Visible by default, hidden on large screens
-   -------------------------------------- */
-@media (min-width: 1025px) {
+/* Hide on Desktop (>768px) - was >1024px */
+@media (min-width: 769px) {
   .hide-desktop {
     display: none !important;
   }
 }
 
-
-/* ==========================================================================
-   Inline Visibility Variants
-   ========================================================================== 
-   For elements that should be inline rather than block
-*/
-
+/* Inline variants */
 .mobile-only-inline {
   display: inline;
 }
@@ -136,29 +74,17 @@
   display: none;
 }
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  .tablet-only-inline {
-    display: inline !important;
-  }
-}
-
 .desktop-only-inline {
   display: none;
 }
 
-@media (min-width: 1025px) {
+@media (min-width: 769px) {
   .desktop-only-inline {
     display: inline !important;
   }
 }
 
-
-/* ==========================================================================
-   Flex Visibility Variants
-   ========================================================================== 
-   For elements that should be flex containers
-*/
-
+/* Flex variants */
 .mobile-only-flex {
   display: flex;
 }
@@ -173,17 +99,11 @@
   display: none;
 }
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  .tablet-only-flex {
-    display: flex !important;
-  }
-}
-
 .desktop-only-flex {
   display: none;
 }
 
-@media (min-width: 1025px) {
+@media (min-width: 769px) {
   .desktop-only-flex {
     display: flex !important;
   }

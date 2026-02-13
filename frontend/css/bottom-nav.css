@@ -265,7 +265,7 @@
 /* ===================
    MOBILE ONLY - Show nav
    =================== */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     .bottom-nav {
         display: block;
     }
@@ -286,7 +286,7 @@
 /* ===================
    LANDSCAPE ADJUSTMENTS
    =================== */
-@media (max-width: 1024px) and (orientation: landscape) {
+@media (max-width: 768px) and (orientation: landscape) {
     .bottom-nav-items {
         padding: 4px 0;
     }

@@ -1748,7 +1748,7 @@ body {
     }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     .board {
         grid-template-columns: repeat(2, minmax(250px, 1fr));
     }
@@ -8707,7 +8707,7 @@ body.column-dragging .base-table {
 }
 
 /* Responsive for wide loss section */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     .job-fields-wide {
         grid-template-columns: 1fr 1fr;
     }
