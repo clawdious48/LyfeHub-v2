@@ -687,6 +687,26 @@ const dryingVisit = {
                 this._save();
             });
         }
+
+        // Enter key navigates horizontally then down across all number inputs
+        modal.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter') return;
+            const active = document.activeElement;
+            if (!active || active.tagName === 'TEXTAREA') return;
+            if (active.tagName !== 'INPUT') return;
+            e.preventDefault();
+
+            // Gather all visible number/text inputs in the modal (not buttons, not textareas)
+            const allInputs = [...modal.querySelectorAll('input[type="number"], input[type="text"], input:not([type])')].filter(
+                el => el.offsetParent !== null && !el.disabled && !el.readOnly
+            );
+            const idx = allInputs.indexOf(active);
+            if (idx === -1) return;
+
+            const next = idx + 1 < allInputs.length ? allInputs[idx + 1] : allInputs[0];
+            next.focus();
+            next.select();
+        });
     },
 
     // ========================================
