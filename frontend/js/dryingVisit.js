@@ -940,20 +940,82 @@ const dryingVisit = {
     },
 
     async _promptAddRefPoint(roomId) {
-        // Build a simple material select prompt
-        const codes = dryingUtils.MATERIAL_CODES;
-        const labels = codes.map(m => `${m.code} - ${m.label}`);
-        const choice = prompt('Select material code:\n' + labels.map((l, i) => `${i + 1}. ${l}`).join('\n') + '\n\nEnter number:');
-        if (!choice) return;
+        const esc = dryingUtils.escapeHtml;
 
-        const idx = parseInt(choice) - 1;
-        if (idx < 0 || idx >= codes.length) return;
+        // Build surface type chips HTML
+        let surfaceChips = '';
+        for (const st of dryingUtils.SURFACE_TYPES) {
+            surfaceChips += `<button class="dry-chip dry-chip-surface" data-surface="${esc(st.key)}">${esc(st.label)}</button>`;
+        }
 
-        const materialCode = codes[idx].code;
+        const materialCode = await new Promise((resolve) => {
+            const overlay = document.createElement('div');
+            overlay.className = 'dry-confirm-overlay';
+            overlay.innerHTML = `
+                <div class="dry-confirm-backdrop"></div>
+                <div class="dry-confirm-card" style="max-width:440px;">
+                    <div class="dry-confirm-icon">📍</div>
+                    <h3 class="dry-confirm-title">Add Reference Point</h3>
+                    <p class="dry-confirm-message">Pick a surface type, then select the material.</p>
+                    <div class="dry-material-picker">
+                        <div class="dry-surface-chips" style="display:flex;flex-wrap:wrap;gap:0.4rem;justify-content:center;margin-bottom:0.75rem;">
+                            ${surfaceChips}
+                        </div>
+                        <div class="dry-material-chips" style="display:flex;flex-wrap:wrap;gap:0.4rem;justify-content:center;min-height:2rem;"></div>
+                    </div>
+                    <div class="dry-confirm-actions" style="margin-top:1rem;">
+                        <button class="dry-btn dry-btn-secondary dry-btn-sm dry-confirm-cancel">Cancel</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            requestAnimationFrame(() => overlay.classList.add('visible'));
+
+            const cleanup = (result) => {
+                overlay.classList.remove('visible');
+                setTimeout(() => overlay.remove(), 200);
+                resolve(result);
+            };
+
+            overlay.querySelector('.dry-confirm-backdrop').addEventListener('click', () => cleanup(null));
+            overlay.querySelector('.dry-confirm-cancel').addEventListener('click', () => cleanup(null));
+
+            const matContainer = overlay.querySelector('.dry-material-chips');
+
+            overlay.querySelectorAll('.dry-chip-surface').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    overlay.querySelectorAll('.dry-chip-surface').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    const surfaceKey = chip.dataset.surface;
+                    const codes = dryingUtils.SURFACE_MATERIALS[surfaceKey] || [];
+                    let html = '';
+                    for (const code of codes) {
+                        const m = dryingUtils.MATERIAL_CODES.find(mc => mc.code === code);
+                        if (m) html += `<button class="dry-chip dry-chip-material" data-mat-code="${esc(m.code)}">${esc(m.label)}</button>`;
+                    }
+                    matContainer.innerHTML = html;
+                    matContainer.querySelectorAll('.dry-chip-material').forEach(matChip => {
+                        matChip.addEventListener('click', () => cleanup(matChip.dataset.matCode));
+                    });
+                });
+            });
+        });
+
+        if (!materialCode) return;
+
         try {
+            // Determine surface label for the ref point
+            let surfaceLabel = '';
+            for (const st of dryingUtils.SURFACE_TYPES) {
+                if ((dryingUtils.SURFACE_MATERIALS[st.key] || []).includes(materialCode)) {
+                    surfaceLabel = st.label;
+                    break;
+                }
+            }
             await api.createDryingRefPoint(this._state.jobId, {
                 room_id: roomId,
-                material_code: materialCode
+                material_code: materialCode,
+                label: surfaceLabel
             });
             this._state.refPoints = await api.getDryingRefPoints(this._state.jobId);
             this._switchRoom(this._state.activeRoomId);
