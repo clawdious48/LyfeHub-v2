@@ -488,13 +488,16 @@ const dryingVisit = {
             const materialLabel = this._materialLabel(rp.material_code);
 
             if (isDemolished) {
+                // Show Undo Demo if demolished on THIS visit (or visit not yet created — same session)
+                const demoedThisVisit = isInput && (rp.demolished_visit_id === this._state.visitId ||
+                    (!this._state.visitId && !rp.demolished_visit_id));
                 html += `<div class="dry-moisture-row${rowClass}">
                     <div class="dry-moisture-cell">${esc(String(rp.ref_number))}</div>
                     <div class="dry-moisture-cell">${esc(materialLabel)}</div>
                     <div class="dry-moisture-cell">${priorVal != null ? priorVal : '--'}</div>
-                    <div class="dry-moisture-cell">Demolished</div>
+                    <div class="dry-moisture-cell" style="opacity:0.5">Demolished</div>
                     <div class="dry-moisture-cell">--</div>
-                    <div class="dry-moisture-cell"></div>
+                    <div class="dry-moisture-cell">${demoedThisVisit ? `<button class="dry-btn dry-btn-secondary dry-btn-sm dv-undo-demo-btn" data-rp-id="${esc(rp.id)}">Undo</button>` : ''}</div>
                 </div>`;
             } else if (isInput) {
                 html += `<div class="dry-moisture-row${rowClass}" data-rp-id="${esc(rp.id)}">
@@ -679,6 +682,13 @@ const dryingVisit = {
             });
         });
 
+        // Undo Demo buttons
+        modal.querySelectorAll('.dv-undo-demo-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this._undoDemolish(btn.dataset.rpId);
+            });
+        });
+
         // Add reference point buttons
         modal.querySelectorAll('.dv-add-rp-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -772,6 +782,12 @@ const dryingVisit = {
         panel.querySelectorAll('.dv-demo-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 this._demolishRefPoint(btn.dataset.rpId);
+            });
+        });
+
+        panel.querySelectorAll('.dv-undo-demo-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this._undoDemolish(btn.dataset.rpId);
             });
         });
 
@@ -932,6 +948,29 @@ const dryingVisit = {
             this._switchRoom(this._state.activeRoomId);
         } catch (err) {
             console.error('Failed to demolish ref point:', err);
+        }
+    },
+
+    async _undoDemolish(rpId) {
+        const rp = this._state.refPoints.find(r => r.id === rpId);
+        const mat = rp ? (dryingUtils.MATERIAL_CODES.find(m => m.code === rp.material_code) || { label: rp.material_code }) : { label: 'this point' };
+
+        const confirmed = await dryingUtils.confirm({
+            icon: '↩️',
+            title: 'Undo Demolish',
+            message: `Restore <strong>#${rp ? rp.ref_number : '?'} ${dryingUtils.escapeHtml(mat.label)}</strong> back to active? It will require readings again.`,
+            confirmText: 'Restore',
+            cancelText: 'Cancel',
+            confirmClass: 'dry-btn-primary'
+        });
+        if (!confirmed) return;
+
+        try {
+            await api.undoDemolishRefPoint(this._state.jobId, rpId);
+            this._state.refPoints = await api.getDryingRefPoints(this._state.jobId);
+            this._switchRoom(this._state.activeRoomId);
+        } catch (err) {
+            console.error('Failed to undo demolish:', err);
         }
     },
 

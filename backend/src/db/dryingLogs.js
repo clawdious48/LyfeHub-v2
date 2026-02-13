@@ -89,6 +89,7 @@ const getRefPointsByLog = db.prepare('SELECT * FROM drying_ref_points WHERE log_
 const getRefPointById = db.prepare('SELECT * FROM drying_ref_points WHERE id = ?');
 const insertRefPoint = db.prepare('INSERT INTO drying_ref_points (id, room_id, log_id, ref_number, material_code, label) VALUES (?, ?, ?, ?, ?, ?)');
 const demolishRefPoint = db.prepare("UPDATE drying_ref_points SET demolished_at = datetime('now'), demolished_visit_id = ? WHERE id = ?");
+const undemolishRefPoint = db.prepare("UPDATE drying_ref_points SET demolished_at = NULL, demolished_visit_id = NULL WHERE id = ?");
 
 // Baselines
 const getBaselinesByLog = db.prepare('SELECT * FROM drying_baselines WHERE log_id = ?');
@@ -311,6 +312,7 @@ module.exports = {
   getRefPointById: (id) => getRefPointById.get(id),
   addRefPoint,
   demolishRefPoint: (refPointId, visitId) => demolishRefPoint.run(visitId, refPointId),
+  undemolishRefPoint: (refPointId) => undemolishRefPoint.run(refPointId),
 
   // Baselines
   getBaselinesByLog: (logId) => getBaselinesByLog.all(logId),

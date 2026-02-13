@@ -858,6 +858,12 @@ const api = {
         });
     },
 
+    async undoDemolishRefPoint(jobId, rpId) {
+        return this.request(`/apex-jobs/${jobId}/drying/ref-points/${rpId}/undemolish`, {
+            method: 'POST',
+        });
+    },
+
     /**
      * Drying: Get all baselines for a job's drying log
      */

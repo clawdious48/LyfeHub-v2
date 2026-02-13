@@ -347,6 +347,22 @@ router.post('/ref-points/:rpId/demolish', (req, res) => {
   }
 });
 
+// POST /ref-points/:rpId/undemolish - Undo demolish on a reference point
+router.post('/ref-points/:rpId/undemolish', (req, res) => {
+  try {
+    const existing = dryingLogs.getRefPointById(req.params.rpId);
+    if (!existing) return res.status(404).json({ error: 'Reference point not found' });
+    if (!existing.demolished_at) return res.status(400).json({ error: 'Reference point is not demolished' });
+
+    dryingLogs.undemolishRefPoint(req.params.rpId);
+    const updated = dryingLogs.getRefPointById(req.params.rpId);
+    res.json(updated);
+  } catch (err) {
+    console.error('Error undoing demolish:', err);
+    res.status(500).json({ error: 'Failed to undo demolish' });
+  }
+});
+
 // ============================================
 // BASELINE ROUTES
 // ============================================
