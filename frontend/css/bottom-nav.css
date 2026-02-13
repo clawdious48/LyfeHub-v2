@@ -1,0 +1,306 @@
+/* ========================================
+   BOTTOM NAVIGATION BAR - Mobile Only
+   
+   Dark glassmorphic style matching LyfeHub theme
+   Shows only on mobile (<768px)
+   ======================================== */
+
+/* ===================
+   BOTTOM NAV CONTAINER
+   =================== */
+.bottom-nav {
+    display: none; /* Hidden by default (desktop) */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    
+    /* Glassmorphic background */
+    background: rgba(10, 10, 15, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    
+    /* Top border glow */
+    border-top: 1px solid rgba(191, 90, 242, 0.2);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+    
+    /* Safe area padding for notched phones */
+    padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* ===================
+   NAV ITEMS CONTAINER
+   =================== */
+.bottom-nav-items {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 8px 0;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* ===================
+   INDIVIDUAL NAV ITEM
+   =================== */
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 12px;
+    min-width: 60px;
+    
+    /* Reset button styles */
+    background: none;
+    border: none;
+    cursor: pointer;
+    
+    /* Text styling */
+    color: var(--apex-text-muted, rgba(255, 255, 255, 0.5));
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    
+    /* Smooth transitions */
+    transition: all 0.2s ease;
+    
+    /* Touch target */
+    -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav-item:active {
+    transform: scale(0.95);
+}
+
+/* ===================
+   NAV ITEM ICON
+   =================== */
+.bottom-nav-item svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    fill: none;
+    transition: all 0.2s ease;
+}
+
+/* ===================
+   ACTIVE STATE
+   =================== */
+.bottom-nav-item.active {
+    color: var(--apex-primary, #bf5af2);
+}
+
+.bottom-nav-item.active svg {
+    filter: drop-shadow(0 0 6px rgba(191, 90, 242, 0.5));
+}
+
+.bottom-nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 3px;
+    background: var(--apex-gradient-primary, linear-gradient(135deg, #bf5af2, #0af));
+    border-radius: 0 0 3px 3px;
+}
+
+/* Make nav item position relative for the indicator */
+.bottom-nav-item {
+    position: relative;
+}
+
+/* ===================
+   MORE MENU OVERLAY
+   =================== */
+.bottom-nav-more-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.bottom-nav-more-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ===================
+   MORE MENU PANEL
+   =================== */
+.bottom-nav-more-menu {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1001;
+    
+    /* Glassmorphic background */
+    background: rgba(15, 15, 20, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    
+    /* Border and shadow */
+    border-top: 1px solid rgba(191, 90, 242, 0.3);
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.5);
+    
+    /* Safe area */
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    
+    /* Slide animation */
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bottom-nav-more-menu.visible {
+    transform: translateY(0);
+}
+
+/* ===================
+   MORE MENU HEADER
+   =================== */
+.more-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    position: relative;
+}
+
+.more-menu-handle {
+    width: 40px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}
+
+.more-menu-close {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--apex-text-muted, rgba(255, 255, 255, 0.5));
+    transition: all 0.2s ease;
+}
+
+.more-menu-close:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--apex-text-primary, #fff);
+}
+
+.more-menu-close svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* ===================
+   MORE MENU ITEMS
+   =================== */
+.more-menu-items {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 8px 16px 24px;
+}
+
+.more-menu-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 8px;
+    
+    /* Reset button styles */
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    cursor: pointer;
+    
+    /* Text styling */
+    color: var(--apex-text-secondary, rgba(255, 255, 255, 0.75));
+    font-size: 12px;
+    font-weight: 500;
+    
+    transition: all 0.2s ease;
+}
+
+.more-menu-item:active {
+    transform: scale(0.96);
+    background: rgba(191, 90, 242, 0.1);
+    border-color: rgba(191, 90, 242, 0.3);
+}
+
+.more-menu-item svg {
+    width: 28px;
+    height: 28px;
+    stroke: var(--apex-primary, #bf5af2);
+    stroke-width: 1.5;
+    fill: none;
+}
+
+/* ===================
+   MOBILE ONLY - Show nav
+   =================== */
+@media (max-width: 1024px) {
+    .bottom-nav {
+        display: block;
+    }
+    
+    /* Add padding to main content so it's not hidden */
+    body {
+        padding-bottom: calc(70px + env(safe-area-inset-bottom, 0));
+    }
+    
+    /* Ensure modals appear above bottom nav */
+    .modal,
+    .modal-backdrop,
+    .jdm-overlay {
+        z-index: 1100;
+    }
+}
+
+/* ===================
+   LANDSCAPE ADJUSTMENTS
+   =================== */
+@media (max-width: 1024px) and (orientation: landscape) {
+    .bottom-nav-items {
+        padding: 4px 0;
+    }
+    
+    .bottom-nav-item {
+        padding: 4px 12px;
+    }
+    
+    .bottom-nav-item svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .bottom-nav-item span {
+        display: none;
+    }
+}

@@ -1,27 +1,29 @@
 /**
  * Kanban Mobile Navigation
  * =========================
- * Adds swipe navigation and column indicators for mobile view.
+ * Swipe-to-navigate columns on mobile with dot indicators.
+ * Arrows hidden on mobile - pure gesture navigation.
  * 
  * Features:
  * - Touch swipe left/right to change columns
- * - Column indicator with dots
- * - Previous/Next arrow buttons as fallback
- * - Preserves existing drag-drop functionality within visible columns
+ * - Smooth CSS transitions with spring easing
+ * - Dot indicators showing current column position (tappable)
+ * - Resistance at edges
+ * - Desktop: arrows still work (if nav is shown)
  */
 
 const kanbanMobile = {
   // Configuration
   SWIPE_THRESHOLD: 50, // Minimum px to trigger swipe
-  SWIPE_VELOCITY_THRESHOLD: 0.3, // Minimum velocity (px/ms)
-  COLUMNS: ['planned', 'ready', 'in_progress', 'blocked', 'review', 'done'],
+  SWIPE_VELOCITY_THRESHOLD: 0.25, // Minimum velocity (px/ms) - lowered for easier swiping
+  COLUMNS: ["planned", "ready", "in_progress", "blocked", "review", "done"],
   COLUMN_NAMES: {
-    planned: 'Planned',
-    ready: 'Ready',
-    in_progress: 'In Progress',
-    blocked: 'Blocked',
-    review: 'Review',
-    done: 'Done'
+    planned: "Planned",
+    ready: "Ready",
+    in_progress: "In Progress",
+    blocked: "Blocked",
+    review: "Review",
+    done: "Done"
   },
 
   // State
@@ -48,10 +50,10 @@ const kanbanMobile = {
       return;
     }
 
-    this.board = document.getElementById('board');
+    this.board = document.getElementById("board");
     if (!this.board) return;
 
-    this.boardContainer = this.board.closest('.view-container') || this.board.closest('.board-container') || this.board.parentElement;
+    this.boardContainer = this.board.closest(".view-container") || this.board.closest(".board-container") || this.board.parentElement;
     
     // Prevent double initialization
     if (this.isInitialized) return;
@@ -66,14 +68,14 @@ const kanbanMobile = {
   },
 
   /**
-   * Create the navigation UI (indicator + arrows + dots)
+   * Create the navigation UI (indicator + dots, arrows hidden via CSS on mobile)
    */
   createNavigationUI() {
     // Check if already exists
-    if (document.querySelector('.kanban-mobile-nav')) return;
+    if (document.querySelector(".kanban-mobile-nav")) return;
 
-    const nav = document.createElement('div');
-    nav.className = 'kanban-mobile-nav';
+    const nav = document.createElement("div");
+    nav.className = "kanban-mobile-nav";
     nav.innerHTML = `
       <div class="kanban-column-indicator">
         <button class="kanban-nav-btn kanban-prev" aria-label="Previous column">
@@ -90,8 +92,8 @@ const kanbanMobile = {
       </div>
       <div class="kanban-dots">
         ${this.COLUMNS.map((status, i) => 
-          `<div class="kanban-dot ${i === 0 ? 'active' : ''}" data-index="${i}" data-status="${status}"></div>`
-        ).join('')}
+          `<div class="kanban-dot ${i === 0 ? "active" : ""}" data-index="${i}" data-status="${status}"></div>`
+        ).join("")}
       </div>
     `;
 
@@ -105,35 +107,38 @@ const kanbanMobile = {
    */
   bindEvents() {
     // Touch events for swipe
-    this.board.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: true });
-    this.board.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
-    this.board.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: true });
+    this.board.addEventListener("touchstart", this.handleTouchStart.bind(this), { passive: true });
+    this.board.addEventListener("touchmove", this.handleTouchMove.bind(this), { passive: false });
+    this.board.addEventListener("touchend", this.handleTouchEnd.bind(this), { passive: true });
 
-    // Navigation button clicks
-    const prevBtn = this.navContainer.querySelector('.kanban-prev');
-    const nextBtn = this.navContainer.querySelector('.kanban-next');
+    // Navigation button clicks (for desktop/tablet)
+    const prevBtn = this.navContainer.querySelector(".kanban-prev");
+    const nextBtn = this.navContainer.querySelector(".kanban-next");
     
-    prevBtn.addEventListener('click', () => this.goToColumn(this.currentColumnIndex - 1));
-    nextBtn.addEventListener('click', () => this.goToColumn(this.currentColumnIndex + 1));
+    prevBtn.addEventListener("click", () => this.goToColumn(this.currentColumnIndex - 1));
+    nextBtn.addEventListener("click", () => this.goToColumn(this.currentColumnIndex + 1));
 
-    // Dot clicks
-    this.navContainer.querySelectorAll('.kanban-dot').forEach(dot => {
-      dot.addEventListener('click', () => {
+    // Dot clicks - tap to jump to column
+    this.navContainer.querySelectorAll(".kanban-dot").forEach(dot => {
+      dot.addEventListener("click", () => {
         const index = parseInt(dot.dataset.index);
         this.goToColumn(index);
+        // Haptic feedback
+        if (navigator.vibrate) navigator.vibrate(10);
       });
     });
 
     // Handle resize
-    window.addEventListener('resize', this.handleResize.bind(this));
+    window.addEventListener("resize", this.handleResize.bind(this));
   },
 
   /**
    * Touch start handler
    */
   handleTouchStart(e) {
-    // Ignore if dragging a card
-    if (e.target.closest('.task-card[draggable="true"]')) return;
+    // Ignore if dragging a card or touching interactive elements
+    if (e.target.closest(".task-card[draggable=\"true\"]")) return;
+    if (e.target.closest("button, input, select, textarea, a")) return;
     
     this.touchStartX = e.touches[0].clientX;
     this.touchStartY = e.touches[0].clientY;
@@ -155,7 +160,7 @@ const kanbanMobile = {
     // Determine if horizontal swipe (vs vertical scroll)
     if (!this.isDragging) {
       // If more vertical than horizontal movement, ignore
-      if (Math.abs(deltaY) > Math.abs(deltaX)) {
+      if (Math.abs(deltaY) > Math.abs(deltaX) * 1.2) {
         this.touchStartX = 0;
         return;
       }
@@ -163,7 +168,7 @@ const kanbanMobile = {
       // Start horizontal drag if threshold met
       if (Math.abs(deltaX) > 10) {
         this.isDragging = true;
-        this.board.classList.add('swiping');
+        this.board.classList.add("swiping");
       }
     }
 
@@ -174,10 +179,10 @@ const kanbanMobile = {
       const baseTranslate = -this.currentColumnIndex * 100;
       let dragOffset = (deltaX / this.board.offsetWidth) * 100;
       
-      // Add resistance at first and last columns
+      // Add rubber-band resistance at first and last columns
       if ((this.currentColumnIndex === 0 && deltaX > 0) || 
           (this.currentColumnIndex === this.COLUMNS.length - 1 && deltaX < 0)) {
-        dragOffset *= 0.3; // Resistance factor
+        dragOffset *= 0.25; // Strong resistance
       }
       
       this.currentTranslate = baseTranslate + dragOffset;
@@ -194,7 +199,7 @@ const kanbanMobile = {
       return;
     }
 
-    this.board.classList.remove('swiping');
+    this.board.classList.remove("swiping");
     
     const touchEndX = e.changedTouches[0].clientX;
     const deltaX = touchEndX - this.touchStartX;
@@ -203,7 +208,7 @@ const kanbanMobile = {
 
     let newIndex = this.currentColumnIndex;
 
-    // Check if swipe meets threshold (distance or velocity)
+    // Check if swipe meets threshold (distance OR velocity)
     if (Math.abs(deltaX) > this.SWIPE_THRESHOLD || velocity > this.SWIPE_VELOCITY_THRESHOLD) {
       if (deltaX > 0 && this.currentColumnIndex > 0) {
         newIndex = this.currentColumnIndex - 1;
@@ -232,27 +237,26 @@ const kanbanMobile = {
    * Update the visual state
    */
   updateView() {
-    // Update board position
+    // Update board position with smooth transition
     const translateX = -this.currentColumnIndex * 100;
     this.board.style.transform = `translateX(${translateX}%)`;
     this.currentTranslate = translateX;
 
     const status = this.COLUMNS[this.currentColumnIndex];
     const columnName = this.COLUMN_NAMES[status];
-    const taskCount = this.getTaskCount(status);
 
-    // Update title
-    const title = this.navContainer.querySelector('.kanban-column-title');
-    title.textContent = `${columnName} (${this.currentColumnIndex + 1} of ${this.COLUMNS.length})`;
+    // Update title - simpler format without "X of Y"
+    const title = this.navContainer.querySelector(".kanban-column-title");
+    title.textContent = columnName;
 
     // Update dots
-    this.navContainer.querySelectorAll('.kanban-dot').forEach((dot, i) => {
-      dot.classList.toggle('active', i === this.currentColumnIndex);
+    this.navContainer.querySelectorAll(".kanban-dot").forEach((dot, i) => {
+      dot.classList.toggle("active", i === this.currentColumnIndex);
     });
 
-    // Update arrow buttons
-    const prevBtn = this.navContainer.querySelector('.kanban-prev');
-    const nextBtn = this.navContainer.querySelector('.kanban-next');
+    // Update arrow buttons (for desktop)
+    const prevBtn = this.navContainer.querySelector(".kanban-prev");
+    const nextBtn = this.navContainer.querySelector(".kanban-next");
     prevBtn.disabled = this.currentColumnIndex === 0;
     nextBtn.disabled = this.currentColumnIndex === this.COLUMNS.length - 1;
   },
@@ -269,17 +273,17 @@ const kanbanMobile = {
    * Show swipe hint animation on first visit
    */
   showSwipeHint() {
-    const hintShown = localStorage.getItem('kanban-swipe-hint-shown');
+    const hintShown = localStorage.getItem("kanban-swipe-hint-shown");
     if (hintShown) return;
 
     setTimeout(() => {
-      this.board.classList.add('swipe-hint');
+      this.board.classList.add("swipe-hint");
       setTimeout(() => {
-        this.board.classList.remove('swipe-hint');
-      }, 1500);
-    }, 500);
+        this.board.classList.remove("swipe-hint");
+      }, 1200);
+    }, 800);
 
-    localStorage.setItem('kanban-swipe-hint-shown', 'true');
+    localStorage.setItem("kanban-swipe-hint-shown", "true");
   },
 
   /**
@@ -302,7 +306,7 @@ const kanbanMobile = {
       this.navContainer = null;
     }
     if (this.board) {
-      this.board.style.transform = '';
+      this.board.style.transform = "";
     }
     this.isInitialized = false;
     this.currentColumnIndex = 0;
@@ -325,11 +329,11 @@ const kanbanMobile = {
 // ============================================================================
 
 const apexKanbanMobile = {
-  COLUMNS: ['active', 'pending_insurance', 'complete'],
+  COLUMNS: ["active", "pending_insurance", "complete"],
   COLUMN_NAMES: {
-    active: 'Active',
-    pending_insurance: 'Pending Insurance',
-    complete: 'Complete'
+    active: "Active",
+    pending_insurance: "Pending Insurance",
+    complete: "Complete"
   },
   currentColumnIndex: 0,
   touchStartX: 0,
@@ -340,7 +344,7 @@ const apexKanbanMobile = {
   board: null,
   navContainer: null,
   SWIPE_THRESHOLD: 50,
-  SWIPE_VELOCITY_THRESHOLD: 0.3,
+  SWIPE_VELOCITY_THRESHOLD: 0.25,
 
   init() {
     if (window.innerWidth > 640) {
@@ -348,7 +352,7 @@ const apexKanbanMobile = {
       return;
     }
 
-    this.board = document.querySelector('.apex-board');
+    this.board = document.querySelector(".apex-board");
     if (!this.board) return;
 
     if (this.isInitialized) return;
@@ -357,13 +361,14 @@ const apexKanbanMobile = {
     this.createNavigationUI();
     this.bindEvents();
     this.updateView();
+    this.showSwipeHint();
   },
 
   createNavigationUI() {
-    if (document.querySelector('.apex-kanban-mobile-nav')) return;
+    if (document.querySelector(".apex-kanban-mobile-nav")) return;
 
-    const nav = document.createElement('div');
-    nav.className = 'apex-kanban-mobile-nav kanban-mobile-nav';
+    const nav = document.createElement("div");
+    nav.className = "apex-kanban-mobile-nav kanban-mobile-nav";
     nav.innerHTML = `
       <div class="kanban-column-indicator">
         <button class="kanban-nav-btn kanban-prev" aria-label="Previous column">
@@ -371,7 +376,7 @@ const apexKanbanMobile = {
             <polyline points="15 18 9 12 15 6"/>
           </svg>
         </button>
-        <span class="kanban-column-title">Active (1 of 3)</span>
+        <span class="kanban-column-title">Active</span>
         <button class="kanban-nav-btn kanban-next" aria-label="Next column">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="9 18 15 12 9 6"/>
@@ -380,36 +385,41 @@ const apexKanbanMobile = {
       </div>
       <div class="kanban-dots">
         ${this.COLUMNS.map((status, i) => 
-          `<div class="kanban-dot ${i === 0 ? 'active' : ''}" data-index="${i}" data-status="${status}"></div>`
-        ).join('')}
+          `<div class="kanban-dot ${i === 0 ? "active" : ""}" data-index="${i}" data-status="${status}"></div>`
+        ).join("")}
       </div>
     `;
 
-    const container = this.board.closest('.apex-view-container') || this.board.closest('.apex-board-container') || this.board.parentElement;
+    const container = this.board.closest(".apex-view-container") || this.board.closest(".apex-board-container") || this.board.parentElement;
     container.insertBefore(nav, this.board);
     this.navContainer = nav;
   },
 
   bindEvents() {
-    this.board.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: true });
-    this.board.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
-    this.board.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: true });
+    this.board.addEventListener("touchstart", this.handleTouchStart.bind(this), { passive: true });
+    this.board.addEventListener("touchmove", this.handleTouchMove.bind(this), { passive: false });
+    this.board.addEventListener("touchend", this.handleTouchEnd.bind(this), { passive: true });
 
-    const prevBtn = this.navContainer.querySelector('.kanban-prev');
-    const nextBtn = this.navContainer.querySelector('.kanban-next');
+    const prevBtn = this.navContainer.querySelector(".kanban-prev");
+    const nextBtn = this.navContainer.querySelector(".kanban-next");
     
-    prevBtn.addEventListener('click', () => this.goToColumn(this.currentColumnIndex - 1));
-    nextBtn.addEventListener('click', () => this.goToColumn(this.currentColumnIndex + 1));
+    prevBtn.addEventListener("click", () => this.goToColumn(this.currentColumnIndex - 1));
+    nextBtn.addEventListener("click", () => this.goToColumn(this.currentColumnIndex + 1));
 
-    this.navContainer.querySelectorAll('.kanban-dot').forEach(dot => {
-      dot.addEventListener('click', () => this.goToColumn(parseInt(dot.dataset.index)));
+    this.navContainer.querySelectorAll(".kanban-dot").forEach(dot => {
+      dot.addEventListener("click", () => {
+        this.goToColumn(parseInt(dot.dataset.index));
+        if (navigator.vibrate) navigator.vibrate(10);
+      });
     });
 
-    window.addEventListener('resize', this.handleResize.bind(this));
+    window.addEventListener("resize", this.handleResize.bind(this));
   },
 
   handleTouchStart(e) {
-    if (e.target.closest('.apex-job-card[draggable="true"]')) return;
+    if (e.target.closest(".apex-job-card[draggable=\"true\"]")) return;
+    if (e.target.closest("button, input, select, textarea, a")) return;
+    
     this.touchStartX = e.touches[0].clientX;
     this.touchStartY = e.touches[0].clientY;
     this.touchStartTime = Date.now();
@@ -423,13 +433,13 @@ const apexKanbanMobile = {
     const deltaY = e.touches[0].clientY - this.touchStartY;
 
     if (!this.isDragging) {
-      if (Math.abs(deltaY) > Math.abs(deltaX)) {
+      if (Math.abs(deltaY) > Math.abs(deltaX) * 1.2) {
         this.touchStartX = 0;
         return;
       }
       if (Math.abs(deltaX) > 10) {
         this.isDragging = true;
-        this.board.classList.add('swiping');
+        this.board.classList.add("swiping");
       }
     }
 
@@ -440,7 +450,7 @@ const apexKanbanMobile = {
       
       if ((this.currentColumnIndex === 0 && deltaX > 0) || 
           (this.currentColumnIndex === this.COLUMNS.length - 1 && deltaX < 0)) {
-        dragOffset *= 0.3;
+        dragOffset *= 0.25;
       }
       
       this.board.style.transform = `translateX(${baseTranslate + dragOffset}%)`;
@@ -453,7 +463,7 @@ const apexKanbanMobile = {
       return;
     }
 
-    this.board.classList.remove('swiping');
+    this.board.classList.remove("swiping");
     
     const deltaX = e.changedTouches[0].clientX - this.touchStartX;
     const deltaTime = Date.now() - this.touchStartTime;
@@ -484,17 +494,31 @@ const apexKanbanMobile = {
     this.board.style.transform = `translateX(${-this.currentColumnIndex * 100}%)`;
 
     const status = this.COLUMNS[this.currentColumnIndex];
-    const title = this.navContainer.querySelector('.kanban-column-title');
-    title.textContent = `${this.COLUMN_NAMES[status]} (${this.currentColumnIndex + 1} of ${this.COLUMNS.length})`;
+    const title = this.navContainer.querySelector(".kanban-column-title");
+    title.textContent = this.COLUMN_NAMES[status];
 
-    this.navContainer.querySelectorAll('.kanban-dot').forEach((dot, i) => {
-      dot.classList.toggle('active', i === this.currentColumnIndex);
+    this.navContainer.querySelectorAll(".kanban-dot").forEach((dot, i) => {
+      dot.classList.toggle("active", i === this.currentColumnIndex);
     });
 
-    const prevBtn = this.navContainer.querySelector('.kanban-prev');
-    const nextBtn = this.navContainer.querySelector('.kanban-next');
+    const prevBtn = this.navContainer.querySelector(".kanban-prev");
+    const nextBtn = this.navContainer.querySelector(".kanban-next");
     prevBtn.disabled = this.currentColumnIndex === 0;
     nextBtn.disabled = this.currentColumnIndex === this.COLUMNS.length - 1;
+  },
+
+  showSwipeHint() {
+    const hintShown = localStorage.getItem("apex-kanban-swipe-hint-shown");
+    if (hintShown) return;
+
+    setTimeout(() => {
+      this.board.classList.add("swipe-hint");
+      setTimeout(() => {
+        this.board.classList.remove("swipe-hint");
+      }, 1200);
+    }, 800);
+
+    localStorage.setItem("apex-kanban-swipe-hint-shown", "true");
   },
 
   handleResize() {
@@ -511,7 +535,7 @@ const apexKanbanMobile = {
       this.navContainer = null;
     }
     if (this.board) {
-      this.board.style.transform = '';
+      this.board.style.transform = "";
     }
     this.isInitialized = false;
     this.currentColumnIndex = 0;
@@ -523,17 +547,17 @@ const apexKanbanMobile = {
 // Initialize on DOM ready
 // ============================================================================
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   kanbanMobile.init();
   apexKanbanMobile.init();
 });
 
 // Re-initialize when switching tabs (if board becomes visible)
-document.addEventListener('click', (e) => {
-  const tab = e.target.closest('.tab');
+document.addEventListener("click", (e) => {
+  const tab = e.target.closest(".tab");
   if (tab) {
     setTimeout(() => {
-      if (tab.dataset.tab === 'projects') {
+      if (tab.dataset.tab === "projects") {
         kanbanMobile.init();
         apexKanbanMobile.init();
       }

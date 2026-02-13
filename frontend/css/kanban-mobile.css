@@ -4,7 +4,7 @@
  * Mobile-first approach for Kanban board navigation.
  * 
  * Breakpoints:
- *   ≤640px  → Single column view with swipe navigation
+ *   ≤640px  → Single column view with swipe navigation (NO arrows)
  *   641-1024px → 2-3 columns with snap scrolling
  *   >1024px → Full 6-column grid (handled in style.css)
  */
@@ -16,11 +16,11 @@
 .kanban-mobile-nav {
   display: none;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 1rem;
-  background: rgba(10, 10, 15, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(10, 10, 15, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--glass-border);
   position: sticky;
   top: 0;
@@ -39,10 +39,10 @@
   font-weight: 600;
   text-align: center;
   color: var(--text-primary);
-  min-width: 160px;
+  min-width: 180px;
 }
 
-/* Navigation arrows */
+/* Navigation arrows - DESKTOP ONLY */
 .kanban-nav-btn {
   display: flex;
   align-items: center;
@@ -79,66 +79,86 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.625rem;
+  padding: 0.25rem 0;
 }
 
 .kanban-dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+  position: relative;
 }
 
 .kanban-dot:hover {
   background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.15);
 }
 
 .kanban-dot.active {
   background: var(--neon-purple);
-  box-shadow: 0 0 10px var(--neon-purple);
+  box-shadow: 0 0 12px var(--neon-purple);
+  transform: scale(1.2);
 }
 
 /* Column-specific dot colors when active */
 .kanban-dot.active[data-status="planned"] {
   background: var(--neon-purple);
-  box-shadow: 0 0 10px var(--neon-purple);
+  box-shadow: 0 0 12px var(--neon-purple);
 }
 
 .kanban-dot.active[data-status="ready"] {
   background: var(--neon-blue);
-  box-shadow: 0 0 10px var(--neon-blue);
+  box-shadow: 0 0 12px var(--neon-blue);
 }
 
 .kanban-dot.active[data-status="in_progress"] {
   background: var(--neon-orange);
-  box-shadow: 0 0 10px var(--neon-orange);
+  box-shadow: 0 0 12px var(--neon-orange);
 }
 
 .kanban-dot.active[data-status="blocked"] {
   background: var(--neon-pink);
-  box-shadow: 0 0 10px var(--neon-pink);
+  box-shadow: 0 0 12px var(--neon-pink);
 }
 
 .kanban-dot.active[data-status="review"] {
   background: var(--neon-yellow);
-  box-shadow: 0 0 10px var(--neon-yellow);
+  box-shadow: 0 0 12px var(--neon-yellow);
 }
 
 .kanban-dot.active[data-status="done"] {
   background: var(--neon-green);
-  box-shadow: 0 0 10px var(--neon-green);
+  box-shadow: 0 0 12px var(--neon-green);
+}
+
+/* Apex Jobs specific dot colors */
+.kanban-dot.active[data-status="active"] {
+  background: var(--neon-green);
+  box-shadow: 0 0 12px var(--neon-green);
+}
+
+.kanban-dot.active[data-status="pending_insurance"] {
+  background: var(--neon-orange);
+  box-shadow: 0 0 12px var(--neon-orange);
+}
+
+.kanban-dot.active[data-status="complete"] {
+  background: var(--neon-blue);
+  box-shadow: 0 0 12px var(--neon-blue);
 }
 
 
 /* ==========================================================================
-   Tablet View (641px - 1024px): Snap Scrolling
+   Tablet View (641px - 1024px): Snap Scrolling with arrows
    ========================================================================== */
 
 @media (min-width: 641px) and (max-width: 1024px) {
   .kanban-mobile-nav {
-    display: none; /* Hide nav on tablet */
+    display: none; /* Hide nav on tablet - use native scroll */
   }
 
   .view-container[data-view="kanban"] {
@@ -166,7 +186,7 @@
 
   /* Hint shadow for scroll indication */
   .view-container[data-view="kanban"]::after {
-    content: '';
+    content: "";
     position: absolute;
     right: 0;
     top: 0;
@@ -179,13 +199,29 @@
 
 
 /* ==========================================================================
-   Mobile View (≤640px): Single Column with Swipe
+   Mobile View (≤640px): Single Column with Swipe - NO ARROWS
    ========================================================================== */
 
 @media (max-width: 640px) {
   /* Show navigation UI */
   .kanban-mobile-nav {
     display: flex;
+  }
+
+  /* HIDE ARROWS ON MOBILE - swipe only! */
+  .kanban-mobile-nav .kanban-nav-btn {
+    display: none !important;
+  }
+
+  /* Center the title without arrows */
+  .kanban-column-indicator {
+    justify-content: center;
+  }
+
+  .kanban-column-title {
+    min-width: unset;
+    flex: 1;
+    text-align: center;
   }
 
   /* Hide scrollbar and set up swipe container */
@@ -197,7 +233,7 @@
 
   .board {
     display: flex;
-    transition: transform 0.3s ease-out;
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     will-change: transform;
     min-height: calc(100vh - 280px);
     touch-action: pan-y pinch-zoom; /* Allow vertical scroll, prevent horizontal browser nav */
@@ -234,20 +270,58 @@
     padding: 1rem;
   }
 
-  /* Swipe visual feedback during drag */
+  /* Swipe visual feedback during drag - NO transition */
   .board.swiping {
-    transition: none;
+    transition: none !important;
   }
 
   /* Swipe hint animation on first load */
   @keyframes swipeHint {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-20px); }
-    75% { transform: translateX(10px); }
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-30px); }
+    40% { transform: translateX(15px); }
+    60% { transform: translateX(-10px); }
+    80% { transform: translateX(5px); }
+    100% { transform: translateX(0); }
   }
 
   .board.swipe-hint {
-    animation: swipeHint 1.5s ease-in-out 1;
+    animation: swipeHint 1.2s ease-in-out 1;
+  }
+
+  /* Swipe instruction hint (first-time users) */
+  .swipe-instruction {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: var(--text-secondary);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    animation: fadeInOut 3s ease-in-out forwards;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .swipe-instruction::before {
+    content: "👈";
+  }
+
+  .swipe-instruction::after {
+    content: "👉";
+  }
+
+  @keyframes fadeInOut {
+    0% { opacity: 0; }
+    15% { opacity: 1; }
+    85% { opacity: 1; }
+    100% { opacity: 0; }
   }
 }
 
@@ -256,7 +330,7 @@
    Apex Jobs Board - Same Treatment
    ========================================================================== */
 
-/* Navigation for Apex board (if using same pattern) */
+/* Navigation for Apex board */
 .apex-kanban-mobile-nav {
   display: none;
 }
@@ -282,21 +356,33 @@
   .apex-kanban-mobile-nav {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: rgba(10, 10, 15, 0.7);
-    backdrop-filter: blur(8px);
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--glass-border);
   }
 
-  .apex-view-container[data-view="kanban"] {
+  /* HIDE ARROWS ON MOBILE - swipe only! */
+  .apex-kanban-mobile-nav .kanban-nav-btn {
+    display: none !important;
+  }
+
+  .apex-view-container[data-view="kanban"],
+  .apex-board-container {
     overflow: hidden;
   }
 
   .apex-board {
     display: flex;
-    transition: transform 0.3s ease-out;
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
     min-height: calc(100vh - 280px);
+    touch-action: pan-y pinch-zoom;
+  }
+
+  .apex-board.swiping {
+    transition: none !important;
   }
 
   .apex-board .apex-column {
@@ -312,16 +398,29 @@
    ========================================================================== */
 
 /* Visual feedback when column is being dragged */
-.board.dragging-active {
+.board.dragging-active,
+.apex-board.dragging-active {
   cursor: grabbing;
 }
 
-.board.dragging-active .column {
+.board.dragging-active .column,
+.apex-board.dragging-active .apex-column {
   pointer-events: none;
 }
 
 /* Prevent text selection during swipe */
-.board.swiping * {
+.board.swiping *,
+.apex-board.swiping * {
   user-select: none;
   -webkit-user-select: none;
+}
+
+/* Active dot pulse animation */
+@keyframes dotPulse {
+  0%, 100% { transform: scale(1.2); }
+  50% { transform: scale(1.35); }
+}
+
+.kanban-dot.active {
+  animation: dotPulse 2s ease-in-out infinite;
 }

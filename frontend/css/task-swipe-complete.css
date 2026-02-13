@@ -1,0 +1,257 @@
+/**
+ * Task Swipe-to-Complete Styles
+ * Mobile-only swipe right gesture to complete tasks
+ */
+
+/* ==========================================================================
+   BASE SETUP - Task items need proper structure
+   ========================================================================== */
+
+.touch-device .task-item,
+.touch-device .task-card {
+    position: relative;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   SWIPE COMPLETE BACKGROUND
+   Green action reveal from left side - positioned behind content
+   ========================================================================== */
+
+.swipe-complete-bg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+    pointer-events: none;
+}
+
+.swipe-completing .swipe-complete-bg {
+    opacity: 1;
+}
+
+.swipe-complete-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    transform: translateX(-10px);
+    opacity: 0.6;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.swipe-complete-ready .swipe-complete-content {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.swipe-complete-icon {
+    flex-shrink: 0;
+}
+
+.swipe-complete-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+/* ==========================================================================
+   TASK ITEM CONTENT WRAPPER
+   All children move together during swipe
+   ========================================================================== */
+
+/* Task list items (.task-item) */
+.touch-device .task-item.swipe-completing .task-item-checkbox,
+.touch-device .task-item.swipe-completing .task-item-content,
+.touch-device .task-item.swipe-completing .task-item-star,
+.touch-device .task-item.swipe-completing .task-item-due,
+.touch-device .task-item.swipe-completing .task-item-recurring {
+    transform: translateX(var(--swipe-complete-x, 0));
+    transition: none;
+}
+
+/* Reset when not swiping */
+.touch-device .task-item:not(.swipe-completing) .task-item-checkbox,
+.touch-device .task-item:not(.swipe-completing) .task-item-content,
+.touch-device .task-item:not(.swipe-completing) .task-item-star,
+.touch-device .task-item:not(.swipe-completing) .task-item-due,
+.touch-device .task-item:not(.swipe-completing) .task-item-recurring {
+    transform: translateX(0);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animate completion */
+.touch-device .task-item.swipe-complete-animating .task-item-checkbox,
+.touch-device .task-item.swipe-complete-animating .task-item-content,
+.touch-device .task-item.swipe-complete-animating .task-item-star,
+.touch-device .task-item.swipe-complete-animating .task-item-due,
+.touch-device .task-item.swipe-complete-animating .task-item-recurring {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Task cards (.task-card) */
+.touch-device .task-card.swipe-completing .task-card-header,
+.touch-device .task-card.swipe-completing .task-card-datetime,
+.touch-device .task-card.swipe-completing .task-card-description,
+.touch-device .task-card.swipe-completing .task-card-meta,
+.touch-device .task-card.swipe-completing .task-card-subtasks-list {
+    transform: translateX(var(--swipe-complete-x, 0));
+    transition: none;
+}
+
+.touch-device .task-card:not(.swipe-completing) .task-card-header,
+.touch-device .task-card:not(.swipe-completing) .task-card-datetime,
+.touch-device .task-card:not(.swipe-completing) .task-card-description,
+.touch-device .task-card:not(.swipe-completing) .task-card-meta,
+.touch-device .task-card:not(.swipe-completing) .task-card-subtasks-list {
+    transform: translateX(0);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.touch-device .task-card.swipe-complete-animating .task-card-header,
+.touch-device .task-card.swipe-complete-animating .task-card-datetime,
+.touch-device .task-card.swipe-complete-animating .task-card-description,
+.touch-device .task-card.swipe-complete-animating .task-card-meta,
+.touch-device .task-card.swipe-complete-animating .task-card-subtasks-list {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================================
+   READY STATE - Visual feedback when past threshold
+   ========================================================================== */
+
+.swipe-complete-ready .swipe-complete-bg {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+}
+
+.swipe-complete-ready .swipe-complete-icon {
+    animation: checkPulse 0.25s ease;
+}
+
+@keyframes checkPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+/* ==========================================================================
+   COMPLETION SUCCESS FLASH
+   ========================================================================== */
+
+.touch-device .task-item.swipe-complete-animating,
+.touch-device .task-card.swipe-complete-animating {
+    animation: completeFlash 0.4s ease forwards;
+}
+
+@keyframes completeFlash {
+    0% { 
+        background-color: rgba(34, 197, 94, 0.4); 
+    }
+    100% { 
+        background-color: transparent;
+        opacity: 0.6;
+    }
+}
+
+/* ==========================================================================
+   VISUAL HINT - Subtle green edge indicator
+   Only on incomplete tasks
+   ========================================================================== */
+
+.touch-device .task-item:not(.completed)::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, 
+        rgba(34, 197, 94, 0.5) 0%, 
+        rgba(34, 197, 94, 0.2) 100%
+    );
+    opacity: 0.7;
+    pointer-events: none;
+    z-index: 2;
+    transition: opacity 0.2s ease;
+}
+
+.touch-device .task-card:not(.completed)::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    border-radius: 8px 0 0 8px;
+    background: linear-gradient(180deg, 
+        rgba(34, 197, 94, 0.5) 0%, 
+        rgba(34, 197, 94, 0.2) 100%
+    );
+    opacity: 0.7;
+    pointer-events: none;
+    z-index: 2;
+    transition: opacity 0.2s ease;
+}
+
+/* Hide hint during swipe */
+.touch-device .task-item.swipe-completing::before,
+.touch-device .task-card.swipe-completing::before {
+    opacity: 0;
+}
+
+/* ==========================================================================
+   Z-INDEX STACKING
+   ========================================================================== */
+
+.touch-device .task-item .task-item-checkbox,
+.touch-device .task-item .task-item-content,
+.touch-device .task-item .task-item-star,
+.touch-device .task-item .task-item-due,
+.touch-device .task-item .task-item-recurring {
+    position: relative;
+    z-index: 1;
+}
+
+.touch-device .task-card .task-card-header,
+.touch-device .task-card .task-card-datetime,
+.touch-device .task-card .task-card-description,
+.touch-device .task-card .task-card-meta,
+.touch-device .task-card .task-card-subtasks-list {
+    position: relative;
+    z-index: 1;
+}
+
+/* ==========================================================================
+   DISABLE ON DESKTOP
+   ========================================================================== */
+
+@media (min-width: 769px) {
+    .swipe-complete-bg {
+        display: none !important;
+    }
+    
+    .touch-device .task-item::before,
+    .touch-device .task-card::before {
+        display: none !important;
+    }
+}
+
+/* ==========================================================================
+   DISABLE FOR COMPLETED TASKS
+   (they should use swipe-to-uncomplete or just tap)
+   ========================================================================== */
+
+.touch-device .task-item.completed::before,
+.touch-device .task-card.completed::before {
+    display: none;
+}

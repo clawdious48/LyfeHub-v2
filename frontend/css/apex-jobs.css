@@ -6,7 +6,7 @@
    separate from the rest of the app's neon green/blue/purple.
    
    BREAKPOINTS STANDARDIZED (2025-06-30)
-   640px (sm), 768px (md), 1024px (lg), 1280px (xl)
+   640px (sm), 768px (md), 1200px (lg), 1280px (xl)
    ======================================== */
 
 /* Sub-tabs navigation */
@@ -862,14 +862,14 @@
 }
 
 /* Responsive */
-/* Breakpoints standardized: 640px (sm), 768px (md), 1024px (lg), 1280px (xl) */
+/* Breakpoints standardized: 640px (sm), 768px (md), 1200px (lg), 1280px (xl) */
 @media (max-width: 1280px) {
     .apex-board {
         grid-template-columns: repeat(3, minmax(280px, 1fr));
     }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
     .apex-board {
         grid-template-columns: 1fr;
     }
@@ -884,8 +884,8 @@
     }
 }
 
-/* Tablet portrait (768px-1024px) - Controls row wraps to 2 rows */
-@media (max-width: 1024px) and (min-width: 641px) {
+/* Tablet portrait (768px-1200px) - Controls row wraps to 2 rows */
+@media (max-width: 1200px) and (min-width: 641px) {
     .apex-view-controls {
         flex-wrap: wrap;
         gap: 0.75rem;
@@ -2403,7 +2403,7 @@
 }
 
 /* 16. Responsive Breakpoints */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
     .job-detail-grid {
         grid-template-columns: 1fr;
     }
@@ -3657,5 +3657,338 @@
     
     .btn {
         max-width: 100%;
+    }
+}
+
+/* ========================================
+   MOBILE HEADER OPTIMIZATION
+   ======================================== */
+
+@media (max-width: 480px) {
+    /* Hide the full "+ New Job" button on mobile */
+    #new-job-btn {
+        display: none;
+    }
+    
+    /* Compact view controls container */
+    .apex-view-controls {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+    
+    /* View toggle - make it a single row */
+    .apex-view-toggle {
+        width: 100%;
+        justify-content: center;
+        gap: 0.25rem;
+    }
+    
+    .apex-view-toggle .apex-view-btn span {
+        display: none;
+    }
+    
+    .apex-view-toggle .apex-view-btn {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Hide individual filter dropdowns on mobile */
+    .apex-view-filters .apex-filter-select {
+        display: none;
+    }
+    
+    /* Compact filter row */
+    .apex-view-filters {
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+    }
+    
+    /* Sync info - subtle */
+    .apex-sync-info {
+        font-size: 0.7rem;
+        opacity: 0.5;
+    }
+    
+    /* Mobile filter button (will be added via JS) */
+    .mobile-filter-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.4rem 0.75rem;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 0.5rem;
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    
+    .mobile-filter-btn:hover {
+        background: rgba(255,255,255,0.1);
+        color: var(--text-primary);
+    }
+    
+    .mobile-filter-btn.has-filters {
+        border-color: var(--apex-primary);
+        color: var(--apex-primary);
+    }
+    
+    .mobile-filter-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    /* Mobile add button in header */
+    .mobile-add-btn {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--apex-primary);
+        border: none;
+        color: white;
+        font-size: 1.75rem;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .mobile-add-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    }
+    
+    .mobile-add-btn:active {
+        transform: scale(0.95);
+    }
+}
+
+/* Filter bottom sheet */
+.filter-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--glass-border);
+    border-radius: 1rem 1rem 0 0;
+    padding: 1rem;
+    z-index: 1000;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+}
+
+.filter-sheet.open {
+    transform: translateY(0);
+}
+
+.filter-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.filter-sheet-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.filter-sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.filter-sheet-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.filter-sheet-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    line-height: 1;
+}
+
+.filter-sheet-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.filter-sheet-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.filter-sheet-row label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.filter-sheet-row select {
+    padding: 0.75rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 0.5rem;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.filter-sheet-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.filter-sheet-actions button {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.filter-sheet-clear {
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+}
+
+.filter-sheet-apply {
+    background: var(--apex-primary);
+    border: none;
+    color: white;
+}
+
+/* ========================================
+   MOBILE: Minimal Header (hide hamburger + settings)
+   Bottom nav handles navigation now
+   ======================================== */
+@media (max-width: 767px) {
+    /* Hide hamburger menu button */
+    .hamburger-btn,
+    .menu-toggle,
+    #menu-toggle,
+    [class*='hamburger'],
+    .header button:first-child {
+        display: none !important;
+    }
+    
+    /* Hide settings gear in header */
+    .header a[href='/settings.html'],
+    .header .settings-btn,
+    .header button:last-child:not(.mobile-filter-btn) {
+        display: none !important;
+    }
+    
+    /* Center the title properly */
+    .header {
+        justify-content: center;
+        padding: 0.5rem 1rem;
+    }
+    
+    /* Make header title centered and clean */
+    .header .dynamic-header,
+    .header h1,
+    .header .header-title {
+        text-align: center;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+}
+
+/* ========================================
+   TABLET: Hybrid Mode (768px - 1200px)
+   Keep desktop content layout, add mobile nav elements
+   ======================================== */
+@media (min-width: 768px) and (max-width: 1200px) {
+    /* Show bottom nav on tablets */
+    .bottom-nav {
+        display: flex !important;
+    }
+    
+    /* Show FAB on tablets */
+    .fab-container,
+    .fab-btn,
+    #fab-btn {
+        display: flex !important;
+    }
+    
+    /* Add padding for bottom nav */
+    body {
+        padding-bottom: 70px;
+    }
+    
+    /* Minimal header on tablets too */
+    .hamburger-btn,
+    .menu-toggle,
+    #menu-toggle,
+    [class*='hamburger'] {
+        display: none !important;
+    }
+    
+    .header a[href='/settings.html'],
+    .header .settings-btn {
+        display: none !important;
+    }
+    
+    .header {
+        justify-content: center;
+    }
+}
+
+/* ========================================
+   TABLET: Hide desktop header nav (768px - 1200px)
+   Bottom nav handles navigation now
+   ======================================== */
+@media (min-width: 768px) and (max-width: 1200px) {
+    /* Hide the desktop tab navigation */
+    .header .tabs,
+    header .tabs,
+    nav.tabs {
+        display: none !important;
+    }
+    
+    /* Hide settings and logout in header */
+    .header-right {
+        display: none !important;
+    }
+    
+    /* Center the logo/title */
+    .header {
+        justify-content: center !important;
+    }
+    
+    .header-logo {
+        position: static;
+        transform: none;
     }
 }

@@ -1,0 +1,289 @@
+/**
+ * Quick Add Modal Styles
+ * Minimal capture modal with optional expanded form
+ */
+
+/* Modal Overlay */
+.quick-add-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
+}
+
+.quick-add-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Modal Card */
+.quick-add-modal {
+    width: 100%;
+    max-width: 500px;
+    background: var(--bg-card, #1c1c1e);
+    border-radius: 16px 16px 0 0;
+    padding: 20px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+}
+
+.quick-add-overlay.visible .quick-add-modal {
+    transform: translateY(0);
+}
+
+/* Header */
+.quick-add-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.quick-add-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary, #fff);
+    margin: 0;
+}
+
+.quick-add-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-secondary, #2c2c2e);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary, #999);
+    font-size: 20px;
+    line-height: 1;
+}
+
+.quick-add-close:active {
+    background: var(--bg-hover, #3c3c3e);
+}
+
+/* Main Input */
+.quick-add-input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 16px;
+    background: var(--bg-secondary, #2c2c2e);
+    border: 1px solid var(--border-subtle, #444);
+    border-radius: 12px;
+    color: var(--text-primary, #fff);
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.quick-add-input::placeholder {
+    color: var(--text-muted, #666);
+}
+
+.quick-add-input:focus {
+    border-color: #bf5af2;
+}
+
+/* Actions */
+.quick-add-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+}
+
+.quick-add-more {
+    color: #bf5af2;
+    background: none;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.quick-add-more svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    transition: transform 0.2s ease;
+}
+
+.quick-add-more.expanded svg {
+    transform: rotate(180deg);
+}
+
+.quick-add-save {
+    padding: 10px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #bf5af2, #a445d8);
+    border: none;
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.1s ease, opacity 0.15s ease;
+}
+
+.quick-add-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.quick-add-save:not(:disabled):active {
+    transform: scale(0.97);
+}
+
+/* Expanded Form Section */
+.quick-add-expanded {
+    display: none;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-subtle, #333);
+}
+
+.quick-add-expanded.visible {
+    display: block;
+}
+
+.quick-add-field {
+    margin-bottom: 12px;
+}
+
+.quick-add-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary, #999);
+    margin-bottom: 6px;
+}
+
+.quick-add-field input,
+.quick-add-field select,
+.quick-add-field textarea {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 15px;
+    background: var(--bg-secondary, #2c2c2e);
+    border: 1px solid var(--border-subtle, #444);
+    border-radius: 8px;
+    color: var(--text-primary, #fff);
+    outline: none;
+}
+
+.quick-add-field input:focus,
+.quick-add-field select:focus,
+.quick-add-field textarea:focus {
+    border-color: #bf5af2;
+}
+
+.quick-add-field textarea {
+    resize: none;
+    min-height: 80px;
+}
+
+/* Priority Buttons */
+.quick-add-priority-group {
+    display: flex;
+    gap: 8px;
+}
+
+.priority-btn {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--bg-secondary, #2c2c2e);
+    border: 1px solid var(--border-subtle, #444);
+    border-radius: 8px;
+    color: var(--text-secondary, #999);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.priority-btn.active {
+    color: white;
+    border-color: transparent;
+}
+
+.priority-btn[data-priority="low"].active {
+    background: #30d158;
+}
+
+.priority-btn[data-priority="medium"].active {
+    background: #ff9f0a;
+}
+
+.priority-btn[data-priority="high"].active {
+    background: #ff453a;
+}
+
+/* Date/Time Row */
+.quick-add-row {
+    display: flex;
+    gap: 12px;
+}
+
+.quick-add-row .quick-add-field {
+    flex: 1;
+}
+
+/* List Selector */
+.quick-add-list-selector {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+/* Toast notification */
+.quick-add-toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--bg-card, #1c1c1e);
+    color: var(--text-primary, #fff);
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    font-size: 14px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 2100;
+}
+
+.quick-add-toast.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Desktop adjustments */
+@media (min-width: 1201px) {
+    .quick-add-modal {
+        border-radius: 16px;
+        margin-bottom: 20px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+}

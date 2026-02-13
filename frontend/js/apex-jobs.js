@@ -1332,3 +1332,228 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.apexJobs = apexJobs;
+
+/* ========================================
+   MOBILE UI ENHANCEMENTS
+   ======================================== */
+
+const mobileUI = {
+    isMobile: () => window.innerWidth <= 480,
+    
+    init() {
+        this.createMobileElements();
+        this.bindEvents();
+        window.addEventListener('resize', () => this.handleResize());
+    },
+    
+    createMobileElements() {
+        // Create mobile filter button
+        if (!document.getElementById('mobile-filter-btn')) {
+            const filterBtn = document.createElement('button');
+            filterBtn.id = 'mobile-filter-btn';
+            filterBtn.className = 'mobile-filter-btn';
+            filterBtn.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                </svg>
+                <span>Filter</span>
+            `;
+            
+            const filtersContainer = document.querySelector('.apex-view-filters');
+            if (filtersContainer) {
+                filtersContainer.appendChild(filterBtn);
+            }
+        }
+        
+        // Create floating action button
+        if (!document.getElementById('mobile-add-btn')) {
+            const fab = document.createElement('button');
+            fab.id = 'mobile-add-btn';
+            fab.className = 'mobile-add-btn';
+            fab.innerHTML = '+';
+            fab.onclick = () => jobModal.open();
+            document.body.appendChild(fab);
+        }
+        
+        // Create filter sheet
+        if (!document.getElementById('filter-sheet')) {
+            const backdrop = document.createElement('div');
+            backdrop.id = 'filter-sheet-backdrop';
+            backdrop.className = 'filter-sheet-backdrop';
+            
+            const sheet = document.createElement('div');
+            sheet.id = 'filter-sheet';
+            sheet.className = 'filter-sheet';
+            sheet.innerHTML = `
+                <div class="filter-sheet-header">
+                    <h3>Filters</h3>
+                    <button class="filter-sheet-close">&times;</button>
+                </div>
+                <div class="filter-sheet-content">
+                    <div class="filter-sheet-row">
+                        <label>Status</label>
+                        <select id="mobile-filter-status">
+                            <option value="all">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="pending_insurance">Pending Insurance</option>
+                            <option value="complete">Complete</option>
+                        </select>
+                    </div>
+                    <div class="filter-sheet-row">
+                        <label>Loss Type</label>
+                        <select id="mobile-filter-loss">
+                            <option value="all">All Loss Types</option>
+                        </select>
+                    </div>
+                    <div class="filter-sheet-row">
+                        <label>Owner</label>
+                        <select id="mobile-filter-owner">
+                            <option value="all">All Owners</option>
+                        </select>
+                    </div>
+                    <div class="filter-sheet-actions">
+                        <button class="filter-sheet-clear">Clear All</button>
+                        <button class="filter-sheet-apply">Apply</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(backdrop);
+            document.body.appendChild(sheet);
+        }
+        
+        this.handleResize();
+    },
+    
+    bindEvents() {
+        // Filter button opens sheet
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('#mobile-filter-btn')) {
+                this.openFilterSheet();
+            }
+            if (e.target.closest('.filter-sheet-close') || e.target.closest('#filter-sheet-backdrop')) {
+                this.closeFilterSheet();
+            }
+            if (e.target.closest('.filter-sheet-apply')) {
+                this.applyFilters();
+                this.closeFilterSheet();
+            }
+            if (e.target.closest('.filter-sheet-clear')) {
+                this.clearFilters();
+            }
+        });
+    },
+    
+    openFilterSheet() {
+        // Sync current filter values to mobile selects
+        const statusVal = document.getElementById('apex-filter-status')?.value || 'all';
+        const lossVal = document.getElementById('apex-filter-loss')?.value || 'all';
+        const ownerVal = document.getElementById('apex-filter-owner')?.value || 'all';
+        
+        const mobileStatus = document.getElementById('mobile-filter-status');
+        const mobileLoss = document.getElementById('mobile-filter-loss');
+        const mobileOwner = document.getElementById('mobile-filter-owner');
+        
+        if (mobileStatus) mobileStatus.value = statusVal;
+        if (mobileLoss) mobileLoss.value = lossVal;
+        if (mobileOwner) mobileOwner.value = ownerVal;
+        
+        // Copy options for loss types and owners
+        this.syncSelectOptions('apex-filter-loss', 'mobile-filter-loss');
+        this.syncSelectOptions('apex-filter-owner', 'mobile-filter-owner');
+        
+        document.getElementById('filter-sheet')?.classList.add('open');
+        document.getElementById('filter-sheet-backdrop')?.classList.add('open');
+    },
+    
+    closeFilterSheet() {
+        document.getElementById('filter-sheet')?.classList.remove('open');
+        document.getElementById('filter-sheet-backdrop')?.classList.remove('open');
+    },
+    
+    syncSelectOptions(sourceId, targetId) {
+        const source = document.getElementById(sourceId);
+        const target = document.getElementById(targetId);
+        if (!source || !target) return;
+        
+        const currentVal = target.value;
+        target.innerHTML = source.innerHTML;
+        target.value = currentVal;
+    },
+    
+    applyFilters() {
+        const mobileStatus = document.getElementById('mobile-filter-status')?.value;
+        const mobileLoss = document.getElementById('mobile-filter-loss')?.value;
+        const mobileOwner = document.getElementById('mobile-filter-owner')?.value;
+        
+        const desktopStatus = document.getElementById('apex-filter-status');
+        const desktopLoss = document.getElementById('apex-filter-loss');
+        const desktopOwner = document.getElementById('apex-filter-owner');
+        
+        if (desktopStatus && mobileStatus) {
+            desktopStatus.value = mobileStatus;
+            desktopStatus.dispatchEvent(new Event('change'));
+        }
+        if (desktopLoss && mobileLoss) {
+            desktopLoss.value = mobileLoss;
+            desktopLoss.dispatchEvent(new Event('change'));
+        }
+        if (desktopOwner && mobileOwner) {
+            desktopOwner.value = mobileOwner;
+            desktopOwner.dispatchEvent(new Event('change'));
+        }
+        
+        this.updateFilterButtonState();
+    },
+    
+    clearFilters() {
+        document.getElementById('mobile-filter-status').value = 'all';
+        document.getElementById('mobile-filter-loss').value = 'all';
+        document.getElementById('mobile-filter-owner').value = 'all';
+        this.applyFilters();
+    },
+    
+    updateFilterButtonState() {
+        const btn = document.getElementById('mobile-filter-btn');
+        if (!btn) return;
+        
+        const hasFilters = 
+            document.getElementById('apex-filter-status')?.value !== 'all' ||
+            document.getElementById('apex-filter-loss')?.value !== 'all' ||
+            document.getElementById('apex-filter-owner')?.value !== 'all';
+        
+        btn.classList.toggle('has-filters', hasFilters);
+        
+        const countSpan = btn.querySelector('.filter-count') || document.createElement('span');
+        if (hasFilters) {
+            let count = 0;
+            if (document.getElementById('apex-filter-status')?.value !== 'all') count++;
+            if (document.getElementById('apex-filter-loss')?.value !== 'all') count++;
+            if (document.getElementById('apex-filter-owner')?.value !== 'all') count++;
+            
+            countSpan.className = 'filter-count';
+            countSpan.textContent = count;
+            if (!btn.querySelector('.filter-count')) {
+                btn.appendChild(countSpan);
+            }
+        } else {
+            countSpan.remove();
+        }
+    },
+    
+    handleResize() {
+        const isMobile = this.isMobile();
+        const fab = document.getElementById('mobile-add-btn');
+        const filterBtn = document.getElementById('mobile-filter-btn');
+        
+        if (fab) fab.style.display = isMobile ? 'flex' : 'none';
+        if (filterBtn) filterBtn.style.display = isMobile ? 'flex' : 'none';
+    }
+};
+
+// Initialize on DOM ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => mobileUI.init());
+} else {
+    mobileUI.init();
+}
