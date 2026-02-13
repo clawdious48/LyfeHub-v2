@@ -18,10 +18,27 @@ router.use((req, res, next) => {
 router.get('/', (req, res) => {
   try {
     const keys = apiKeysDb.listApiKeys(req.user.id);
-    res.json({ keys });
+    res.json({ keys, role: req.user.role });
   } catch (err) {
     console.error('Error listing API keys:', err);
     res.status(500).json({ error: 'Failed to list API keys' });
+  }
+});
+
+// Get full key - management only
+router.get('/:id/full', (req, res) => {
+  try {
+    if (req.user.role !== 'management') {
+      return res.status(403).json({ error: 'Insufficient permissions' });
+    }
+    const fullKey = apiKeysDb.getFullKey(req.params.id, req.user.id);
+    if (!fullKey) {
+      return res.status(404).json({ error: 'Key not found or not retrievable' });
+    }
+    res.json({ key: fullKey });
+  } catch (err) {
+    console.error('Error retrieving full key:', err);
+    res.status(500).json({ error: 'Failed to retrieve key' });
   }
 });
 

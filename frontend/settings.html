@@ -105,10 +105,11 @@
                 </form>
             </div>
             
-            <div id="new-key-display" style="display: none; margin-top: 1rem; padding: 1rem; background: #1a1a2e; border-radius: 8px; border: 1px solid #00aaff;">
-                <p style="color: #00aaff; font-weight: bold; margin-bottom: 0.5rem;">⚠️ Copy this key now - it won't be shown again!</p>
-                <code id="new-key-value" style="display: block; padding: 0.5rem; background: #000; border-radius: 4px; word-break: break-all; margin-bottom: 0.5rem;"></code>
-                <button type="button" class="btn btn-secondary" onclick="copyKey()">Copy to Clipboard</button>
+            <div id="new-key-display" style="display: none; margin-top: 1rem; padding: 1rem; background: #1a1a2e; border-radius: 8px; border: 2px solid #00aaff;">
+                <p style="color: #00aaff; font-weight: bold; margin-bottom: 0.75rem; font-size: 0.95rem;">⚠️ Copy this key now - it won't be shown again!</p>
+                <code id="new-key-value" style="display: block; padding: 0.75rem; background: #000; border-radius: 4px; word-break: break-all; margin-bottom: 1rem; font-size: 0.8rem; overflow-x: auto; user-select: all; -webkit-user-select: all; line-height: 1.4;"></code>
+                <button type="button" onclick="copyKey()" style="display: block; width: 100%; padding: 0.875rem; background: #00aaff; color: #000; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer;">📋 Tap to Copy Key</button>
+                <p id="copy-confirm" style="display: none; text-align: center; color: #00ff88; margin-top: 0.5rem; font-weight: bold;">✅ Copied!</p>
             </div>
         </div>
         <!-- Employee Management (management only) -->
@@ -161,11 +162,25 @@
         </div>
     </div>
     
-        // API Keys functions loaded
     <script src="js/particles.js"></script>
-        // API Keys functions loaded
     <script src="js/api.js"></script>
     <script>
+        // Global auth check - redirect to login on 401
+        async function checkAuth() {
+            try {
+                const res = await fetch("/api/users/me", { credentials: "include" });
+                if (res.status === 401) {
+                    window.location.href = "/login.html";
+                    return false;
+                }
+                return await res.json();
+            } catch (e) {
+                window.location.href = "/login.html";
+                return false;
+            }
+        }
+        checkAuth();
+
         // Load user info
         async function loadUser() {
             try {
@@ -222,6 +237,9 @@
             try {
                 await api.logout();
             } catch (e) {}
+            document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+            document.cookie = "jwt=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+            document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
             window.location.href = '/login.html';
         });
         
@@ -422,30 +440,70 @@
         // API Keys functions
         let currentNewKey = '';
         
+        let userRole = null;
+        
         async function loadApiKeys() {
-            const container = document.getElementById('api-keys-list');
+            const container = document.getElementById("api-keys-list");
             try {
-                const res = await fetch('/api/api-keys', { credentials: 'include' });
+                const res = await fetch("/api/api-keys", { credentials: "include" });
                 const data = await res.json();
+                userRole = data.role || null;
                 
                 if (!data.keys || data.keys.length === 0) {
-                    container.innerHTML = '<p class="text-muted">No API keys yet.</p>';
+                    container.innerHTML = "<p class=\"text-muted\">No API keys yet.</p>";
                     return;
                 }
                 
-                container.innerHTML = data.keys.map(key => `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #1a1a2e; border-radius: 6px; margin-bottom: 0.5rem;">
-                        <div>
-                            <strong>${key.name}</strong>
-                            <span style="color: #666; margin-left: 0.5rem;">${key.keyPrefix}...</span>
-                            ${key.isExpired ? '<span style="color: #ff4444; margin-left: 0.5rem;">Expired</span>' : ''}
-                            ${key.expiresAt ? '<span style="color: #888; margin-left: 0.5rem;">Expires: ' + new Date(key.expiresAt).toLocaleDateString() + '</span>' : ''}
-                        </div>
-                        <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="revokeKey('${key.id}')">Revoke</button>
-                    </div>
-                `).join('');
+                const isManagement = Array.isArray(userRole) ? userRole.includes("management") : userRole === "management";
+                
+                container.innerHTML = data.keys.map(function(key) {
+                    var escapedId = key.id.replace(/"/g, "&quot;");
+                    var html = "<div ";
+                    if (isManagement) {
+                        html += "onclick=\"copyExistingKey(&apos;" + escapedId + "&apos;, this)\" ";
+                        html += "style=\"display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #1a1a2e; border-radius: 6px; margin-bottom: 0.5rem; cursor: pointer; border: 1px solid transparent; transition: border-color 0.2s;\" ";
+                        html += "onmouseover=\"this.style.borderColor=&apos;#00aaff&apos;\" onmouseout=\"this.style.borderColor=&apos;transparent&apos;\"";
+                    } else {
+                        html += "style=\"display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #1a1a2e; border-radius: 6px; margin-bottom: 0.5rem;\"";
+                    }
+                    html += ">";
+                    html += "<div>";
+                    html += "<strong>" + (key.name || "Unnamed") + "</strong>";
+                    html += "<span style=\"color: #666; margin-left: 0.5rem;\">" + (key.keyPrefix || "") + "...</span>";
+                    if (isManagement) html += "<br><span class=\"copy-hint\" style=\"color: #00aaff; font-size: 0.75rem;\">Click to copy full key</span>";
+                    if (key.isExpired) html += "<span style=\"color: #ff4444; margin-left: 0.5rem;\">Expired</span>";
+                    if (key.expiresAt) html += "<span style=\"color: #888; margin-left: 0.5rem;\">Expires: " + new Date(key.expiresAt).toLocaleDateString() + "</span>";
+                    html += "</div>";
+                    html += "<button class=\"btn btn-danger\" style=\"padding: 0.25rem 0.5rem; font-size: 0.8rem; flex-shrink: 0;\" onclick=\"event.stopPropagation(); revokeKey(&apos;" + escapedId + "&apos;)\">Revoke</button>";
+                    html += "</div>";
+                    return html;
+                }).join("");
             } catch (err) {
-                container.innerHTML = '<p class="text-muted">Failed to load keys.</p>';
+                container.innerHTML = "<p class=\"text-muted\">Failed to load keys.</p>";
+                console.error("loadApiKeys error:", err);
+            }
+        }
+        
+        async function copyExistingKey(keyId, el) {
+            try {
+                const res = await fetch('/api/api-keys/' + keyId + '/full', { credentials: 'include' });
+                if (!res.ok) {
+                    const data = await res.json();
+                    alert(data.error || 'Could not retrieve key');
+                    return;
+                }
+                const data = await res.json();
+                await navigator.clipboard.writeText(data.key);
+                const orig = el.style.borderColor;
+                el.style.borderColor = '#00ff88';
+                const hint = el.querySelector('span[style*="00aaff"]');
+                if (hint) { hint.textContent = '✅ Copied!'; hint.style.color = '#00ff88'; }
+                setTimeout(() => { 
+                    el.style.borderColor = 'transparent';
+                    if (hint) { hint.textContent = 'Tap to copy full key'; hint.style.color = '#00aaff'; }
+                }, 2000);
+            } catch (err) {
+                alert('Failed to copy key');
             }
         }
         
@@ -497,7 +555,7 @@
         
         function copyKey() {
             navigator.clipboard.writeText(currentNewKey);
-            alert('Key copied to clipboard!');
+            var c=document.getElementById('copy-confirm');c.style.display='block';setTimeout(function(){c.style.display='none'},3000);
         }
         
         loadApiKeys();

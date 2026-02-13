@@ -741,3 +741,11 @@ try {
 db.exec(`CREATE INDEX IF NOT EXISTS idx_people_score ON people(score)`);
 db.exec(`CREATE INDEX IF NOT EXISTS idx_people_source ON people(source)`);
 db.exec(`CREATE INDEX IF NOT EXISTS idx_people_email ON people(email)`);
+
+// ============================================
+// API KEYS - Add encrypted key storage (for management role copy)
+// ============================================
+try {
+  db.exec(`ALTER TABLE api_keys ADD COLUMN key_encrypted TEXT`);
+  console.log("Added key_encrypted column to api_keys");
+} catch (e) { /* Column exists */ }
