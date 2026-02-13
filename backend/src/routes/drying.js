@@ -211,7 +211,6 @@ router.post('/rooms', (req, res) => {
 
     const { chamber_id, name, position } = req.body;
     if (!chamber_id) return res.status(400).json({ error: 'chamber_id is required' });
-    if (!name) return res.status(400).json({ error: 'name is required' });
 
     // Verify chamber exists and belongs to this log
     const chamber = dryingLogs.getChamberById(chamber_id);
@@ -219,7 +218,7 @@ router.post('/rooms', (req, res) => {
       return res.status(400).json({ error: 'Invalid chamber_id for this job' });
     }
 
-    const room = dryingLogs.insertRoom(chamber_id, name, position);
+    const room = dryingLogs.insertRoom(chamber_id, name || '', position);
     res.status(201).json(room);
   } catch (err) {
     console.error('Error creating room:', err);

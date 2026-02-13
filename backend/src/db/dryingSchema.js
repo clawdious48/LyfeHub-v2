@@ -140,7 +140,7 @@ if (!dryingAtmosphericTable) {
     CREATE TABLE drying_atmospheric_readings (
       id TEXT PRIMARY KEY,
       visit_id TEXT NOT NULL REFERENCES drying_visits(id) ON DELETE CASCADE,
-      reading_type TEXT NOT NULL CHECK(reading_type IN ('chamber_intake', 'dehu_exhaust', 'unaffected', 'outside')),
+      reading_type TEXT NOT NULL CHECK(reading_type IN ('chamber_intake', 'chamber_dehu_exhaust', 'dehu_exhaust', 'unaffected', 'outside')),
       chamber_id TEXT REFERENCES drying_chambers(id) ON DELETE SET NULL,
       dehu_number INTEGER,
       temp_f REAL,
