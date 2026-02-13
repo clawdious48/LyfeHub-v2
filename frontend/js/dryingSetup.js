@@ -310,8 +310,11 @@ const dryingSetup = {
     _renderStep0() {
         const { rooms } = this._state;
         const esc = dryingUtils.escapeHtml;
+        const message = rooms.length
+            ? 'Rooms were pre-populated from the job\'s affected areas. Rename, remove, or add rooms below.'
+            : 'No rooms yet. Add your first room below.';
         let html = `<p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0 0 1rem">
-            Rooms were pre-populated from the job's affected areas. Rename, remove, or add rooms below.
+            ${message}
         </p>`;
         html += `<div class="dry-room-list" id="dry-wiz-rooms">`;
         for (const room of rooms) {
@@ -809,6 +812,7 @@ const dryingSetup = {
         const chamberId = this._state.chambers.length ? this._state.chambers[0].id : null;
         if (!chamberId) {
             console.error('Cannot add room: no chambers exist');
+            alert('Cannot add room: please create a chamber first (go back to Step 1).');
             return;
         }
         try {
@@ -821,6 +825,7 @@ const dryingSetup = {
             }, 50);
         } catch (err) {
             console.error('Failed to add room:', err);
+            alert('Failed to add room: ' + (err.message || 'Unknown error'));
         }
     },
 
