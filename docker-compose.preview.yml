@@ -1,14 +1,23 @@
-version: '3.8'
-
 services:
-  lyfehub:
-    build: .
-    container_name: lyfehub-orgs-preview
-    ports:
-      - "4003:3000"
-    volumes:
-      - /root/lyfehub-orgs-preview-data:/data
-    environment:
-      - NODE_ENV=production
-      - JWT_SECRET=preview-secret-key-12345
+  lyfehub-v2-preview:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lyfehub-v2-preview-mobile-tabs
     restart: unless-stopped
+    ports:
+      - "4001:3000"
+    environment:
+      - KANBAN_PASSWORD=${KANBAN_PASSWORD}
+      - KANBAN_API_KEY=${KANBAN_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - NODE_ENV=production
+      - PORT=3000
+    volumes:
+      - /root/lyfehub-v2-preview-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

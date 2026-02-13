@@ -728,7 +728,7 @@ const apexJobs = {
                 ${tabs.map(t => `
                     <button class="job-detail-tab-btn ${t.id === this.activeTab ? 'active' : ''}" data-tab="${t.id}">
                         ${t.icon}
-                        ${t.label}
+                        <span class="tab-label">${t.label}</span>
                     </button>
                 `).join('')}
             </div>
