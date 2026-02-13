@@ -854,7 +854,7 @@ const api = {
     async demolishDryingRefPoint(jobId, rpId, visitId) {
         return this.request(`/apex-jobs/${jobId}/drying/ref-points/${rpId}/demolish`, {
             method: 'POST',
-            body: { visitId },
+            body: { visit_id: visitId },
         });
     },
 

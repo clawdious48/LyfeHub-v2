@@ -1380,3 +1380,76 @@
         padding: 0.75rem 1rem;
     }
 }
+
+/* ── Custom Confirm Dialog ──────────────────────────────── */
+
+.dry-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.dry-confirm-overlay.visible {
+    opacity: 1;
+}
+
+.dry-confirm-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+.dry-confirm-card {
+    position: relative;
+    background: var(--apex-glass-bg, rgba(20, 20, 35, 0.95));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.75rem 2rem;
+    max-width: 380px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(139, 92, 246, 0.1);
+    transform: scale(0.95);
+    transition: transform 0.2s ease;
+}
+
+.dry-confirm-overlay.visible .dry-confirm-card {
+    transform: scale(1);
+}
+
+.dry-confirm-icon {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.dry-confirm-title {
+    color: #fff;
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+}
+
+.dry-confirm-message {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin: 0 0 1.25rem;
+}
+
+.dry-confirm-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.dry-confirm-actions .dry-btn {
+    min-width: 100px;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.85rem;
+}

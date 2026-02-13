@@ -885,17 +885,44 @@ const dryingVisit = {
     // Actions
     // ========================================
 
+    async _ensureVisitCreated() {
+        if (!this._state.visitId) {
+            const newVisit = await api.createDryingVisit(this._state.jobId);
+            this._state.visitId = newVisit.id;
+            this._state.visit = newVisit;
+        }
+        return this._state.visitId;
+    },
+
     async _demolishRefPoint(rpId) {
-        const { jobId, visitId } = this._state;
-        if (!confirm('Demolish this reference point?')) return;
+        const { jobId } = this._state;
+        const rp = this._state.refPoints.find(r => r.id === rpId);
+        const mat = rp ? (dryingUtils.MATERIAL_CODES.find(m => m.code === rp.material_code) || { label: rp.material_code }) : { label: 'this point' };
+
+        const confirmed = await dryingUtils.confirm({
+            icon: '🔨',
+            title: 'Demolish Reference Point',
+            message: `Mark <strong>#${rp ? rp.ref_number : '?'} ${dryingUtils.escapeHtml(mat.label)}</strong> as demolished? It won't require readings on future visits.`,
+            confirmText: 'Demolish',
+            cancelText: 'Cancel',
+            confirmClass: 'dry-btn-danger'
+        });
+        if (!confirmed) return;
 
         try {
+            const visitId = await this._ensureVisitCreated();
             await api.demolishDryingRefPoint(jobId, rpId, visitId);
 
             // Ask about replacement
-            const addNew = confirm('Add new reference point to replace it?');
+            const addNew = await dryingUtils.confirm({
+                icon: '➕',
+                title: 'Add Replacement?',
+                message: `Material was removed — do you want to add a new reference point for what's behind it? (e.g., framing behind demolished drywall)`,
+                confirmText: 'Add New Point',
+                cancelText: 'No Thanks',
+                confirmClass: 'dry-btn-primary'
+            });
             if (addNew) {
-                const rp = this._state.refPoints.find(r => r.id === rpId);
                 const roomId = rp ? rp.room_id : this._state.activeRoomId;
                 await this._promptAddRefPoint(roomId);
             }
