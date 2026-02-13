@@ -318,12 +318,14 @@ const dryingSetup = {
         </p>`;
         html += `<div class="dry-room-list" id="dry-wiz-rooms">`;
         for (const room of rooms) {
+            const isNewRoom = !room.name || room.name.trim() === '';
+            const buttonLabel = isNewRoom ? 'Save' : 'Rename';
             html += `
                 <div class="dry-room-item" data-room-id="${esc(room.id)}">
-                    <input type="text" class="dry-input dry-room-name" value="${esc(room.name)}" placeholder="New Room"
+                    <input type="text" class="dry-input dry-room-name" value="${esc(room.name)}" placeholder="New room"
                            data-room-id="${esc(room.id)}" style="flex:1" />
                     <button class="dry-btn dry-btn-sm dry-btn-secondary dry-room-rename"
-                            data-room-id="${esc(room.id)}" title="Save name">Rename</button>
+                            data-room-id="${esc(room.id)}" title="Save name">${buttonLabel}</button>
                     <button class="dry-btn dry-btn-sm dry-btn-danger dry-room-delete"
                             data-room-id="${esc(room.id)}" title="Delete room">&times;</button>
                 </div>`;
@@ -817,7 +819,7 @@ const dryingSetup = {
         }
         try {
             const roomNum = this._state.rooms.length + 1;
-            await api.createDryingRoom(jobId, { chamber_id: chamberId, name: `Room ${roomNum}` });
+            await api.createDryingRoom(jobId, { chamber_id: chamberId, name: '' });
             this._state.rooms = await api.getDryingRooms(jobId);
             this._render();
             setTimeout(() => {
