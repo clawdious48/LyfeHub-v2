@@ -94,6 +94,21 @@
     transform: translateY(-1px);
 }
 
+.dry-btn-draft {
+    background: linear-gradient(135deg, #ff6b35, #e63946) !important;
+    box-shadow: 0 0 12px rgba(230, 57, 70, 0.4) !important;
+    animation: draft-pulse 2s ease-in-out infinite;
+}
+
+.dry-btn-draft:hover:not(:disabled) {
+    box-shadow: 0 0 18px rgba(230, 57, 70, 0.6) !important;
+}
+
+@keyframes draft-pulse {
+    0%, 100% { box-shadow: 0 0 12px rgba(230, 57, 70, 0.4); }
+    50% { box-shadow: 0 0 20px rgba(255, 107, 53, 0.6); }
+}
+
 .dry-btn-secondary {
     background: transparent;
     color: var(--apex-primary);

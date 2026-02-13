@@ -54,10 +54,9 @@ const dryingVisit = {
             this._state.refPoints = refPoints;
             this._state.baselines = baselines;
 
-            // Create a new visit
-            const newVisit = await api.createDryingVisit(jobId);
-            this._state.visit = newVisit;
-            this._state.visitId = newVisit.id;
+            // DON'T create visit yet — defer until Save
+            this._state.visitId = null;
+            this._state.visit = null;
 
             // Load prior visit data for comparison
             const sorted = allVisits.sort((a, b) => a.visit_number - b.visit_number);
@@ -69,6 +68,15 @@ const dryingVisit = {
 
             // Pre-populate equipment from prior visit
             this._initEquipmentFromPrior();
+
+            // Restore draft if one exists
+            const draft = this._loadDraft(jobId);
+            if (draft) {
+                if (draft.atmospheric) this._state.atmospheric = draft.atmospheric;
+                if (draft.moisture) this._state.moisture = draft.moisture;
+                if (draft.equipment) this._state.equipment = draft.equipment;
+                if (draft.noteText) this._state.noteText = draft.noteText;
+            }
 
             // Set first room active
             if (rooms.length > 0) {
@@ -182,11 +190,26 @@ const dryingVisit = {
         if (this._overlay) {
             this._overlay.style.display = 'none';
         }
+        // If in add mode and there's data entered, save as draft
+        if (this._state.mode === 'add' && this._state.jobId && !this._state._saved) {
+            const hasData = Object.keys(this._state.atmospheric).length > 0 ||
+                Object.keys(this._state.moisture).length > 0 ||
+                Object.values(this._state.equipment).some(v => v > 0) ||
+                this._state.noteText.trim();
+            if (hasData) {
+                this._saveDraft();
+            } else {
+                this._clearDraft(this._state.jobId);
+            }
+        }
         // Revoke object URLs
         for (const url of this._state.photoPreviewUrls) {
             URL.revokeObjectURL(url);
         }
+        // Update Add Visit button styling
+        const jobId = this._state.jobId;
         this._resetState();
+        if (jobId) this._updateAddVisitButton(jobId);
     },
 
     // ========================================
@@ -947,8 +970,17 @@ const dryingVisit = {
                 }
             }
 
+            // Create the visit now (deferred from open)
+            let actualVisitId = visitId;
+            if (!actualVisitId) {
+                const newVisit = await api.createDryingVisit(jobId);
+                actualVisitId = newVisit.id;
+                this._state.visitId = actualVisitId;
+                this._state.visit = newVisit;
+            }
+
             // Save visit data
-            await api.saveDryingVisit(jobId, visitId, { atmospheric, moisture, equipment });
+            await api.saveDryingVisit(jobId, actualVisitId, { atmospheric, moisture, equipment });
 
             // Save note if any
             if (this._state.noteText.trim() || this._state.photoFiles.length > 0) {
@@ -958,13 +990,16 @@ const dryingVisit = {
                     photos = uploaded;
                 }
                 if (this._state.noteText.trim() || photos.length > 0) {
-                    await api.createDryingVisitNote(jobId, visitId, {
+                    await api.createDryingVisitNote(jobId, actualVisitId, {
                         content: this._state.noteText.trim(),
                         photos
                     });
                 }
             }
 
+            // Mark as saved so close() doesn't create a draft
+            this._state._saved = true;
+            this._clearDraft(jobId);
             this.close();
 
             // Refresh drying tab
@@ -1105,6 +1140,53 @@ const dryingVisit = {
         if (diff < 0) return 'dry-delta-down';
         if (diff > 0) return 'dry-delta-up';
         return 'dry-delta-flat';
+    },
+
+    // ========================================
+    // Draft persistence
+    // ========================================
+
+    _draftKey(jobId) {
+        return `drying-visit-draft-${jobId}`;
+    },
+
+    _saveDraft() {
+        const { jobId, atmospheric, moisture, equipment, noteText } = this._state;
+        const draft = { atmospheric, moisture, equipment, noteText, savedAt: Date.now() };
+        try {
+            localStorage.setItem(this._draftKey(jobId), JSON.stringify(draft));
+        } catch (e) { console.warn('Failed to save draft:', e); }
+    },
+
+    _loadDraft(jobId) {
+        try {
+            const raw = localStorage.getItem(this._draftKey(jobId));
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) { return null; }
+    },
+
+    _clearDraft(jobId) {
+        try { localStorage.removeItem(this._draftKey(jobId)); } catch (e) {}
+    },
+
+    hasDraft(jobId) {
+        return !!this._loadDraft(jobId);
+    },
+
+    _updateAddVisitButton(jobId) {
+        // Find the Add Visit button for this job and style it if draft exists
+        const buttons = document.querySelectorAll('.dry-action-bar .dry-btn-primary');
+        for (const btn of buttons) {
+            if (btn.textContent.includes('Add Visit') && btn.getAttribute('onclick')?.includes(jobId)) {
+                if (this.hasDraft(jobId)) {
+                    btn.classList.add('dry-btn-draft');
+                    btn.textContent = '⏎ Resume Visit';
+                } else {
+                    btn.classList.remove('dry-btn-draft');
+                    btn.textContent = '+ Add Visit';
+                }
+            }
+        }
     }
 };
 

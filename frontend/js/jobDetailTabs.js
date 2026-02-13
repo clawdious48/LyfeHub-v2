@@ -610,8 +610,8 @@ const jobDetailTabs = {
             </div>
 
             <div class="dry-action-bar">
-                <button class="dry-btn dry-btn-primary dry-btn-sm" onclick="dryingVisit.open('${jobId}')">
-                    + Add Visit
+                <button class="dry-btn dry-btn-primary dry-btn-sm${typeof dryingVisit !== 'undefined' && dryingVisit.hasDraft && dryingVisit.hasDraft(jobId) ? ' dry-btn-draft' : ''}" onclick="dryingVisit.open('${jobId}')">
+                    ${typeof dryingVisit !== 'undefined' && dryingVisit.hasDraft && dryingVisit.hasDraft(jobId) ? '⏎ Resume Visit' : '+ Add Visit'}
                 </button>
                 ${typeof userHasRole === 'function' && userHasRole('management', 'project_manager', 'office_coordinator') ? `<button class="dry-btn dry-btn-secondary dry-btn-sm" onclick="jobDetailTabs._editDryingSetup('${jobId}')">
                     Edit Job
