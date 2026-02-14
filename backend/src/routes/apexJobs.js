@@ -83,11 +83,42 @@ router.get('/', (req, res) => {
     const dbJobs = apexJobsDb.getAllJobs(req.org.id, { memberRole: req.org.role, userId: req.user.id });
     const formattedDbJobs = dbJobs.map(formatDbJob);
 
-    // Tag Zoho projects with the requesting user's org_id
-    const zohoProjects = (zohoData.projects || []).map(p => ({
-      ...p,
-      org_id: req.org.id
-    }));
+    // Tag Zoho projects with the requesting user's org_id + flatten nested fields
+    // so frontend can use job.client_phone, job.client_email, etc.
+    const zohoProjects = (zohoData.projects || []).map(p => {
+      // Parse address string into components
+      let clientStreet = '', clientCity = '', clientState = '', clientZip = '';
+      if (p.client?.address) {
+        const parts = p.client.address.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+        if (parts.length >= 1) clientStreet = parts[0];
+        if (parts.length >= 2) clientCity = parts[1];
+        if (parts.length >= 3) clientState = parts[2];
+        if (parts.length >= 4) clientZip = parts[3];
+      }
+      return {
+        ...p,
+        org_id: req.org.id,
+        // Flat client fields for frontend compatibility
+        client_name: p.client?.name || p.clientName || null,
+        client_phone: p.client?.phone || null,
+        client_email: p.client?.email || null,
+        client_street: clientStreet,
+        client_city: clientCity,
+        client_state: clientState,
+        client_zip: clientZip,
+        // Also set prop_ fields (used by formatAddress in frontend)
+        prop_street: clientStreet,
+        prop_city: clientCity,
+        prop_state: clientState,
+        prop_zip: clientZip,
+        // Insurance flat fields
+        ins_carrier: p.insurance?.carrier || null,
+        ins_claim: p.insurance?.claimNumber || null,
+        adj_name: p.insurance?.adjusterName || null,
+        adj_email: p.insurance?.adjusterEmail || null,
+        adj_phone: p.insurance?.adjusterPhone || null,
+      };
+    });
 
     let merged = [...formattedDbJobs, ...zohoProjects];
 
