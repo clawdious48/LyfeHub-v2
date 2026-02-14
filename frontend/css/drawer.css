@@ -3,7 +3,7 @@
  * =======================
  * Slide-out navigation drawer for mobile devices.
  * Triggered by hamburger menu via drawer:toggle events.
- * Uses the neon/glass design system from :root vars.
+ * Uses the clean white/teal design system from :root vars.
  */
 
 /* ==========================================================================
@@ -19,11 +19,11 @@
   height: 100dvh; /* Dynamic viewport height for mobile */
   
   /* Glass morphism background */
-  background: rgba(10, 10, 15, 0.95);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-right: 1px solid var(--glass-border);
-  box-shadow: 4px 0 30px rgba(0, 0, 0, 0.5);
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 4px 0 30px rgba(0, 0, 0, 0.08);
   
   /* Slide animation */
   transform: translateX(-100%);
@@ -42,7 +42,7 @@
   transform: translateX(0);
 }
 
-/* Neon accent line on the right edge when open */
+/* Teal accent line on the right edge when open */
 .mobile-drawer.is-open::after {
   content: '';
   position: absolute;
@@ -52,12 +52,11 @@
   height: 100%;
   background: linear-gradient(
     180deg,
-    var(--neon-cyan) 0%,
-    var(--neon-purple) 50%,
-    var(--neon-pink) 100%
+    #14b8a6 0%,
+    #0d9488 50%,
+    #14b8a6 100%
   );
-  opacity: 0.8;
-  box-shadow: 0 0 15px var(--neon-purple);
+  opacity: 0.6;
 }
 
 
@@ -72,7 +71,7 @@
   width: 100vw;
   height: 100vh;
   height: 100dvh;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
   opacity: 0;
@@ -93,8 +92,8 @@
 
 .drawer-header {
   padding: 1.5rem 1.25rem;
-  border-bottom: 1px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .drawer-user {
@@ -107,16 +106,16 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan));
+  background: linear-gradient(135deg, #14b8a6, #0d9488);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #ffffff;
   text-transform: uppercase;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 20px rgba(191, 90, 242, 0.3);
+  border: 2px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(20, 184, 166, 0.25);
 }
 
 .drawer-user-info {
@@ -127,7 +126,7 @@
 .drawer-user-name {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #1a1a2e;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -135,7 +134,7 @@
 
 .drawer-user-email {
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: rgba(26, 26, 46, 0.5);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -153,7 +152,7 @@
   
   /* Custom scrollbar */
   scrollbar-width: thin;
-  scrollbar-color: var(--glass-border) transparent;
+  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
 }
 
 .drawer-nav::-webkit-scrollbar {
@@ -165,7 +164,7 @@
 }
 
 .drawer-nav::-webkit-scrollbar-thumb {
-  background: var(--glass-border);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 2px;
 }
 
@@ -185,7 +184,7 @@
   gap: 0.875rem;
   padding: 0.875rem 1rem;
   border-radius: 10px;
-  color: var(--text-secondary);
+  color: rgba(26, 26, 46, 0.7);
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
@@ -198,25 +197,24 @@
 }
 
 .drawer-nav-link:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.04);
+  color: #1a1a2e;
 }
 
 .drawer-nav-link:active {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.06);
   transform: scale(0.98);
 }
 
 /* Active tab state */
 .drawer-nav-link.is-active {
-  background: rgba(191, 90, 242, 0.12);
-  color: var(--neon-purple);
-  border-color: rgba(191, 90, 242, 0.25);
-  box-shadow: inset 0 0 20px rgba(191, 90, 242, 0.1);
+  background: rgba(20, 184, 166, 0.08);
+  color: #14b8a6;
+  border-color: rgba(20, 184, 166, 0.2);
 }
 
 .drawer-nav-link.is-active .drawer-nav-icon {
-  filter: drop-shadow(0 0 6px var(--neon-purple));
+  filter: none;
 }
 
 /* Icon styles */
@@ -238,8 +236,8 @@
 
 .drawer-footer {
   padding: 0.75rem;
-  border-top: 1px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .drawer-footer-link {
@@ -248,7 +246,7 @@
   gap: 0.875rem;
   padding: 0.75rem 1rem;
   border-radius: 10px;
-  color: var(--text-secondary);
+  color: rgba(26, 26, 46, 0.7);
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 500;
@@ -261,8 +259,8 @@
 }
 
 .drawer-footer-link:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.04);
+  color: #1a1a2e;
 }
 
 .drawer-footer-link:active {
@@ -271,13 +269,13 @@
 
 /* Logout button special styling */
 .drawer-logout-btn {
-  color: var(--text-muted);
+  color: rgba(26, 26, 46, 0.45);
   margin-top: 0.25rem;
 }
 
 .drawer-logout-btn:hover {
-  color: var(--neon-pink);
-  background: rgba(255, 42, 109, 0.1);
+  color: #e53e3e;
+  background: rgba(229, 62, 62, 0.06);
 }
 
 .drawer-footer-icon {
@@ -294,7 +292,7 @@
 
 .drawer-nav-link:focus-visible,
 .drawer-footer-link:focus-visible {
-  outline: 2px solid var(--neon-cyan);
+  outline: 2px solid #14b8a6;
   outline-offset: 2px;
 }
 

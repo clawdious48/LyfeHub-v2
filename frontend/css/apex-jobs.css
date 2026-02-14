@@ -13,7 +13,7 @@
 .projects-subtabs {
     display: flex;
     gap: 0.25rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.02);
     padding: 0.25rem;
     border-radius: 10px;
     border: 1px solid var(--glass-border);
@@ -37,13 +37,13 @@
 
 .subtab-btn:hover {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
 }
 
 .subtab-btn.active {
     background: linear-gradient(135deg, var(--apex-primary-muted), var(--apex-secondary-muted));
     color: var(--apex-primary);
-    box-shadow: var(--apex-glow-sm);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 /* Apex content container */
@@ -69,14 +69,14 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 2rem;
-    background: rgba(10, 10, 15, 0.5);
+    background: rgba(255, 255, 255, 0.7);
     border-bottom: 1px solid var(--glass-border);
 }
 
 .apex-view-toggle {
     display: flex;
     gap: 0.25rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.02);
     padding: 0.25rem;
     border-radius: 10px;
     border: 1px solid var(--glass-border);
@@ -99,13 +99,13 @@
 
 .apex-view-btn:hover {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
 }
 
 .apex-view-btn.active {
     background: linear-gradient(135deg, var(--apex-primary-muted), var(--apex-secondary-muted));
     color: var(--apex-primary);
-    box-shadow: var(--apex-glow-sm);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .apex-view-filters {
@@ -122,7 +122,7 @@
 
 .apex-filter-select {
     padding: 0.5rem 1rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.02);
     border: 1px solid var(--glass-border);
     border-radius: 8px;
     color: var(--text-primary);
@@ -135,11 +135,11 @@
 .apex-filter-select:focus {
     border-color: var(--apex-primary);
     outline: none;
-    box-shadow: var(--apex-glow-sm);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .apex-filter-select option {
-    background: #0a0a0f;
+    background: #ffffff;
 }
 
 /* Apex View Containers */
@@ -176,7 +176,7 @@
 
 /* Glowing column borders on hover */
 .apex-column:hover {
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(0, 0, 0, 0.08);
 }
 
 .apex-column-header {
@@ -206,7 +206,7 @@
 
 .apex-column-header.active h2 {
     color: var(--apex-primary);
-    text-shadow: 0 0 20px rgba(var(--apex-primary-rgb), 0.5);
+    text-shadow: none;
 }
 
 .apex-column-header.active::after {
@@ -221,7 +221,7 @@
 
 .apex-column-header.pending_insurance h2 {
     color: var(--apex-secondary);
-    text-shadow: 0 0 20px rgba(var(--apex-secondary-rgb), 0.5);
+    text-shadow: none;
 }
 
 .apex-column-header.pending_insurance::after {
@@ -236,7 +236,7 @@
 
 .apex-column-header.complete h2 {
     color: var(--apex-tertiary);
-    text-shadow: 0 0 20px rgba(74, 144, 164, 0.5);
+    text-shadow: none;
 }
 
 .apex-column-header.complete::after {
@@ -252,7 +252,7 @@
 }
 
 .apex-task-count {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.08);
     padding: 0.125rem 0.5rem;
     border-radius: 999px;
     font-size: 0.7rem;
@@ -271,10 +271,10 @@
 
 /* Apex Job Cards (Kanban) */
 .apex-job-card {
-    background: rgba(20, 20, 35, 0.95);
+    background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.04);
     border-radius: 12px;
     padding: 0.875rem;
     cursor: pointer;
@@ -283,7 +283,7 @@
 
 .apex-job-card:hover {
     background: rgba(30, 30, 50, 0.7);
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(0, 0, 0, 0.08);
     transform: translateY(-2px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
@@ -320,7 +320,7 @@
     justify-content: space-between;
     align-items: center;
     padding-top: 0.75rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .apex-owner {
@@ -369,12 +369,12 @@
 .apex-loss-badge.loss-wind {
     background: var(--apex-loss-storm-bg);
     color: var(--apex-loss-storm);
-    border: 1px solid rgba(139, 92, 246, 0.3);
-    box-shadow: 0 0 8px rgba(139, 92, 246, 0.2);
+    border: 1px solid rgba(20, 184, 166, 0.15);
+    box-shadow: 0 0 8px rgba(20, 184, 166, 0.1);
 }
 
 .apex-loss-badge.loss-unknown {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.08);
     color: var(--text-muted);
     border: 1px solid var(--glass-border);
 }
@@ -442,7 +442,7 @@
 .progress-bar {
     flex: 1;
     height: 4px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.08);
     border-radius: 2px;
     overflow: hidden;
 }
@@ -457,7 +457,7 @@
     background: var(--apex-gradient-primary);
     border-radius: inherit;
     transition: width 0.3s ease;
-    box-shadow: 0 0 8px rgba(var(--apex-primary-rgb), 0.5);
+    box-shadow: 0 2px 8px rgba(20, 184, 166, 0.2);
 }
 
 .progress-text {
@@ -483,7 +483,7 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    background: rgba(15, 15, 25, 0.4);
+    background: rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(8px);
     border-radius: 16px;
     overflow: hidden;
@@ -531,12 +531,12 @@
 }
 
 .apex-task-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .apex-task-table td {
     padding: 1rem 1.25rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.02);
     font-size: 0.875rem;
 }
 
@@ -559,10 +559,10 @@
 }
 
 .apex-project-card {
-    background: rgba(20, 20, 35, 0.95);
+    background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.04);
     border-radius: 16px;
     padding: 1.5rem;
     cursor: pointer;
@@ -604,7 +604,7 @@
 
 .apex-project-card:hover {
     background: rgba(30, 30, 50, 0.7);
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(0, 0, 0, 0.08);
     transform: translateY(-4px);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
@@ -644,7 +644,7 @@
     justify-content: space-between;
     align-items: center;
     padding-top: 0.75rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 /* ========================================
@@ -678,10 +678,10 @@
 
 #apex-job-modal .modal-content {
     position: relative;
-    background: rgba(15, 15, 25, 0.95);
+    background: rgba(255, 255, 255, 0.9);
     backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 20px;
     width: 90%;
     max-width: 700px;
@@ -690,13 +690,13 @@
     display: flex;
     flex-direction: column;
     box-shadow: 
-        0 0 60px rgba(191, 90, 242, 0.1),
-        0 0 100px rgba(0, 170, 255, 0.05);
+        0 0 60px rgba(20, 184, 166, 0.08),
+        0 0 100px rgba(8, 145, 178, 0.05);
 }
 
 #apex-job-modal .modal-header {
     padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -806,7 +806,7 @@
 }
 
 .apex-task-item:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .apex-task-item.completed {
@@ -910,7 +910,7 @@
         justify-content: flex-start;
         gap: 0.5rem;
         padding-top: 0.5rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-top: 1px solid rgba(0, 0, 0, 0.04);
         margin-top: 0.25rem;
     }
     
@@ -1017,7 +1017,7 @@
 .apex-phase-badge.phase-rmd {
     background: var(--apex-phase-rmd-bg);
     color: var(--apex-phase-rmd);
-    border: 1px solid rgba(139, 92, 246, 0.3);
+    border: 1px solid rgba(20, 184, 166, 0.15);
 }
 
 .apex-phase-badge.phase-abt {
@@ -1062,7 +1062,7 @@
 
 .apex-phase-tab:hover {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .apex-phase-tab.active {
@@ -1090,7 +1090,7 @@
     align-items: center;
     margin-bottom: 1.25rem;
     padding-bottom: 0.75rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .apex-phase-job-number {
@@ -1117,12 +1117,12 @@
 }
 
 .phase-status-approved {
-    background: rgba(0, 170, 255, 0.15);
+    background: rgba(8, 145, 178, 0.1);
     color: var(--apex-info);
 }
 
 .phase-status-complete {
-    background: rgba(191, 90, 242, 0.15);
+    background: rgba(20, 184, 166, 0.1);
     color: var(--apex-secondary);
 }
 
@@ -1152,7 +1152,7 @@
     font-style: italic;
     background: rgba(0, 0, 0, 0.15);
     border-radius: 8px;
-    border: 1px dashed rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(0, 0, 0, 0.04);
 }
 
 /* Wider modal for tabbed view */
@@ -1231,7 +1231,7 @@
 
 /* 3. Header Card */
 .job-detail-header {
-    background: rgba(15, 15, 25, 0.7);
+    background: rgba(255, 255, 255, 0.7);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     padding: 1.5rem;
@@ -1253,9 +1253,9 @@
 
 .job-detail-damage-icon {
     padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1288,7 +1288,7 @@
 
 .job-detail-header-text .client-name {
     font-size: 1rem;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(26, 26, 46, 0.9);
     font-weight: 500;
     margin-bottom: 0.25rem;
 }
@@ -1320,7 +1320,7 @@
     gap: 0.35rem;
     padding: 0.4rem 0.75rem;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 999px;
     cursor: pointer;
     font-size: 0.8rem;
@@ -1330,7 +1330,7 @@
 }
 
 .job-detail-status-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
 }
 
 .job-detail-status-btn svg {
@@ -1345,7 +1345,7 @@
     gap: 0.35rem;
     padding: 0.4rem 0.75rem;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 8px;
     cursor: pointer;
     font-size: 0.8rem;
@@ -1354,7 +1354,7 @@
 }
 
 .job-detail-edit-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
     color: var(--text-primary);
 }
 
@@ -1371,7 +1371,7 @@
 }
 
 .job-info-card {
-    background: rgba(15, 15, 25, 0.7);
+    background: rgba(255, 255, 255, 0.7);
     border: 1px solid var(--glass-border);
     border-radius: 12px;
     padding: 1rem;
@@ -1387,7 +1387,7 @@
     letter-spacing: 0.1em;
     color: var(--text-muted);
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
     margin-bottom: 0.5rem;
 }
 
@@ -1465,7 +1465,7 @@
 }
 
 .job-detail-phase-bar .phase-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
     color: var(--text-primary);
 }
 
@@ -1473,7 +1473,7 @@
     border-color: var(--apex-primary);
     background: var(--apex-primary-muted);
     color: var(--apex-primary);
-    box-shadow: var(--apex-glow-sm);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .job-detail-phase-bar .phase-btn .phase-badge {
@@ -1520,7 +1520,7 @@
 
 .job-detail-tab-btn:hover {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .job-detail-tab-btn.active {
@@ -1569,12 +1569,12 @@
 }
 
 .date-field .date-value:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
 }
 
 .date-field.highlighted .date-value {
-    border: 1px solid rgba(0, 245, 212, 0.3);
-    background: rgba(0, 245, 212, 0.05);
+    border: 1px solid rgba(20, 184, 166, 0.2);
+    background: rgba(20, 184, 166, 0.05);
 }
 
 /* 9. Notes Tab */
@@ -1673,12 +1673,12 @@
 }
 
 .note-type-badge.type-call {
-    background: rgba(0, 170, 255, 0.2);
+    background: rgba(8, 145, 178, 0.12);
     color: var(--apex-info);
 }
 
 .note-type-badge.type-email {
-    background: rgba(191, 90, 242, 0.2);
+    background: rgba(20, 184, 166, 0.12);
     color: var(--apex-secondary);
 }
 
@@ -1731,14 +1731,14 @@
     align-items: center;
     cursor: pointer;
     padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.015);
     border-radius: 8px;
     transition: var(--transition);
     margin-bottom: 0.25rem;
 }
 
 .expense-group-header:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
 }
 
 .expense-group-header .group-title {
@@ -1767,7 +1767,7 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.02);
     font-size: 0.85rem;
 }
 
@@ -1796,7 +1796,7 @@
 }
 
 .category-badge.cat-labor {
-    background: rgba(0, 170, 255, 0.2);
+    background: rgba(8, 145, 178, 0.12);
     color: var(--apex-info);
 }
 
@@ -1806,7 +1806,7 @@
 }
 
 .category-badge.cat-equipment {
-    background: rgba(191, 90, 242, 0.2);
+    background: rgba(20, 184, 166, 0.12);
     color: var(--apex-secondary);
 }
 
@@ -1822,7 +1822,7 @@
 
 /* 11. Accounting Sidebar */
 .job-accounting {
-    background: rgba(15, 15, 25, 0.7);
+    background: rgba(255, 255, 255, 0.7);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     padding: 1.25rem;
@@ -1871,7 +1871,7 @@
 
 .accounting-metric .metric-value.balance-due {
     color: var(--apex-warning);
-    text-shadow: 0 0 10px rgba(255, 230, 109, 0.3);
+    text-shadow: none;
 }
 
 .accounting-metric .metric-value.balance-paid {
@@ -1903,7 +1903,7 @@
     justify-content: center;
     gap: 0.35rem;
     padding: 0.5rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.02);
     border: 1px solid var(--glass-border);
     border-radius: 8px;
     color: var(--text-secondary);
@@ -1913,7 +1913,7 @@
 }
 
 .accounting-action-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.06);
     color: var(--text-primary);
     border-color: var(--apex-primary);
 }
@@ -1943,7 +1943,7 @@
 }
 
 .accounting-invoice-toggle.not-ready {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.02);
     color: var(--text-muted);
 }
 
@@ -1961,7 +1961,7 @@
     align-items: center;
     cursor: pointer;
     padding: 0.5rem 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
     font-size: 0.75rem;
     color: var(--text-secondary);
     transition: var(--transition);
@@ -1998,7 +1998,7 @@
 
 /* 12. Activity Sidebar */
 .job-activity {
-    background: rgba(15, 15, 25, 0.7);
+    background: rgba(255, 255, 255, 0.7);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     padding: 1.25rem;
@@ -2034,7 +2034,7 @@
 }
 
 .activity-filter-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
     color: var(--text-secondary);
 }
 
@@ -2105,7 +2105,7 @@
 
 /* 13. Contacts Section */
 .job-contacts {
-    background: rgba(15, 15, 25, 0.7);
+    background: rgba(255, 255, 255, 0.7);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     padding: 1.25rem;
@@ -2143,7 +2143,7 @@
 
 .job-contacts-header-left .contact-count {
     font-size: 0.65rem;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.08);
     padding: 0.1rem 0.4rem;
     border-radius: 999px;
     color: var(--text-muted);
@@ -2164,7 +2164,7 @@
 }
 
 .job-contacts-add-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
     color: var(--text-primary);
     border-color: var(--apex-primary);
 }
@@ -2181,14 +2181,14 @@
 }
 
 .contact-card {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
     border-radius: 8px;
     padding: 0.75rem;
     transition: var(--transition);
 }
 
 .contact-card:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.06);
 }
 
 .contact-card-top {
@@ -2213,9 +2213,9 @@
 .contact-card .msa-badge {
     display: inline-block;
     padding: 0.1rem 0.35rem;
-    background: rgba(0, 170, 255, 0.2);
+    background: rgba(8, 145, 178, 0.12);
     color: var(--apex-info);
-    border: 1px solid rgba(0, 170, 255, 0.3);
+    border: 1px solid rgba(8, 145, 178, 0.15);
     font-size: 0.6rem;
     font-weight: 700;
     border-radius: 999px;
@@ -2244,7 +2244,7 @@
 }
 
 .contact-card-actions a:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.08);
     color: var(--apex-primary);
 }
 
@@ -2283,10 +2283,10 @@
 
 .job-detail-modal-overlay .modal-content {
     position: relative;
-    background: rgba(15, 15, 25, 0.95);
+    background: rgba(255, 255, 255, 0.9);
     backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 20px;
     width: 90%;
     max-width: 600px;
@@ -2295,13 +2295,13 @@
     display: flex;
     flex-direction: column;
     box-shadow:
-        0 0 60px rgba(191, 90, 242, 0.1),
-        0 0 100px rgba(0, 170, 255, 0.05);
+        0 0 60px rgba(20, 184, 166, 0.08),
+        0 0 100px rgba(8, 145, 178, 0.05);
 }
 
 .job-detail-modal-overlay .modal-form-header {
     padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -2365,7 +2365,7 @@
     display: flex;
     justify-content: space-between;
     padding: 1rem 1.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 /* 15. Status Dropdown */
@@ -2375,8 +2375,8 @@
     right: 0;
     top: 100%;
     margin-top: 0.5rem;
-    background: rgba(15, 15, 25, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     z-index: 100;
@@ -2399,7 +2399,7 @@
 }
 
 .status-dropdown button:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
 }
 
 /* 16. Responsive Breakpoints */
@@ -2484,8 +2484,8 @@
 }
 
 .jdt-date-highlight {
-    border: 1px solid rgba(0, 245, 212, 0.2);
-    background: rgba(0, 245, 212, 0.04);
+    border: 1px solid rgba(20, 184, 166, 0.12);
+    background: rgba(20, 184, 166, 0.04);
     border-radius: 8px;
     padding: 0.5rem;
 }
@@ -2500,7 +2500,7 @@
 }
 
 .jdt-date-display:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
 }
 
 .jdt-date-input {
@@ -2524,7 +2524,7 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.02);
     font-size: 0.85rem;
 }
 
@@ -2571,7 +2571,7 @@
 }
 
 .jdt-upload-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
     color: var(--text-primary);
     border-color: var(--apex-primary);
 }
@@ -2606,15 +2606,15 @@
 
 .jdt-add-note-btn:hover,
 .jdt-submit-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
     color: var(--text-primary);
     border-color: var(--apex-primary);
 }
 
 .jdt-submit-btn {
-    background: rgba(0, 245, 212, 0.15);
+    background: rgba(20, 184, 166, 0.1);
     color: var(--apex-primary);
-    border-color: rgba(0, 245, 212, 0.3);
+    border-color: rgba(20, 184, 166, 0.2);
     margin-top: 0.5rem;
 }
 
@@ -2768,13 +2768,13 @@
     gap: 0.5rem;
     cursor: pointer;
     padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.015);
     border-radius: 8px;
     transition: var(--transition);
 }
 
 .jdt-section-header:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
 }
 
 .jdt-section-arrow {
@@ -2798,14 +2798,14 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.5rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.02);
     font-size: 0.85rem;
     cursor: pointer;
     transition: var(--transition);
 }
 
 .jdt-expense-row:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .jdt-expense-row:last-child {
@@ -2880,7 +2880,7 @@
 }
 
 .jdt-add-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
     color: var(--text-primary);
     border-color: var(--apex-primary);
 }
@@ -2912,10 +2912,10 @@
 
 .jdm-card {
     position: relative;
-    background: rgba(15, 15, 25, 0.95);
+    background: rgba(255, 255, 255, 0.9);
     backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 20px;
     width: 90%;
     max-width: 720px;
@@ -2924,13 +2924,13 @@
     display: flex;
     flex-direction: column;
     box-shadow:
-        0 0 60px rgba(191, 90, 242, 0.1),
-        0 0 100px rgba(0, 170, 255, 0.05);
+        0 0 60px rgba(20, 184, 166, 0.08),
+        0 0 100px rgba(8, 145, 178, 0.05);
 }
 
 .jdm-header {
     padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -2998,7 +2998,7 @@
     justify-content: flex-end;
     gap: 0.5rem;
     padding: 1rem 0 0 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
     margin-top: 1rem;
 }
 
@@ -3017,18 +3017,18 @@
 }
 
 .jdm-btn-cancel:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
     color: var(--text-primary);
 }
 
 .jdm-btn-action {
-    background: rgba(0, 245, 212, 0.15);
+    background: rgba(20, 184, 166, 0.1);
     color: var(--apex-primary);
-    border-color: rgba(0, 245, 212, 0.3);
+    border-color: rgba(20, 184, 166, 0.2);
 }
 
 .jdm-btn-action:hover {
-    background: rgba(0, 245, 212, 0.25);
+    background: rgba(20, 184, 166, 0.15);
 }
 
 .jdm-btn-danger {
@@ -3065,7 +3065,7 @@
 .jdm-section {
     margin-bottom: 1.25rem;
     padding-bottom: 1.25rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 .jdm-section:last-of-type {
     border-bottom: none;
@@ -3107,7 +3107,7 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--text-muted, #888);
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
     padding-top: 0.6rem;
     margin-top: 0.25rem;
 }
@@ -3116,7 +3116,7 @@
 .jdm-est-helper {
     font-size: 11px;
     margin-top: 4px;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(26, 26, 46, 0.5);
 }
 
 /* =====================================================
@@ -3134,28 +3134,28 @@
     padding: 4px 10px;
     font-size: 11px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.6);
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    color: rgba(26, 26, 46, 0.6);
     cursor: pointer;
     transition: var(--transition);
     white-space: nowrap;
 }
 
 .acct-phase-tab:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.08);
+    color: rgba(26, 26, 46, 0.8);
 }
 
 .acct-phase-tab.active {
-    border-color: #00aaff;
-    box-shadow: 0 0 8px rgba(0, 170, 255, 0.3);
-    color: #fff;
+    border-color: #0891b2;
+    box-shadow: 0 2px 6px rgba(8, 145, 178, 0.08);
+    color: #1a1a2e;
 }
 
 /* Estimates Breakdown (collapsible section) */
 .estimates-breakdown {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
     margin-top: 12px;
     padding-top: 12px;
 }
@@ -3172,7 +3172,7 @@
 .estimates-breakdown-header h4 {
     margin: 0;
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(26, 26, 46, 0.8);
 }
 
 .estimates-breakdown-header .breakdown-total {
@@ -3184,7 +3184,7 @@
     transition: transform 0.2s;
     width: 14px;
     height: 14px;
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(26, 26, 46, 0.4);
 }
 
 .estimates-breakdown.collapsed .breakdown-content {
@@ -3201,30 +3201,30 @@
     gap: 4px;
     margin-bottom: 10px;
     padding-bottom: 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .est-tab {
     padding: 4px 10px;
     font-size: 11px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.6);
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    color: rgba(26, 26, 46, 0.6);
     cursor: pointer;
     transition: var(--transition);
     white-space: nowrap;
 }
 
 .est-tab:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.08);
+    color: rgba(26, 26, 46, 0.8);
 }
 
 .est-tab.active {
-    border-color: #00aaff;
-    box-shadow: 0 0 8px rgba(0, 170, 255, 0.3);
-    color: #fff;
+    border-color: #0891b2;
+    box-shadow: 0 2px 6px rgba(8, 145, 178, 0.08);
+    color: #1a1a2e;
 }
 
 /* Estimate Current / Summary */
@@ -3240,11 +3240,11 @@
 }
 
 .estimate-current .current-label {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(26, 26, 46, 0.5);
 }
 
 .estimate-current .current-value {
-    color: #fff;
+    color: #1a1a2e;
     font-weight: 500;
 }
 
@@ -3276,14 +3276,14 @@
     justify-content: space-between;
     align-items: center;
     padding: 6px 0 4px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     margin-bottom: 6px;
 }
 
 .est-type-label {
     font-size: 12px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(26, 26, 46, 0.8);
 }
 
 .est-type-total {
@@ -3298,7 +3298,7 @@
     justify-content: space-between;
     font-size: 11px;
     padding: 2px 0;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(26, 26, 46, 0.6);
 }
 
 /* Estimate Version List */
@@ -3312,7 +3312,7 @@
     gap: 8px;
     padding: 4px 0;
     font-size: 11px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.02);
 }
 
 .est-version-row:last-child {
@@ -3320,19 +3320,19 @@
 }
 
 .est-ver-num {
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(26, 26, 46, 0.7);
     font-weight: 500;
     min-width: 32px;
 }
 
 .est-original-tag {
     font-size: 9px;
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(26, 26, 46, 0.4);
     font-weight: 400;
 }
 
 .est-ver-amount {
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(26, 26, 46, 0.8);
 }
 
 .est-ver-delta {
@@ -3387,13 +3387,13 @@
     margin-top: 6px;
     padding: 6px 8px;
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.02);
     font-size: 12px;
 }
 
 .original-amount-display {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(26, 26, 46, 0.5);
     margin-top: 4px;
 }
 
@@ -3409,14 +3409,14 @@
     background: var(--apex-gradient-primary) !important;
     border: none !important;
     color: var(--apex-text-primary) !important;
-    box-shadow: var(--apex-btn-glow) !important;
+    box-shadow: 0 2px 8px rgba(20, 184, 166, 0.2) !important;
     transition: var(--apex-transition) !important;
 }
 
 .apex-content .btn-primary:hover,
 #new-job-btn:hover,
 [data-tab="apex"] .btn-primary:hover {
-    box-shadow: var(--apex-btn-glow-hover) !important;
+    box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3) !important;
     transform: translateY(-2px);
 }
 
@@ -3437,13 +3437,13 @@
 /* Apex kanban card hover glow */
 .apex-job-card:hover {
     border-color: var(--apex-border-hover);
-    box-shadow: var(--apex-shadow-md), var(--apex-glow-sm);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 /* Apex column hover glow */
 .apex-column:hover {
     border-color: var(--apex-border-hover);
-    box-shadow: var(--apex-glow-sm);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 /* Focus states for inputs in Apex modals */
@@ -3480,8 +3480,8 @@
 
 /* Trigger button — matches .job-field input styling */
 .team-select-trigger {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 6px;
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
@@ -3496,12 +3496,12 @@
 }
 
 .team-select-trigger:hover {
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(0, 0, 0, 0.12);
 }
 
 .team-select.open .team-select-trigger {
-    border-color: var(--neon-purple, #a855f7);
-    background: rgba(255, 255, 255, 0.08);
+    border-color: #14b8a6;
+    background: rgba(0, 0, 0, 0.06);
 }
 
 /* Dropdown panel */
@@ -3512,8 +3512,8 @@
     left: 0;
     right: 0;
     margin-top: 4px;
-    background: rgba(20, 20, 35, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -3540,11 +3540,11 @@
 }
 
 .team-select-option:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.06);
 }
 
 .team-select-option input[type="checkbox"] {
-    accent-color: var(--apex-primary, #bf5af2);
+    accent-color: var(--apex-primary, #14b8a6);
     cursor: pointer;
     flex-shrink: 0;
 }
@@ -3605,12 +3605,12 @@
 }
 
 .team-select-dropdown::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.1);
     border-radius: 3px;
 }
 
 .team-select-dropdown::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(26, 26, 46, 0.25);
 }
 
 /* Mobile: Hide tab labels, show icons only */
@@ -3752,7 +3752,7 @@
         border-radius: 50%;
         background: var(--apex-primary);
         border: none;
-        color: white;
+        color: #1a1a2e;
         font-size: 1.75rem;
         cursor: pointer;
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -3885,7 +3885,7 @@
 .filter-sheet-apply {
     background: var(--apex-primary);
     border: none;
-    color: white;
+    color: #1a1a2e;
 }
 
 /* ========================================
@@ -4094,7 +4094,7 @@
     font-size: 0.85rem;
 }
 .inv-back-btn svg { width: 16px; height: 16px; }
-.inv-back-btn:hover { border-color: var(--neon-cyan, #00f0ff); color: var(--neon-cyan, #00f0ff); }
+.inv-back-btn:hover { border-color: var(--neon-cyan, #14b8a6); color: var(--neon-cyan, #14b8a6); }
 
 .inv-tabs {
     display: flex;
@@ -4113,8 +4113,8 @@
     transition: all 0.2s;
 }
 .inv-tab.active {
-    color: var(--neon-cyan, #00f0ff);
-    border-bottom-color: var(--neon-cyan, #00f0ff);
+    color: var(--neon-cyan, #14b8a6);
+    border-bottom-color: var(--neon-cyan, #14b8a6);
 }
 .inv-tab:hover { color: var(--text-primary, #fff); }
 
@@ -4140,8 +4140,8 @@
 }
 .inv-cat-btn.active {
     background: rgba(0,240,255,0.1);
-    border-color: var(--neon-cyan, #00f0ff);
-    color: var(--neon-cyan, #00f0ff);
+    border-color: var(--neon-cyan, #14b8a6);
+    color: var(--neon-cyan, #14b8a6);
 }
 
 .inv-catalog-header, .inv-stock-header, .inv-purchase-header, .inv-alloc-subheader {
@@ -4228,7 +4228,7 @@
 }
 .inv-alloc-total {
     font-size: 0.8rem;
-    color: var(--neon-cyan, #00f0ff);
+    color: var(--neon-cyan, #14b8a6);
 }
 
 /* Contact remove button */

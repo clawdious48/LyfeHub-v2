@@ -104,18 +104,14 @@
 
 /* Scrolled state - add shadow for depth */
 .header.is-scrolled {
-  box-shadow: 
-    0 4px 20px rgba(0, 0, 0, 0.4),
-    0 0 1px rgba(191, 90, 242, 0.3);
-  border-bottom-color: rgba(191, 90, 242, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
 }
 
 /* Extra shadow enhancement for mobile */
 @media (max-width: 768px) {
   .header.is-scrolled {
-    box-shadow: 
-      0 2px 12px rgba(0, 0, 0, 0.5),
-      0 0 1px rgba(191, 90, 242, 0.4);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   }
 }
 
@@ -188,7 +184,7 @@ body.keyboard-open .header {
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--text-primary);
-    background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan));
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

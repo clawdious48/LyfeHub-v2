@@ -8,118 +8,118 @@
 :root {
     /* ===================
        PRIMARY COLORS
-       Purple spectrum - matches LyfeHub accent
+       Teal spectrum - matches LyfeHub accent
        =================== */
-    --apex-primary: #bf5af2;
-    --apex-primary-light: #d17ff7;
-    --apex-primary-dark: #a040d8;
-    --apex-primary-muted: rgba(191, 90, 242, 0.15);
-    --apex-primary-glow: rgba(191, 90, 242, 0.3);
+    --apex-primary: #14b8a6;
+    --apex-primary-light: #2dd4bf;
+    --apex-primary-dark: #0d9488;
+    --apex-primary-muted: rgba(20, 184, 166, 0.1);
+    --apex-primary-glow: rgba(20, 184, 166, 0.15);
     
     /* RGB values for alpha compositing */
-    --apex-primary-rgb: 191, 90, 242;
+    --apex-primary-rgb: 20, 184, 166;
     
     /* ===================
        SECONDARY COLORS
        Cyan/blue accent
        =================== */
-    --apex-secondary: #0af;
-    --apex-secondary-light: #4dc3ff;
-    --apex-secondary-dark: #0088cc;
-    --apex-secondary-muted: rgba(0, 170, 255, 0.15);
+    --apex-secondary: #0891b2;
+    --apex-secondary-light: #22d3ee;
+    --apex-secondary-dark: #0e7490;
+    --apex-secondary-muted: rgba(8, 145, 178, 0.1);
     
     /* RGB values */
-    --apex-secondary-rgb: 0, 170, 255;
+    --apex-secondary-rgb: 8, 145, 178;
     
     /* ===================
        TERTIARY COLORS
-       Teal for contrast
+       Emerald for contrast
        =================== */
-    --apex-tertiary: #00f5d4;
-    --apex-tertiary-muted: rgba(0, 245, 212, 0.15);
+    --apex-tertiary: #10b981;
+    --apex-tertiary-muted: rgba(16, 185, 129, 0.1);
     
     /* ===================
        SEMANTIC COLORS
        Status and feedback
        =================== */
-    --apex-success: #05ffa1;
-    --apex-success-muted: rgba(5, 255, 161, 0.15);
+    --apex-success: #10b981;
+    --apex-success-muted: rgba(16, 185, 129, 0.1);
     
-    --apex-warning: #ffe66d;
-    --apex-warning-muted: rgba(255, 230, 109, 0.15);
+    --apex-warning: #f59e0b;
+    --apex-warning-muted: rgba(245, 158, 11, 0.1);
     
-    --apex-danger: #ff2a6d;
-    --apex-danger-muted: rgba(255, 42, 109, 0.15);
+    --apex-danger: #e11d48;
+    --apex-danger-muted: rgba(225, 29, 72, 0.1);
     
-    --apex-info: #0af;
-    --apex-info-muted: rgba(0, 170, 255, 0.15);
+    --apex-info: #0891b2;
+    --apex-info-muted: rgba(8, 145, 178, 0.1);
     
     /* ===================
        NEUTRAL BACKGROUNDS
-       Dark mode optimized
+       Light mode optimized
        =================== */
-    --apex-bg-dark: #0a0a0f;
-    --apex-bg-card: rgba(255, 255, 255, 0.03);
-    --apex-bg-elevated: rgba(255, 255, 255, 0.05);
-    --apex-bg-hover: rgba(255, 255, 255, 0.08);
-    --apex-bg-active: rgba(255, 255, 255, 0.1);
+    --apex-bg-dark: #ffffff;
+    --apex-bg-card: rgba(255, 255, 255, 0.7);
+    --apex-bg-elevated: rgba(255, 255, 255, 0.85);
+    --apex-bg-hover: rgba(0, 0, 0, 0.04);
+    --apex-bg-active: rgba(0, 0, 0, 0.06);
     
     /* Glass effect backgrounds */
-    --apex-glass-bg: rgba(255, 255, 255, 0.03);
-    --apex-glass-bg-solid: rgba(10, 10, 15, 0.95);
+    --apex-glass-bg: rgba(255, 255, 255, 0.7);
+    --apex-glass-bg-solid: rgba(255, 255, 255, 0.95);
     
     /* ===================
        BORDER COLORS
        =================== */
-    --apex-border: rgba(255, 255, 255, 0.08);
-    --apex-border-hover: rgba(255, 255, 255, 0.15);
-    --apex-border-active: rgba(191, 90, 242, 0.4);
-    --apex-border-focus: rgba(191, 90, 242, 0.6);
+    --apex-border: rgba(0, 0, 0, 0.08);
+    --apex-border-hover: rgba(0, 0, 0, 0.12);
+    --apex-border-active: rgba(20, 184, 166, 0.4);
+    --apex-border-focus: rgba(20, 184, 166, 0.6);
     
     /* ===================
        TEXT COLORS
        =================== */
-    --apex-text-primary: #ffffff;
-    --apex-text-secondary: rgba(255, 255, 255, 0.75);
-    --apex-text-muted: rgba(255, 255, 255, 0.5);
-    --apex-text-disabled: rgba(255, 255, 255, 0.3);
-    --apex-text-inverted: #0a0a0f;
+    --apex-text-primary: #1a1a2e;
+    --apex-text-secondary: rgba(26, 26, 46, 0.7);
+    --apex-text-muted: rgba(26, 26, 46, 0.45);
+    --apex-text-disabled: rgba(26, 26, 46, 0.3);
+    --apex-text-inverted: #ffffff;
     
     /* Accent text colors */
     --apex-text-accent: var(--apex-primary);
     --apex-text-link: var(--apex-secondary);
     
     /* ===================
-       SHADOWS & GLOWS
+       SHADOWS
        =================== */
-    --apex-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --apex-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-    --apex-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+    --apex-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --apex-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+    --apex-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
     
-    --apex-glow-sm: 0 0 10px rgba(191, 90, 242, 0.2);
-    --apex-glow-md: 0 0 20px rgba(191, 90, 242, 0.3);
-    --apex-glow-lg: 0 0 40px rgba(191, 90, 242, 0.4);
+    --apex-glow-sm: 0 0 10px rgba(20, 184, 166, 0.1);
+    --apex-glow-md: 0 0 20px rgba(20, 184, 166, 0.15);
+    --apex-glow-lg: 0 0 40px rgba(20, 184, 166, 0.2);
     
-    /* Combined shadow + glow for buttons */
-    --apex-btn-glow: 0 4px 15px rgba(191, 90, 242, 0.3);
-    --apex-btn-glow-hover: 0 6px 25px rgba(191, 90, 242, 0.5);
+    /* Combined shadow for buttons */
+    --apex-btn-glow: 0 4px 15px rgba(20, 184, 166, 0.2);
+    --apex-btn-glow-hover: 0 6px 25px rgba(20, 184, 166, 0.3);
     
     /* ===================
        GRADIENTS
        =================== */
-    --apex-gradient-primary: linear-gradient(135deg, #bf5af2, #0af);
-    --apex-gradient-primary-vertical: linear-gradient(180deg, #bf5af2, #a040d8);
-    --apex-gradient-dark: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
-    --apex-gradient-glow: linear-gradient(135deg, rgba(191, 90, 242, 0.2), rgba(0, 170, 255, 0.1));
+    --apex-gradient-primary: linear-gradient(135deg, #14b8a6, #0891b2);
+    --apex-gradient-primary-vertical: linear-gradient(180deg, #14b8a6, #0d9488);
+    --apex-gradient-dark: linear-gradient(135deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.01));
+    --apex-gradient-glow: linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(8, 145, 178, 0.05));
     
     /* Header/accent gradient */
-    --apex-gradient-accent: linear-gradient(135deg, #bf5af2, #0af);
+    --apex-gradient-accent: linear-gradient(135deg, #14b8a6, #0891b2);
     
     /* ===================
        BLUR/BACKDROP
        =================== */
-    --apex-blur: blur(12px);
-    --apex-blur-strong: blur(20px);
+    --apex-blur: blur(16px);
+    --apex-blur-strong: blur(24px);
     
     /* ===================
        TRANSITIONS
@@ -131,50 +131,50 @@
     /* ===================
        JOB STATUS COLORS
        =================== */
-    --apex-status-active: #05ffa1;
-    --apex-status-active-bg: rgba(5, 255, 161, 0.15);
+    --apex-status-active: #10b981;
+    --apex-status-active-bg: rgba(16, 185, 129, 0.1);
     
-    --apex-status-pending: #ffe66d;
-    --apex-status-pending-bg: rgba(255, 230, 109, 0.15);
+    --apex-status-pending: #f59e0b;
+    --apex-status-pending-bg: rgba(245, 158, 11, 0.1);
     
-    --apex-status-complete: #0af;
-    --apex-status-complete-bg: rgba(0, 170, 255, 0.15);
+    --apex-status-complete: #0891b2;
+    --apex-status-complete-bg: rgba(8, 145, 178, 0.1);
     
-    --apex-status-hold: #bf5af2;
-    --apex-status-hold-bg: rgba(191, 90, 242, 0.15);
+    --apex-status-hold: #6366f1;
+    --apex-status-hold-bg: rgba(99, 102, 241, 0.1);
     
     /* ===================
        LOSS TYPE COLORS
        =================== */
-    --apex-loss-water: #0af;
-    --apex-loss-water-bg: rgba(0, 170, 255, 0.15);
+    --apex-loss-water: #0891b2;
+    --apex-loss-water-bg: rgba(8, 145, 178, 0.1);
     
-    --apex-loss-fire: #ff2a6d;
-    --apex-loss-fire-bg: rgba(255, 42, 109, 0.15);
+    --apex-loss-fire: #e11d48;
+    --apex-loss-fire-bg: rgba(225, 29, 72, 0.1);
     
-    --apex-loss-mold: #05ffa1;
-    --apex-loss-mold-bg: rgba(5, 255, 161, 0.15);
+    --apex-loss-mold: #10b981;
+    --apex-loss-mold-bg: rgba(16, 185, 129, 0.1);
     
     --apex-loss-smoke: #6B7280;
-    --apex-loss-smoke-bg: rgba(107, 114, 128, 0.15);
+    --apex-loss-smoke-bg: rgba(107, 114, 128, 0.1);
     
-    --apex-loss-storm: #bf5af2;
-    --apex-loss-storm-bg: rgba(191, 90, 242, 0.15);
+    --apex-loss-storm: #6366f1;
+    --apex-loss-storm-bg: rgba(99, 102, 241, 0.1);
     
     /* ===================
        PHASE COLORS
        =================== */
-    --apex-phase-mit: #0af;
-    --apex-phase-mit-bg: rgba(0, 170, 255, 0.15);
+    --apex-phase-mit: #0891b2;
+    --apex-phase-mit-bg: rgba(8, 145, 178, 0.1);
     
-    --apex-phase-rpr: #05ffa1;
-    --apex-phase-rpr-bg: rgba(5, 255, 161, 0.15);
+    --apex-phase-rpr: #10b981;
+    --apex-phase-rpr-bg: rgba(16, 185, 129, 0.1);
     
-    --apex-phase-rmd: #bf5af2;
-    --apex-phase-rmd-bg: rgba(191, 90, 242, 0.15);
+    --apex-phase-rmd: #6366f1;
+    --apex-phase-rmd-bg: rgba(99, 102, 241, 0.1);
     
-    --apex-phase-abt: #ffe66d;
-    --apex-phase-abt-bg: rgba(255, 230, 109, 0.15);
+    --apex-phase-abt: #f59e0b;
+    --apex-phase-abt-bg: rgba(245, 158, 11, 0.1);
 }
 
 /* ========================================
@@ -183,7 +183,7 @@
 
 .apex-btn-primary {
     background: var(--apex-gradient-primary);
-    color: var(--apex-text-primary);
+    color: #ffffff;
     border: none;
     box-shadow: var(--apex-btn-glow);
     transition: var(--apex-transition);

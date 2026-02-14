@@ -1,7 +1,7 @@
 /* ========================================
    BOTTOM NAVIGATION BAR - Mobile Only
    
-   Dark glassmorphic style matching LyfeHub theme
+   Clean white glassmorphic style matching LyfeHub theme
    Shows only on mobile (<768px)
    ======================================== */
 
@@ -17,13 +17,13 @@
     z-index: 1000;
     
     /* Glassmorphic background */
-    background: rgba(10, 10, 15, 0.92);
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     
-    /* Top border glow */
-    border-top: 1px solid rgba(191, 90, 242, 0.2);
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+    /* Top border */
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
     
     /* Safe area padding for notched phones */
     padding-bottom: env(safe-area-inset-bottom, 0);
@@ -59,7 +59,7 @@
     cursor: pointer;
     
     /* Text styling */
-    color: var(--apex-text-muted, rgba(255, 255, 255, 0.5));
+    color: rgba(26, 26, 46, 0.45);
     font-size: 10px;
     font-weight: 500;
     text-transform: uppercase;
@@ -92,11 +92,11 @@
    ACTIVE STATE
    =================== */
 .bottom-nav-item.active {
-    color: var(--apex-primary, #bf5af2);
+    color: #14b8a6;
 }
 
 .bottom-nav-item.active svg {
-    filter: drop-shadow(0 0 6px rgba(191, 90, 242, 0.5));
+    filter: drop-shadow(0 0 6px rgba(20, 184, 166, 0.4));
 }
 
 .bottom-nav-item.active::before {
@@ -107,7 +107,7 @@
     transform: translateX(-50%);
     width: 30px;
     height: 3px;
-    background: var(--apex-gradient-primary, linear-gradient(135deg, #bf5af2, #0af));
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
     border-radius: 0 0 3px 3px;
 }
 
@@ -125,7 +125,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     z-index: 999;
@@ -150,14 +150,14 @@
     z-index: 1001;
     
     /* Glassmorphic background */
-    background: rgba(15, 15, 20, 0.95);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     
     /* Border and shadow */
-    border-top: 1px solid rgba(191, 90, 242, 0.3);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 24px 24px 0 0;
-    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.1);
     
     /* Safe area */
     padding-bottom: env(safe-area-inset-bottom, 0);
@@ -185,7 +185,7 @@
 .more-menu-handle {
     width: 40px;
     height: 4px;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.15);
     border-radius: 2px;
 }
 
@@ -194,7 +194,7 @@
     right: 16px;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.05);
     border: none;
     width: 32px;
     height: 32px;
@@ -203,13 +203,13 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: var(--apex-text-muted, rgba(255, 255, 255, 0.5));
+    color: rgba(26, 26, 46, 0.45);
     transition: all 0.2s ease;
 }
 
 .more-menu-close:hover {
-    background: rgba(255, 255, 255, 0.15);
-    color: var(--apex-text-primary, #fff);
+    background: rgba(0, 0, 0, 0.08);
+    color: #1a1a2e;
 }
 
 .more-menu-close svg {
@@ -235,13 +235,13 @@
     padding: 16px 8px;
     
     /* Reset button styles */
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.06);
     border-radius: 16px;
     cursor: pointer;
     
     /* Text styling */
-    color: var(--apex-text-secondary, rgba(255, 255, 255, 0.75));
+    color: rgba(26, 26, 46, 0.7);
     font-size: 12px;
     font-weight: 500;
     
@@ -250,14 +250,14 @@
 
 .more-menu-item:active {
     transform: scale(0.96);
-    background: rgba(191, 90, 242, 0.1);
-    border-color: rgba(191, 90, 242, 0.3);
+    background: rgba(20, 184, 166, 0.08);
+    border-color: rgba(20, 184, 166, 0.25);
 }
 
 .more-menu-item svg {
     width: 28px;
     height: 28px;
-    stroke: var(--apex-primary, #bf5af2);
+    stroke: #14b8a6;
     stroke-width: 1.5;
     fill: none;
 }

@@ -19,7 +19,7 @@
 .calendar-sidebar {
     width: 280px;
     min-width: 280px;
-    background: rgba(10, 10, 15, 0.6);
+    background: rgba(255, 255, 255, 0.7);
     backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
     border-right: 1px solid var(--glass-border);
@@ -43,7 +43,7 @@
     margin: 0.5rem 0.75rem;
     padding: 0.6rem 1rem;
     box-sizing: border-box;
-    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    background: linear-gradient(135deg, #14b8a6, var(--neon-blue));
     border: none;
     border-radius: 8px;
     color: white;
@@ -55,7 +55,7 @@
 
 .sidebar-new-calendar-btn:hover {
     filter: brightness(1.1);
-    box-shadow: 0 0 15px rgba(255, 42, 109, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Color Picker Row */
@@ -109,7 +109,7 @@
 }
 
 .calendar-sidebar-toggle:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .calendar-sidebar-toggle .toggle-chevron {
@@ -153,7 +153,7 @@
 }
 
 .calendar-list-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
     color: var(--text-primary);
 }
 
@@ -163,7 +163,7 @@
 }
 
 .calendar-list-item.selected {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
     color: var(--text-primary);
 }
 
@@ -184,7 +184,7 @@
     height: 22px;
     padding: 0;
     margin-left: auto;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
     border: none;
     border-radius: 4px;
     color: var(--text-muted);
@@ -198,8 +198,8 @@
 }
 
 .calendar-edit-btn:hover {
-    background: rgba(191, 90, 242, 0.2);
-    color: var(--neon-purple);
+    background: rgba(20, 184, 166, 0.15);
+    color: #14b8a6;
 }
 
 .calendar-edit-btn svg {
@@ -262,7 +262,7 @@
 }
 
 .calendar-section-header:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.02);
     color: var(--text-primary);
 }
 
@@ -277,7 +277,7 @@
 .section-count {
     margin-left: auto;
     padding: 0.125rem 0.5rem;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
     border-radius: 10px;
     font-size: 0.75rem;
     color: var(--text-muted);
@@ -312,7 +312,7 @@
 }
 
 .calendar-task-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
     border-color: rgba(255, 255, 255, 0.12);
 }
 
@@ -403,7 +403,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.5rem;
-    background: rgba(10, 10, 15, 0.5);
+    background: rgba(255, 255, 255, 0.7);
     border-bottom: 1px solid var(--glass-border);
 }
 
@@ -419,7 +419,7 @@
     justify-content: center;
     width: 32px;
     height: 32px;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.02);
     border: 1px solid var(--glass-border);
     border-radius: 6px;
     color: var(--text-secondary);
@@ -428,14 +428,14 @@
 }
 
 .calendar-nav-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.06);
     color: var(--text-primary);
-    border-color: var(--neon-purple);
+    border-color: #14b8a6;
 }
 
 .calendar-today-btn {
     padding: 0.4rem 0.75rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.02);
     border: 1px solid var(--glass-border);
     border-radius: 6px;
     color: var(--text-secondary);
@@ -446,7 +446,7 @@
 }
 
 .calendar-today-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.06);
     color: var(--text-primary);
 }
 
@@ -461,7 +461,7 @@
 .calendar-view-toggle {
     display: flex;
     gap: 0.25rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.02);
     padding: 0.25rem;
     border-radius: 10px;
     border: 1px solid var(--glass-border);
@@ -481,13 +481,13 @@
 
 .calendar-view-btn:hover {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
 }
 
 .calendar-view-btn.active {
-    background: linear-gradient(135deg, rgba(191, 90, 242, 0.3), rgba(0, 170, 255, 0.2));
+    background: linear-gradient(135deg, rgba(20, 184, 166, 0.2), rgba(0, 170, 255, 0.2));
     color: var(--text-primary);
-    box-shadow: 0 0 15px rgba(191, 90, 242, 0.2);
+    box-shadow: 0 0 15px rgba(20, 184, 166, 0.15);
 }
 
 /* Calendar Content Area */
@@ -538,7 +538,7 @@
 }
 
 .month-cell {
-    background: rgba(15, 15, 25, 0.4);
+    background: #ffffff;
     padding: 0.5rem;
     min-height: 100px;
     cursor: pointer;
@@ -546,7 +546,7 @@
 }
 
 .month-cell:hover {
-    background: rgba(25, 25, 40, 0.5);
+    background: rgba(0, 0, 0, 0.03);
 }
 
 .month-cell.other-month {
@@ -554,11 +554,11 @@
 }
 
 .month-cell.today {
-    background: rgba(191, 90, 242, 0.1);
+    background: rgba(20, 184, 166, 0.1);
 }
 
 .month-cell.today .month-date {
-    background: var(--neon-purple);
+    background: #14b8a6;
     color: white;
     border-radius: 50%;
     width: 28px;
@@ -566,7 +566,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 12px var(--neon-purple);
+    box-shadow: 0 2px 8px rgba(20, 184, 166, 0.3);
 }
 
 .month-date {
@@ -585,8 +585,8 @@
 
 .month-event {
     padding: 0.2rem 0.4rem;
-    background: rgba(191, 90, 242, 0.2);
-    border-left: 2px solid var(--neon-purple);
+    background: rgba(20, 184, 166, 0.15);
+    border-left: 2px solid #14b8a6;
     border-radius: 2px;
     font-size: 0.7rem;
     color: var(--text-primary);
@@ -598,7 +598,7 @@
 }
 
 .month-event:hover {
-    background: rgba(191, 90, 242, 0.3);
+    background: rgba(20, 184, 166, 0.2);
 }
 
 .month-event.important {
@@ -619,7 +619,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: rgba(15, 15, 25, 0.3);
+    background: rgba(255, 255, 255, 0.7);
     border-radius: 12px;
     overflow: hidden;
     border: 1px solid var(--glass-border);
@@ -668,7 +668,7 @@
 }
 
 .week-header-cell.today .week-header-date {
-    background: var(--neon-purple);
+    background: #14b8a6;
     color: white;
     border-radius: 50%;
     width: 36px;
@@ -676,7 +676,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 12px var(--neon-purple);
+    box-shadow: 0 2px 8px rgba(20, 184, 166, 0.3);
 }
 
 .week-body {
@@ -722,7 +722,7 @@
     min-height: 50px;
     max-height: 150px; /* Cap expansion to prevent taking over the view */
     border-bottom: 1px solid var(--glass-border);
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.02);
     flex-shrink: 0;
     overflow-y: auto; /* Scroll if many all-day events */
     transition: max-height 0.2s ease;
@@ -741,7 +741,7 @@
     justify-content: flex-end;
     position: sticky;
     left: 0;
-    background: rgba(15, 15, 25, 0.95);
+    background: rgba(255, 255, 255, 0.95);
 }
 
 .week-all-day-cells {
@@ -766,15 +766,15 @@
 }
 
 .week-all-day-cell.calendar-drop-target {
-    background: rgba(191, 90, 242, 0.1);
-    border: 2px dashed var(--neon-purple);
+    background: rgba(20, 184, 166, 0.1);
+    border: 2px dashed #14b8a6;
 }
 
 /* All-day events in the frozen row cells */
 .week-all-day-cell .all-day-event {
     padding: 0.2rem 0.4rem;
-    background: rgba(191, 90, 242, 0.2);
-    border-left: 2px solid var(--neon-purple);
+    background: rgba(20, 184, 166, 0.15);
+    border-left: 2px solid #14b8a6;
     border-radius: 3px;
     font-size: 0.75rem;
     color: var(--text-primary);
@@ -791,7 +791,7 @@
 }
 
 .week-all-day-cell .all-day-event:hover {
-    background: rgba(191, 90, 242, 0.3);
+    background: rgba(20, 184, 166, 0.2);
 }
 
 .week-all-day-cell .all-day-event.important:hover {
@@ -807,18 +807,18 @@
 .week-all-day {
     min-height: 40px;
     padding: 0.25rem;
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.02);
     border-bottom: 1px solid var(--glass-border);
 }
 
 .week-hour-slot {
     height: 60px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.02);
     position: relative;
 }
 
 .week-hour-slot:hover {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .week-hour-slot.drag-hover {
@@ -832,7 +832,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: rgba(15, 15, 25, 0.3);
+    background: rgba(255, 255, 255, 0.7);
     border-radius: 12px;
     overflow: hidden;
     border: 1px solid var(--glass-border);
@@ -859,8 +859,8 @@
 }
 
 .day-header.today .day-header-date {
-    color: var(--neon-purple);
-    text-shadow: 0 0 20px var(--neon-purple);
+    color: #14b8a6;
+    text-shadow: none;
 }
 
 .day-body {
@@ -881,7 +881,7 @@
     min-height: 50px;
     max-height: 150px; /* Cap expansion */
     border-bottom: 1px solid var(--glass-border);
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.02);
     overflow-y: auto;
     flex-shrink: 0;
 }
@@ -896,7 +896,7 @@
     flex-shrink: 0;
     position: sticky;
     left: 0;
-    background: rgba(15, 15, 25, 0.95);
+    background: rgba(255, 255, 255, 0.95);
 }
 
 .all-day-events {
@@ -910,8 +910,8 @@
 
 .all-day-event {
     padding: 0.25rem 0.5rem;
-    background: rgba(191, 90, 242, 0.2);
-    border-left: 3px solid var(--neon-purple);
+    background: rgba(20, 184, 166, 0.15);
+    border-left: 3px solid #14b8a6;
     border-radius: 4px;
     font-size: 0.8rem;
     color: var(--text-primary);
@@ -920,7 +920,7 @@
 }
 
 .all-day-event:hover {
-    background: rgba(191, 90, 242, 0.3);
+    background: rgba(20, 184, 166, 0.2);
 }
 
 /* Hour Grid */
@@ -932,7 +932,7 @@
 .hour-row {
     display: flex;
     height: 60px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.02);
 }
 
 .hour-label {
@@ -952,7 +952,7 @@
 }
 
 .hour-content:hover {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .hour-content.drag-hover {
@@ -965,9 +965,9 @@
     left: 4px;
     right: 4px;
     padding: 0.25rem 0.5rem;
-    background: rgba(191, 90, 242, 0.25);
+    background: rgba(20, 184, 166, 0.15);
     backdrop-filter: blur(4px);
-    border-left: 3px solid var(--neon-purple);
+    border-left: 3px solid #14b8a6;
     border-radius: 4px;
     font-size: 0.8rem;
     color: var(--text-primary);
@@ -978,7 +978,7 @@
 }
 
 .time-block:hover {
-    background: rgba(191, 90, 242, 0.35);
+    background: rgba(20, 184, 166, 0.25);
     z-index: 2;
 }
 
@@ -1007,8 +1007,8 @@
 
 /* Drag & Drop States */
 .calendar-drop-target {
-    background: rgba(191, 90, 242, 0.1) !important;
-    border: 2px dashed var(--neon-purple) !important;
+    background: rgba(20, 184, 166, 0.1) !important;
+    border: 2px dashed #14b8a6 !important;
 }
 
 .drag-preview {
@@ -1039,7 +1039,7 @@
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, #00aaff 0%, #bf5af2 50%, #ec4899 100%);
+    background: #14b8a6;
     z-index: 15;
     pointer-events: none;
 }
@@ -1052,9 +1052,9 @@
     transform: translateY(-50%);
     width: 8px;
     height: 8px;
-    background: #00aaff;
+    background: #14b8a6;
     border-radius: 50%;
-    box-shadow: 0 0 6px rgba(0, 170, 255, 0.6);
+    box-shadow: 0 0 4px rgba(20, 184, 166, 0.4);
 }
 
 /* Day view - indicator spans the hour-content area */
@@ -1189,7 +1189,7 @@
     display: none;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(4px);
     z-index: 1000;
 }
@@ -1201,12 +1201,12 @@
 .time-picker-content {
     width: 320px;
     max-height: 90vh;
-    background: rgba(20, 20, 30, 0.95);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: var(--blur);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
 }
 
 /* Time picker body - mini day view style */
@@ -1221,7 +1221,7 @@
     display: flex;
     min-height: 50px;
     border-bottom: 1px solid var(--glass-border);
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.02);
     flex-shrink: 0;
 }
 
@@ -1251,14 +1251,14 @@
 }
 
 .time-picker-all-day-zone:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
     color: var(--text-primary);
 }
 
 .time-picker-all-day-zone.selected {
-    background: rgba(191, 90, 242, 0.2);
+    background: rgba(20, 184, 166, 0.15);
     color: var(--text-primary);
-    box-shadow: inset 0 0 10px rgba(191, 90, 242, 0.2);
+    box-shadow: inset 0 0 10px rgba(20, 184, 166, 0.15);
 }
 
 /* Scrollable hour grid */
@@ -1276,13 +1276,13 @@
 .time-picker-hour-row {
     display: flex;
     height: 60px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.02);
     cursor: pointer;
     transition: var(--transition);
 }
 
 .time-picker-hour-row:hover {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .time-picker-hour-label {
@@ -1303,20 +1303,20 @@
 /* Drag selection styles */
 .time-picker-hour-row.selected,
 .time-picker-hour-row.in-range {
-    background: rgba(191, 90, 242, 0.15);
+    background: rgba(20, 184, 166, 0.15);
 }
 
 .time-picker-hour-row.selected .time-picker-hour-slot,
 .time-picker-hour-row.in-range .time-picker-hour-slot {
-    background: rgba(191, 90, 242, 0.1);
+    background: rgba(20, 184, 166, 0.1);
 }
 
 .time-picker-hour-row.drag-start {
-    border-top: 2px solid var(--neon-purple);
+    border-top: 2px solid #14b8a6;
 }
 
 .time-picker-hour-row.drag-end {
-    border-bottom: 2px solid var(--neon-purple);
+    border-bottom: 2px solid #14b8a6;
 }
 
 /* Time picker drag selection preview */
@@ -1324,8 +1324,8 @@
     position: absolute;
     left: 60px;
     right: 0;
-    background: rgba(191, 90, 242, 0.2);
-    border: 2px dashed var(--neon-purple);
+    background: rgba(20, 184, 166, 0.15);
+    border: 2px dashed #14b8a6;
     border-radius: 4px;
     pointer-events: none;
     z-index: 10;
@@ -1365,17 +1365,17 @@
 }
 
 .time-picker-hour:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
 }
 
 .time-picker-hour.selected {
-    background: rgba(191, 90, 242, 0.15);
+    background: rgba(20, 184, 166, 0.15);
 }
 
 .time-picker-hour-bar {
     flex: 1;
     height: 40px;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.02);
     border-radius: 4px;
     border: 1px solid var(--glass-border);
 }
@@ -1410,13 +1410,13 @@
 
 .time-block-popup-content {
     width: 320px;
-    background: rgba(20, 20, 30, 0.98);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
     border: 1px solid var(--glass-border);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(191, 90, 242, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(20, 184, 166, 0.1);
 }
 
 .time-block-popup-header {
@@ -1424,14 +1424,14 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 1rem;
-    background: rgba(191, 90, 242, 0.1);
+    background: rgba(20, 184, 166, 0.1);
     border-bottom: 1px solid var(--glass-border);
 }
 
 .time-block-popup-header span {
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--neon-purple);
+    color: #14b8a6;
 }
 
 .time-block-popup-close {
@@ -1456,7 +1456,7 @@
 .time-block-quick-input {
     width: 100%;
     padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.02);
     border: 1px solid var(--glass-border);
     border-radius: 8px;
     color: var(--text-primary);
@@ -1466,8 +1466,8 @@
 
 .time-block-quick-input:focus {
     outline: none;
-    border-color: var(--neon-purple);
-    box-shadow: 0 0 10px rgba(191, 90, 242, 0.2);
+    border-color: #14b8a6;
+    box-shadow: 0 0 10px rgba(20, 184, 166, 0.15);
 }
 
 .time-block-quick-input::placeholder {
@@ -1494,13 +1494,13 @@
 }
 
 .time-block-task-option:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
     border-color: var(--glass-border);
 }
 
 .time-block-task-option.selected {
-    background: rgba(191, 90, 242, 0.15);
-    border-color: var(--neon-purple);
+    background: rgba(20, 184, 166, 0.15);
+    border-color: #14b8a6;
 }
 
 .time-block-task-option .task-bullet {

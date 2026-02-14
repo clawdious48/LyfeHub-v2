@@ -23,10 +23,10 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #bf5af2, #a445d8);
+    background: #14b8a6;
     border: none;
-    box-shadow: 0 4px 12px rgba(191, 90, 242, 0.4),
-                0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3),
+                0 2px 4px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -41,8 +41,8 @@
 }
 
 .fab-btn:hover {
-    box-shadow: 0 6px 16px rgba(191, 90, 242, 0.5),
-                0 3px 6px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 6px 16px rgba(20, 184, 166, 0.4),
+                0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
 /* Plus Icon */
@@ -108,10 +108,12 @@
     align-items: center;
     gap: 10px;
     padding: 10px 16px;
-    background: var(--bg-card, #1c1c1e);
-    border: 1px solid var(--border-subtle, #333);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 24px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
     cursor: pointer;
     white-space: nowrap;
     transition: background 0.15s ease;
@@ -119,7 +121,7 @@
 }
 
 .fab-menu-item:active {
-    background: var(--bg-hover, #2c2c2e);
+    background: rgba(0, 0, 0, 0.05);
 }
 
 .fab-menu-item .menu-icon {
@@ -128,7 +130,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #bf5af2;
+    color: #14b8a6;
 }
 
 .fab-menu-item .menu-icon svg {
@@ -142,7 +144,7 @@
 .fab-menu-item .menu-label {
     font-size: 14px;
     font-weight: 500;
-    color: var(--text-primary, #fff);
+    color: var(--text-primary, #1a1a2e);
 }
 
 /* Backdrop when menu is open */
@@ -152,7 +154,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.2);
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s ease;

@@ -41,10 +41,10 @@
    ========================================================================== */
 
 .apex-job-mobile-card {
-    background: rgba(20, 20, 35, 0.95);
+    background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 16px;
     padding: 1rem;
     cursor: pointer;
@@ -65,18 +65,18 @@
 }
 
 .apex-job-mobile-card.status-active::before {
-    background: linear-gradient(90deg, var(--neon-green), transparent);
-    box-shadow: 0 0 10px var(--neon-green);
+    background: linear-gradient(90deg, #10b981, transparent);
+    ;
 }
 
 .apex-job-mobile-card.status-pending_insurance::before {
-    background: linear-gradient(90deg, var(--neon-yellow), transparent);
-    box-shadow: 0 0 10px var(--neon-yellow);
+    background: linear-gradient(90deg, #eab308, transparent);
+    ;
 }
 
 .apex-job-mobile-card.status-complete::before {
-    background: linear-gradient(90deg, var(--neon-blue), transparent);
-    box-shadow: 0 0 10px var(--neon-blue);
+    background: linear-gradient(90deg, #0891b2, transparent);
+    ;
 }
 
 /* Tap/hover effects */
@@ -86,10 +86,10 @@
 
 @media (hover: hover) {
     .apex-job-mobile-card:hover {
-        background: rgba(30, 30, 50, 0.95);
-        border-color: rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.85);
+        border-color: rgba(0, 0, 0, 0.12);
         transform: translateY(-2px);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
     }
 }
 
@@ -109,7 +109,7 @@
     line-height: 1.3;
     flex: 1;
     /* Gradient text like the app theme */
-    background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan));
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -128,21 +128,21 @@
 }
 
 .apex-card-status.status-active {
-    background: rgba(5, 255, 161, 0.15);
-    color: var(--neon-green);
-    box-shadow: 0 0 8px rgba(5, 255, 161, 0.2);
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    ;
 }
 
 .apex-card-status.status-pending_insurance {
-    background: rgba(255, 230, 109, 0.15);
-    color: var(--neon-yellow);
-    box-shadow: 0 0 8px rgba(255, 230, 109, 0.2);
+    background: rgba(234, 179, 8, 0.1);
+    color: #eab308;
+    ;
 }
 
 .apex-card-status.status-complete {
-    background: rgba(0, 170, 255, 0.15);
-    color: var(--neon-blue);
-    box-shadow: 0 0 8px rgba(0, 170, 255, 0.2);
+    background: rgba(8, 145, 178, 0.1);
+    color: #0891b2;
+    ;
 }
 
 /* Card Body - Key Fields */
@@ -220,34 +220,34 @@
 }
 
 .apex-card-loss-badge.loss-water {
-    background: rgba(0, 170, 255, 0.2);
-    color: var(--neon-blue);
-    border: 1px solid rgba(0, 170, 255, 0.3);
+    background: rgba(8, 145, 178, 0.1);
+    color: #0891b2;
+    border: 1px solid rgba(8, 145, 178, 0.15);
 }
 
 .apex-card-loss-badge.loss-fire {
-    background: rgba(255, 107, 53, 0.2);
-    color: var(--neon-orange);
-    border: 1px solid rgba(255, 107, 53, 0.3);
+    background: rgba(249, 115, 22, 0.1);
+    color: #f97316;
+    border: 1px solid rgba(249, 115, 22, 0.15);
 }
 
 .apex-card-loss-badge.loss-mold {
-    background: rgba(5, 255, 161, 0.2);
-    color: var(--neon-green);
-    border: 1px solid rgba(5, 255, 161, 0.3);
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.15);
 }
 
 .apex-card-loss-badge.loss-storm,
 .apex-card-loss-badge.loss-wind {
-    background: rgba(191, 90, 242, 0.2);
-    color: var(--neon-purple);
-    border: 1px solid rgba(191, 90, 242, 0.3);
+    background: rgba(20, 184, 166, 0.15);
+    color: #14b8a6;
+    border: 1px solid rgba(20, 184, 166, 0.2);
 }
 
 .apex-card-loss-badge.loss-unknown {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.06);
     color: var(--text-muted);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 /* Card Footer */
@@ -257,7 +257,7 @@
     align-items: center;
     margin-top: 0.75rem;
     padding-top: 0.75rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .apex-card-meta {
@@ -282,16 +282,16 @@
 .apex-card-progress-bar {
     width: 40px;
     height: 4px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.06);
     border-radius: 2px;
     overflow: hidden;
 }
 
 .apex-card-progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue));
+    background: linear-gradient(90deg, #14b8a6, #0891b2);
     border-radius: inherit;
-    box-shadow: 0 0 8px rgba(0, 170, 255, 0.5);
+    box-shadow: none;
 }
 
 /* Expand indicator */
@@ -317,7 +317,7 @@
     display: none;
     margin-top: 0.75rem;
     padding-top: 0.75rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .apex-job-mobile-card.expanded .apex-card-expanded-content {
@@ -405,7 +405,7 @@
     
     .apex-list-view::after {
         right: 0;
-        background: linear-gradient(to left, rgba(10, 10, 15, 0.9), transparent);
+        background: linear-gradient(to left, rgba(255, 255, 255, 0.9), transparent);
     }
     
     .apex-list-view.has-scroll-right::after {
@@ -423,7 +423,7 @@
         min-width: 180px;
         position: sticky;
         left: 0;
-        background: rgba(15, 15, 25, 0.98);
+        background: rgba(255, 255, 255, 0.95);
         z-index: 5;
     }
     
@@ -472,7 +472,7 @@
         left: 50%;
         width: 0;
         height: 0;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.06);
         border-radius: 50%;
         transform: translate(-50%, -50%);
         transition: width 0.4s ease, height 0.4s ease, opacity 0.4s ease;
@@ -551,8 +551,8 @@
    ========================================================================== */
 
 .apex-card-skeleton {
-    background: rgba(20, 20, 35, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 16px;
     padding: 1rem;
     animation: pulse 1.5s ease-in-out infinite;
@@ -569,7 +569,7 @@
 
 .apex-card-skeleton-line {
     height: 1rem;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.06);
     border-radius: 4px;
     margin-bottom: 0.5rem;
 }

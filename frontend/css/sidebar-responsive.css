@@ -17,7 +17,7 @@
   --sidebar-width-full: 240px;
   --sidebar-width-collapsed: 48px;
   --sidebar-transition: 0.3s ease;
-  --sidebar-backdrop-color: rgba(0, 0, 0, 0.5);
+  --sidebar-backdrop-color: rgba(0, 0, 0, 0.3);
   --sidebar-z-index: 100;
   --sidebar-backdrop-z-index: 99;
 }
@@ -62,7 +62,7 @@
   height: 100% !important;
   max-width: 4px !important;
   max-height: 18px !important;
-  background: rgba(0, 245, 212, 0.4);
+  background: rgba(20, 184, 166, 0.4);
   border: none;
   border-radius: 0 2px 2px 0;
   transition: all 0.2s ease;
@@ -78,13 +78,11 @@
 .sidebar-pull-tab:active .pull-tab-inner {
   background: linear-gradient(
     135deg,
-    rgba(0, 245, 212, 0.25) 0%,
-    rgba(0, 245, 212, 0.12) 100%
+    rgba(20, 184, 166, 0.2) 0%,
+    rgba(20, 184, 166, 0.08) 100%
   );
-  border-color: rgba(0, 245, 212, 0.5);
-  box-shadow: 
-    0 0 15px rgba(0, 245, 212, 0.35),
-    inset 0 0 10px rgba(0, 245, 212, 0.1);
+  border-color: rgba(20, 184, 166, 0.4);
+  box-shadow: 0 0 8px rgba(20, 184, 166, 0.2);
 }
 
 .sidebar-pull-tab:active .pull-tab-inner {
@@ -98,7 +96,7 @@
   height: 40px;
   background: transparent;
   border: none;
-  color: var(--text-secondary, #888);
+  color: var(--text-secondary, rgba(26, 26, 46, 0.6));
   cursor: pointer;
   align-items: center;
   justify-content: center;
@@ -106,8 +104,8 @@
 }
 
 .sidebar-expand-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary, #fff);
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-primary, #1a1a2e);
 }
 
 .sidebar-expand-btn svg {
@@ -181,7 +179,7 @@
     min-width: var(--sidebar-width-full);
     z-index: var(--sidebar-z-index);
     transform: translateX(-100%);
-    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.08);
   }
 
   /* Show sidebar when .sidebar-open is on the layout */
