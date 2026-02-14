@@ -8,46 +8,42 @@ const { v4: uuidv4 } = require('uuid');
 /**
  * Get all tags for a user
  */
-function getAllTags(userId) {
-  const stmt = db.prepare(`
+async function getAllTags(userId) {
+  return await db.getAll(`
     SELECT * FROM tags
-    WHERE user_id = ?
+    WHERE user_id = $1
     ORDER BY created_at DESC
-  `);
-  return stmt.all(userId);
+  `, [userId]);
 }
 
 /**
  * Get a single tag by ID
  */
-function getTagById(id, userId) {
-  const stmt = db.prepare(`
+async function getTagById(id, userId) {
+  return await db.getOne(`
     SELECT * FROM tags
-    WHERE id = ? AND user_id = ?
-  `);
-  return stmt.get(id, userId);
+    WHERE id = $1 AND user_id = $2
+  `, [id, userId]);
 }
 
 /**
  * Create a new tag
  */
-function createTag(data, userId) {
+async function createTag(data, userId) {
   const id = uuidv4();
   const now = new Date().toISOString();
 
-  const stmt = db.prepare(`
+  await db.run(`
     INSERT INTO tags (
       id, user_id, name, type, archived, favorite,
       parent_tag_id, url, description,
       created_at, updated_at
     ) VALUES (
-      ?, ?, ?, ?, ?, ?,
-      ?, ?, ?,
-      ?, ?
+      $1, $2, $3, $4, $5, $6,
+      $7, $8, $9,
+      $10, $11
     )
-  `);
-
-  stmt.run(
+  `, [
     id, userId,
     data.name || 'Untitled Tag',
     data.type || 'resource',
@@ -57,34 +53,32 @@ function createTag(data, userId) {
     data.url || '',
     data.description || '',
     now, now
-  );
+  ]);
 
-  return getTagById(id, userId);
+  return await getTagById(id, userId);
 }
 
 /**
  * Update a tag
  */
-function updateTag(id, data, userId) {
-  const existing = getTagById(id, userId);
+async function updateTag(id, data, userId) {
+  const existing = await getTagById(id, userId);
   if (!existing) return null;
 
   const now = new Date().toISOString();
 
-  const stmt = db.prepare(`
+  await db.run(`
     UPDATE tags SET
-      name = ?,
-      type = ?,
-      archived = ?,
-      favorite = ?,
-      parent_tag_id = ?,
-      url = ?,
-      description = ?,
-      updated_at = ?
-    WHERE id = ? AND user_id = ?
-  `);
-
-  stmt.run(
+      name = $1,
+      type = $2,
+      archived = $3,
+      favorite = $4,
+      parent_tag_id = $5,
+      url = $6,
+      description = $7,
+      updated_at = $8
+    WHERE id = $9 AND user_id = $10
+  `, [
     data.name !== undefined ? data.name : existing.name,
     data.type !== undefined ? data.type : existing.type,
     data.archived !== undefined ? (data.archived ? 1 : 0) : existing.archived,
@@ -94,30 +88,28 @@ function updateTag(id, data, userId) {
     data.description !== undefined ? data.description : existing.description,
     now,
     id, userId
-  );
+  ]);
 
-  return getTagById(id, userId);
+  return await getTagById(id, userId);
 }
 
 /**
  * Delete a tag
  */
-function deleteTag(id, userId) {
-  const stmt = db.prepare(`
+async function deleteTag(id, userId) {
+  const result = await db.run(`
     DELETE FROM tags
-    WHERE id = ? AND user_id = ?
-  `);
-  const result = stmt.run(id, userId);
-  return result.changes > 0;
+    WHERE id = $1 AND user_id = $2
+  `, [id, userId]);
+  return result.rowCount > 0;
 }
 
 /**
  * Get tag count for a user
  */
-function getTagCount(userId) {
-  const stmt = db.prepare('SELECT COUNT(*) as count FROM tags WHERE user_id = ?');
-  const result = stmt.get(userId);
-  return result ? result.count : 0;
+async function getTagCount(userId) {
+  const result = await db.getOne('SELECT COUNT(*) as count FROM tags WHERE user_id = $1', [userId]);
+  return result ? parseInt(result.count) : 0;
 }
 
 module.exports = {

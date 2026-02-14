@@ -15,9 +15,9 @@ router.use((req, res, next) => {
   next();
 });
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const keys = apiKeysDb.listApiKeys(req.user.id);
+    const keys = await apiKeysDb.listApiKeys(req.user.id);
     res.json({ keys, role: req.user.role });
   } catch (err) {
     console.error('Error listing API keys:', err);
@@ -26,12 +26,12 @@ router.get('/', (req, res) => {
 });
 
 // Get full key - management only
-router.get('/:id/full', (req, res) => {
+router.get('/:id/full', async (req, res) => {
   try {
     if (req.user.role !== 'management') {
       return res.status(403).json({ error: 'Insufficient permissions' });
     }
-    const fullKey = apiKeysDb.getFullKey(req.params.id, req.user.id);
+    const fullKey = await apiKeysDb.getFullKey(req.params.id, req.user.id);
     if (!fullKey) {
       return res.status(404).json({ error: 'Key not found or not retrievable' });
     }
@@ -42,7 +42,7 @@ router.get('/:id/full', (req, res) => {
   }
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { name, expiresAt } = req.body;
     if (!name || name.trim().length === 0) {
@@ -53,7 +53,7 @@ router.post('/', (req, res) => {
       if (isNaN(expDate.getTime())) return res.status(400).json({ error: 'Invalid expiration date' });
       if (expDate < new Date()) return res.status(400).json({ error: 'Expiration date must be in the future' });
     }
-    const key = apiKeysDb.createApiKey(req.user.id, name.trim(), expiresAt || null);
+    const key = await apiKeysDb.createApiKey(req.user.id, name.trim(), expiresAt || null);
     res.status(201).json({ message: 'API key created. Copy it now - it won\'t be shown again!', key });
   } catch (err) {
     console.error('Error creating API key:', err);
@@ -61,13 +61,13 @@ router.post('/', (req, res) => {
   }
 });
 
-router.patch('/:id', (req, res) => {
+router.patch('/:id', async (req, res) => {
   try {
     const { name, expiresAt } = req.body;
     if (expiresAt && isNaN(new Date(expiresAt).getTime())) {
       return res.status(400).json({ error: 'Invalid expiration date' });
     }
-    const updated = apiKeysDb.updateApiKey(req.params.id, req.user.id, { name: name?.trim(), expiresAt });
+    const updated = await apiKeysDb.updateApiKey(req.params.id, req.user.id, { name: name?.trim(), expiresAt });
     if (!updated) return res.status(404).json({ error: 'API key not found' });
     res.json({ message: 'API key updated' });
   } catch (err) {
@@ -76,9 +76,9 @@ router.patch('/:id', (req, res) => {
   }
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
-    const deleted = apiKeysDb.deleteApiKey(req.params.id, req.user.id);
+    const deleted = await apiKeysDb.deleteApiKey(req.params.id, req.user.id);
     if (!deleted) return res.status(404).json({ error: 'API key not found' });
     res.json({ message: 'API key revoked' });
   } catch (err) {

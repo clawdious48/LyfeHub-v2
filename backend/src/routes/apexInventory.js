@@ -12,9 +12,9 @@ router.use(authMiddleware, requireOrgMember);
 // ============================================
 
 // GET /items
-router.get('/items', (req, res) => {
+router.get('/items', async (req, res) => {
   try {
-    const items = inv.getItems(req.org.id, {
+    const items = await inv.getItems(req.org.id, {
       search: req.query.search,
       category: req.query.category,
       activeOnly: req.query.active_only !== 'false',
@@ -29,10 +29,10 @@ router.get('/items', (req, res) => {
 });
 
 // POST /items
-router.post('/items', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.post('/items', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     if (!req.body.name) return res.status(400).json({ error: 'name is required' });
-    const item = inv.createItem(req.org.id, req.body, req.user.id);
+    const item = await inv.createItem(req.org.id, req.body, req.user.id);
     res.status(201).json(item);
   } catch (err) {
     console.error('Error creating item:', err);
@@ -44,9 +44,9 @@ router.post('/items', requireOrgRole('management', 'office_coordinator'), (req, 
 });
 
 // GET /items/:id
-router.get('/items/:id', (req, res) => {
+router.get('/items/:id', async (req, res) => {
   try {
-    const item = inv.getItemById(req.params.id, req.org.id);
+    const item = await inv.getItemById(req.params.id, req.org.id);
     if (!item) return res.status(404).json({ error: 'Item not found' });
     res.json(item);
   } catch (err) {
@@ -56,9 +56,9 @@ router.get('/items/:id', (req, res) => {
 });
 
 // PATCH /items/:id
-router.patch('/items/:id', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.patch('/items/:id', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const item = inv.updateItem(req.params.id, req.body, req.org.id);
+    const item = await inv.updateItem(req.params.id, req.body, req.org.id);
     if (!item) return res.status(404).json({ error: 'Item not found' });
     res.json(item);
   } catch (err) {
@@ -68,9 +68,9 @@ router.patch('/items/:id', requireOrgRole('management', 'office_coordinator'), (
 });
 
 // DELETE /items/:id (soft delete)
-router.delete('/items/:id', requireOrgRole('management'), (req, res) => {
+router.delete('/items/:id', requireOrgRole('management'), async (req, res) => {
   try {
-    const success = inv.deactivateItem(req.params.id, req.org.id);
+    const success = await inv.deactivateItem(req.params.id, req.org.id);
     if (!success) return res.status(404).json({ error: 'Item not found' });
     res.json({ success: true });
   } catch (err) {
@@ -84,9 +84,9 @@ router.delete('/items/:id', requireOrgRole('management'), (req, res) => {
 // ============================================
 
 // GET /purchases
-router.get('/purchases', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.get('/purchases', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const purchases = inv.getPurchases(req.org.id, {
+    const purchases = await inv.getPurchases(req.org.id, {
       itemId: req.query.item_id,
       startDate: req.query.start_date,
       endDate: req.query.end_date,
@@ -101,12 +101,12 @@ router.get('/purchases', requireOrgRole('management', 'office_coordinator'), (re
 });
 
 // POST /purchases
-router.post('/purchases', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.post('/purchases', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     if (!req.body.item_id || !req.body.purchase_date) {
       return res.status(400).json({ error: 'item_id and purchase_date are required' });
     }
-    const purchase = inv.recordPurchase(req.org.id, req.body, req.user.id);
+    const purchase = await inv.recordPurchase(req.org.id, req.body, req.user.id);
     res.status(201).json(purchase);
   } catch (err) {
     console.error('Error recording purchase:', err);
@@ -115,9 +115,9 @@ router.post('/purchases', requireOrgRole('management', 'office_coordinator'), (r
 });
 
 // DELETE /purchases/:id
-router.delete('/purchases/:id', requireOrgRole('management'), (req, res) => {
+router.delete('/purchases/:id', requireOrgRole('management'), async (req, res) => {
   try {
-    const success = inv.deletePurchase(req.params.id, req.org.id);
+    const success = await inv.deletePurchase(req.params.id, req.org.id);
     if (!success) return res.status(404).json({ error: 'Purchase not found' });
     res.json({ success: true });
   } catch (err) {
@@ -131,9 +131,9 @@ router.delete('/purchases/:id', requireOrgRole('management'), (req, res) => {
 // ============================================
 
 // GET /levels
-router.get('/levels', (req, res) => {
+router.get('/levels', async (req, res) => {
   try {
-    const levels = inv.getLevels(req.org.id);
+    const levels = await inv.getLevels(req.org.id);
     res.json(levels);
   } catch (err) {
     console.error('Error getting levels:', err);
@@ -142,12 +142,12 @@ router.get('/levels', (req, res) => {
 });
 
 // PATCH /levels/:itemId (manual adjustment)
-router.patch('/levels/:itemId', requireOrgRole('management'), (req, res) => {
+router.patch('/levels/:itemId', requireOrgRole('management'), async (req, res) => {
   try {
     if (req.body.adjustment == null) {
       return res.status(400).json({ error: 'adjustment is required' });
     }
-    const level = inv.adjustLevel(req.org.id, req.params.itemId, req.body.adjustment, req.body.reason || '');
+    const level = await inv.adjustLevel(req.org.id, req.params.itemId, req.body.adjustment, req.body.reason || '');
     res.json(level);
   } catch (err) {
     console.error('Error adjusting level:', err);
@@ -160,9 +160,9 @@ router.patch('/levels/:itemId', requireOrgRole('management'), (req, res) => {
 // ============================================
 
 // GET /jobs/:jobId/materials
-router.get('/jobs/:jobId/materials', (req, res) => {
+router.get('/jobs/:jobId/materials', async (req, res) => {
   try {
-    const allocations = inv.getJobAllocations(req.params.jobId, { phaseId: req.query.phase_id });
+    const allocations = await inv.getJobAllocations(req.params.jobId, { phaseId: req.query.phase_id });
     res.json(allocations);
   } catch (err) {
     console.error('Error getting job allocations:', err);
@@ -171,10 +171,10 @@ router.get('/jobs/:jobId/materials', (req, res) => {
 });
 
 // POST /jobs/:jobId/materials
-router.post('/jobs/:jobId/materials', requireOrgRole('management', 'office_coordinator', 'project_manager', 'field_tech'), (req, res) => {
+router.post('/jobs/:jobId/materials', requireOrgRole('management', 'office_coordinator', 'project_manager', 'field_tech'), async (req, res) => {
   try {
     if (!req.body.item_id) return res.status(400).json({ error: 'item_id is required' });
-    const alloc = inv.allocateMaterial(req.params.jobId, { ...req.body, used_by: req.user.id });
+    const alloc = await inv.allocateMaterial(req.params.jobId, { ...req.body, used_by: req.user.id });
     res.status(201).json(alloc);
   } catch (err) {
     console.error('Error allocating material:', err);
@@ -183,9 +183,9 @@ router.post('/jobs/:jobId/materials', requireOrgRole('management', 'office_coord
 });
 
 // DELETE /jobs/:jobId/materials/:id
-router.delete('/jobs/:jobId/materials/:id', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.delete('/jobs/:jobId/materials/:id', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const success = inv.deallocateMaterial(req.params.id);
+    const success = await inv.deallocateMaterial(req.params.id);
     if (!success) return res.status(404).json({ error: 'Allocation not found' });
     res.json({ success: true });
   } catch (err) {

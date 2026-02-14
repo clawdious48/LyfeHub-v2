@@ -7,10 +7,10 @@ const apexOrgsDb = require('../db/apexOrgs');
 router.use(authMiddleware);
 
 // Helper: check if requesting user is a member of the org
-function requireOrgMember(req, res, next) {
+async function requireOrgMember(req, res, next) {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const membership = apexOrgsDb.getMembership(req.params.id, req.user.id);
+    const membership = await apexOrgsDb.getMembership(req.params.id, req.user.id);
     if (!membership) return res.status(403).json({ error: 'Not a member of this organization' });
     req.orgRole = membership.role;
     req.orgId = req.params.id;
@@ -30,10 +30,10 @@ function requireManagement(req, res, next) {
 }
 
 // GET /mine - Get user's org(s) + role
-router.get('/mine', (req, res) => {
+router.get('/mine', async (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const orgs = apexOrgsDb.getUserOrgs(req.user.id);
+    const orgs = await apexOrgsDb.getUserOrgs(req.user.id);
     res.json(orgs);
   } catch (err) {
     console.error('Error getting user orgs:', err);
@@ -42,9 +42,9 @@ router.get('/mine', (req, res) => {
 });
 
 // GET /:id - Get org details
-router.get('/:id', requireOrgMember, (req, res) => {
+router.get('/:id', requireOrgMember, async (req, res) => {
   try {
-    const org = apexOrgsDb.getOrgById(req.params.id);
+    const org = await apexOrgsDb.getOrgById(req.params.id);
     if (!org) return res.status(404).json({ error: 'Organization not found' });
     res.json(org);
   } catch (err) {
@@ -54,9 +54,9 @@ router.get('/:id', requireOrgMember, (req, res) => {
 });
 
 // GET /:id/members - List members with user info
-router.get('/:id/members', requireOrgMember, (req, res) => {
+router.get('/:id/members', requireOrgMember, async (req, res) => {
   try {
-    const members = apexOrgsDb.getOrgMembers(req.params.id);
+    const members = await apexOrgsDb.getOrgMembers(req.params.id);
     res.json(members);
   } catch (err) {
     console.error('Error getting org members:', err);
@@ -65,7 +65,7 @@ router.get('/:id/members', requireOrgMember, (req, res) => {
 });
 
 // POST /:id/members - Add member (management only)
-router.post('/:id/members', requireOrgMember, requireManagement, (req, res) => {
+router.post('/:id/members', requireOrgMember, requireManagement, async (req, res) => {
   try {
     const { email, role } = req.body;
     if (!email || !role) {
@@ -78,18 +78,18 @@ router.post('/:id/members', requireOrgMember, requireManagement, (req, res) => {
     }
 
     // Look up user by email
-    const user = apexOrgsDb.getUserByEmail(email);
+    const user = await apexOrgsDb.getUserByEmail(email);
     if (!user) {
       return res.status(404).json({ error: 'No user found with that email' });
     }
 
     // Check if already a member
-    const existing = apexOrgsDb.getMembership(req.params.id, user.id);
+    const existing = await apexOrgsDb.getMembership(req.params.id, user.id);
     if (existing) {
       return res.status(409).json({ error: 'User is already a member of this organization' });
     }
 
-    const member = apexOrgsDb.addMember(req.params.id, user.id, role);
+    const member = await apexOrgsDb.addMember(req.params.id, user.id, role);
     res.status(201).json(member);
   } catch (err) {
     console.error('Error adding org member:', err);
@@ -98,7 +98,7 @@ router.post('/:id/members', requireOrgMember, requireManagement, (req, res) => {
 });
 
 // PATCH /:id/members/:userId - Change member role (management only)
-router.patch('/:id/members/:userId', requireOrgMember, requireManagement, (req, res) => {
+router.patch('/:id/members/:userId', requireOrgMember, requireManagement, async (req, res) => {
   try {
     const { role } = req.body;
     if (!role) {
@@ -110,7 +110,7 @@ router.patch('/:id/members/:userId', requireOrgMember, requireManagement, (req, 
       return res.status(400).json({ error: `Invalid role. Must be one of: ${validRoles.join(', ')}` });
     }
 
-    const member = apexOrgsDb.updateMemberRole(req.params.id, req.params.userId, role);
+    const member = await apexOrgsDb.updateMemberRole(req.params.id, req.params.userId, role);
     if (!member) return res.status(404).json({ error: 'Member not found' });
     res.json(member);
   } catch (err) {
@@ -120,9 +120,9 @@ router.patch('/:id/members/:userId', requireOrgMember, requireManagement, (req, 
 });
 
 // DELETE /:id/members/:userId - Remove member (management only)
-router.delete('/:id/members/:userId', requireOrgMember, requireManagement, (req, res) => {
+router.delete('/:id/members/:userId', requireOrgMember, requireManagement, async (req, res) => {
   try {
-    const success = apexOrgsDb.removeMember(req.params.id, req.params.userId);
+    const success = await apexOrgsDb.removeMember(req.params.id, req.params.userId);
     if (!success) return res.status(404).json({ error: 'Member not found' });
     res.json({ success: true });
   } catch (err) {

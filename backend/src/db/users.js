@@ -7,25 +7,22 @@ const BCRYPT_ROUNDS = 12;
 /**
  * Find user by email
  */
-function findUserByEmail(email) {
-  const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
-  return stmt.get(email.toLowerCase());
+async function findUserByEmail(email) {
+  return await db.getOne('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
 }
 
 /**
  * Find user by email OR name (for login)
  */
-function findUserByEmailOrName(identifier) {
-  const stmt = db.prepare('SELECT * FROM users WHERE email = ? OR LOWER(name) = ?');
-  return stmt.get(identifier.toLowerCase(), identifier.toLowerCase());
+async function findUserByEmailOrName(identifier) {
+  return await db.getOne('SELECT * FROM users WHERE email = $1 OR LOWER(name) = $2', [identifier.toLowerCase(), identifier.toLowerCase()]);
 }
 
 /**
  * Find user by ID
  */
-function findUserById(id) {
-  const stmt = db.prepare('SELECT * FROM users WHERE id = ?');
-  return stmt.get(id);
+async function findUserById(id) {
+  return await db.getOne('SELECT * FROM users WHERE id = $1', [id]);
 }
 
 /**
@@ -36,14 +33,12 @@ async function createUser({ email, password, name }) {
   const id = uuidv4();
   const now = new Date().toISOString();
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
-  
-  const stmt = db.prepare(`
+
+  await db.run(`
     INSERT INTO users (id, email, password_hash, name, settings, created_at, updated_at)
-    VALUES (?, ?, ?, ?, '{}', ?, ?)
-  `);
-  
-  stmt.run(id, email.toLowerCase(), passwordHash, name, now, now);
-  
+    VALUES ($1, $2, $3, $4, '{}', $5, $6)
+  `, [id, email.toLowerCase(), passwordHash, name, now, now]);
+
   return {
     id,
     email: email.toLowerCase(),
@@ -59,12 +54,12 @@ async function createUser({ email, password, name }) {
  * @returns {object|null} User object if valid, null if invalid
  */
 async function verifyPassword(identifier, password) {
-  const user = findUserByEmailOrName(identifier);
+  const user = await findUserByEmailOrName(identifier);
   if (!user) return null;
-  
+
   const valid = await bcrypt.compare(password, user.password_hash);
   if (!valid) return null;
-  
+
   // Return user without password hash
   const { password_hash, ...safeUser } = user;
   return safeUser;
@@ -73,31 +68,31 @@ async function verifyPassword(identifier, password) {
 /**
  * Update user profile
  */
-function updateUser(id, data) {
+async function updateUser(id, data) {
   const now = new Date().toISOString();
   const updates = [];
   const values = [];
-  
+  let paramIdx = 1;
+
   if (data.name !== undefined) {
-    updates.push('name = ?');
+    updates.push(`name = $${paramIdx++}`);
     values.push(data.name);
   }
-  
+
   if (data.settings !== undefined) {
-    updates.push('settings = ?');
+    updates.push(`settings = $${paramIdx++}`);
     values.push(JSON.stringify(data.settings));
   }
-  
-  if (updates.length === 0) return findUserById(id);
-  
-  updates.push('updated_at = ?');
+
+  if (updates.length === 0) return await findUserById(id);
+
+  updates.push(`updated_at = $${paramIdx++}`);
   values.push(now);
   values.push(id);
-  
-  const stmt = db.prepare(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`);
-  stmt.run(...values);
-  
-  return findUserById(id);
+
+  await db.run(`UPDATE users SET ${updates.join(', ')} WHERE id = $${paramIdx}`, values);
+
+  return await findUserById(id);
 }
 
 /**
@@ -106,10 +101,9 @@ function updateUser(id, data) {
 async function changePassword(id, newPassword) {
   const now = new Date().toISOString();
   const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
-  
-  const stmt = db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?');
-  stmt.run(passwordHash, now, id);
-  
+
+  await db.run('UPDATE users SET password_hash = $1, updated_at = $2 WHERE id = $3', [passwordHash, now, id]);
+
   return true;
 }
 
@@ -135,22 +129,22 @@ const VALID_ROLES = ['management', 'office_coordinator', 'project_manager', 'est
 /**
  * Get all users (without password_hash)
  */
-function getAllUsers() {
-  return db.prepare('SELECT id, name, email, role, created_at FROM users ORDER BY created_at ASC').all();
+async function getAllUsers() {
+  return await db.getAll('SELECT id, name, email, role, created_at FROM users ORDER BY created_at ASC');
 }
 
 /**
- * Synchronous user creation for employee management
+ * Create user (uses bcrypt.hashSync for synchronous-style, but function is async for PG)
  */
-function createUserSync({ email, password, name, role }) {
+async function createUserSync({ email, password, name, role }) {
   const id = uuidv4();
   const now = new Date().toISOString();
   const passwordHash = bcrypt.hashSync(password, BCRYPT_ROUNDS);
 
-  db.prepare(`
+  await db.run(`
     INSERT INTO users (id, email, password_hash, name, role, settings, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, '{}', ?, ?)
-  `).run(id, email.toLowerCase(), passwordHash, name, role || 'field_tech', now, now);
+    VALUES ($1, $2, $3, $4, $5, '{}', $6, $7)
+  `, [id, email.toLowerCase(), passwordHash, name, role || 'field_tech', now, now]);
 
   return { id, name, email: email.toLowerCase(), role: role || 'field_tech', created_at: now };
 }
@@ -158,19 +152,19 @@ function createUserSync({ email, password, name, role }) {
 /**
  * Update a user's role
  */
-function updateUserRole(id, role) {
+async function updateUserRole(id, role) {
   const now = new Date().toISOString();
-  db.prepare('UPDATE users SET role = ?, updated_at = ? WHERE id = ?').run(role, now, id);
-  return findUserById(id);
+  await db.run('UPDATE users SET role = $1, updated_at = $2 WHERE id = $3', [role, now, id]);
+  return await findUserById(id);
 }
 
 /**
- * Reset a user's password (synchronous)
+ * Reset a user's password
  */
-function resetUserPassword(id, newPassword) {
+async function resetUserPassword(id, newPassword) {
   const now = new Date().toISOString();
   const passwordHash = bcrypt.hashSync(newPassword, BCRYPT_ROUNDS);
-  db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?').run(passwordHash, now, id);
+  await db.run('UPDATE users SET password_hash = $1, updated_at = $2 WHERE id = $3', [passwordHash, now, id]);
   return true;
 }
 
@@ -179,31 +173,23 @@ function resetUserPassword(id, newPassword) {
  * Nullifies user_id references in owned-data tables and removes the user.
  * Uses a transaction to keep everything consistent.
  */
-const deleteUserTx = db.transaction((id) => {
-  // Nullify ownership references so data isn't lost
-  const tables = ['tasks', 'task_items', 'calendars', 'people', 'people_groups',
-    'organizations', 'notes', 'projects', 'tags', 'apex_jobs',
-    'bases', 'base_records', 'task_lists'];
-  for (const table of tables) {
-    try { db.prepare(`UPDATE ${table} SET user_id = NULL WHERE user_id = ?`).run(id); } catch (_) {}
-  }
-  // Delete rows from tables with NOT NULL user_id + ON DELETE CASCADE
-  const cascadeTables = ['api_keys'];
-  for (const table of cascadeTables) {
-    try { db.prepare(`DELETE FROM ${table} WHERE user_id = ?`).run(id); } catch (_) {}
-  }
-  const result = db.prepare('DELETE FROM users WHERE id = ?').run(id);
-  return result.changes > 0;
-});
-
-function deleteUser(id) {
-  // Disable FK checks outside the transaction (PRAGMA can't change mid-transaction)
-  db.exec('PRAGMA foreign_keys = OFF');
-  try {
-    return deleteUserTx(id);
-  } finally {
-    db.exec('PRAGMA foreign_keys = ON');
-  }
+async function deleteUser(id) {
+  return await db.transaction(async (client) => {
+    // Nullify ownership references so data isn't lost
+    const tables = ['tasks', 'task_items', 'calendars', 'people', 'people_groups',
+      'organizations', 'notes', 'projects', 'tags', 'apex_jobs',
+      'bases', 'base_records', 'task_lists'];
+    for (const table of tables) {
+      try { await client.run(`UPDATE ${table} SET user_id = NULL WHERE user_id = $1`, [id]); } catch (_) {}
+    }
+    // Delete rows from tables with NOT NULL user_id + ON DELETE CASCADE
+    const cascadeTables = ['api_keys'];
+    for (const table of cascadeTables) {
+      try { await client.run(`DELETE FROM ${table} WHERE user_id = $1`, [id]); } catch (_) {}
+    }
+    const result = await client.run('DELETE FROM users WHERE id = $1', [id]);
+    return result.rowCount > 0;
+  });
 }
 
 module.exports = {

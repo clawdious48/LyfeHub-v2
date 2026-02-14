@@ -12,9 +12,9 @@ router.use(authMiddleware, requireOrgMember);
 // ============================================
 
 // GET /orgs - List CRM orgs
-router.get('/orgs', (req, res) => {
+router.get('/orgs', async (req, res) => {
   try {
-    const orgs = crmDb.getCrmOrgsByOrg(req.org.id, {
+    const orgs = await crmDb.getCrmOrgsByOrg(req.org.id, {
       search: req.query.search,
       tag: req.query.tag,
       limit: parseInt(req.query.limit) || 50,
@@ -28,10 +28,10 @@ router.get('/orgs', (req, res) => {
 });
 
 // POST /orgs - Create CRM org
-router.post('/orgs', requireOrgRole('management', 'office_coordinator', 'project_manager', 'estimator'), (req, res) => {
+router.post('/orgs', requireOrgRole('management', 'office_coordinator', 'project_manager', 'estimator'), async (req, res) => {
   try {
     if (!req.body.name) return res.status(400).json({ error: 'name is required' });
-    const org = crmDb.createCrmOrg(req.org.id, req.body, req.user.id);
+    const org = await crmDb.createCrmOrg(req.org.id, req.body, req.user.id);
     res.status(201).json(org);
   } catch (err) {
     console.error('Error creating CRM org:', err);
@@ -40,9 +40,9 @@ router.post('/orgs', requireOrgRole('management', 'office_coordinator', 'project
 });
 
 // GET /orgs/:id - Get CRM org
-router.get('/orgs/:id', (req, res) => {
+router.get('/orgs/:id', async (req, res) => {
   try {
-    const org = crmDb.getCrmOrgById(req.params.id, req.org.id);
+    const org = await crmDb.getCrmOrgById(req.params.id, req.org.id);
     if (!org) return res.status(404).json({ error: 'CRM organization not found' });
     res.json(org);
   } catch (err) {
@@ -52,9 +52,9 @@ router.get('/orgs/:id', (req, res) => {
 });
 
 // PATCH /orgs/:id - Update CRM org
-router.patch('/orgs/:id', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.patch('/orgs/:id', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const org = crmDb.updateCrmOrg(req.params.id, req.body, req.org.id);
+    const org = await crmDb.updateCrmOrg(req.params.id, req.body, req.org.id);
     if (!org) return res.status(404).json({ error: 'CRM organization not found' });
     res.json(org);
   } catch (err) {
@@ -64,9 +64,9 @@ router.patch('/orgs/:id', requireOrgRole('management', 'office_coordinator'), (r
 });
 
 // DELETE /orgs/:id - Delete CRM org
-router.delete('/orgs/:id', requireOrgRole('management'), (req, res) => {
+router.delete('/orgs/:id', requireOrgRole('management'), async (req, res) => {
   try {
-    const success = crmDb.deleteCrmOrg(req.params.id, req.org.id);
+    const success = await crmDb.deleteCrmOrg(req.params.id, req.org.id);
     if (!success) return res.status(404).json({ error: 'CRM organization not found' });
     res.json({ success: true });
   } catch (err) {
@@ -76,12 +76,12 @@ router.delete('/orgs/:id', requireOrgRole('management'), (req, res) => {
 });
 
 // PUT /orgs/:id/tags - Set tags for CRM org
-router.put('/orgs/:id/tags', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.put('/orgs/:id/tags', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     const { tag_ids } = req.body;
     if (!Array.isArray(tag_ids)) return res.status(400).json({ error: 'tag_ids array is required' });
-    crmDb.setOrgTags(req.params.id, tag_ids);
-    const org = crmDb.getCrmOrgById(req.params.id, req.org.id);
+    await crmDb.setOrgTags(req.params.id, tag_ids);
+    const org = await crmDb.getCrmOrgById(req.params.id, req.org.id);
     res.json(org);
   } catch (err) {
     console.error('Error setting CRM org tags:', err);
@@ -90,9 +90,9 @@ router.put('/orgs/:id/tags', requireOrgRole('management', 'office_coordinator'),
 });
 
 // GET /orgs/:id/contacts - Get contacts in a CRM org
-router.get('/orgs/:id/contacts', (req, res) => {
+router.get('/orgs/:id/contacts', async (req, res) => {
   try {
-    const contacts = crmDb.getOrgContacts(req.params.id);
+    const contacts = await crmDb.getOrgContacts(req.params.id);
     res.json(contacts);
   } catch (err) {
     console.error('Error getting CRM org contacts:', err);
@@ -105,9 +105,9 @@ router.get('/orgs/:id/contacts', (req, res) => {
 // ============================================
 
 // GET /org-tags
-router.get('/org-tags', (req, res) => {
+router.get('/org-tags', async (req, res) => {
   try {
-    res.json(crmDb.getOrgTags(req.org.id));
+    res.json(await crmDb.getOrgTags(req.org.id));
   } catch (err) {
     console.error('Error listing org tags:', err);
     res.status(500).json({ error: 'Failed to list org tags' });
@@ -115,10 +115,10 @@ router.get('/org-tags', (req, res) => {
 });
 
 // POST /org-tags
-router.post('/org-tags', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.post('/org-tags', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     if (!req.body.name) return res.status(400).json({ error: 'name is required' });
-    const tag = crmDb.createOrgTag(req.org.id, req.body.name, req.body.color);
+    const tag = await crmDb.createOrgTag(req.org.id, req.body.name, req.body.color);
     res.status(201).json(tag);
   } catch (err) {
     console.error('Error creating org tag:', err);
@@ -127,9 +127,9 @@ router.post('/org-tags', requireOrgRole('management', 'office_coordinator'), (re
 });
 
 // PATCH /org-tags/:id
-router.patch('/org-tags/:id', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.patch('/org-tags/:id', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const tag = crmDb.updateOrgTag(req.params.id, req.body, req.org.id);
+    const tag = await crmDb.updateOrgTag(req.params.id, req.body, req.org.id);
     if (!tag) return res.status(404).json({ error: 'Tag not found' });
     res.json(tag);
   } catch (err) {
@@ -139,9 +139,9 @@ router.patch('/org-tags/:id', requireOrgRole('management', 'office_coordinator')
 });
 
 // DELETE /org-tags/:id
-router.delete('/org-tags/:id', requireOrgRole('management'), (req, res) => {
+router.delete('/org-tags/:id', requireOrgRole('management'), async (req, res) => {
   try {
-    const success = crmDb.deleteOrgTag(req.params.id, req.org.id);
+    const success = await crmDb.deleteOrgTag(req.params.id, req.org.id);
     if (!success) return res.status(404).json({ error: 'Tag not found' });
     res.json({ success: true });
   } catch (err) {
@@ -155,9 +155,9 @@ router.delete('/org-tags/:id', requireOrgRole('management'), (req, res) => {
 // ============================================
 
 // GET /contacts
-router.get('/contacts', (req, res) => {
+router.get('/contacts', async (req, res) => {
   try {
-    const contacts = crmDb.getContactsByOrg(req.org.id, {
+    const contacts = await crmDb.getContactsByOrg(req.org.id, {
       search: req.query.search,
       tag: req.query.tag,
       crmOrgId: req.query.crm_org_id,
@@ -172,10 +172,10 @@ router.get('/contacts', (req, res) => {
 });
 
 // POST /contacts
-router.post('/contacts', requireOrgRole('management', 'office_coordinator', 'project_manager', 'estimator'), (req, res) => {
+router.post('/contacts', requireOrgRole('management', 'office_coordinator', 'project_manager', 'estimator'), async (req, res) => {
   try {
     if (!req.body.first_name) return res.status(400).json({ error: 'first_name is required' });
-    const contact = crmDb.createContact(req.org.id, req.body, req.user.id);
+    const contact = await crmDb.createContact(req.org.id, req.body, req.user.id);
     res.status(201).json(contact);
   } catch (err) {
     console.error('Error creating contact:', err);
@@ -184,9 +184,9 @@ router.post('/contacts', requireOrgRole('management', 'office_coordinator', 'pro
 });
 
 // GET /contacts/:id
-router.get('/contacts/:id', (req, res) => {
+router.get('/contacts/:id', async (req, res) => {
   try {
-    const contact = crmDb.getContactById(req.params.id, req.org.id);
+    const contact = await crmDb.getContactById(req.params.id, req.org.id);
     if (!contact) return res.status(404).json({ error: 'Contact not found' });
     res.json(contact);
   } catch (err) {
@@ -196,9 +196,9 @@ router.get('/contacts/:id', (req, res) => {
 });
 
 // PATCH /contacts/:id
-router.patch('/contacts/:id', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.patch('/contacts/:id', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const contact = crmDb.updateContact(req.params.id, req.body, req.org.id);
+    const contact = await crmDb.updateContact(req.params.id, req.body, req.org.id);
     if (!contact) return res.status(404).json({ error: 'Contact not found' });
     res.json(contact);
   } catch (err) {
@@ -208,9 +208,9 @@ router.patch('/contacts/:id', requireOrgRole('management', 'office_coordinator')
 });
 
 // DELETE /contacts/:id
-router.delete('/contacts/:id', requireOrgRole('management'), (req, res) => {
+router.delete('/contacts/:id', requireOrgRole('management'), async (req, res) => {
   try {
-    const success = crmDb.deleteContact(req.params.id, req.org.id);
+    const success = await crmDb.deleteContact(req.params.id, req.org.id);
     if (!success) return res.status(404).json({ error: 'Contact not found' });
     res.json({ success: true });
   } catch (err) {
@@ -220,12 +220,12 @@ router.delete('/contacts/:id', requireOrgRole('management'), (req, res) => {
 });
 
 // PUT /contacts/:id/tags
-router.put('/contacts/:id/tags', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.put('/contacts/:id/tags', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     const { tag_ids } = req.body;
     if (!Array.isArray(tag_ids)) return res.status(400).json({ error: 'tag_ids array is required' });
-    crmDb.setContactTags(req.params.id, tag_ids);
-    const contact = crmDb.getContactById(req.params.id, req.org.id);
+    await crmDb.setContactTags(req.params.id, tag_ids);
+    const contact = await crmDb.getContactById(req.params.id, req.org.id);
     res.json(contact);
   } catch (err) {
     console.error('Error setting contact tags:', err);
@@ -234,11 +234,11 @@ router.put('/contacts/:id/tags', requireOrgRole('management', 'office_coordinato
 });
 
 // POST /contacts/:id/orgs - Add contact to CRM org
-router.post('/contacts/:id/orgs', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.post('/contacts/:id/orgs', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     const { crm_org_id, role_title, is_primary } = req.body;
     if (!crm_org_id) return res.status(400).json({ error: 'crm_org_id is required' });
-    const membership = crmDb.addContactToOrg(req.params.id, crm_org_id, role_title, is_primary);
+    const membership = await crmDb.addContactToOrg(req.params.id, crm_org_id, role_title, is_primary);
     res.status(201).json(membership);
   } catch (err) {
     console.error('Error adding contact to org:', err);
@@ -247,9 +247,9 @@ router.post('/contacts/:id/orgs', requireOrgRole('management', 'office_coordinat
 });
 
 // DELETE /contacts/:id/orgs/:crmOrgId
-router.delete('/contacts/:id/orgs/:crmOrgId', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.delete('/contacts/:id/orgs/:crmOrgId', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const success = crmDb.removeContactFromOrg(req.params.id, req.params.crmOrgId);
+    const success = await crmDb.removeContactFromOrg(req.params.id, req.params.crmOrgId);
     if (!success) return res.status(404).json({ error: 'Membership not found' });
     res.json({ success: true });
   } catch (err) {
@@ -263,9 +263,9 @@ router.delete('/contacts/:id/orgs/:crmOrgId', requireOrgRole('management', 'offi
 // ============================================
 
 // GET /contact-tags
-router.get('/contact-tags', (req, res) => {
+router.get('/contact-tags', async (req, res) => {
   try {
-    res.json(crmDb.getContactTags(req.org.id));
+    res.json(await crmDb.getContactTags(req.org.id));
   } catch (err) {
     console.error('Error listing contact tags:', err);
     res.status(500).json({ error: 'Failed to list contact tags' });
@@ -273,10 +273,10 @@ router.get('/contact-tags', (req, res) => {
 });
 
 // POST /contact-tags
-router.post('/contact-tags', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.post('/contact-tags', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     if (!req.body.name) return res.status(400).json({ error: 'name is required' });
-    const tag = crmDb.createContactTag(req.org.id, req.body.name, req.body.color);
+    const tag = await crmDb.createContactTag(req.org.id, req.body.name, req.body.color);
     res.status(201).json(tag);
   } catch (err) {
     console.error('Error creating contact tag:', err);
@@ -285,9 +285,9 @@ router.post('/contact-tags', requireOrgRole('management', 'office_coordinator'),
 });
 
 // PATCH /contact-tags/:id
-router.patch('/contact-tags/:id', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.patch('/contact-tags/:id', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const tag = crmDb.updateContactTag(req.params.id, req.body, req.org.id);
+    const tag = await crmDb.updateContactTag(req.params.id, req.body, req.org.id);
     if (!tag) return res.status(404).json({ error: 'Tag not found' });
     res.json(tag);
   } catch (err) {
@@ -297,9 +297,9 @@ router.patch('/contact-tags/:id', requireOrgRole('management', 'office_coordinat
 });
 
 // DELETE /contact-tags/:id
-router.delete('/contact-tags/:id', requireOrgRole('management'), (req, res) => {
+router.delete('/contact-tags/:id', requireOrgRole('management'), async (req, res) => {
   try {
-    const success = crmDb.deleteContactTag(req.params.id, req.org.id);
+    const success = await crmDb.deleteContactTag(req.params.id, req.org.id);
     if (!success) return res.status(404).json({ error: 'Tag not found' });
     res.json({ success: true });
   } catch (err) {
@@ -313,9 +313,9 @@ router.delete('/contact-tags/:id', requireOrgRole('management'), (req, res) => {
 // ============================================
 
 // GET /jobs/:jobId/contacts
-router.get('/jobs/:jobId/contacts', (req, res) => {
+router.get('/jobs/:jobId/contacts', async (req, res) => {
   try {
-    const contacts = crmDb.getJobContacts(req.params.jobId);
+    const contacts = await crmDb.getJobContacts(req.params.jobId);
     res.json(contacts);
   } catch (err) {
     console.error('Error getting job contacts:', err);
@@ -324,11 +324,11 @@ router.get('/jobs/:jobId/contacts', (req, res) => {
 });
 
 // POST /jobs/:jobId/contacts
-router.post('/jobs/:jobId/contacts', (req, res) => {
+router.post('/jobs/:jobId/contacts', async (req, res) => {
   try {
     const { contact_id, crm_organization_id, job_role, notes } = req.body;
     if (!contact_id) return res.status(400).json({ error: 'contact_id is required' });
-    const link = crmDb.linkContactToJob(req.params.jobId, contact_id, crm_organization_id, job_role, notes);
+    const link = await crmDb.linkContactToJob(req.params.jobId, contact_id, crm_organization_id, job_role, notes);
     res.status(201).json(link);
   } catch (err) {
     console.error('Error linking contact to job:', err);
@@ -337,9 +337,9 @@ router.post('/jobs/:jobId/contacts', (req, res) => {
 });
 
 // DELETE /jobs/:jobId/contacts/:id
-router.delete('/jobs/:jobId/contacts/:id', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.delete('/jobs/:jobId/contacts/:id', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const success = crmDb.unlinkContactFromJob(req.params.id);
+    const success = await crmDb.unlinkContactFromJob(req.params.id);
     if (!success) return res.status(404).json({ error: 'Job contact link not found' });
     res.json({ success: true });
   } catch (err) {

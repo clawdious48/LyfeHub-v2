@@ -16,10 +16,10 @@ router.use(authMiddleware);
  * GET /api/task-lists
  * Get all lists for current user
  */
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const userId = req.user.id;
-    const lists = getAllLists(userId);
+    const lists = await getAllLists(userId);
     res.json({ lists });
   } catch (err) {
     console.error('Error fetching lists:', err);
@@ -31,10 +31,10 @@ router.get('/', (req, res) => {
  * GET /api/task-lists/:id
  * Get a single list
  */
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const userId = req.user.id;
-    const list = getListById(req.params.id, userId);
+    const list = await getListById(req.params.id, userId);
     
     if (!list) {
       return res.status(404).json({ error: 'List not found' });
@@ -51,7 +51,7 @@ router.get('/:id', (req, res) => {
  * POST /api/task-lists
  * Create a new list
  */
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     console.log('[task-lists POST] body:', req.body);
     console.log('[task-lists POST] user:', req.user);
@@ -63,7 +63,7 @@ router.post('/', (req, res) => {
     }
     
     console.log('[task-lists POST] creating list:', name, 'for user:', userId);
-    const list = createList({ name: name.trim(), color }, userId);
+    const list = await createList({ name: name.trim(), color }, userId);
     console.log('[task-lists POST] created:', list);
     res.status(201).json({ list });
   } catch (err) {
@@ -77,10 +77,10 @@ router.post('/', (req, res) => {
  * PATCH /api/task-lists/:id
  * Update a list
  */
-router.patch('/:id', (req, res) => {
+router.patch('/:id', async (req, res) => {
   try {
     const userId = req.user.id;
-    const list = updateList(req.params.id, req.body, userId);
+    const list = await updateList(req.params.id, req.body, userId);
     
     if (!list) {
       return res.status(404).json({ error: 'List not found' });
@@ -97,10 +97,10 @@ router.patch('/:id', (req, res) => {
  * DELETE /api/task-lists/:id
  * Delete a list
  */
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const userId = req.user.id;
-    const deleted = deleteList(req.params.id, userId);
+    const deleted = await deleteList(req.params.id, userId);
     
     if (!deleted) {
       return res.status(404).json({ error: 'List not found' });

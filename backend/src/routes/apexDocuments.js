@@ -110,7 +110,7 @@ router.post('/upload', upload.array('files', 20), async (req, res) => {
         }
 
         const stat = fs.statSync(finalPath);
-        const doc = docsDb.createDocument({
+        const doc = await docsDb.createDocument({
           orgId,
           jobId: job_id,
           phaseId: phase_id,
@@ -147,9 +147,9 @@ router.post('/upload', upload.array('files', 20), async (req, res) => {
 });
 
 // GET /job/:jobId — list documents for a job
-router.get('/job/:jobId', (req, res) => {
+router.get('/job/:jobId', async (req, res) => {
   try {
-    const docs = docsDb.getDocumentsByJob(req.params.jobId, req.orgId, {
+    const docs = await docsDb.getDocumentsByJob(req.params.jobId, req.orgId, {
       documentType: req.query.document_type,
       entityType: req.query.entity_type
     });
@@ -161,11 +161,11 @@ router.get('/job/:jobId', (req, res) => {
 });
 
 // GET /search — search documents
-router.get('/search', (req, res) => {
+router.get('/search', async (req, res) => {
   try {
     const { q, job_id, document_type } = req.query;
     if (!q) return res.status(400).json({ error: 'q query parameter is required' });
-    const docs = docsDb.searchDocuments(req.orgId, q, { jobId: job_id, documentType: document_type });
+    const docs = await docsDb.searchDocuments(req.orgId, q, { jobId: job_id, documentType: document_type });
     res.json(docs);
   } catch (err) {
     console.error('Error searching documents:', err);
@@ -174,9 +174,9 @@ router.get('/search', (req, res) => {
 });
 
 // GET /:id — get single document metadata
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const doc = docsDb.getDocumentById(req.params.id, req.orgId);
+    const doc = await docsDb.getDocumentById(req.params.id, req.orgId);
     if (!doc) return res.status(404).json({ error: 'Document not found' });
     res.json(doc);
   } catch (err) {
@@ -186,9 +186,9 @@ router.get('/:id', (req, res) => {
 });
 
 // GET /:id/file — serve the actual file
-router.get('/:id/file', (req, res) => {
+router.get('/:id/file', async (req, res) => {
   try {
-    const doc = docsDb.getDocumentById(req.params.id, req.orgId);
+    const doc = await docsDb.getDocumentById(req.params.id, req.orgId);
     if (!doc) return res.status(404).json({ error: 'Document not found' });
 
     const filePath = path.join(UPLOAD_BASE, doc.file_path);
@@ -214,12 +214,12 @@ router.get('/:id/file', (req, res) => {
 });
 
 // PATCH /:id — update metadata
-router.patch('/:id', (req, res) => {
+router.patch('/:id', async (req, res) => {
   try {
-    const doc = docsDb.getDocumentById(req.params.id, req.orgId);
+    const doc = await docsDb.getDocumentById(req.params.id, req.orgId);
     if (!doc) return res.status(404).json({ error: 'Document not found' });
 
-    const updated = docsDb.updateDocument(req.params.id, req.orgId, req.body);
+    const updated = await docsDb.updateDocument(req.params.id, req.orgId, req.body);
     res.json(updated);
   } catch (err) {
     console.error('Error updating document:', err);
@@ -228,9 +228,9 @@ router.patch('/:id', (req, res) => {
 });
 
 // DELETE /:id — delete document + file (management/office_coordinator only)
-router.delete('/:id', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.delete('/:id', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const doc = docsDb.deleteDocument(req.params.id, req.orgId);
+    const doc = await docsDb.deleteDocument(req.params.id, req.orgId);
     if (!doc) return res.status(404).json({ error: 'Document not found' });
 
     // Delete file from disk

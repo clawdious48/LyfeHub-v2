@@ -31,28 +31,28 @@ function hashKey(key) {
   return crypto.createHash('sha256').update(key).digest('hex');
 }
 
-function createApiKey(userId, name, expiresAt = null) {
+async function createApiKey(userId, name, expiresAt = null) {
   const id = uuidv4();
   const key = generateApiKey();
   const keyHash = hashKey(key);
   const keyPrefix = key.substring(0, 12);
   const keyEncrypted = encrypt(key);
 
-  const stmt = db.prepare(
-    "INSERT INTO api_keys (id, user_id, name, key_hash, key_prefix, key_encrypted, expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))"
+  await db.run(
+    "INSERT INTO api_keys (id, user_id, name, key_hash, key_prefix, key_encrypted, expires_at, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())",
+    [id, userId, name, keyHash, keyPrefix, keyEncrypted, expiresAt]
   );
-
-  stmt.run(id, userId, name, keyHash, keyPrefix, keyEncrypted, expiresAt);
 
   return { id, name, key, keyPrefix, expiresAt, createdAt: new Date().toISOString() };
 }
 
-function listApiKeys(userId) {
-  const stmt = db.prepare(
-    "SELECT id, name, key_prefix, expires_at, last_used_at, created_at FROM api_keys WHERE user_id = ? ORDER BY created_at DESC"
+async function listApiKeys(userId) {
+  const rows = await db.getAll(
+    "SELECT id, name, key_prefix, expires_at, last_used_at, created_at FROM api_keys WHERE user_id = $1 ORDER BY created_at DESC",
+    [userId]
   );
 
-  return stmt.all(userId).map(row => ({
+  return rows.map(row => ({
     id: row.id, name: row.name, keyPrefix: row.key_prefix,
     expiresAt: row.expires_at, lastUsedAt: row.last_used_at,
     createdAt: row.created_at,
@@ -60,11 +60,11 @@ function listApiKeys(userId) {
   }));
 }
 
-function getFullKey(keyId, userId) {
-  const stmt = db.prepare(
-    "SELECT key_encrypted FROM api_keys WHERE id = ? AND user_id = ?"
+async function getFullKey(keyId, userId) {
+  const row = await db.getOne(
+    "SELECT key_encrypted FROM api_keys WHERE id = $1 AND user_id = $2",
+    [keyId, userId]
   );
-  const row = stmt.get(keyId, userId);
   if (!row || !row.key_encrypted) return null;
   try {
     return decrypt(row.key_encrypted);
@@ -73,30 +73,31 @@ function getFullKey(keyId, userId) {
   }
 }
 
-function validateApiKey(key) {
+async function validateApiKey(key) {
   if (!key || !key.startsWith('lh_live_')) return null;
   const keyHash = hashKey(key);
-  const stmt = db.prepare(
-    "SELECT ak.id, ak.user_id, ak.name, ak.expires_at, u.email, u.name as user_name, u.role FROM api_keys ak JOIN users u ON u.id = ak.user_id WHERE ak.key_hash = ?"
+  const row = await db.getOne(
+    "SELECT ak.id, ak.user_id, ak.name, ak.expires_at, u.email, u.name as user_name, u.role FROM api_keys ak JOIN users u ON u.id = ak.user_id WHERE ak.key_hash = $1",
+    [keyHash]
   );
-  const row = stmt.get(keyHash);
   if (!row) return null;
   if (row.expires_at && new Date(row.expires_at) < new Date()) return null;
-  db.prepare("UPDATE api_keys SET last_used_at = datetime('now') WHERE id = ?").run(row.id);
+  await db.run("UPDATE api_keys SET last_used_at = NOW() WHERE id = $1", [row.id]);
   return { keyId: row.id, keyName: row.name, userId: row.user_id, email: row.email, userName: row.user_name, role: row.role };
 }
 
-function deleteApiKey(keyId, userId) {
-  const result = db.prepare("DELETE FROM api_keys WHERE id = ? AND user_id = ?").run(keyId, userId);
-  return result.changes > 0;
+async function deleteApiKey(keyId, userId) {
+  const result = await db.run("DELETE FROM api_keys WHERE id = $1 AND user_id = $2", [keyId, userId]);
+  return result.rowCount > 0;
 }
 
-function updateApiKey(keyId, userId, updates) {
+async function updateApiKey(keyId, userId, updates) {
   const { name, expiresAt } = updates;
-  const result = db.prepare(
-    "UPDATE api_keys SET name = COALESCE(?, name), expires_at = COALESCE(?, expires_at) WHERE id = ? AND user_id = ?"
-  ).run(name, expiresAt, keyId, userId);
-  return result.changes > 0;
+  const result = await db.run(
+    "UPDATE api_keys SET name = COALESCE($1, name), expires_at = COALESCE($2, expires_at) WHERE id = $3 AND user_id = $4",
+    [name, expiresAt, keyId, userId]
+  );
+  return result.rowCount > 0;
 }
 
 module.exports = { generateApiKey, createApiKey, listApiKeys, getFullKey, validateApiKey, deleteApiKey, updateApiKey };

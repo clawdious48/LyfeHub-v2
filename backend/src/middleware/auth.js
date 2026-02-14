@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const db = require('../db/schema');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
 const COOKIE_NAME = 'kanban_session';
@@ -8,18 +9,17 @@ function parseRoles(roleStr) {
   try { const r = JSON.parse(roleStr); return Array.isArray(r) ? r : [r]; } catch { return [roleStr]; }
 }
 
-function authMiddleware(req, res, next) {
+async function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.slice(7);
     if (token.startsWith('lh_live_')) {
       const apiKeysDb = require('../db/apiKeys');
-      const keyData = apiKeysDb.validateApiKey(token);
+      const keyData = await apiKeysDb.validateApiKey(token);
       if (!keyData) {
         return res.status(401).json({ error: 'Invalid or expired API key', code: 'INVALID_API_KEY' });
       }
-      const db = require('../db/schema');
-      const userRow = db.prepare('SELECT role FROM users WHERE id = ?').get(keyData.userId);
+      const userRow = await db.getOne('SELECT role FROM users WHERE id = $1', [keyData.userId]);
       req.authMethod = 'api_key';
       req.apiKeyId = keyData.keyId;
       req.apiKeyName = keyData.keyName;
@@ -37,8 +37,7 @@ function authMiddleware(req, res, next) {
   
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const db = require('../db/schema');
-    const user = db.prepare('SELECT role, name FROM users WHERE id = ?').get(decoded.userId);
+    const user = await db.getOne('SELECT role, name FROM users WHERE id = $1', [decoded.userId]);
     req.authMethod = 'jwt';
     req.sessionId = decoded.sessionId;
     const roles = parseRoles(user?.role);

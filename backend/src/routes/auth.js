@@ -83,7 +83,7 @@ router.post('/signup', signupLimiter, async (req, res) => {
     }
     
     // Check if email already exists
-    const existing = findUserByEmail(email);
+    const existing = await findUserByEmail(email);
     if (existing) {
       return res.status(409).json({ 
         error: 'An account with this email already exists',
@@ -104,7 +104,7 @@ router.post('/signup', signupLimiter, async (req, res) => {
     res.status(201).json({ 
       success: true,
       message: 'Account created successfully',
-      user: getSafeUser(user)
+      user: await getSafeUser(user)
     });
   } catch (err) {
     console.error('Signup error:', err);
@@ -149,7 +149,7 @@ router.post('/login', loginLimiter, async (req, res) => {
     res.json({ 
       success: true,
       message: 'Logged in successfully',
-      user: getSafeUser(user)
+      user: await getSafeUser(user)
     });
   } catch (err) {
     console.error('Login error:', err);
@@ -164,7 +164,7 @@ router.post('/login', loginLimiter, async (req, res) => {
  * POST /api/auth/logout
  * Clear session cookie
  */
-router.post('/logout', (req, res) => {
+router.post('/logout', async (req, res) => {
   clearSessionCookie(res);
   res.json({ 
     success: true,
@@ -176,7 +176,7 @@ router.post('/logout', (req, res) => {
  * GET /api/auth/check
  * Check if current session is valid
  */
-router.get('/check', (req, res) => {
+router.get('/check', async (req, res) => {
   const jwt = require('jsonwebtoken');
   const { COOKIE_NAME } = require('../middleware/auth');
   const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';

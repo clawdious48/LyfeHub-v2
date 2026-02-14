@@ -8,34 +8,32 @@ const { v4: uuidv4 } = require('uuid');
 /**
  * Get all organizations for a user
  */
-function getAllOrganizations(userId) {
-  const stmt = db.prepare(`
+async function getAllOrganizations(userId) {
+  return await db.getAll(`
     SELECT * FROM organizations
-    WHERE user_id = ?
+    WHERE user_id = $1
     ORDER BY name ASC
-  `);
-  return stmt.all(userId);
+  `, [userId]);
 }
 
 /**
  * Get a single organization by ID
  */
-function getOrganizationById(id, userId) {
-  const stmt = db.prepare(`
+async function getOrganizationById(id, userId) {
+  return await db.getOne(`
     SELECT * FROM organizations
-    WHERE id = ? AND user_id = ?
-  `);
-  return stmt.get(id, userId);
+    WHERE id = $1 AND user_id = $2
+  `, [id, userId]);
 }
 
 /**
  * Create a new organization
  */
-function createOrganization(data, userId) {
+async function createOrganization(data, userId) {
   const id = uuidv4();
   const now = new Date().toISOString();
 
-  const stmt = db.prepare(`
+  await db.run(`
     INSERT INTO organizations (
       id, user_id, name, type, industry, description,
       website, linkedin, phone, email,
@@ -44,16 +42,14 @@ function createOrganization(data, userId) {
       notes, tags, important,
       created_at, updated_at
     ) VALUES (
-      ?, ?, ?, ?, ?, ?,
-      ?, ?, ?, ?,
-      ?, ?, ?, ?,
-      ?, ?, ?,
-      ?, ?, ?,
-      ?, ?
+      $1, $2, $3, $4, $5, $6,
+      $7, $8, $9, $10,
+      $11, $12, $13, $14,
+      $15, $16, $17,
+      $18, $19, $20,
+      $21, $22
     )
-  `);
-
-  stmt.run(
+  `, [
     id, userId,
     data.name || 'Unnamed Organization',
     data.type || '',
@@ -74,43 +70,19 @@ function createOrganization(data, userId) {
     JSON.stringify(data.tags || []),
     data.important ? 1 : 0,
     now, now
-  );
+  ]);
 
-  return getOrganizationById(id, userId);
+  return await getOrganizationById(id, userId);
 }
 
 /**
  * Update an organization
  */
-function updateOrganization(id, data, userId) {
-  const existing = getOrganizationById(id, userId);
+async function updateOrganization(id, data, userId) {
+  const existing = await getOrganizationById(id, userId);
   if (!existing) return null;
 
   const now = new Date().toISOString();
-
-  const stmt = db.prepare(`
-    UPDATE organizations SET
-      name = ?,
-      type = ?,
-      industry = ?,
-      description = ?,
-      website = ?,
-      linkedin = ?,
-      phone = ?,
-      email = ?,
-      address = ?,
-      city = ?,
-      state = ?,
-      country = ?,
-      parent_org_id = ?,
-      founded_year = ?,
-      employee_count = ?,
-      notes = ?,
-      tags = ?,
-      important = ?,
-      updated_at = ?
-    WHERE id = ? AND user_id = ?
-  `);
 
   const val = (key, isJson = false) => {
     if (data[key] === undefined) {
@@ -119,7 +91,29 @@ function updateOrganization(id, data, userId) {
     return isJson ? JSON.stringify(data[key]) : data[key];
   };
 
-  stmt.run(
+  await db.run(`
+    UPDATE organizations SET
+      name = $1,
+      type = $2,
+      industry = $3,
+      description = $4,
+      website = $5,
+      linkedin = $6,
+      phone = $7,
+      email = $8,
+      address = $9,
+      city = $10,
+      state = $11,
+      country = $12,
+      parent_org_id = $13,
+      founded_year = $14,
+      employee_count = $15,
+      notes = $16,
+      tags = $17,
+      important = $18,
+      updated_at = $19
+    WHERE id = $20 AND user_id = $21
+  `, [
     data.name !== undefined ? data.name : existing.name,
     val('type'),
     val('industry'),
@@ -140,64 +134,59 @@ function updateOrganization(id, data, userId) {
     data.important !== undefined ? (data.important ? 1 : 0) : existing.important,
     now,
     id, userId
-  );
+  ]);
 
-  return getOrganizationById(id, userId);
+  return await getOrganizationById(id, userId);
 }
 
 /**
  * Delete an organization
  */
-function deleteOrganization(id, userId) {
+async function deleteOrganization(id, userId) {
   // First, unlink any people from this org
-  const unlinkStmt = db.prepare(`
+  await db.run(`
     UPDATE people SET organization_id = NULL
-    WHERE organization_id = ? AND user_id = ?
-  `);
-  unlinkStmt.run(id, userId);
+    WHERE organization_id = $1 AND user_id = $2
+  `, [id, userId]);
 
-  const stmt = db.prepare(`
+  const result = await db.run(`
     DELETE FROM organizations
-    WHERE id = ? AND user_id = ?
-  `);
-  const result = stmt.run(id, userId);
-  return result.changes > 0;
+    WHERE id = $1 AND user_id = $2
+  `, [id, userId]);
+  return result.rowCount > 0;
 }
 
 /**
  * Get organization count for a user
  */
-function getOrganizationCount(userId) {
-  const stmt = db.prepare('SELECT COUNT(*) as count FROM organizations WHERE user_id = ?');
-  const result = stmt.get(userId);
-  return result ? result.count : 0;
+async function getOrganizationCount(userId) {
+  const result = await db.getOne('SELECT COUNT(*) as count FROM organizations WHERE user_id = $1', [userId]);
+  return result ? parseInt(result.count) : 0;
 }
 
 /**
  * Get all people belonging to an organization
  */
-function getPeopleByOrganization(orgId, userId) {
-  const stmt = db.prepare(`
+async function getPeopleByOrganization(orgId, userId) {
+  return await db.getAll(`
     SELECT id, name, job_title, email, phone_mobile
     FROM people
-    WHERE organization_id = ? AND user_id = ?
+    WHERE organization_id = $1 AND user_id = $2
     ORDER BY name ASC
-  `);
-  return stmt.all(orgId, userId);
+  `, [orgId, userId]);
 }
 
 /**
  * Search organizations by name or other fields
  */
-function searchOrganizations(userId, query) {
+async function searchOrganizations(userId, query) {
   const searchTerm = `%${query}%`;
-  const stmt = db.prepare(`
+  return await db.getAll(`
     SELECT * FROM organizations
-    WHERE user_id = ?
-      AND (name LIKE ? OR industry LIKE ? OR notes LIKE ?)
+    WHERE user_id = $1
+      AND (name ILIKE $2 OR industry ILIKE $3 OR notes ILIKE $4)
     ORDER BY name ASC
-  `);
-  return stmt.all(userId, searchTerm, searchTerm, searchTerm);
+  `, [userId, searchTerm, searchTerm, searchTerm]);
 }
 
 module.exports = {

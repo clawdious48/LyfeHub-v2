@@ -18,14 +18,14 @@ router.use(authMiddleware);
  * GET /api/calendars
  * List all calendars for current user
  */
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const userId = req.user.id;
 
     // Ensure user has system calendars (My Calendar + Tasks)
-    ensureSystemCalendars(userId);
+    await ensureSystemCalendars(userId);
 
-    const calendars = getAllCalendars(userId);
+    const calendars = await getAllCalendars(userId);
     res.json({ calendars });
   } catch (err) {
     console.error('Error fetching calendars:', err);
@@ -37,10 +37,10 @@ router.get('/', (req, res) => {
  * GET /api/calendars/:id
  * Get a single calendar
  */
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const userId = req.user.id;
-    const calendar = getCalendarById(req.params.id, userId);
+    const calendar = await getCalendarById(req.params.id, userId);
 
     if (!calendar) {
       return res.status(404).json({ error: 'Calendar not found' });
@@ -57,7 +57,7 @@ router.get('/:id', (req, res) => {
  * POST /api/calendars
  * Create a new calendar
  */
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const userId = req.user.id;
     const { name, description, color } = req.body;
@@ -66,7 +66,7 @@ router.post('/', (req, res) => {
       return res.status(400).json({ error: 'Calendar name is required' });
     }
 
-    const calendar = createCalendar({
+    const calendar = await createCalendar({
       name: name.trim(),
       description,
       color
@@ -83,10 +83,10 @@ router.post('/', (req, res) => {
  * PATCH /api/calendars/:id
  * Update a calendar
  */
-router.patch('/:id', (req, res) => {
+router.patch('/:id', async (req, res) => {
   try {
     const userId = req.user.id;
-    const calendar = updateCalendar(req.params.id, req.body, userId);
+    const calendar = await updateCalendar(req.params.id, req.body, userId);
 
     if (!calendar) {
       return res.status(404).json({ error: 'Calendar not found' });
@@ -103,10 +103,10 @@ router.patch('/:id', (req, res) => {
  * DELETE /api/calendars/:id
  * Delete a calendar
  */
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const userId = req.user.id;
-    const deleted = deleteCalendar(req.params.id, userId);
+    const deleted = await deleteCalendar(req.params.id, userId);
 
     if (!deleted) {
       return res.status(400).json({ error: 'Cannot delete calendar (may be default or not found)' });

@@ -15,15 +15,20 @@ const TYPE_CODES = {
  * Generate a unique job number: YYYYMM-SEQ-TYPE
  * e.g., 202602-001-MIT
  */
-function generateJobNumber(typeCode) {
+async function generateJobNumber(typeCode, client) {
   const now = new Date();
   const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
 
+  const runner = client || db;
+
   // Insert if not exists, then get and increment
-  db.prepare('INSERT OR IGNORE INTO apex_job_number_seq (year_month, next_seq) VALUES (?, 1)').run(yearMonth);
-  const row = db.prepare('SELECT next_seq FROM apex_job_number_seq WHERE year_month = ?').get(yearMonth);
+  await runner.run(
+    'INSERT INTO apex_job_number_seq (year_month, next_seq) VALUES ($1, 1) ON CONFLICT (year_month) DO NOTHING',
+    [yearMonth]
+  );
+  const row = await runner.getOne('SELECT next_seq FROM apex_job_number_seq WHERE year_month = $1', [yearMonth]);
   const seq = row.next_seq;
-  db.prepare('UPDATE apex_job_number_seq SET next_seq = next_seq + 1 WHERE year_month = ?').run(yearMonth);
+  await runner.run('UPDATE apex_job_number_seq SET next_seq = next_seq + 1 WHERE year_month = $1', [yearMonth]);
 
   return `${yearMonth}-${String(seq).padStart(3, '0')}-${typeCode}`;
 }
@@ -34,7 +39,6 @@ function generateJobNumber(typeCode) {
 function ensureJsonString(val) {
   if (Array.isArray(val)) return JSON.stringify(val);
   if (typeof val === 'string') {
-    // If it's already a JSON string, return as-is
     try { JSON.parse(val); return val; } catch { return JSON.stringify([val]); }
   }
   return '[]';
@@ -43,12 +47,12 @@ function ensureJsonString(val) {
 /**
  * Create a new apex job with phases (transactional)
  */
-function createJob(data, userId, orgId) {
-  const create = db.transaction(() => {
+async function createJob(data, userId, orgId) {
+  const jobId = await db.transaction(async (client) => {
     const id = uuidv4();
     const name = `${data.client_name} - ${data.prop_street || data.client_street || 'New Job'}`;
 
-    db.prepare(`
+    await client.run(`
       INSERT INTO apex_jobs (
         id, user_id, org_id, name, status,
         client_name, client_phone, client_email,
@@ -66,23 +70,23 @@ function createJob(data, userId, orgId) {
         source, zoho_id,
         additional_clients, additional_adjusters, site_contacts
       ) VALUES (
-        ?, ?, ?, ?, ?,
-        ?, ?, ?,
-        ?, ?, ?, ?, ?, ?,
-        ?,
-        ?, ?, ?, ?, ?, ?, ?,
-        ?, ?, ?, ?,
-        ?, ?, ?, ?,
-        ?, ?, ?,
-        ?, ?, ?, ?,
-        ?, ?, ?, ?, ?,
-        ?, ?, ?, ?,
-        ?, ?, ?, ?, ?,
-        ?, ?, ?,
-        ?, ?,
-        ?, ?, ?
+        $1, $2, $3, $4, $5,
+        $6, $7, $8,
+        $9, $10, $11, $12, $13, $14,
+        $15,
+        $16, $17, $18, $19, $20, $21, $22,
+        $23, $24, $25, $26,
+        $27, $28, $29, $30,
+        $31, $32, $33,
+        $34, $35, $36, $37,
+        $38, $39, $40, $41, $42,
+        $43, $44, $45, $46,
+        $47, $48, $49, $50, $51,
+        $52, $53, $54,
+        $55, $56,
+        $57, $58, $59
       )
-    `).run(
+    `, [
       id, userId, orgId, name, data.status || 'active',
       data.client_name, data.client_phone || '', data.client_email || '',
       data.client_street || '', data.client_city || '', data.client_state || '', data.client_zip || '', data.client_unit || '', data.client_relation || 'owner',
@@ -100,7 +104,7 @@ function createJob(data, userId, orgId) {
       data.referral_source || '', data.how_heard || '', data.internal_notes || '',
       data.source || 'local', data.zoho_id || '',
       ensureJsonString(data.additional_clients), ensureJsonString(data.additional_adjusters), ensureJsonString(data.site_contacts)
-    );
+    ]);
 
     // Create phases for each selected job type
     const jobTypes = data.job_types || [];
@@ -109,37 +113,38 @@ function createJob(data, userId, orgId) {
       if (!typeCode) continue;
 
       const phaseId = uuidv4();
-      const jobNumber = generateJobNumber(typeCode);
+      const jobNumber = await generateJobNumber(typeCode, client);
 
-      db.prepare(`
+      await client.run(`
         INSERT INTO apex_job_phases (
           id, job_id, job_type, job_type_code, job_number
-        ) VALUES (?, ?, ?, ?, ?)
-      `).run(phaseId, id, jobType, typeCode, jobNumber);
+        ) VALUES ($1, $2, $3, $4, $5)
+      `, [phaseId, id, jobType, typeCode, jobNumber]);
     }
 
     return id;
   });
 
-  const jobId = create();
   return getJobById(jobId, orgId);
 }
 
 /**
  * Get all non-archived jobs for a user, with phases
  */
-function getAllJobs(orgId) {
-  const jobs = db.prepare(
-    'SELECT * FROM apex_jobs WHERE org_id = ? AND status != ? ORDER BY created_at DESC'
-  ).all(orgId, 'archived');
+async function getAllJobs(orgId) {
+  const jobs = await db.getAll(
+    'SELECT * FROM apex_jobs WHERE org_id = $1 AND status != $2 ORDER BY created_at DESC',
+    [orgId, 'archived']
+  );
 
   const jobIds = jobs.map(j => j.id);
   if (jobIds.length === 0) return [];
 
-  const placeholders = jobIds.map(() => '?').join(',');
-  const phases = db.prepare(
-    `SELECT * FROM apex_job_phases WHERE job_id IN (${placeholders}) ORDER BY created_at ASC`
-  ).all(...jobIds);
+  const placeholders = jobIds.map((_, i) => `$${i + 1}`).join(',');
+  const phases = await db.getAll(
+    `SELECT * FROM apex_job_phases WHERE job_id IN (${placeholders}) ORDER BY created_at ASC`,
+    jobIds
+  );
 
   // Group phases by job_id
   const phaseMap = {};
@@ -154,15 +159,17 @@ function getAllJobs(orgId) {
 /**
  * Get a single job by ID with phases
  */
-function getJobById(id, orgId) {
-  const job = db.prepare(
-    'SELECT * FROM apex_jobs WHERE id = ? AND org_id = ?'
-  ).get(id, orgId);
+async function getJobById(id, orgId) {
+  const job = await db.getOne(
+    'SELECT * FROM apex_jobs WHERE id = $1 AND org_id = $2',
+    [id, orgId]
+  );
   if (!job) return null;
 
-  const phases = db.prepare(
-    'SELECT * FROM apex_job_phases WHERE job_id = ? ORDER BY created_at ASC'
-  ).all(id);
+  const phases = await db.getAll(
+    'SELECT * FROM apex_job_phases WHERE job_id = $1 ORDER BY created_at ASC',
+    [id]
+  );
 
   return { ...job, phases };
 }
@@ -170,11 +177,10 @@ function getJobById(id, orgId) {
 /**
  * Update job fields dynamically (only updates fields present in data)
  */
-function updateJob(id, data, orgId) {
-  const existing = getJobById(id, orgId);
+async function updateJob(id, data, orgId) {
+  const existing = await getJobById(id, orgId);
   if (!existing) return null;
 
-  // Fields that can be updated
   const allowedFields = [
     'name', 'status',
     'client_name', 'client_phone', 'client_email',
@@ -193,16 +199,16 @@ function updateJob(id, data, orgId) {
     'additional_clients', 'additional_adjusters', 'site_contacts'
   ];
 
-  // Assignment fields that need JSON handling
   const jsonArrayFields = ['mitigation_pm', 'reconstruction_pm', 'estimator', 'project_coordinator', 'mitigation_techs',
     'additional_clients', 'additional_adjusters', 'site_contacts'];
 
   const updates = [];
   const values = [];
+  let paramIdx = 1;
 
   for (const field of allowedFields) {
     if (data[field] !== undefined) {
-      updates.push(`${field} = ?`);
+      updates.push(`${field} = $${paramIdx++}`);
       if (jsonArrayFields.includes(field)) {
         values.push(ensureJsonString(data[field]));
       } else if (['same_as_client', 'urgent', 'extraction_required', 'ongoing_intrusion', 'drywall_debris', 'content_manipulation'].includes(field)) {
@@ -216,13 +222,14 @@ function updateJob(id, data, orgId) {
   if (updates.length === 0) return existing;
 
   // Always update updated_at
-  updates.push("updated_at = datetime('now')");
+  updates.push(`updated_at = NOW()`);
 
   values.push(id, orgId);
 
-  db.prepare(
-    `UPDATE apex_jobs SET ${updates.join(', ')} WHERE id = ? AND org_id = ?`
-  ).run(...values);
+  await db.run(
+    `UPDATE apex_jobs SET ${updates.join(', ')} WHERE id = $${paramIdx++} AND org_id = $${paramIdx++}`,
+    values
+  );
 
   return getJobById(id, orgId);
 }
@@ -230,13 +237,13 @@ function updateJob(id, data, orgId) {
 /**
  * Update a phase (verifies job ownership via JOIN)
  */
-function updatePhase(phaseId, data, orgId) {
+async function updatePhase(phaseId, data, orgId) {
   // Verify ownership
-  const phase = db.prepare(`
+  const phase = await db.getOne(`
     SELECT p.* FROM apex_job_phases p
     JOIN apex_jobs j ON p.job_id = j.id
-    WHERE p.id = ? AND j.org_id = ?
-  `).get(phaseId, orgId);
+    WHERE p.id = $1 AND j.org_id = $2
+  `, [phaseId, orgId]);
 
   if (!phase) return null;
 
@@ -249,10 +256,11 @@ function updatePhase(phaseId, data, orgId) {
 
   const updates = [];
   const values = [];
+  let paramIdx = 1;
 
   for (const field of allowedFields) {
     if (data[field] !== undefined) {
-      updates.push(`${field} = ?`);
+      updates.push(`${field} = $${paramIdx++}`);
       if (jsonFields.includes(field)) {
         values.push(typeof data[field] === 'string' ? data[field] : JSON.stringify(data[field]));
       } else {
@@ -263,39 +271,42 @@ function updatePhase(phaseId, data, orgId) {
 
   if (updates.length === 0) return phase;
 
-  updates.push("updated_at = datetime('now')");
+  updates.push(`updated_at = NOW()`);
   values.push(phaseId);
 
-  db.prepare(
-    `UPDATE apex_job_phases SET ${updates.join(', ')} WHERE id = ?`
-  ).run(...values);
+  await db.run(
+    `UPDATE apex_job_phases SET ${updates.join(', ')} WHERE id = $${paramIdx++}`,
+    values
+  );
 
   // Return updated phase
-  return db.prepare('SELECT * FROM apex_job_phases WHERE id = ?').get(phaseId);
+  return await db.getOne('SELECT * FROM apex_job_phases WHERE id = $1', [phaseId]);
 }
 
 /**
  * Archive a job (soft delete)
  */
-function archiveJob(id, orgId) {
-  const result = db.prepare(
-    "UPDATE apex_jobs SET status = 'archived', updated_at = datetime('now') WHERE id = ? AND org_id = ?"
-  ).run(id, orgId);
-  return result.changes > 0;
+async function archiveJob(id, orgId) {
+  const result = await db.run(
+    "UPDATE apex_jobs SET status = 'archived', updated_at = NOW() WHERE id = $1 AND org_id = $2",
+    [id, orgId]
+  );
+  return result.rowCount > 0;
 }
 
 /**
  * Get job count stats grouped by status
  */
-function getJobStats(orgId) {
-  const rows = db.prepare(
-    'SELECT status, COUNT(*) as count FROM apex_jobs WHERE org_id = ? GROUP BY status'
-  ).all(orgId);
+async function getJobStats(orgId) {
+  const rows = await db.getAll(
+    'SELECT status, COUNT(*) as count FROM apex_jobs WHERE org_id = $1 GROUP BY status',
+    [orgId]
+  );
 
   const stats = { active: 0, pending_insurance: 0, complete: 0, archived: 0, total: 0 };
   rows.forEach(r => {
-    stats[r.status] = r.count;
-    stats.total += r.count;
+    stats[r.status] = parseInt(r.count);
+    stats.total += parseInt(r.count);
   });
   return stats;
 }
@@ -307,14 +318,14 @@ function getJobStats(orgId) {
 /**
  * Log an activity entry (internal, no ownership check)
  */
-function logActivity(jobId, data) {
+async function logActivity(jobId, data) {
   const id = uuidv4();
-  db.prepare(`
+  await db.run(`
     INSERT INTO apex_job_activity (
       id, job_id, event_type, description, entity_type, entity_id,
       old_value, new_value, amount, actor_id
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+  `, [
     id, jobId,
     data.event_type || 'note',
     data.description || '',
@@ -324,23 +335,24 @@ function logActivity(jobId, data) {
     data.new_value || '',
     data.amount ?? null,
     data.actor_id || ''
-  );
+  ]);
   return id;
 }
 
 /**
  * Get activity log for a job with optional type filter and pagination
  */
-function getActivityByJob(jobId, orgId, options = {}) {
+async function getActivityByJob(jobId, orgId, options = {}) {
   // Verify ownership
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
   const params = [jobId];
-  let where = 'WHERE job_id = ?';
+  let paramIdx = 2;
+  let where = 'WHERE job_id = $1';
 
   if (options.type) {
-    where += ' AND event_type = ?';
+    where += ` AND event_type = $${paramIdx++}`;
     params.push(options.type);
   }
 
@@ -348,33 +360,34 @@ function getActivityByJob(jobId, orgId, options = {}) {
   const offset = options.offset || 0;
   params.push(limit, offset);
 
-  return db.prepare(
-    `SELECT * FROM apex_job_activity ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`
-  ).all(...params);
+  return await db.getAll(
+    `SELECT * FROM apex_job_activity ${where} ORDER BY created_at DESC LIMIT $${paramIdx++} OFFSET $${paramIdx++}`,
+    params
+  );
 }
 
 // ============================================
 // NOTES
 // ============================================
 
-function createNote(jobId, data, userId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function createNote(jobId, data, userId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
   const id = uuidv4();
-  db.prepare(`
+  await db.run(`
     INSERT INTO apex_job_notes (id, job_id, phase_id, subject, note_type, content, author_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+  `, [
     id, jobId,
     data.phase_id || null,
     data.subject || '',
     data.note_type || 'general',
     data.content || '',
     data.author_id || userId
-  );
+  ]);
 
-  logActivity(jobId, {
+  await logActivity(jobId, {
     event_type: 'note',
     description: `Note added: ${data.subject || 'Untitled'}`,
     entity_type: 'note',
@@ -382,33 +395,35 @@ function createNote(jobId, data, userId, orgId) {
     actor_id: userId
   });
 
-  return db.prepare('SELECT * FROM apex_job_notes WHERE id = ?').get(id);
+  return await db.getOne('SELECT * FROM apex_job_notes WHERE id = $1', [id]);
 }
 
-function getNotesByJob(jobId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function getNotesByJob(jobId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
-  return db.prepare(
-    'SELECT n.*, u.name as author_name FROM apex_job_notes n LEFT JOIN users u ON n.author_id = u.id WHERE n.job_id = ? ORDER BY n.created_at DESC'
-  ).all(jobId);
+  return await db.getAll(
+    'SELECT n.*, u.name as author_name FROM apex_job_notes n LEFT JOIN users u ON n.author_id = u.id WHERE n.job_id = $1 ORDER BY n.created_at DESC',
+    [jobId]
+  );
 }
 
-function getNoteById(noteId) {
-  return db.prepare('SELECT * FROM apex_job_notes WHERE id = ?').get(noteId);
+async function getNoteById(noteId) {
+  return await db.getOne('SELECT * FROM apex_job_notes WHERE id = $1', [noteId]);
 }
 
-function updateNote(noteId, data) {
-  const note = getNoteById(noteId);
+async function updateNote(noteId, data) {
+  const note = await getNoteById(noteId);
   if (!note) return null;
 
   const allowedFields = ['subject', 'note_type', 'content'];
   const updates = [];
   const values = [];
+  let paramIdx = 1;
 
   for (const field of allowedFields) {
     if (data[field] !== undefined) {
-      updates.push(`${field} = ?`);
+      updates.push(`${field} = $${paramIdx++}`);
       values.push(data[field]);
     }
   }
@@ -416,24 +431,25 @@ function updateNote(noteId, data) {
   if (updates.length === 0) return note;
   values.push(noteId);
 
-  db.prepare(
-    `UPDATE apex_job_notes SET ${updates.join(', ')} WHERE id = ?`
-  ).run(...values);
+  await db.run(
+    `UPDATE apex_job_notes SET ${updates.join(', ')} WHERE id = $${paramIdx++}`,
+    values
+  );
 
-  return db.prepare('SELECT n.*, u.name as author_name FROM apex_job_notes n LEFT JOIN users u ON n.author_id = u.id WHERE n.id = ?').get(noteId);
+  return await db.getOne('SELECT n.*, u.name as author_name FROM apex_job_notes n LEFT JOIN users u ON n.author_id = u.id WHERE n.id = $1', [noteId]);
 }
 
-function deleteNote(noteId, userId, orgId) {
-  const note = db.prepare(`
+async function deleteNote(noteId, userId, orgId) {
+  const note = await db.getOne(`
     SELECT n.* FROM apex_job_notes n
     JOIN apex_jobs j ON n.job_id = j.id
-    WHERE n.id = ? AND j.org_id = ?
-  `).get(noteId, orgId);
+    WHERE n.id = $1 AND j.org_id = $2
+  `, [noteId, orgId]);
   if (!note) return false;
 
-  db.prepare('DELETE FROM apex_job_notes WHERE id = ?').run(noteId);
+  await db.run('DELETE FROM apex_job_notes WHERE id = $1', [noteId]);
 
-  logActivity(note.job_id, {
+  await logActivity(note.job_id, {
     event_type: 'note',
     description: `Note deleted: ${note.subject || 'Untitled'}`,
     entity_type: 'note',
@@ -448,23 +464,24 @@ function deleteNote(noteId, userId, orgId) {
 // ESTIMATES
 // ============================================
 
-function createEstimate(jobId, data, userId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function createEstimate(jobId, data, userId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
   // Auto-version: count existing estimates of same type for this job
-  const existing = db.prepare(
-    'SELECT COUNT(*) as cnt FROM apex_job_estimates WHERE job_id = ? AND estimate_type = ?'
-  ).get(jobId, data.estimate_type || 'mitigation');
-  const version = (existing.cnt || 0) + 1;
+  const existing = await db.getOne(
+    'SELECT COUNT(*) as cnt FROM apex_job_estimates WHERE job_id = $1 AND estimate_type = $2',
+    [jobId, data.estimate_type || 'mitigation']
+  );
+  const version = (parseInt(existing.cnt) || 0) + 1;
 
   const id = uuidv4();
-  db.prepare(`
+  await db.run(`
     INSERT INTO apex_job_estimates (
       id, job_id, phase_id, estimate_type, version, amount, original_amount,
       status, submitted_date, approved_date, file_path, notes
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+  `, [
     id, jobId,
     data.phase_id || null,
     data.estimate_type || 'mitigation',
@@ -476,9 +493,9 @@ function createEstimate(jobId, data, userId, orgId) {
     data.approved_date || null,
     data.file_path || '',
     data.notes || ''
-  );
+  ]);
 
-  logActivity(jobId, {
+  await logActivity(jobId, {
     event_type: 'estimate',
     description: `Estimate created: ${data.estimate_type || 'mitigation'} v${version}`,
     entity_type: 'estimate',
@@ -487,33 +504,35 @@ function createEstimate(jobId, data, userId, orgId) {
     actor_id: userId
   });
 
-  return db.prepare('SELECT * FROM apex_job_estimates WHERE id = ?').get(id);
+  return await db.getOne('SELECT * FROM apex_job_estimates WHERE id = $1', [id]);
 }
 
-function getEstimatesByJob(jobId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function getEstimatesByJob(jobId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
-  return db.prepare(
-    'SELECT * FROM apex_job_estimates WHERE job_id = ? ORDER BY estimate_type, version ASC'
-  ).all(jobId);
+  return await db.getAll(
+    'SELECT * FROM apex_job_estimates WHERE job_id = $1 ORDER BY estimate_type, version ASC',
+    [jobId]
+  );
 }
 
-function updateEstimate(estimateId, data, userId, orgId) {
-  const est = db.prepare(`
+async function updateEstimate(estimateId, data, userId, orgId) {
+  const est = await db.getOne(`
     SELECT e.* FROM apex_job_estimates e
     JOIN apex_jobs j ON e.job_id = j.id
-    WHERE e.id = ? AND j.org_id = ?
-  `).get(estimateId, orgId);
+    WHERE e.id = $1 AND j.org_id = $2
+  `, [estimateId, orgId]);
   if (!est) return null;
 
   const allowedFields = ['amount', 'original_amount', 'status', 'submitted_date', 'approved_date', 'file_path', 'notes'];
   const updates = [];
   const values = [];
+  let paramIdx = 1;
 
   for (const field of allowedFields) {
     if (data[field] !== undefined) {
-      updates.push(`${field} = ?`);
+      updates.push(`${field} = $${paramIdx++}`);
       values.push(data[field]);
     }
   }
@@ -521,11 +540,12 @@ function updateEstimate(estimateId, data, userId, orgId) {
   if (updates.length === 0) return est;
   values.push(estimateId);
 
-  db.prepare(
-    `UPDATE apex_job_estimates SET ${updates.join(', ')} WHERE id = ?`
-  ).run(...values);
+  await db.run(
+    `UPDATE apex_job_estimates SET ${updates.join(', ')} WHERE id = $${paramIdx++}`,
+    values
+  );
 
-  logActivity(est.job_id, {
+  await logActivity(est.job_id, {
     event_type: 'estimate',
     description: `Estimate updated: ${est.estimate_type} v${est.version}`,
     entity_type: 'estimate',
@@ -536,24 +556,24 @@ function updateEstimate(estimateId, data, userId, orgId) {
     actor_id: userId
   });
 
-  return db.prepare('SELECT * FROM apex_job_estimates WHERE id = ?').get(estimateId);
+  return await db.getOne('SELECT * FROM apex_job_estimates WHERE id = $1', [estimateId]);
 }
 
 // ============================================
 // PAYMENTS
 // ============================================
 
-function createPayment(jobId, data, userId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function createPayment(jobId, data, userId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
   const id = uuidv4();
-  db.prepare(`
+  await db.run(`
     INSERT INTO apex_job_payments (
       id, job_id, estimate_id, amount, payment_method, payment_type,
       check_number, received_date, deposited_date, invoice_number, notes
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+  `, [
     id, jobId,
     data.estimate_id || null,
     data.amount || 0,
@@ -564,9 +584,9 @@ function createPayment(jobId, data, userId, orgId) {
     data.deposited_date || null,
     data.invoice_number || '',
     data.notes || ''
-  );
+  ]);
 
-  logActivity(jobId, {
+  await logActivity(jobId, {
     event_type: 'payment',
     description: `Payment received: $${(data.amount || 0).toFixed(2)} (${data.payment_type || 'initial'})`,
     entity_type: 'payment',
@@ -575,33 +595,34 @@ function createPayment(jobId, data, userId, orgId) {
     actor_id: userId
   });
 
-  return db.prepare('SELECT * FROM apex_job_payments WHERE id = ?').get(id);
+  return await db.getOne('SELECT * FROM apex_job_payments WHERE id = $1', [id]);
 }
 
-function getPaymentsByJob(jobId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function getPaymentsByJob(jobId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
-  return db.prepare(
-    'SELECT * FROM apex_job_payments WHERE job_id = ? ORDER BY received_date DESC, created_at DESC'
-  ).all(jobId);
+  return await db.getAll(
+    'SELECT * FROM apex_job_payments WHERE job_id = $1 ORDER BY received_date DESC, created_at DESC',
+    [jobId]
+  );
 }
 
 // ============================================
 // LABOR
 // ============================================
 
-function createLaborEntry(jobId, data, userId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function createLaborEntry(jobId, data, userId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
   const id = uuidv4();
-  db.prepare(`
+  await db.run(`
     INSERT INTO apex_job_labor (
       id, job_id, phase_id, employee_name, work_date, hours, hourly_rate,
       work_category, description, billable, author_id
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+  `, [
     id, jobId,
     data.phase_id || null,
     data.employee_name || '',
@@ -612,9 +633,9 @@ function createLaborEntry(jobId, data, userId, orgId) {
     data.description || '',
     data.billable !== undefined ? (data.billable ? 1 : 0) : 1,
     data.author_id || userId
-  );
+  ]);
 
-  logActivity(jobId, {
+  await logActivity(jobId, {
     event_type: 'labor',
     description: `Labor logged: ${data.employee_name || 'Unknown'} - ${data.hours || 0}h`,
     entity_type: 'labor',
@@ -623,33 +644,35 @@ function createLaborEntry(jobId, data, userId, orgId) {
     actor_id: userId
   });
 
-  return db.prepare('SELECT * FROM apex_job_labor WHERE id = ?').get(id);
+  return await db.getOne('SELECT * FROM apex_job_labor WHERE id = $1', [id]);
 }
 
-function getLaborByJob(jobId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function getLaborByJob(jobId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
-  return db.prepare(
-    'SELECT * FROM apex_job_labor WHERE job_id = ? ORDER BY work_date DESC, created_at DESC'
-  ).all(jobId);
+  return await db.getAll(
+    'SELECT * FROM apex_job_labor WHERE job_id = $1 ORDER BY work_date DESC, created_at DESC',
+    [jobId]
+  );
 }
 
-function updateLaborEntry(entryId, data, userId, orgId) {
-  const entry = db.prepare(`
+async function updateLaborEntry(entryId, data, userId, orgId) {
+  const entry = await db.getOne(`
     SELECT l.* FROM apex_job_labor l
     JOIN apex_jobs j ON l.job_id = j.id
-    WHERE l.id = ? AND j.org_id = ?
-  `).get(entryId, orgId);
+    WHERE l.id = $1 AND j.org_id = $2
+  `, [entryId, orgId]);
   if (!entry) return null;
 
   const allowedFields = ['employee_name', 'work_date', 'hours', 'hourly_rate', 'work_category', 'description', 'billable', 'phase_id'];
   const updates = [];
   const values = [];
+  let paramIdx = 1;
 
   for (const field of allowedFields) {
     if (data[field] !== undefined) {
-      updates.push(`${field} = ?`);
+      updates.push(`${field} = $${paramIdx++}`);
       if (field === 'billable') {
         values.push(data[field] ? 1 : 0);
       } else {
@@ -661,11 +684,12 @@ function updateLaborEntry(entryId, data, userId, orgId) {
   if (updates.length === 0) return entry;
   values.push(entryId);
 
-  db.prepare(
-    `UPDATE apex_job_labor SET ${updates.join(', ')} WHERE id = ?`
-  ).run(...values);
+  await db.run(
+    `UPDATE apex_job_labor SET ${updates.join(', ')} WHERE id = $${paramIdx++}`,
+    values
+  );
 
-  logActivity(entry.job_id, {
+  await logActivity(entry.job_id, {
     event_type: 'labor',
     description: `Labor entry updated: ${data.employee_name || entry.employee_name}`,
     entity_type: 'labor',
@@ -673,20 +697,20 @@ function updateLaborEntry(entryId, data, userId, orgId) {
     actor_id: userId
   });
 
-  return db.prepare('SELECT * FROM apex_job_labor WHERE id = ?').get(entryId);
+  return await db.getOne('SELECT * FROM apex_job_labor WHERE id = $1', [entryId]);
 }
 
-function deleteLaborEntry(entryId, userId, orgId) {
-  const entry = db.prepare(`
+async function deleteLaborEntry(entryId, userId, orgId) {
+  const entry = await db.getOne(`
     SELECT l.* FROM apex_job_labor l
     JOIN apex_jobs j ON l.job_id = j.id
-    WHERE l.id = ? AND j.org_id = ?
-  `).get(entryId, orgId);
+    WHERE l.id = $1 AND j.org_id = $2
+  `, [entryId, orgId]);
   if (!entry) return false;
 
-  db.prepare('DELETE FROM apex_job_labor WHERE id = ?').run(entryId);
+  await db.run('DELETE FROM apex_job_labor WHERE id = $1', [entryId]);
 
-  logActivity(entry.job_id, {
+  await logActivity(entry.job_id, {
     event_type: 'labor',
     description: `Labor entry deleted: ${entry.employee_name} - ${entry.hours}h`,
     entity_type: 'labor',
@@ -701,17 +725,17 @@ function deleteLaborEntry(entryId, userId, orgId) {
 // RECEIPTS
 // ============================================
 
-function createReceipt(jobId, data, userId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function createReceipt(jobId, data, userId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
   const id = uuidv4();
-  db.prepare(`
+  await db.run(`
     INSERT INTO apex_job_receipts (
       id, job_id, phase_id, amount, expense_category, description,
       vendor, paid_by, reimbursable, expense_date, file_path, author_id
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+  `, [
     id, jobId,
     data.phase_id || null,
     data.amount || 0,
@@ -723,9 +747,9 @@ function createReceipt(jobId, data, userId, orgId) {
     data.expense_date || null,
     data.file_path || '',
     data.author_id || userId
-  );
+  ]);
 
-  logActivity(jobId, {
+  await logActivity(jobId, {
     event_type: 'receipt',
     description: `Receipt added: $${(data.amount || 0).toFixed(2)} - ${data.vendor || 'Unknown vendor'}`,
     entity_type: 'receipt',
@@ -734,33 +758,35 @@ function createReceipt(jobId, data, userId, orgId) {
     actor_id: userId
   });
 
-  return db.prepare('SELECT * FROM apex_job_receipts WHERE id = ?').get(id);
+  return await db.getOne('SELECT * FROM apex_job_receipts WHERE id = $1', [id]);
 }
 
-function getReceiptsByJob(jobId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function getReceiptsByJob(jobId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
-  return db.prepare(
-    'SELECT * FROM apex_job_receipts WHERE job_id = ? ORDER BY expense_date DESC, created_at DESC'
-  ).all(jobId);
+  return await db.getAll(
+    'SELECT * FROM apex_job_receipts WHERE job_id = $1 ORDER BY expense_date DESC, created_at DESC',
+    [jobId]
+  );
 }
 
-function updateReceipt(receiptId, data, userId, orgId) {
-  const receipt = db.prepare(`
+async function updateReceipt(receiptId, data, userId, orgId) {
+  const receipt = await db.getOne(`
     SELECT r.* FROM apex_job_receipts r
     JOIN apex_jobs j ON r.job_id = j.id
-    WHERE r.id = ? AND j.org_id = ?
-  `).get(receiptId, orgId);
+    WHERE r.id = $1 AND j.org_id = $2
+  `, [receiptId, orgId]);
   if (!receipt) return null;
 
   const allowedFields = ['amount', 'expense_category', 'description', 'vendor', 'paid_by', 'reimbursable', 'expense_date', 'file_path', 'phase_id'];
   const updates = [];
   const values = [];
+  let paramIdx = 1;
 
   for (const field of allowedFields) {
     if (data[field] !== undefined) {
-      updates.push(`${field} = ?`);
+      updates.push(`${field} = $${paramIdx++}`);
       if (field === 'reimbursable') {
         values.push(data[field] ? 1 : 0);
       } else {
@@ -772,11 +798,12 @@ function updateReceipt(receiptId, data, userId, orgId) {
   if (updates.length === 0) return receipt;
   values.push(receiptId);
 
-  db.prepare(
-    `UPDATE apex_job_receipts SET ${updates.join(', ')} WHERE id = ?`
-  ).run(...values);
+  await db.run(
+    `UPDATE apex_job_receipts SET ${updates.join(', ')} WHERE id = $${paramIdx++}`,
+    values
+  );
 
-  logActivity(receipt.job_id, {
+  await logActivity(receipt.job_id, {
     event_type: 'receipt',
     description: `Receipt updated: ${data.vendor || receipt.vendor}`,
     entity_type: 'receipt',
@@ -785,20 +812,20 @@ function updateReceipt(receiptId, data, userId, orgId) {
     actor_id: userId
   });
 
-  return db.prepare('SELECT * FROM apex_job_receipts WHERE id = ?').get(receiptId);
+  return await db.getOne('SELECT * FROM apex_job_receipts WHERE id = $1', [receiptId]);
 }
 
-function deleteReceipt(receiptId, userId, orgId) {
-  const receipt = db.prepare(`
+async function deleteReceipt(receiptId, userId, orgId) {
+  const receipt = await db.getOne(`
     SELECT r.* FROM apex_job_receipts r
     JOIN apex_jobs j ON r.job_id = j.id
-    WHERE r.id = ? AND j.org_id = ?
-  `).get(receiptId, orgId);
+    WHERE r.id = $1 AND j.org_id = $2
+  `, [receiptId, orgId]);
   if (!receipt) return false;
 
-  db.prepare('DELETE FROM apex_job_receipts WHERE id = ?').run(receiptId);
+  await db.run('DELETE FROM apex_job_receipts WHERE id = $1', [receiptId]);
 
-  logActivity(receipt.job_id, {
+  await logActivity(receipt.job_id, {
     event_type: 'receipt',
     description: `Receipt deleted: $${receipt.amount} - ${receipt.vendor}`,
     entity_type: 'receipt',
@@ -813,17 +840,17 @@ function deleteReceipt(receiptId, userId, orgId) {
 // WORK ORDERS
 // ============================================
 
-function createWorkOrder(jobId, data, userId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function createWorkOrder(jobId, data, userId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
   const id = uuidv4();
-  db.prepare(`
+  await db.run(`
     INSERT INTO apex_job_work_orders (
       id, job_id, phase_id, wo_number, title, description,
       budget_amount, status, file_path
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+  `, [
     id, jobId,
     data.phase_id || null,
     data.wo_number || '',
@@ -832,9 +859,9 @@ function createWorkOrder(jobId, data, userId, orgId) {
     data.budget_amount || 0,
     data.status || 'draft',
     data.file_path || ''
-  );
+  ]);
 
-  logActivity(jobId, {
+  await logActivity(jobId, {
     event_type: 'work_order',
     description: `Work order created: ${data.title || data.wo_number || 'Untitled'}`,
     entity_type: 'work_order',
@@ -843,33 +870,35 @@ function createWorkOrder(jobId, data, userId, orgId) {
     actor_id: userId
   });
 
-  return db.prepare('SELECT * FROM apex_job_work_orders WHERE id = ?').get(id);
+  return await db.getOne('SELECT * FROM apex_job_work_orders WHERE id = $1', [id]);
 }
 
-function getWorkOrdersByJob(jobId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function getWorkOrdersByJob(jobId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
-  return db.prepare(
-    'SELECT * FROM apex_job_work_orders WHERE job_id = ? ORDER BY created_at DESC'
-  ).all(jobId);
+  return await db.getAll(
+    'SELECT * FROM apex_job_work_orders WHERE job_id = $1 ORDER BY created_at DESC',
+    [jobId]
+  );
 }
 
-function updateWorkOrder(woId, data, userId, orgId) {
-  const wo = db.prepare(`
+async function updateWorkOrder(woId, data, userId, orgId) {
+  const wo = await db.getOne(`
     SELECT w.* FROM apex_job_work_orders w
     JOIN apex_jobs j ON w.job_id = j.id
-    WHERE w.id = ? AND j.org_id = ?
-  `).get(woId, orgId);
+    WHERE w.id = $1 AND j.org_id = $2
+  `, [woId, orgId]);
   if (!wo) return null;
 
   const allowedFields = ['wo_number', 'title', 'description', 'budget_amount', 'status', 'file_path', 'phase_id'];
   const updates = [];
   const values = [];
+  let paramIdx = 1;
 
   for (const field of allowedFields) {
     if (data[field] !== undefined) {
-      updates.push(`${field} = ?`);
+      updates.push(`${field} = $${paramIdx++}`);
       values.push(data[field]);
     }
   }
@@ -877,11 +906,12 @@ function updateWorkOrder(woId, data, userId, orgId) {
   if (updates.length === 0) return wo;
   values.push(woId);
 
-  db.prepare(
-    `UPDATE apex_job_work_orders SET ${updates.join(', ')} WHERE id = ?`
-  ).run(...values);
+  await db.run(
+    `UPDATE apex_job_work_orders SET ${updates.join(', ')} WHERE id = $${paramIdx++}`,
+    values
+  );
 
-  logActivity(wo.job_id, {
+  await logActivity(wo.job_id, {
     event_type: 'work_order',
     description: `Work order updated: ${data.title || wo.title}`,
     entity_type: 'work_order',
@@ -891,20 +921,20 @@ function updateWorkOrder(woId, data, userId, orgId) {
     actor_id: userId
   });
 
-  return db.prepare('SELECT * FROM apex_job_work_orders WHERE id = ?').get(woId);
+  return await db.getOne('SELECT * FROM apex_job_work_orders WHERE id = $1', [woId]);
 }
 
-function deleteWorkOrder(woId, userId, orgId) {
-  const wo = db.prepare(`
+async function deleteWorkOrder(woId, userId, orgId) {
+  const wo = await db.getOne(`
     SELECT w.* FROM apex_job_work_orders w
     JOIN apex_jobs j ON w.job_id = j.id
-    WHERE w.id = ? AND j.org_id = ?
-  `).get(woId, orgId);
+    WHERE w.id = $1 AND j.org_id = $2
+  `, [woId, orgId]);
   if (!wo) return false;
 
-  db.prepare('DELETE FROM apex_job_work_orders WHERE id = ?').run(woId);
+  await db.run('DELETE FROM apex_job_work_orders WHERE id = $1', [woId]);
 
-  logActivity(wo.job_id, {
+  await logActivity(wo.job_id, {
     event_type: 'work_order',
     description: `Work order deleted: ${wo.title || wo.wo_number}`,
     entity_type: 'work_order',
@@ -919,23 +949,24 @@ function deleteWorkOrder(woId, userId, orgId) {
 // CONTACTS (junction — assign contacts to jobs)
 // ============================================
 
-function assignContact(jobId, contactId, role, userId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function assignContact(jobId, contactId, role, userId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
   // Check if already assigned
-  const existing = db.prepare(
-    'SELECT id FROM apex_job_contacts WHERE job_id = ? AND contact_id = ?'
-  ).get(jobId, contactId);
+  const existing = await db.getOne(
+    'SELECT id FROM apex_job_contacts WHERE job_id = $1 AND contact_id = $2',
+    [jobId, contactId]
+  );
   if (existing) return existing;
 
   const id = uuidv4();
-  db.prepare(`
+  await db.run(`
     INSERT INTO apex_job_contacts (id, job_id, contact_id, role)
-    VALUES (?, ?, ?, ?)
-  `).run(id, jobId, contactId, role || '');
+    VALUES ($1, $2, $3, $4)
+  `, [id, jobId, contactId, role || '']);
 
-  logActivity(jobId, {
+  await logActivity(jobId, {
     event_type: 'status',
     description: `Contact assigned with role: ${role || 'none'}`,
     entity_type: 'contact',
@@ -946,16 +977,17 @@ function assignContact(jobId, contactId, role, userId, orgId) {
   return { id, job_id: jobId, contact_id: contactId, role: role || '' };
 }
 
-function removeContact(jobId, contactId, userId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function removeContact(jobId, contactId, userId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return false;
 
-  const result = db.prepare(
-    'DELETE FROM apex_job_contacts WHERE job_id = ? AND contact_id = ?'
-  ).run(jobId, contactId);
+  const result = await db.run(
+    'DELETE FROM apex_job_contacts WHERE job_id = $1 AND contact_id = $2',
+    [jobId, contactId]
+  );
 
-  if (result.changes > 0) {
-    logActivity(jobId, {
+  if (result.rowCount > 0) {
+    await logActivity(jobId, {
       event_type: 'status',
       description: 'Contact removed from job',
       entity_type: 'contact',
@@ -964,34 +996,35 @@ function removeContact(jobId, contactId, userId, orgId) {
     });
   }
 
-  return result.changes > 0;
+  return result.rowCount > 0;
 }
 
-function getContactsByJob(jobId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function getContactsByJob(jobId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
-  return db.prepare(
-    'SELECT * FROM apex_job_contacts WHERE job_id = ? ORDER BY created_at ASC'
-  ).all(jobId);
+  return await db.getAll(
+    'SELECT * FROM apex_job_contacts WHERE job_id = $1 ORDER BY created_at ASC',
+    [jobId]
+  );
 }
 
 // ============================================
 // SUPPLEMENTS (JC-01)
 // ============================================
 
-function createSupplement(jobId, data, userId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function createSupplement(jobId, data, userId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
-  const numRow = db.prepare('SELECT COALESCE(MAX(supplement_number), 0) + 1 as next FROM apex_job_supplements WHERE job_id = ?').get(jobId);
+  const numRow = await db.getOne('SELECT COALESCE(MAX(supplement_number), 0) + 1 as next FROM apex_job_supplements WHERE job_id = $1', [jobId]);
   const id = uuidv4();
-  db.prepare(`
+  await db.run(`
     INSERT INTO apex_job_supplements (
       id, job_id, supplement_number, description, amount_requested, amount_approved,
       status, submitted_date, approved_date, document_id, notes, created_by
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+  `, [
     id, jobId, numRow.next,
     data.description || '',
     data.amount_requested || 0,
@@ -1002,9 +1035,9 @@ function createSupplement(jobId, data, userId, orgId) {
     data.document_id || null,
     data.notes || '',
     userId
-  );
+  ]);
 
-  logActivity(jobId, {
+  await logActivity(jobId, {
     event_type: 'supplement',
     description: `Supplement #${numRow.next} created: $${(data.amount_requested || 0).toFixed(2)}`,
     entity_type: 'supplement',
@@ -1013,39 +1046,40 @@ function createSupplement(jobId, data, userId, orgId) {
     actor_id: userId
   });
 
-  return db.prepare('SELECT * FROM apex_job_supplements WHERE id = ?').get(id);
+  return await db.getOne('SELECT * FROM apex_job_supplements WHERE id = $1', [id]);
 }
 
-function getSupplementsByJob(jobId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function getSupplementsByJob(jobId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
-  return db.prepare('SELECT * FROM apex_job_supplements WHERE job_id = ? ORDER BY supplement_number ASC').all(jobId);
+  return await db.getAll('SELECT * FROM apex_job_supplements WHERE job_id = $1 ORDER BY supplement_number ASC', [jobId]);
 }
 
-function updateSupplement(id, data, userId, orgId) {
-  const sup = db.prepare(`
+async function updateSupplement(id, data, userId, orgId) {
+  const sup = await db.getOne(`
     SELECT s.* FROM apex_job_supplements s
     JOIN apex_jobs j ON s.job_id = j.id
-    WHERE s.id = ? AND j.org_id = ?
-  `).get(id, orgId);
+    WHERE s.id = $1 AND j.org_id = $2
+  `, [id, orgId]);
   if (!sup) return null;
 
   const allowedFields = ['description', 'amount_requested', 'amount_approved', 'status', 'submitted_date', 'approved_date', 'document_id', 'notes'];
   const updates = [];
   const values = [];
+  let paramIdx = 1;
 
   for (const field of allowedFields) {
     if (data[field] !== undefined) {
-      updates.push(`${field} = ?`);
+      updates.push(`${field} = $${paramIdx++}`);
       values.push(data[field]);
     }
   }
   if (updates.length === 0) return sup;
   values.push(id);
 
-  db.prepare(`UPDATE apex_job_supplements SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+  await db.run(`UPDATE apex_job_supplements SET ${updates.join(', ')} WHERE id = $${paramIdx++}`, values);
 
-  logActivity(sup.job_id, {
+  await logActivity(sup.job_id, {
     event_type: 'supplement',
     description: `Supplement #${sup.supplement_number} updated`,
     entity_type: 'supplement',
@@ -1055,20 +1089,20 @@ function updateSupplement(id, data, userId, orgId) {
     actor_id: userId
   });
 
-  return db.prepare('SELECT * FROM apex_job_supplements WHERE id = ?').get(id);
+  return await db.getOne('SELECT * FROM apex_job_supplements WHERE id = $1', [id]);
 }
 
-function deleteSupplement(id, userId, orgId) {
-  const sup = db.prepare(`
+async function deleteSupplement(id, userId, orgId) {
+  const sup = await db.getOne(`
     SELECT s.* FROM apex_job_supplements s
     JOIN apex_jobs j ON s.job_id = j.id
-    WHERE s.id = ? AND j.org_id = ?
-  `).get(id, orgId);
+    WHERE s.id = $1 AND j.org_id = $2
+  `, [id, orgId]);
   if (!sup) return false;
 
-  db.prepare('DELETE FROM apex_job_supplements WHERE id = ?').run(id);
+  await db.run('DELETE FROM apex_job_supplements WHERE id = $1', [id]);
 
-  logActivity(sup.job_id, {
+  await logActivity(sup.job_id, {
     event_type: 'supplement',
     description: `Supplement #${sup.supplement_number} deleted`,
     entity_type: 'supplement',
@@ -1079,16 +1113,16 @@ function deleteSupplement(id, userId, orgId) {
   return true;
 }
 
-function getSupplementById(id) {
-  return db.prepare('SELECT * FROM apex_job_supplements WHERE id = ?').get(id);
+async function getSupplementById(id) {
+  return await db.getOne('SELECT * FROM apex_job_supplements WHERE id = $1', [id]);
 }
 
 // ============================================
 // SUB INVOICES (JC-02)
 // ============================================
 
-function createSubInvoice(jobId, data, userId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function createSubInvoice(jobId, data, userId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
   const id = uuidv4();
@@ -1096,13 +1130,13 @@ function createSubInvoice(jobId, data, userId, orgId) {
   const retainagePct = data.retainage_pct || 0;
   const retainageAmount = amount * (retainagePct / 100);
 
-  db.prepare(`
+  await db.run(`
     INSERT INTO apex_sub_invoices (
       id, job_id, phase_id, sub_org_id, sub_contact_id, work_order_id,
       invoice_number, description, amount, retainage_pct, retainage_amount,
       amount_paid, status, invoice_date, due_date, paid_date, document_id, notes, created_by
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+  `, [
     id, jobId,
     data.phase_id || null,
     data.sub_org_id || null,
@@ -1121,9 +1155,9 @@ function createSubInvoice(jobId, data, userId, orgId) {
     data.document_id || null,
     data.notes || '',
     userId
-  );
+  ]);
 
-  logActivity(jobId, {
+  await logActivity(jobId, {
     event_type: 'sub_invoice',
     description: `Sub invoice created: $${amount.toFixed(2)} - ${data.description || data.invoice_number || ''}`,
     entity_type: 'sub_invoice',
@@ -1132,36 +1166,37 @@ function createSubInvoice(jobId, data, userId, orgId) {
     actor_id: userId
   });
 
-  return db.prepare('SELECT * FROM apex_sub_invoices WHERE id = ?').get(id);
+  return await db.getOne('SELECT * FROM apex_sub_invoices WHERE id = $1', [id]);
 }
 
-function getSubInvoicesByJob(jobId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function getSubInvoicesByJob(jobId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
-  return db.prepare(`
+  return await db.getAll(`
     SELECT si.*, co.name as sub_org_name
     FROM apex_sub_invoices si
     LEFT JOIN apex_crm_organizations co ON si.sub_org_id = co.id
-    WHERE si.job_id = ?
+    WHERE si.job_id = $1
     ORDER BY si.created_at DESC
-  `).all(jobId);
+  `, [jobId]);
 }
 
-function updateSubInvoice(id, data, userId, orgId) {
-  const inv = db.prepare(`
+async function updateSubInvoice(id, data, userId, orgId) {
+  const inv = await db.getOne(`
     SELECT si.* FROM apex_sub_invoices si
     JOIN apex_jobs j ON si.job_id = j.id
-    WHERE si.id = ? AND j.org_id = ?
-  `).get(id, orgId);
+    WHERE si.id = $1 AND j.org_id = $2
+  `, [id, orgId]);
   if (!inv) return null;
 
   const allowedFields = ['phase_id', 'sub_org_id', 'sub_contact_id', 'work_order_id', 'invoice_number', 'description', 'amount', 'retainage_pct', 'amount_paid', 'status', 'invoice_date', 'due_date', 'paid_date', 'document_id', 'notes'];
   const updates = [];
   const values = [];
+  let paramIdx = 1;
 
   for (const field of allowedFields) {
     if (data[field] !== undefined) {
-      updates.push(`${field} = ?`);
+      updates.push(`${field} = $${paramIdx++}`);
       values.push(data[field]);
     }
   }
@@ -1170,16 +1205,16 @@ function updateSubInvoice(id, data, userId, orgId) {
   const newAmount = data.amount !== undefined ? data.amount : inv.amount;
   const newPct = data.retainage_pct !== undefined ? data.retainage_pct : inv.retainage_pct;
   if (data.amount !== undefined || data.retainage_pct !== undefined) {
-    updates.push('retainage_amount = ?');
+    updates.push(`retainage_amount = $${paramIdx++}`);
     values.push(newAmount * (newPct / 100));
   }
 
   if (updates.length === 0) return inv;
   values.push(id);
 
-  db.prepare(`UPDATE apex_sub_invoices SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+  await db.run(`UPDATE apex_sub_invoices SET ${updates.join(', ')} WHERE id = $${paramIdx++}`, values);
 
-  logActivity(inv.job_id, {
+  await logActivity(inv.job_id, {
     event_type: 'sub_invoice',
     description: `Sub invoice updated: ${data.invoice_number || inv.invoice_number || ''}`,
     entity_type: 'sub_invoice',
@@ -1189,20 +1224,20 @@ function updateSubInvoice(id, data, userId, orgId) {
     actor_id: userId
   });
 
-  return db.prepare('SELECT * FROM apex_sub_invoices WHERE id = ?').get(id);
+  return await db.getOne('SELECT * FROM apex_sub_invoices WHERE id = $1', [id]);
 }
 
-function deleteSubInvoice(id, userId, orgId) {
-  const inv = db.prepare(`
+async function deleteSubInvoice(id, userId, orgId) {
+  const inv = await db.getOne(`
     SELECT si.* FROM apex_sub_invoices si
     JOIN apex_jobs j ON si.job_id = j.id
-    WHERE si.id = ? AND j.org_id = ?
-  `).get(id, orgId);
+    WHERE si.id = $1 AND j.org_id = $2
+  `, [id, orgId]);
   if (!inv) return false;
 
-  db.prepare('DELETE FROM apex_sub_invoices WHERE id = ?').run(id);
+  await db.run('DELETE FROM apex_sub_invoices WHERE id = $1', [id]);
 
-  logActivity(inv.job_id, {
+  await logActivity(inv.job_id, {
     event_type: 'sub_invoice',
     description: `Sub invoice deleted: $${inv.amount} - ${inv.invoice_number || ''}`,
     entity_type: 'sub_invoice',
@@ -1213,22 +1248,24 @@ function deleteSubInvoice(id, userId, orgId) {
   return true;
 }
 
-function recordSubPayment(id, paymentAmount, userId, orgId) {
-  const inv = db.prepare(`
+async function recordSubPayment(id, paymentAmount, userId, orgId) {
+  const inv = await db.getOne(`
     SELECT si.* FROM apex_sub_invoices si
     JOIN apex_jobs j ON si.job_id = j.id
-    WHERE si.id = ? AND j.org_id = ?
-  `).get(id, orgId);
+    WHERE si.id = $1 AND j.org_id = $2
+  `, [id, orgId]);
   if (!inv) return null;
 
   const newPaid = (inv.amount_paid || 0) + paymentAmount;
   const netDue = inv.amount - inv.retainage_amount;
   const newStatus = newPaid >= netDue ? 'paid' : newPaid > 0 ? 'partial_paid' : inv.status;
 
-  db.prepare('UPDATE apex_sub_invoices SET amount_paid = ?, status = ?, paid_date = CASE WHEN ? >= ? THEN datetime(\'now\') ELSE paid_date END WHERE id = ?')
-    .run(newPaid, newStatus, newPaid, netDue, id);
+  await db.run(
+    `UPDATE apex_sub_invoices SET amount_paid = $1, status = $2, paid_date = CASE WHEN $3 >= $4 THEN NOW() ELSE paid_date END WHERE id = $5`,
+    [newPaid, newStatus, newPaid, netDue, id]
+  );
 
-  logActivity(inv.job_id, {
+  await logActivity(inv.job_id, {
     event_type: 'sub_invoice',
     description: `Sub payment recorded: $${paymentAmount.toFixed(2)} on invoice ${inv.invoice_number || id}`,
     entity_type: 'sub_invoice',
@@ -1237,19 +1274,19 @@ function recordSubPayment(id, paymentAmount, userId, orgId) {
     actor_id: userId
   });
 
-  return db.prepare('SELECT * FROM apex_sub_invoices WHERE id = ?').get(id);
+  return await db.getOne('SELECT * FROM apex_sub_invoices WHERE id = $1', [id]);
 }
 
-function getSubInvoiceById(id) {
-  return db.prepare('SELECT * FROM apex_sub_invoices WHERE id = ?').get(id);
+async function getSubInvoiceById(id) {
+  return await db.getOne('SELECT * FROM apex_sub_invoices WHERE id = $1', [id]);
 }
 
 // ============================================
 // FUEL / MILEAGE (JC-03)
 // ============================================
 
-function createFuelEntry(jobId, data, userId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function createFuelEntry(jobId, data, userId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
   const id = uuidv4();
@@ -1261,12 +1298,12 @@ function createFuelEntry(jobId, data, userId, orgId) {
     totalCost = data.fuel_cost || 0;
   }
 
-  db.prepare(`
+  await db.run(`
     INSERT INTO apex_job_fuel_mileage (
       id, job_id, employee_id, date, type, miles, mileage_rate,
       fuel_cost, total_cost, document_id, notes
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+  `, [
     id, jobId,
     data.employee_id || userId,
     data.date || null,
@@ -1277,9 +1314,9 @@ function createFuelEntry(jobId, data, userId, orgId) {
     totalCost,
     data.document_id || null,
     data.notes || ''
-  );
+  ]);
 
-  logActivity(jobId, {
+  await logActivity(jobId, {
     event_type: 'fuel_mileage',
     description: `${type === 'mileage' ? 'Mileage' : 'Fuel'} entry: $${totalCost.toFixed(2)}`,
     entity_type: 'fuel_mileage',
@@ -1288,41 +1325,42 @@ function createFuelEntry(jobId, data, userId, orgId) {
     actor_id: userId
   });
 
-  return db.prepare(`
+  return await db.getOne(`
     SELECT fm.*, u.name as employee_name
     FROM apex_job_fuel_mileage fm
     LEFT JOIN users u ON fm.employee_id = u.id
-    WHERE fm.id = ?
-  `).get(id);
+    WHERE fm.id = $1
+  `, [id]);
 }
 
-function getFuelByJob(jobId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function getFuelByJob(jobId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
-  return db.prepare(`
+  return await db.getAll(`
     SELECT fm.*, u.name as employee_name
     FROM apex_job_fuel_mileage fm
     LEFT JOIN users u ON fm.employee_id = u.id
-    WHERE fm.job_id = ?
+    WHERE fm.job_id = $1
     ORDER BY fm.date DESC, fm.created_at DESC
-  `).all(jobId);
+  `, [jobId]);
 }
 
-function updateFuelEntry(id, data, userId, orgId) {
-  const entry = db.prepare(`
+async function updateFuelEntry(id, data, userId, orgId) {
+  const entry = await db.getOne(`
     SELECT fm.* FROM apex_job_fuel_mileage fm
     JOIN apex_jobs j ON fm.job_id = j.id
-    WHERE fm.id = ? AND j.org_id = ?
-  `).get(id, orgId);
+    WHERE fm.id = $1 AND j.org_id = $2
+  `, [id, orgId]);
   if (!entry) return null;
 
   const allowedFields = ['employee_id', 'date', 'type', 'miles', 'mileage_rate', 'fuel_cost', 'document_id', 'notes'];
   const updates = [];
   const values = [];
+  let paramIdx = 1;
 
   for (const field of allowedFields) {
     if (data[field] !== undefined) {
-      updates.push(`${field} = ?`);
+      updates.push(`${field} = $${paramIdx++}`);
       values.push(data[field]);
     }
   }
@@ -1337,13 +1375,13 @@ function updateFuelEntry(id, data, userId, orgId) {
   } else {
     totalCost = data.fuel_cost !== undefined ? data.fuel_cost : entry.fuel_cost;
   }
-  updates.push('total_cost = ?');
+  updates.push(`total_cost = $${paramIdx++}`);
   values.push(totalCost);
 
   values.push(id);
-  db.prepare(`UPDATE apex_job_fuel_mileage SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+  await db.run(`UPDATE apex_job_fuel_mileage SET ${updates.join(', ')} WHERE id = $${paramIdx++}`, values);
 
-  logActivity(entry.job_id, {
+  await logActivity(entry.job_id, {
     event_type: 'fuel_mileage',
     description: `Fuel/mileage entry updated: $${totalCost.toFixed(2)}`,
     entity_type: 'fuel_mileage',
@@ -1352,25 +1390,25 @@ function updateFuelEntry(id, data, userId, orgId) {
     actor_id: userId
   });
 
-  return db.prepare(`
+  return await db.getOne(`
     SELECT fm.*, u.name as employee_name
     FROM apex_job_fuel_mileage fm
     LEFT JOIN users u ON fm.employee_id = u.id
-    WHERE fm.id = ?
-  `).get(id);
+    WHERE fm.id = $1
+  `, [id]);
 }
 
-function deleteFuelEntry(id, userId, orgId) {
-  const entry = db.prepare(`
+async function deleteFuelEntry(id, userId, orgId) {
+  const entry = await db.getOne(`
     SELECT fm.* FROM apex_job_fuel_mileage fm
     JOIN apex_jobs j ON fm.job_id = j.id
-    WHERE fm.id = ? AND j.org_id = ?
-  `).get(id, orgId);
+    WHERE fm.id = $1 AND j.org_id = $2
+  `, [id, orgId]);
   if (!entry) return false;
 
-  db.prepare('DELETE FROM apex_job_fuel_mileage WHERE id = ?').run(id);
+  await db.run('DELETE FROM apex_job_fuel_mileage WHERE id = $1', [id]);
 
-  logActivity(entry.job_id, {
+  await logActivity(entry.job_id, {
     event_type: 'fuel_mileage',
     description: `Fuel/mileage entry deleted: $${entry.total_cost}`,
     entity_type: 'fuel_mileage',
@@ -1381,8 +1419,8 @@ function deleteFuelEntry(id, userId, orgId) {
   return true;
 }
 
-function getFuelEntryById(id) {
-  return db.prepare('SELECT * FROM apex_job_fuel_mileage WHERE id = ?').get(id);
+async function getFuelEntryById(id) {
+  return await db.getOne('SELECT * FROM apex_job_fuel_mileage WHERE id = $1', [id]);
 }
 
 // ============================================
@@ -1396,31 +1434,30 @@ const REVERSE_TYPE_CODES = Object.fromEntries(
 
 /**
  * Compute accounting metrics for a job, optionally filtered by estimate_type and/or phase_id.
- * Enhanced (JC-04): includes supplements, material allocations, sub invoices, fuel/mileage.
  */
-function computeMetrics(jobId, opts = {}) {
+async function computeMetrics(jobId, opts = {}) {
   const { estimate_type, phase_id } = opts;
 
   // Total estimates — sum only the LATEST version per estimate_type (dedup)
-  const estFilter = estimate_type ? 'AND e1.estimate_type = ?' : '';
+  const estFilter = estimate_type ? 'AND e1.estimate_type = $2' : '';
   const estParams = estimate_type ? [jobId, estimate_type] : [jobId];
-  const totalEstimatesRow = db.prepare(`
+  const totalEstimatesRow = await db.getOne(`
     SELECT COALESCE(SUM(amount), 0) as total
     FROM apex_job_estimates e1
-    WHERE e1.job_id = ?
+    WHERE e1.job_id = $1
     ${estFilter}
     AND e1.version = (
       SELECT MAX(e2.version) FROM apex_job_estimates e2
       WHERE e2.job_id = e1.job_id
       AND COALESCE(e2.estimate_type, '') = COALESCE(e1.estimate_type, '')
     )
-  `).get(...estParams);
+  `, estParams);
 
-  // Approved estimates — same dedup but only approved (for GP calculation)
-  const approvedEstimatesRow = db.prepare(`
+  // Approved estimates
+  const approvedEstimatesRow = await db.getOne(`
     SELECT COALESCE(SUM(amount), 0) as total
     FROM apex_job_estimates e1
-    WHERE e1.job_id = ?
+    WHERE e1.job_id = $1
     AND e1.status = 'approved'
     ${estFilter}
     AND e1.version = (
@@ -1428,101 +1465,100 @@ function computeMetrics(jobId, opts = {}) {
       WHERE e2.job_id = e1.job_id
       AND COALESCE(e2.estimate_type, '') = COALESCE(e1.estimate_type, '')
     )
-  `).get(...estParams);
+  `, estParams);
 
-  // Estimate count (latest versions only)
-  const estimateCountRow = db.prepare(`
+  // Estimate count
+  const estimateCountRow = await db.getOne(`
     SELECT COUNT(*) as cnt
     FROM apex_job_estimates e1
-    WHERE e1.job_id = ?
+    WHERE e1.job_id = $1
     ${estFilter}
     AND e1.version = (
       SELECT MAX(e2.version) FROM apex_job_estimates e2
       WHERE e2.job_id = e1.job_id
       AND COALESCE(e2.estimate_type, '') = COALESCE(e1.estimate_type, '')
     )
-  `).get(...estParams);
+  `, estParams);
 
-  // Payments — joined through estimates when filtered by type
+  // Payments
   let paymentsRow;
   if (estimate_type) {
-    paymentsRow = db.prepare(`
+    paymentsRow = await db.getOne(`
       SELECT COALESCE(SUM(p.amount), 0) as total
       FROM apex_job_payments p
       WHERE p.estimate_id IN (
-        SELECT id FROM apex_job_estimates WHERE job_id = ? AND estimate_type = ?
+        SELECT id FROM apex_job_estimates WHERE job_id = $1 AND estimate_type = $2
       )
-    `).get(jobId, estimate_type);
+    `, [jobId, estimate_type]);
   } else {
-    paymentsRow = db.prepare(
-      'SELECT COALESCE(SUM(amount), 0) as total FROM apex_job_payments WHERE job_id = ?'
-    ).get(jobId);
+    paymentsRow = await db.getOne(
+      'SELECT COALESCE(SUM(amount), 0) as total FROM apex_job_payments WHERE job_id = $1',
+      [jobId]
+    );
   }
 
   // Labor cost (billable only)
-  const laborFilter = phase_id ? 'AND phase_id = ?' : '';
   const laborParams = phase_id ? [jobId, phase_id] : [jobId];
-  const laborRow = db.prepare(`
+  const laborFilter = phase_id ? 'AND phase_id = $2' : '';
+  const laborRow = await db.getOne(`
     SELECT COALESCE(SUM(hours * hourly_rate), 0) as total
-    FROM apex_job_labor WHERE job_id = ? AND billable = 1 ${laborFilter}
-  `).get(...laborParams);
+    FROM apex_job_labor WHERE job_id = $1 AND billable = 1 ${laborFilter}
+  `, laborParams);
 
   // Materials/receipts cost
-  const receiptsFilter = phase_id ? 'AND phase_id = ?' : '';
   const receiptsParams = phase_id ? [jobId, phase_id] : [jobId];
-  const receiptsRow = db.prepare(`
+  const receiptsFilter = phase_id ? 'AND phase_id = $2' : '';
+  const receiptsRow = await db.getOne(`
     SELECT COALESCE(SUM(amount), 0) as total
-    FROM apex_job_receipts WHERE job_id = ? ${receiptsFilter}
-  `).get(...receiptsParams);
+    FROM apex_job_receipts WHERE job_id = $1 ${receiptsFilter}
+  `, receiptsParams);
 
   // Work order budget
-  const woFilter = phase_id ? 'AND phase_id = ?' : '';
   const woParams = phase_id ? [jobId, phase_id] : [jobId];
-  const workOrdersRow = db.prepare(`
+  const woFilter = phase_id ? 'AND phase_id = $2' : '';
+  const workOrdersRow = await db.getOne(`
     SELECT COALESCE(SUM(budget_amount), 0) as total
-    FROM apex_job_work_orders WHERE job_id = ? AND status != 'cancelled' ${woFilter}
-  `).get(...woParams);
-
-  // ---- JC-04: New cost/revenue categories ----
+    FROM apex_job_work_orders WHERE job_id = $1 AND status != 'cancelled' ${woFilter}
+  `, woParams);
 
   // Approved supplements revenue
-  const supplementsRow = db.prepare(`
+  const supplementsRow = await db.getOne(`
     SELECT COALESCE(SUM(amount_approved), 0) as total
-    FROM apex_job_supplements WHERE job_id = ? AND status = 'approved'
-  `).get(jobId);
+    FROM apex_job_supplements WHERE job_id = $1 AND status = 'approved'
+  `, [jobId]);
 
-  // Material allocation costs (from inventory system)
-  const phaseFilterMat = phase_id ? 'AND phase_id = ?' : '';
+  // Material allocation costs
   const matParams = phase_id ? [jobId, phase_id] : [jobId];
-  const materialsAllocRow = db.prepare(`
+  const phaseFilterMat = phase_id ? 'AND phase_id = $2' : '';
+  const materialsAllocRow = await db.getOne(`
     SELECT COALESCE(SUM(total_cost), 0) as total
-    FROM apex_job_material_allocations WHERE job_id = ? ${phaseFilterMat}
-  `).get(...matParams);
+    FROM apex_job_material_allocations WHERE job_id = $1 ${phaseFilterMat}
+  `, matParams);
 
   // Sub invoice costs
-  const subInvoicesRow = db.prepare(`
+  const subInvoicesRow = await db.getOne(`
     SELECT COALESCE(SUM(amount), 0) as total
-    FROM apex_sub_invoices WHERE job_id = ?
-  `).get(jobId);
+    FROM apex_sub_invoices WHERE job_id = $1
+  `, [jobId]);
 
   // Fuel/mileage costs
-  const fuelMileageRow = db.prepare(`
+  const fuelMileageRow = await db.getOne(`
     SELECT COALESCE(SUM(total_cost), 0) as total
-    FROM apex_job_fuel_mileage WHERE job_id = ?
-  `).get(jobId);
+    FROM apex_job_fuel_mileage WHERE job_id = $1
+  `, [jobId]);
 
-  const totalEstimates = totalEstimatesRow.total;
-  const approvedEstimates = approvedEstimatesRow.total;
-  const supplementRevenue = supplementsRow.total;
+  const totalEstimates = parseFloat(totalEstimatesRow.total);
+  const approvedEstimates = parseFloat(approvedEstimatesRow.total);
+  const supplementRevenue = parseFloat(supplementsRow.total);
   const totalRevenue = approvedEstimates + supplementRevenue;
-  const totalPaid = paymentsRow.total;
-  const laborCost = laborRow.total;
-  const materialsCost = receiptsRow.total;
-  const materialAllocationCost = materialsAllocRow.total;
-  const subInvoiceCost = subInvoicesRow.total;
-  const fuelMileageCost = fuelMileageRow.total;
+  const totalPaid = parseFloat(paymentsRow.total);
+  const laborCost = parseFloat(laborRow.total);
+  const materialsCost = parseFloat(receiptsRow.total);
+  const materialAllocationCost = parseFloat(materialsAllocRow.total);
+  const subInvoiceCost = parseFloat(subInvoicesRow.total);
+  const fuelMileageCost = parseFloat(fuelMileageRow.total);
   const totalCost = laborCost + materialsCost + materialAllocationCost + subInvoiceCost + fuelMileageCost;
-  const workOrderBudget = workOrdersRow.total;
+  const workOrderBudget = parseFloat(workOrdersRow.total);
   const grossProfit = totalRevenue - totalCost;
   const gpMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
 
@@ -1542,27 +1578,28 @@ function computeMetrics(jobId, opts = {}) {
     work_order_budget: workOrderBudget,
     gross_profit: grossProfit,
     gp_margin: Math.round(gpMargin * 100) / 100,
-    estimate_count: estimateCountRow.cnt
+    estimate_count: parseInt(estimateCountRow.cnt)
   };
 }
 
-function getAccountingSummary(jobId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function getAccountingSummary(jobId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
   // Get all phases for this job
-  const phases = db.prepare(
-    'SELECT * FROM apex_job_phases WHERE job_id = ? ORDER BY created_at ASC'
-  ).all(jobId);
+  const phases = await db.getAll(
+    'SELECT * FROM apex_job_phases WHERE job_id = $1 ORDER BY created_at ASC',
+    [jobId]
+  );
 
   // All-phases metrics (unfiltered)
-  const all = computeMetrics(jobId);
+  const all = await computeMetrics(jobId);
 
   // Per-phase metrics keyed by long type name
   const by_type = {};
   for (const phase of phases) {
     const typeName = REVERSE_TYPE_CODES[phase.job_type_code] || phase.job_type;
-    by_type[typeName] = computeMetrics(jobId, {
+    by_type[typeName] = await computeMetrics(jobId, {
       estimate_type: typeName,
       phase_id: phase.id
     });
@@ -1575,8 +1612,8 @@ function getAccountingSummary(jobId, orgId) {
 // DATES
 // ============================================
 
-function updateJobDates(jobId, dates, userId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function updateJobDates(jobId, dates, userId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
   const allowedDateFields = [
@@ -1586,24 +1623,26 @@ function updateJobDates(jobId, dates, userId, orgId) {
 
   const updates = [];
   const values = [];
+  let paramIdx = 1;
 
   for (const field of allowedDateFields) {
     if (dates[field] !== undefined) {
-      updates.push(`${field} = ?`);
+      updates.push(`${field} = $${paramIdx++}`);
       values.push(dates[field]);
     }
   }
 
   if (updates.length === 0) return getJobById(jobId, orgId);
 
-  updates.push("updated_at = datetime('now')");
+  updates.push(`updated_at = NOW()`);
   values.push(jobId, orgId);
 
-  db.prepare(
-    `UPDATE apex_jobs SET ${updates.join(', ')} WHERE id = ? AND org_id = ?`
-  ).run(...values);
+  await db.run(
+    `UPDATE apex_jobs SET ${updates.join(', ')} WHERE id = $${paramIdx++} AND org_id = $${paramIdx++}`,
+    values
+  );
 
-  logActivity(jobId, {
+  await logActivity(jobId, {
     event_type: 'status',
     description: `Milestone dates updated: ${Object.keys(dates).filter(k => allowedDateFields.includes(k)).join(', ')}`,
     entity_type: 'job',
@@ -1618,15 +1657,16 @@ function updateJobDates(jobId, dates, userId, orgId) {
 // READY TO INVOICE
 // ============================================
 
-function toggleReadyToInvoice(jobId, ready, userId, orgId) {
-  const job = db.prepare('SELECT id FROM apex_jobs WHERE id = ? AND org_id = ?').get(jobId, orgId);
+async function toggleReadyToInvoice(jobId, ready, userId, orgId) {
+  const job = await db.getOne('SELECT id FROM apex_jobs WHERE id = $1 AND org_id = $2', [jobId, orgId]);
   if (!job) return null;
 
-  db.prepare(
-    "UPDATE apex_jobs SET ready_to_invoice = ?, updated_at = datetime('now') WHERE id = ? AND org_id = ?"
-  ).run(ready ? 1 : 0, jobId, orgId);
+  await db.run(
+    "UPDATE apex_jobs SET ready_to_invoice = $1, updated_at = NOW() WHERE id = $2 AND org_id = $3",
+    [ready ? 1 : 0, jobId, orgId]
+  );
 
-  logActivity(jobId, {
+  await logActivity(jobId, {
     event_type: 'status',
     description: `Invoice status: ${ready ? 'Ready to invoice' : 'Not ready to invoice'}`,
     entity_type: 'job',
@@ -1641,25 +1681,24 @@ function toggleReadyToInvoice(jobId, ready, userId, orgId) {
 // SINGLE-ENTRY LOOKUPS (for permission checks)
 // ============================================
 
-function getLaborEntryById(entryId) {
-  return db.prepare('SELECT * FROM apex_job_labor WHERE id = ?').get(entryId);
+async function getLaborEntryById(entryId) {
+  return await db.getOne('SELECT * FROM apex_job_labor WHERE id = $1', [entryId]);
 }
 
-function getReceiptById(receiptId) {
-  return db.prepare('SELECT * FROM apex_job_receipts WHERE id = ?').get(receiptId);
+async function getReceiptById(receiptId) {
+  return await db.getOne('SELECT * FROM apex_job_receipts WHERE id = $1', [receiptId]);
 }
 
 /**
  * Get assignment counts per user across all active (non-archived) jobs.
- * Returns a map of lowercase user name → { mitigation_pm, reconstruction_pm, estimator, project_coordinator, mitigation_techs, total }
  */
-function getAssignmentCounts() {
-  const jobs = db.prepare(
+async function getAssignmentCounts() {
+  const jobs = await db.getAll(
     "SELECT mitigation_pm, reconstruction_pm, estimator, project_coordinator, mitigation_techs FROM apex_jobs WHERE status != 'archived'"
-  ).all();
+  );
 
   const fields = ['mitigation_pm', 'reconstruction_pm', 'estimator', 'project_coordinator', 'mitigation_techs'];
-  const counts = {}; // keyed by lowercase name
+  const counts = {};
 
   for (const job of jobs) {
     for (const field of fields) {

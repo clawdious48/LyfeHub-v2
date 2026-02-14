@@ -8,46 +8,42 @@ const { v4: uuidv4 } = require('uuid');
 /**
  * Get all projects for a user
  */
-function getAllProjects(userId) {
-  const stmt = db.prepare(`
+async function getAllProjects(userId) {
+  return await db.getAll(`
     SELECT * FROM projects
-    WHERE user_id = ?
+    WHERE user_id = $1
     ORDER BY created_at DESC
-  `);
-  return stmt.all(userId);
+  `, [userId]);
 }
 
 /**
  * Get a single project by ID
  */
-function getProjectById(id, userId) {
-  const stmt = db.prepare(`
+async function getProjectById(id, userId) {
+  return await db.getOne(`
     SELECT * FROM projects
-    WHERE id = ? AND user_id = ?
-  `);
-  return stmt.get(id, userId);
+    WHERE id = $1 AND user_id = $2
+  `, [id, userId]);
 }
 
 /**
  * Create a new project
  */
-function createProject(data, userId) {
+async function createProject(data, userId) {
   const id = uuidv4();
   const now = new Date().toISOString();
 
-  const stmt = db.prepare(`
+  await db.run(`
     INSERT INTO projects (
       id, user_id, name, status, target_deadline, completed_date,
       archived, review_notes, tag_id, goal_id,
       created_at, updated_at
     ) VALUES (
-      ?, ?, ?, ?, ?, ?,
-      ?, ?, ?, ?,
-      ?, ?
+      $1, $2, $3, $4, $5, $6,
+      $7, $8, $9, $10,
+      $11, $12
     )
-  `);
-
-  stmt.run(
+  `, [
     id, userId,
     data.name || 'Untitled Project',
     data.status || 'planned',
@@ -58,35 +54,33 @@ function createProject(data, userId) {
     data.tag_id || null,
     data.goal_id || null,
     now, now
-  );
+  ]);
 
-  return getProjectById(id, userId);
+  return await getProjectById(id, userId);
 }
 
 /**
  * Update a project
  */
-function updateProject(id, data, userId) {
-  const existing = getProjectById(id, userId);
+async function updateProject(id, data, userId) {
+  const existing = await getProjectById(id, userId);
   if (!existing) return null;
 
   const now = new Date().toISOString();
 
-  const stmt = db.prepare(`
+  await db.run(`
     UPDATE projects SET
-      name = ?,
-      status = ?,
-      target_deadline = ?,
-      completed_date = ?,
-      archived = ?,
-      review_notes = ?,
-      tag_id = ?,
-      goal_id = ?,
-      updated_at = ?
-    WHERE id = ? AND user_id = ?
-  `);
-
-  stmt.run(
+      name = $1,
+      status = $2,
+      target_deadline = $3,
+      completed_date = $4,
+      archived = $5,
+      review_notes = $6,
+      tag_id = $7,
+      goal_id = $8,
+      updated_at = $9
+    WHERE id = $10 AND user_id = $11
+  `, [
     data.name !== undefined ? data.name : existing.name,
     data.status !== undefined ? data.status : existing.status,
     data.target_deadline !== undefined ? data.target_deadline : existing.target_deadline,
@@ -97,30 +91,28 @@ function updateProject(id, data, userId) {
     data.goal_id !== undefined ? data.goal_id : existing.goal_id,
     now,
     id, userId
-  );
+  ]);
 
-  return getProjectById(id, userId);
+  return await getProjectById(id, userId);
 }
 
 /**
  * Delete a project
  */
-function deleteProject(id, userId) {
-  const stmt = db.prepare(`
+async function deleteProject(id, userId) {
+  const result = await db.run(`
     DELETE FROM projects
-    WHERE id = ? AND user_id = ?
-  `);
-  const result = stmt.run(id, userId);
-  return result.changes > 0;
+    WHERE id = $1 AND user_id = $2
+  `, [id, userId]);
+  return result.rowCount > 0;
 }
 
 /**
  * Get project count for a user
  */
-function getProjectCount(userId) {
-  const stmt = db.prepare('SELECT COUNT(*) as count FROM projects WHERE user_id = ?');
-  const result = stmt.get(userId);
-  return result ? result.count : 0;
+async function getProjectCount(userId) {
+  const result = await db.getOne('SELECT COUNT(*) as count FROM projects WHERE user_id = $1', [userId]);
+  return result ? parseInt(result.count) : 0;
 }
 
 module.exports = {

@@ -131,7 +131,7 @@ router.use(authMiddleware);
  * Upload one or more files
  * Returns array of file metadata
  */
-router.post('/', upload.array('files'), (req, res) => {
+router.post('/', upload.array('files'), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'No files uploaded' });
@@ -162,7 +162,7 @@ router.post('/', upload.array('files'), (req, res) => {
  * GET /api/uploads/:userId/:year/:month/:filename
  * Serve a file with auth check
  */
-router.get('/:userId/:year/:month/:filename', (req, res) => {
+router.get('/:userId/:year/:month/:filename', async (req, res) => {
   const { userId, year, month, filename } = req.params;
   
   // Security: Only allow user to access their own files
@@ -200,7 +200,7 @@ router.get('/:userId/:year/:month/:filename', (req, res) => {
  * Delete a file
  * Body: { path: "/uploads/userId/year/month/filename" }
  */
-router.delete('/', (req, res) => {
+router.delete('/', async (req, res) => {
   const { path: filePath } = req.body;
   
   if (!filePath) {

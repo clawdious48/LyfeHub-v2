@@ -21,14 +21,14 @@ router.use((req, res, next) => {
 // ============================================
 
 // GET /api/bases - List all bases for user (with counts and column info)
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const bases = basesDb.getAllBases(req.user.id);
+    const bases = await basesDb.getAllBases(req.user.id);
     
     // Enrich with record count and column info
-    const enrichedBases = bases.map(base => {
-      const records = basesDb.getRecordsByBase(base.id);
-      const properties = basesDb.getPropertiesByBase(base.id);
+    const enrichedBases = await Promise.all(bases.map(async (base) => {
+      const records = await basesDb.getRecordsByBase(base.id);
+      const properties = await basesDb.getPropertiesByBase(base.id);
       
       return {
         ...base,
@@ -39,7 +39,7 @@ router.get('/', (req, res) => {
           type: p.type
         }))
       };
-    });
+    }));
     
     res.json(enrichedBases);
   } catch (error) {
@@ -56,9 +56,9 @@ router.get('/', (req, res) => {
 // ============================================
 
 // GET /api/bases/core/list - List all core bases
-router.get('/core/list', (req, res) => {
+router.get('/core/list', async (req, res) => {
   try {
-    const coreBases = coreBasesDb.getAllCoreBases(req.user.id);
+    const coreBases = await coreBasesDb.getAllCoreBases(req.user.id);
     res.json(coreBases);
   } catch (error) {
     console.error('Error fetching core bases:', error);
@@ -67,16 +67,16 @@ router.get('/core/list', (req, res) => {
 });
 
 // GET /api/bases/core/:id - Get single core base with records
-router.get('/core/:id', (req, res) => {
+router.get('/core/:id', async (req, res) => {
   try {
     const baseId = req.params.id;
-    const coreDef = coreBasesDb.getCoreBase(baseId);
+    const coreDef = await coreBasesDb.getCoreBase(baseId);
     
     if (!coreDef) {
       return res.status(404).json({ error: 'Core base not found' });
     }
     
-    const records = coreBasesDb.getCoreBaseRecords(baseId, req.user.id);
+    const records = await coreBasesDb.getCoreBaseRecords(baseId, req.user.id);
     
     res.json({
       ...coreDef,
@@ -90,17 +90,17 @@ router.get('/core/:id', (req, res) => {
 });
 
 // POST /api/bases/core/:id/records - Create record in core base
-router.post('/core/:id/records', (req, res) => {
+router.post('/core/:id/records', async (req, res) => {
   try {
     const baseId = req.params.id;
-    const coreDef = coreBasesDb.getCoreBase(baseId);
+    const coreDef = await coreBasesDb.getCoreBase(baseId);
     
     if (!coreDef) {
       return res.status(404).json({ error: 'Core base not found' });
     }
     
     const { values = {} } = req.body;
-    const record = coreBasesDb.createCoreBaseRecord(baseId, values, req.user.id);
+    const record = await coreBasesDb.createCoreBaseRecord(baseId, values, req.user.id);
     
     if (!record) {
       return res.status(500).json({ error: 'Failed to create record' });
@@ -114,18 +114,18 @@ router.post('/core/:id/records', (req, res) => {
 });
 
 // PUT /api/bases/core/:id/records/:recordId - Update record in core base
-router.put('/core/:id/records/:recordId', (req, res) => {
+router.put('/core/:id/records/:recordId', async (req, res) => {
   try {
     const baseId = req.params.id;
     const recordId = req.params.recordId;
-    const coreDef = coreBasesDb.getCoreBase(baseId);
+    const coreDef = await coreBasesDb.getCoreBase(baseId);
     
     if (!coreDef) {
       return res.status(404).json({ error: 'Core base not found' });
     }
     
     const { values = {} } = req.body;
-    const record = coreBasesDb.updateCoreBaseRecord(baseId, recordId, values, req.user.id);
+    const record = await coreBasesDb.updateCoreBaseRecord(baseId, recordId, values, req.user.id);
     
     if (!record) {
       return res.status(404).json({ error: 'Record not found' });
@@ -139,17 +139,17 @@ router.put('/core/:id/records/:recordId', (req, res) => {
 });
 
 // DELETE /api/bases/core/:id/records/:recordId - Delete record from core base
-router.delete('/core/:id/records/:recordId', (req, res) => {
+router.delete('/core/:id/records/:recordId', async (req, res) => {
   try {
     const baseId = req.params.id;
     const recordId = req.params.recordId;
-    const coreDef = coreBasesDb.getCoreBase(baseId);
+    const coreDef = await coreBasesDb.getCoreBase(baseId);
 
     if (!coreDef) {
       return res.status(404).json({ error: 'Core base not found' });
     }
 
-    const success = coreBasesDb.deleteCoreBaseRecord(baseId, recordId, req.user.id);
+    const success = await coreBasesDb.deleteCoreBaseRecord(baseId, recordId, req.user.id);
 
     if (!success) {
       return res.status(404).json({ error: 'Record not found' });
@@ -163,10 +163,10 @@ router.delete('/core/:id/records/:recordId', (req, res) => {
 });
 
 // GET /api/bases/core/:id/readme - Get README/help content for core base
-router.get('/core/:id/readme', (req, res) => {
+router.get('/core/:id/readme', async (req, res) => {
   try {
     const baseId = req.params.id;
-    const readme = coreBasesDb.getCoreBaseReadme(baseId);
+    const readme = await coreBasesDb.getCoreBaseReadme(baseId);
 
     if (!readme) {
       return res.status(404).json({ error: 'README not found for this core base' });
@@ -184,17 +184,17 @@ router.get('/core/:id/readme', (req, res) => {
 // ============================================
 
 // GET /api/bases/core/:id/views - List all views for a core base (user-specific)
-router.get('/core/:id/views', (req, res) => {
+router.get('/core/:id/views', async (req, res) => {
   try {
     const baseId = req.params.id;
-    const coreDef = coreBasesDb.getCoreBase(baseId);
+    const coreDef = await coreBasesDb.getCoreBase(baseId);
     
     if (!coreDef) {
       return res.status(404).json({ error: 'Core base not found' });
     }
     
     // Use same view storage as regular bases, just with core base ID
-    const views = basesDb.getViewsByBase(baseId, req.user.id);
+    const views = await basesDb.getViewsByBase(baseId, req.user.id);
     const parsedViews = views.map(v => ({
       ...v,
       config: JSON.parse(v.config || '{}')
@@ -208,10 +208,10 @@ router.get('/core/:id/views', (req, res) => {
 });
 
 // POST /api/bases/core/:id/views - Create new view for a core base
-router.post('/core/:id/views', (req, res) => {
+router.post('/core/:id/views', async (req, res) => {
   try {
     const baseId = req.params.id;
-    const coreDef = coreBasesDb.getCoreBase(baseId);
+    const coreDef = await coreBasesDb.getCoreBase(baseId);
     
     if (!coreDef) {
       return res.status(404).json({ error: 'Core base not found' });
@@ -224,13 +224,13 @@ router.post('/core/:id/views', (req, res) => {
     }
     
     // Get max position
-    const views = basesDb.getViewsByBase(baseId, req.user.id);
+    const views = await basesDb.getViewsByBase(baseId, req.user.id);
     const maxPosition = views.reduce((max, v) => Math.max(max, v.position), -1);
     
     const viewId = uuidv4();
-    basesDb.insertView(viewId, baseId, req.user.id, name.trim(), config, maxPosition + 1);
+    await basesDb.insertView(viewId, baseId, req.user.id, name.trim(), config, maxPosition + 1);
     
-    const view = basesDb.getViewById(viewId);
+    const view = await basesDb.getViewById(viewId);
     res.status(201).json({
       ...view,
       config: JSON.parse(view.config || '{}')
@@ -242,16 +242,16 @@ router.post('/core/:id/views', (req, res) => {
 });
 
 // PUT /api/bases/core/:id/views/:viewId - Update view for a core base
-router.put('/core/:id/views/:viewId', (req, res) => {
+router.put('/core/:id/views/:viewId', async (req, res) => {
   try {
     const baseId = req.params.id;
-    const coreDef = coreBasesDb.getCoreBase(baseId);
+    const coreDef = await coreBasesDb.getCoreBase(baseId);
     
     if (!coreDef) {
       return res.status(404).json({ error: 'Core base not found' });
     }
     
-    const existing = basesDb.getViewById(req.params.viewId);
+    const existing = await basesDb.getViewById(req.params.viewId);
     if (!existing || existing.base_id !== baseId || existing.user_id !== req.user.id) {
       return res.status(404).json({ error: 'View not found' });
     }
@@ -259,14 +259,14 @@ router.put('/core/:id/views/:viewId', (req, res) => {
     const { name, config, position } = req.body;
     const existingConfig = JSON.parse(existing.config || '{}');
     
-    basesDb.updateView(
+    await basesDb.updateView(
       req.params.viewId,
       name ?? existing.name,
       config ?? existingConfig,
       position ?? existing.position
     );
     
-    const view = basesDb.getViewById(req.params.viewId);
+    const view = await basesDb.getViewById(req.params.viewId);
     res.json({
       ...view,
       config: JSON.parse(view.config || '{}')
@@ -278,21 +278,21 @@ router.put('/core/:id/views/:viewId', (req, res) => {
 });
 
 // DELETE /api/bases/core/:id/views/:viewId - Delete view for a core base
-router.delete('/core/:id/views/:viewId', (req, res) => {
+router.delete('/core/:id/views/:viewId', async (req, res) => {
   try {
     const baseId = req.params.id;
-    const coreDef = coreBasesDb.getCoreBase(baseId);
+    const coreDef = await coreBasesDb.getCoreBase(baseId);
     
     if (!coreDef) {
       return res.status(404).json({ error: 'Core base not found' });
     }
     
-    const existing = basesDb.getViewById(req.params.viewId);
+    const existing = await basesDb.getViewById(req.params.viewId);
     if (!existing || existing.base_id !== baseId || existing.user_id !== req.user.id) {
       return res.status(404).json({ error: 'View not found' });
     }
     
-    basesDb.deleteView(req.params.viewId);
+    await basesDb.deleteView(req.params.viewId);
     res.json({ success: true });
   } catch (error) {
     console.error('Error deleting core base view:', error);
@@ -303,15 +303,15 @@ router.delete('/core/:id/views/:viewId', (req, res) => {
 // ============================================
 // USER BASES ROUTES
 // ============================================
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const base = basesDb.getBaseById(req.params.id, req.user.id);
+    const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
       return res.status(404).json({ error: 'Base not found' });
     }
     
-    const properties = basesDb.getPropertiesByBase(base.id);
-    const records = basesDb.getRecordsByBase(base.id);
+    const properties = await basesDb.getPropertiesByBase(base.id);
+    const records = await basesDb.getRecordsByBase(base.id);
     const expandRelations = req.query.expandRelations === 'true';
     
     // Parse JSON fields
@@ -321,7 +321,7 @@ router.get('/:id', (req, res) => {
     }));
     
     // Map 'data' field to 'values' for API consistency, include global_id
-    const parsedRecords = records.map(r => {
+    const parsedRecords = await Promise.all(records.map(async (r) => {
       const record = {
         id: r.id,
         base_id: r.base_id,
@@ -334,11 +334,11 @@ router.get('/:id', (req, res) => {
       
       // Optionally expand relations
       if (expandRelations) {
-        record._expandedRelations = basesDb.expandRelations(record, parsedProperties);
+        record._expandedRelations = await basesDb.expandRelations(record, parsedProperties);
       }
       
       return record;
-    });
+    }));
     
     res.json({
       ...base,
@@ -352,7 +352,7 @@ router.get('/:id', (req, res) => {
 });
 
 // POST /api/bases - Create new base
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { name, description = '', icon = '📊' } = req.body;
     
@@ -361,14 +361,14 @@ router.post('/', (req, res) => {
     }
     
     const id = uuidv4();
-    basesDb.insertBase(id, name.trim(), description, icon, req.user.id);
+    await basesDb.insertBase(id, name.trim(), description, icon, req.user.id);
     
     // Create a default "Name" property for every new base
     const propId = uuidv4();
-    basesDb.insertProperty(propId, id, 'Name', 'text', [], 0);
+    await basesDb.insertProperty(propId, id, 'Name', 'text', [], 0);
     
-    const base = basesDb.getBaseById(id, req.user.id);
-    const properties = basesDb.getPropertiesByBase(id);
+    const base = await basesDb.getBaseById(id, req.user.id);
+    const properties = await basesDb.getPropertiesByBase(id);
     
     res.status(201).json({
       ...base,
@@ -382,16 +382,16 @@ router.post('/', (req, res) => {
 });
 
 // PUT /api/bases/:id - Update base
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const { name, description, icon } = req.body;
-    const existing = basesDb.getBaseById(req.params.id, req.user.id);
+    const existing = await basesDb.getBaseById(req.params.id, req.user.id);
     
     if (!existing) {
       return res.status(404).json({ error: 'Base not found' });
     }
     
-    basesDb.updateBase(
+    await basesDb.updateBase(
       req.params.id,
       name ?? existing.name,
       description ?? existing.description,
@@ -399,7 +399,7 @@ router.put('/:id', (req, res) => {
       req.user.id
     );
     
-    const base = basesDb.getBaseById(req.params.id, req.user.id);
+    const base = await basesDb.getBaseById(req.params.id, req.user.id);
     res.json(base);
   } catch (error) {
     console.error('Error updating base:', error);
@@ -409,14 +409,14 @@ router.put('/:id', (req, res) => {
 
 // DELETE /api/bases/:id - Delete base (cascades to properties and records)
 // Also cleans up orphaned relation properties in other bases
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
-    const existing = basesDb.getBaseById(req.params.id, req.user.id);
+    const existing = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!existing) {
       return res.status(404).json({ error: 'Base not found' });
     }
 
-    basesDb.deleteBaseWithCleanup(req.params.id, req.user.id);
+    await basesDb.deleteBaseWithCleanup(req.params.id, req.user.id);
     res.json({ success: true });
   } catch (error) {
     console.error('Error deleting base:', error);
@@ -429,9 +429,9 @@ router.delete('/:id', (req, res) => {
 // ============================================
 
 // POST /api/bases/:id/properties - Add property
-router.post('/:id/properties', (req, res) => {
+router.post('/:id/properties', async (req, res) => {
   try {
-    const base = basesDb.getBaseById(req.params.id, req.user.id);
+    const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
       return res.status(404).json({ error: 'Base not found' });
     }
@@ -448,11 +448,11 @@ router.post('/:id/properties', (req, res) => {
     }
     
     // Get max position
-    const properties = basesDb.getPropertiesByBase(req.params.id);
+    const properties = await basesDb.getPropertiesByBase(req.params.id);
     const maxPosition = properties.reduce((max, p) => Math.max(max, p.position), -1);
     
     const propId = uuidv4();
-    basesDb.insertProperty(propId, req.params.id, name.trim(), type, options, maxPosition + 1);
+    await basesDb.insertProperty(propId, req.params.id, name.trim(), type, options, maxPosition + 1);
     
     let reverseProperty = null;
     
@@ -461,10 +461,10 @@ router.post('/:id/properties', (req, res) => {
       const targetBaseId = options.relatedBaseId;
       
       // Verify target base exists and user has access
-      const targetBase = basesDb.getBaseById(targetBaseId, req.user.id);
+      const targetBase = await basesDb.getBaseById(targetBaseId, req.user.id);
       if (!targetBase) {
         // Rollback the source property
-        basesDb.deleteProperty(propId);
+        await basesDb.deleteProperty(propId);
         return res.status(400).json({ error: 'Target base not found or access denied' });
       }
       
@@ -472,7 +472,7 @@ router.post('/:id/properties', (req, res) => {
       const actualReverseName = reverseName.trim() || `Related ${base.name}`;
       
       // Create the reverse property and link them
-      reverseProperty = basesDb.createReverseRelationProperty(
+      reverseProperty = await basesDb.createReverseRelationProperty(
         propId,
         req.params.id,  // source base
         targetBaseId,   // target base
@@ -481,7 +481,7 @@ router.post('/:id/properties', (req, res) => {
       );
     }
     
-    const property = basesDb.getPropertyById(propId);
+    const property = await basesDb.getPropertyById(propId);
     const response = {
       ...property,
       options: JSON.parse(property.options || '[]')
@@ -503,21 +503,21 @@ router.post('/:id/properties', (req, res) => {
 });
 
 // PUT /api/bases/:id/properties/:propId - Update property
-router.put('/:id/properties/:propId', (req, res) => {
+router.put('/:id/properties/:propId', async (req, res) => {
   try {
-    const base = basesDb.getBaseById(req.params.id, req.user.id);
+    const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
       return res.status(404).json({ error: 'Base not found' });
     }
     
-    const existing = basesDb.getPropertyById(req.params.propId);
+    const existing = await basesDb.getPropertyById(req.params.propId);
     if (!existing || existing.base_id !== req.params.id) {
       return res.status(404).json({ error: 'Property not found' });
     }
     
     const { name, type, options, position, width } = req.body;
     
-    basesDb.updateProperty(
+    await basesDb.updateProperty(
       req.params.propId,
       name ?? existing.name,
       type ?? existing.type,
@@ -526,7 +526,7 @@ router.put('/:id/properties/:propId', (req, res) => {
       width ?? existing.width
     );
     
-    const property = basesDb.getPropertyById(req.params.propId);
+    const property = await basesDb.getPropertyById(req.params.propId);
     res.json({
       ...property,
       options: JSON.parse(property.options || '[]')
@@ -538,24 +538,24 @@ router.put('/:id/properties/:propId', (req, res) => {
 });
 
 // DELETE /api/bases/:id/properties/:propId - Delete property
-router.delete('/:id/properties/:propId', (req, res) => {
+router.delete('/:id/properties/:propId', async (req, res) => {
   try {
-    const base = basesDb.getBaseById(req.params.id, req.user.id);
+    const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
       return res.status(404).json({ error: 'Base not found' });
     }
     
-    const existing = basesDb.getPropertyById(req.params.propId);
+    const existing = await basesDb.getPropertyById(req.params.propId);
     if (!existing || existing.base_id !== req.params.id) {
       return res.status(404).json({ error: 'Property not found' });
     }
     
     // Unlink reverse property if this is a paired relation
     if (existing.type === 'relation') {
-      basesDb.unlinkReverseProperty(req.params.propId);
+      await basesDb.unlinkReverseProperty(req.params.propId);
     }
     
-    basesDb.deleteProperty(req.params.propId);
+    await basesDb.deleteProperty(req.params.propId);
     res.json({ success: true });
   } catch (error) {
     console.error('Error deleting property:', error);
@@ -564,9 +564,9 @@ router.delete('/:id/properties/:propId', (req, res) => {
 });
 
 // POST /api/bases/:id/properties/reorder - Reorder properties
-router.post('/:id/properties/reorder', (req, res) => {
+router.post('/:id/properties/reorder', async (req, res) => {
   try {
-    const base = basesDb.getBaseById(req.params.id, req.user.id);
+    const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
       return res.status(404).json({ error: 'Base not found' });
     }
@@ -576,7 +576,7 @@ router.post('/:id/properties/reorder', (req, res) => {
       return res.status(400).json({ error: 'Order must be an array' });
     }
     
-    basesDb.reorderProperties(order);
+    await basesDb.reorderProperties(order);
     res.json({ success: true });
   } catch (error) {
     console.error('Error reordering properties:', error);
@@ -589,9 +589,9 @@ router.post('/:id/properties/reorder', (req, res) => {
 // ============================================
 
 // POST /api/bases/:id/records - Add record
-router.post('/:id/records', (req, res) => {
+router.post('/:id/records', async (req, res) => {
   try {
-    const base = basesDb.getBaseById(req.params.id, req.user.id);
+    const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
       return res.status(404).json({ error: 'Base not found' });
     }
@@ -599,7 +599,7 @@ router.post('/:id/records', (req, res) => {
     const { values = {} } = req.body;
     
     // Validate relation values and parse properties
-    const properties = basesDb.getPropertiesByBase(req.params.id);
+    const properties = await basesDb.getPropertiesByBase(req.params.id);
     const parsedProperties = properties.map(p => ({
       ...p,
       options: JSON.parse(p.options || '{}')
@@ -610,7 +610,7 @@ router.post('/:id/records', (req, res) => {
       const propValue = values[prop.id];
       if (!propValue) continue;
       
-      const validation = basesDb.validateRelationValues(prop.options, propValue);
+      const validation = await basesDb.validateRelationValues(prop.options, propValue);
       if (!validation.valid) {
         return res.status(400).json({ 
           error: validation.error || `Invalid relation values for property "${prop.name}"`,
@@ -620,11 +620,11 @@ router.post('/:id/records', (req, res) => {
     }
     
     // Get max position
-    const records = basesDb.getRecordsByBase(req.params.id);
+    const records = await basesDb.getRecordsByBase(req.params.id);
     const maxPosition = records.reduce((max, r) => Math.max(max, r.position), -1);
     
     const recordId = uuidv4();
-    basesDb.insertRecord(recordId, req.params.id, values, maxPosition + 1);
+    await basesDb.insertRecord(recordId, req.params.id, values, maxPosition + 1);
     
     // Sync reverse relations for any relation values in the new record
     for (const prop of parsedProperties) {
@@ -635,10 +635,10 @@ router.post('/:id/records', (req, res) => {
       if (!propValue) continue;
       
       // Sync: oldValues is empty, newValues is what was set
-      basesDb.syncReverseRelation(recordId, prop.id, [], propValue);
+      await basesDb.syncReverseRelation(recordId, prop.id, [], propValue);
     }
     
-    const record = basesDb.getRecordById(recordId);
+    const record = await basesDb.getRecordById(recordId);
     res.status(201).json({
       id: record.id,
       base_id: record.base_id,
@@ -655,14 +655,14 @@ router.post('/:id/records', (req, res) => {
 });
 
 // PUT /api/bases/:id/records/:recordId - Update record
-router.put('/:id/records/:recordId', (req, res) => {
+router.put('/:id/records/:recordId', async (req, res) => {
   try {
-    const base = basesDb.getBaseById(req.params.id, req.user.id);
+    const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
       return res.status(404).json({ error: 'Base not found' });
     }
     
-    const existing = basesDb.getRecordById(req.params.recordId);
+    const existing = await basesDb.getRecordById(req.params.recordId);
     if (!existing || existing.base_id !== req.params.id) {
       return res.status(404).json({ error: 'Record not found' });
     }
@@ -671,7 +671,7 @@ router.put('/:id/records/:recordId', (req, res) => {
     
     if (values !== undefined) {
       // Validate relation values
-      const properties = basesDb.getPropertiesByBase(req.params.id);
+      const properties = await basesDb.getPropertiesByBase(req.params.id);
       // Parse property options for all properties
       const parsedProperties = properties.map(p => ({
         ...p,
@@ -684,7 +684,7 @@ router.put('/:id/records/:recordId', (req, res) => {
         if (propValue === undefined) continue; // Not updating this field
         
         if (propValue !== null) {
-          const validation = basesDb.validateRelationValues(prop.options, propValue);
+          const validation = await basesDb.validateRelationValues(prop.options, propValue);
           if (!validation.valid) {
             return res.status(400).json({ 
               error: validation.error || `Invalid relation values for property "${prop.name}"`,
@@ -698,10 +698,10 @@ router.put('/:id/records/:recordId', (req, res) => {
       const oldValues = JSON.parse(existing.data || '{}');
       
       // Update record with reverse relation sync
-      basesDb.updateRecordWithSync(req.params.recordId, values, oldValues, parsedProperties);
+      await basesDb.updateRecordWithSync(req.params.recordId, values, oldValues, parsedProperties);
     }
     
-    const record = basesDb.getRecordById(req.params.recordId);
+    const record = await basesDb.getRecordById(req.params.recordId);
     res.json({
       id: record.id,
       base_id: record.base_id,
@@ -718,21 +718,21 @@ router.put('/:id/records/:recordId', (req, res) => {
 });
 
 // DELETE /api/bases/:id/records/:recordId - Delete record
-router.delete('/:id/records/:recordId', (req, res) => {
+router.delete('/:id/records/:recordId', async (req, res) => {
   try {
-    const base = basesDb.getBaseById(req.params.id, req.user.id);
+    const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
       return res.status(404).json({ error: 'Base not found' });
     }
     
-    const existing = basesDb.getRecordById(req.params.recordId);
+    const existing = await basesDb.getRecordById(req.params.recordId);
     if (!existing || existing.base_id !== req.params.id) {
       return res.status(404).json({ error: 'Record not found' });
     }
     
     // Clean up reverse relations for this record
     // For each relation property with a reversePropertyId, remove this record from targets
-    const properties = basesDb.getPropertiesByBase(req.params.id);
+    const properties = await basesDb.getPropertiesByBase(req.params.id);
     const existingData = JSON.parse(existing.data || '{}');
     
     for (const prop of properties) {
@@ -744,13 +744,13 @@ router.delete('/:id/records/:recordId', (req, res) => {
       if (!linkedIds) continue;
       
       // Sync with empty new values = remove from all linked records
-      basesDb.syncReverseRelation(req.params.recordId, prop.id, linkedIds, []);
+      await basesDb.syncReverseRelation(req.params.recordId, prop.id, linkedIds, []);
     }
     
     // Clean up any relation references to this record in other bases
-    basesDb.cleanupRelationReferences(req.params.recordId, req.params.id);
+    await basesDb.cleanupRelationReferences(req.params.recordId, req.params.id);
     
-    basesDb.deleteRecord(req.params.recordId);
+    await basesDb.deleteRecord(req.params.recordId);
     res.json({ success: true });
   } catch (error) {
     console.error('Error deleting record:', error);
@@ -764,17 +764,17 @@ router.delete('/:id/records/:recordId', (req, res) => {
 
 // GET /api/bases/:id/relation-options - Get records from a base for relation picker
 // This is a lightweight endpoint that returns just id, displayValue, and global_id
-router.get('/:id/relation-options', (req, res) => {
+router.get('/:id/relation-options', async (req, res) => {
   try {
     // Note: We check if the target base exists, but don't require ownership
     // This allows linking to shared bases in the future
-    const baseExists = basesDb.getBaseById(req.params.id, req.user.id);
+    const baseExists = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!baseExists) {
       // For now, only allow linking to own bases
       return res.status(404).json({ error: 'Base not found' });
     }
     
-    const options = basesDb.getRelationPickerOptions(req.params.id);
+    const options = await basesDb.getRelationPickerOptions(req.params.id);
     res.json(options);
   } catch (error) {
     console.error('Error fetching relation options:', error);
@@ -787,14 +787,14 @@ router.get('/:id/relation-options', (req, res) => {
 // ============================================
 
 // GET /api/bases/:id/views - List all views for a base
-router.get('/:id/views', (req, res) => {
+router.get('/:id/views', async (req, res) => {
   try {
-    const base = basesDb.getBaseById(req.params.id, req.user.id);
+    const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
       return res.status(404).json({ error: 'Base not found' });
     }
     
-    const views = basesDb.getViewsByBase(req.params.id, req.user.id);
+    const views = await basesDb.getViewsByBase(req.params.id, req.user.id);
     const parsedViews = views.map(v => ({
       ...v,
       config: JSON.parse(v.config || '{}')
@@ -808,9 +808,9 @@ router.get('/:id/views', (req, res) => {
 });
 
 // POST /api/bases/:id/views - Create new view
-router.post('/:id/views', (req, res) => {
+router.post('/:id/views', async (req, res) => {
   try {
-    const base = basesDb.getBaseById(req.params.id, req.user.id);
+    const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
       return res.status(404).json({ error: 'Base not found' });
     }
@@ -822,13 +822,13 @@ router.post('/:id/views', (req, res) => {
     }
     
     // Get max position
-    const views = basesDb.getViewsByBase(req.params.id, req.user.id);
+    const views = await basesDb.getViewsByBase(req.params.id, req.user.id);
     const maxPosition = views.reduce((max, v) => Math.max(max, v.position), -1);
     
     const viewId = uuidv4();
-    basesDb.insertView(viewId, req.params.id, req.user.id, name.trim(), config, maxPosition + 1);
+    await basesDb.insertView(viewId, req.params.id, req.user.id, name.trim(), config, maxPosition + 1);
     
-    const view = basesDb.getViewById(viewId);
+    const view = await basesDb.getViewById(viewId);
     res.status(201).json({
       ...view,
       config: JSON.parse(view.config || '{}')
@@ -840,14 +840,14 @@ router.post('/:id/views', (req, res) => {
 });
 
 // PUT /api/bases/:id/views/:viewId - Update view
-router.put('/:id/views/:viewId', (req, res) => {
+router.put('/:id/views/:viewId', async (req, res) => {
   try {
-    const base = basesDb.getBaseById(req.params.id, req.user.id);
+    const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
       return res.status(404).json({ error: 'Base not found' });
     }
     
-    const existing = basesDb.getViewById(req.params.viewId);
+    const existing = await basesDb.getViewById(req.params.viewId);
     if (!existing || existing.base_id !== req.params.id || existing.user_id !== req.user.id) {
       return res.status(404).json({ error: 'View not found' });
     }
@@ -855,14 +855,14 @@ router.put('/:id/views/:viewId', (req, res) => {
     const { name, config, position } = req.body;
     const existingConfig = JSON.parse(existing.config || '{}');
     
-    basesDb.updateView(
+    await basesDb.updateView(
       req.params.viewId,
       name ?? existing.name,
       config ?? existingConfig,
       position ?? existing.position
     );
     
-    const view = basesDb.getViewById(req.params.viewId);
+    const view = await basesDb.getViewById(req.params.viewId);
     res.json({
       ...view,
       config: JSON.parse(view.config || '{}')
@@ -874,19 +874,19 @@ router.put('/:id/views/:viewId', (req, res) => {
 });
 
 // DELETE /api/bases/:id/views/:viewId - Delete view
-router.delete('/:id/views/:viewId', (req, res) => {
+router.delete('/:id/views/:viewId', async (req, res) => {
   try {
-    const base = basesDb.getBaseById(req.params.id, req.user.id);
+    const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
       return res.status(404).json({ error: 'Base not found' });
     }
     
-    const existing = basesDb.getViewById(req.params.viewId);
+    const existing = await basesDb.getViewById(req.params.viewId);
     if (!existing || existing.base_id !== req.params.id || existing.user_id !== req.user.id) {
       return res.status(404).json({ error: 'View not found' });
     }
     
-    basesDb.deleteView(req.params.viewId);
+    await basesDb.deleteView(req.params.viewId);
     res.json({ success: true });
   } catch (error) {
     console.error('Error deleting view:', error);
@@ -899,9 +899,9 @@ router.delete('/:id/views/:viewId', (req, res) => {
 // ============================================
 
 // GET /api/bases/groups - List all groups for user
-router.get('/groups/list', (req, res) => {
+router.get('/groups/list', async (req, res) => {
   try {
-    const groups = basesDb.getAllGroups(req.user.id);
+    const groups = await basesDb.getAllGroups(req.user.id);
     res.json(groups);
   } catch (error) {
     console.error('Error fetching groups:', error);
@@ -910,7 +910,7 @@ router.get('/groups/list', (req, res) => {
 });
 
 // POST /api/bases/groups - Create new group
-router.post('/groups', (req, res) => {
+router.post('/groups', async (req, res) => {
   try {
     const { name, icon = '📁' } = req.body;
     
@@ -919,13 +919,13 @@ router.post('/groups', (req, res) => {
     }
     
     // Get max position
-    const groups = basesDb.getAllGroups(req.user.id);
+    const groups = await basesDb.getAllGroups(req.user.id);
     const maxPosition = groups.reduce((max, g) => Math.max(max, g.position), -1);
     
     const id = uuidv4();
-    basesDb.insertGroup(id, name.trim(), icon, req.user.id, maxPosition + 1);
+    await basesDb.insertGroup(id, name.trim(), icon, req.user.id, maxPosition + 1);
     
-    const group = basesDb.getGroupById(id, req.user.id);
+    const group = await basesDb.getGroupById(id, req.user.id);
     res.status(201).json(group);
   } catch (error) {
     console.error('Error creating group:', error);
@@ -934,16 +934,16 @@ router.post('/groups', (req, res) => {
 });
 
 // PUT /api/bases/groups/:groupId - Update group
-router.put('/groups/:groupId', (req, res) => {
+router.put('/groups/:groupId', async (req, res) => {
   try {
-    const existing = basesDb.getGroupById(req.params.groupId, req.user.id);
+    const existing = await basesDb.getGroupById(req.params.groupId, req.user.id);
     if (!existing) {
       return res.status(404).json({ error: 'Group not found' });
     }
     
     const { name, icon, position, collapsed } = req.body;
     
-    basesDb.updateGroup(
+    await basesDb.updateGroup(
       req.params.groupId,
       name ?? existing.name,
       icon ?? existing.icon,
@@ -952,7 +952,7 @@ router.put('/groups/:groupId', (req, res) => {
       req.user.id
     );
     
-    const group = basesDb.getGroupById(req.params.groupId, req.user.id);
+    const group = await basesDb.getGroupById(req.params.groupId, req.user.id);
     res.json(group);
   } catch (error) {
     console.error('Error updating group:', error);
@@ -961,17 +961,17 @@ router.put('/groups/:groupId', (req, res) => {
 });
 
 // PUT /api/bases/groups/:groupId/toggle - Toggle group collapsed state
-router.put('/groups/:groupId/toggle', (req, res) => {
+router.put('/groups/:groupId/toggle', async (req, res) => {
   try {
-    const existing = basesDb.getGroupById(req.params.groupId, req.user.id);
+    const existing = await basesDb.getGroupById(req.params.groupId, req.user.id);
     if (!existing) {
       return res.status(404).json({ error: 'Group not found' });
     }
     
     const newCollapsed = !existing.collapsed;
-    basesDb.updateGroupCollapsed(req.params.groupId, newCollapsed, req.user.id);
+    await basesDb.updateGroupCollapsed(req.params.groupId, newCollapsed, req.user.id);
     
-    const group = basesDb.getGroupById(req.params.groupId, req.user.id);
+    const group = await basesDb.getGroupById(req.params.groupId, req.user.id);
     res.json(group);
   } catch (error) {
     console.error('Error toggling group:', error);
@@ -980,10 +980,10 @@ router.put('/groups/:groupId/toggle', (req, res) => {
 });
 
 // POST /api/bases/groups/collapse-all - Collapse all groups
-router.post('/groups/collapse-all', (req, res) => {
+router.post('/groups/collapse-all', async (req, res) => {
   try {
-    basesDb.collapseAllGroups(req.user.id);
-    const groups = basesDb.getAllGroups(req.user.id);
+    await basesDb.collapseAllGroups(req.user.id);
+    const groups = await basesDb.getAllGroups(req.user.id);
     res.json(groups);
   } catch (error) {
     console.error('Error collapsing groups:', error);
@@ -992,10 +992,10 @@ router.post('/groups/collapse-all', (req, res) => {
 });
 
 // POST /api/bases/groups/expand-all - Expand all groups
-router.post('/groups/expand-all', (req, res) => {
+router.post('/groups/expand-all', async (req, res) => {
   try {
-    basesDb.expandAllGroups(req.user.id);
-    const groups = basesDb.getAllGroups(req.user.id);
+    await basesDb.expandAllGroups(req.user.id);
+    const groups = await basesDb.getAllGroups(req.user.id);
     res.json(groups);
   } catch (error) {
     console.error('Error expanding groups:', error);
@@ -1004,7 +1004,7 @@ router.post('/groups/expand-all', (req, res) => {
 });
 
 // POST /api/bases/groups/reorder - Reorder groups
-router.post('/groups/reorder', (req, res) => {
+router.post('/groups/reorder', async (req, res) => {
   try {
     const { order } = req.body; // Array of { id, position }
     if (!Array.isArray(order)) {
@@ -1013,14 +1013,14 @@ router.post('/groups/reorder', (req, res) => {
     
     // Validate all groups belong to user
     for (const item of order) {
-      const group = basesDb.getGroupById(item.id, req.user.id);
+      const group = await basesDb.getGroupById(item.id, req.user.id);
       if (!group) {
         return res.status(404).json({ error: `Group ${item.id} not found` });
       }
     }
     
-    basesDb.reorderGroups(order, req.user.id);
-    const groups = basesDb.getAllGroups(req.user.id);
+    await basesDb.reorderGroups(order, req.user.id);
+    const groups = await basesDb.getAllGroups(req.user.id);
     res.json(groups);
   } catch (error) {
     console.error('Error reordering groups:', error);
@@ -1029,22 +1029,22 @@ router.post('/groups/reorder', (req, res) => {
 });
 
 // DELETE /api/bases/groups/:groupId - Delete group (bases become ungrouped)
-router.delete('/groups/:groupId', (req, res) => {
+router.delete('/groups/:groupId', async (req, res) => {
   try {
-    const existing = basesDb.getGroupById(req.params.groupId, req.user.id);
+    const existing = await basesDb.getGroupById(req.params.groupId, req.user.id);
     if (!existing) {
       return res.status(404).json({ error: 'Group not found' });
     }
     
     // First, ungroup all bases in this group
-    const bases = basesDb.getAllBases(req.user.id);
+    const bases = await basesDb.getAllBases(req.user.id);
     for (const base of bases) {
       if (base.group_id === req.params.groupId) {
-        basesDb.updateBaseGroup(base.id, null, 0, req.user.id);
+        await basesDb.updateBaseGroup(base.id, null, 0, req.user.id);
       }
     }
     
-    basesDb.deleteGroup(req.params.groupId, req.user.id);
+    await basesDb.deleteGroup(req.params.groupId, req.user.id);
     res.json({ success: true });
   } catch (error) {
     console.error('Error deleting group:', error);
@@ -1053,9 +1053,9 @@ router.delete('/groups/:groupId', (req, res) => {
 });
 
 // PUT /api/bases/:id/group - Assign base to group
-router.put('/:id/group', (req, res) => {
+router.put('/:id/group', async (req, res) => {
   try {
-    const base = basesDb.getBaseById(req.params.id, req.user.id);
+    const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
       return res.status(404).json({ error: 'Base not found' });
     }
@@ -1064,15 +1064,15 @@ router.put('/:id/group', (req, res) => {
     
     // Validate group exists if provided
     if (group_id) {
-      const group = basesDb.getGroupById(group_id, req.user.id);
+      const group = await basesDb.getGroupById(group_id, req.user.id);
       if (!group) {
         return res.status(404).json({ error: 'Group not found' });
       }
     }
     
-    basesDb.updateBaseGroup(req.params.id, group_id || null, position, req.user.id);
+    await basesDb.updateBaseGroup(req.params.id, group_id || null, position, req.user.id);
     
-    const updatedBase = basesDb.getBaseById(req.params.id, req.user.id);
+    const updatedBase = await basesDb.getBaseById(req.params.id, req.user.id);
     res.json(updatedBase);
   } catch (error) {
     console.error('Error updating base group:', error);

@@ -1,59 +1,54 @@
 const db = require('./schema');
 
 // ============================================
-// PEOPLE GROUPS QUERIES
+// PEOPLE GROUPS QUERIES (async for PostgreSQL)
 // ============================================
 
-const getAllGroups = db.prepare('SELECT * FROM people_groups WHERE user_id = ? ORDER BY position ASC');
-const getGroupById = db.prepare('SELECT * FROM people_groups WHERE id = ? AND user_id = ?');
-const insertGroup = db.prepare(`
-  INSERT INTO people_groups (id, name, icon, user_id, position, collapsed)
-  VALUES (?, ?, ?, ?, ?, ?)
-`);
-const updateGroup = db.prepare(`
-  UPDATE people_groups SET name = ?, icon = ?, position = ?, collapsed = ?, updated_at = datetime('now')
-  WHERE id = ? AND user_id = ?
-`);
-const deleteGroup = db.prepare('DELETE FROM people_groups WHERE id = ? AND user_id = ?');
-const updateGroupCollapsed = db.prepare(`
-  UPDATE people_groups SET collapsed = ?, updated_at = datetime('now')
-  WHERE id = ? AND user_id = ?
-`);
-const collapseAllGroups = db.prepare(`
-  UPDATE people_groups SET collapsed = 1, updated_at = datetime('now')
-  WHERE user_id = ?
-`);
-const expandAllGroups = db.prepare(`
-  UPDATE people_groups SET collapsed = 0, updated_at = datetime('now')
-  WHERE user_id = ?
-`);
-
-// Update people to set group
-const updatePersonGroup = db.prepare(`
-  UPDATE people SET group_id = ?, position = ?, updated_at = datetime('now')
-  WHERE id = ? AND user_id = ?
-`);
-
 module.exports = {
-  getAllGroups: (userId) => getAllGroups.all(userId),
-  getGroupById: (id, userId) => getGroupById.get(id, userId),
-  insertGroup: (id, name, icon, userId, position, collapsed = 0) => insertGroup.run(id, name, icon, userId, position, collapsed),
-  updateGroup: (id, name, icon, position, collapsed, userId) => updateGroup.run(name, icon, position, collapsed, id, userId),
-  deleteGroup: (id, userId) => deleteGroup.run(id, userId),
-  updateGroupCollapsed: (id, collapsed, userId) => updateGroupCollapsed.run(collapsed ? 1 : 0, id, userId),
-  collapseAllGroups: (userId) => collapseAllGroups.run(userId),
-  expandAllGroups: (userId) => expandAllGroups.run(userId),
-  updatePersonGroup: (personId, groupId, position, userId) => updatePersonGroup.run(groupId, position, personId, userId),
-  reorderGroups: (updates, userId) => {
-    const updateGroupPosition = db.prepare(`
-      UPDATE people_groups SET position = ?, updated_at = datetime('now')
-      WHERE id = ? AND user_id = ?
-    `);
-    const transaction = db.transaction((items) => {
-      for (const item of items) {
-        updateGroupPosition.run(item.position, item.id, userId);
+  getAllGroups: async (userId) => await db.getAll('SELECT * FROM people_groups WHERE user_id = $1 ORDER BY position ASC', [userId]),
+
+  getGroupById: async (id, userId) => await db.getOne('SELECT * FROM people_groups WHERE id = $1 AND user_id = $2', [id, userId]),
+
+  insertGroup: async (id, name, icon, userId, position, collapsed = 0) => await db.run(`
+    INSERT INTO people_groups (id, name, icon, user_id, position, collapsed)
+    VALUES ($1, $2, $3, $4, $5, $6)
+  `, [id, name, icon, userId, position, collapsed]),
+
+  updateGroup: async (id, name, icon, position, collapsed, userId) => await db.run(`
+    UPDATE people_groups SET name = $1, icon = $2, position = $3, collapsed = $4, updated_at = NOW()
+    WHERE id = $5 AND user_id = $6
+  `, [name, icon, position, collapsed, id, userId]),
+
+  deleteGroup: async (id, userId) => await db.run('DELETE FROM people_groups WHERE id = $1 AND user_id = $2', [id, userId]),
+
+  updateGroupCollapsed: async (id, collapsed, userId) => await db.run(`
+    UPDATE people_groups SET collapsed = $1, updated_at = NOW()
+    WHERE id = $2 AND user_id = $3
+  `, [collapsed ? 1 : 0, id, userId]),
+
+  collapseAllGroups: async (userId) => await db.run(`
+    UPDATE people_groups SET collapsed = 1, updated_at = NOW()
+    WHERE user_id = $1
+  `, [userId]),
+
+  expandAllGroups: async (userId) => await db.run(`
+    UPDATE people_groups SET collapsed = 0, updated_at = NOW()
+    WHERE user_id = $1
+  `, [userId]),
+
+  updatePersonGroup: async (personId, groupId, position, userId) => await db.run(`
+    UPDATE people SET group_id = $1, position = $2, updated_at = NOW()
+    WHERE id = $3 AND user_id = $4
+  `, [groupId, position, personId, userId]),
+
+  reorderGroups: async (updates, userId) => {
+    await db.transaction(async (client) => {
+      for (const item of updates) {
+        await client.run(`
+          UPDATE people_groups SET position = $1, updated_at = NOW()
+          WHERE id = $2 AND user_id = $3
+        `, [item.position, item.id, userId]);
       }
     });
-    transaction(updates);
   }
 };

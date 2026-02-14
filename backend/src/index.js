@@ -3,11 +3,6 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 
-// Initialize database (creates tables if not exist)
-require('./db/schema');
-require('./db/bases'); // Initialize bases tables
-require('./db/apexSchema'); // Initialize apex jobs tables
-
 // Import routes
 const authRoutes = require('./routes/auth');
 const tasksRoutes = require('./routes/tasks');
@@ -97,10 +92,23 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Kanban API server running on port ${PORT}`);
-  console.log(`Frontend served from: ${frontendPath}`);
-});
+// Initialize database then start server
+const { initDatabase } = require('./db/schema');
+
+async function start() {
+  try {
+    await initDatabase();
+    console.log('Database initialized successfully');
+    app.listen(PORT, () => {
+      console.log(`Kanban API server running on port ${PORT}`);
+      console.log(`Frontend served from: ${frontendPath}`);
+    });
+  } catch (err) {
+    console.error('Failed to initialize database:', err);
+    process.exit(1);
+  }
+}
+
+start();
 
 module.exports = app;

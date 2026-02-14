@@ -355,7 +355,6 @@ Track notable people you admire - authors, thought leaders, etc. Note what you c
     icon: '✅',
     is_core: true,
     table_name: 'task_items',
-    // Schema for the Tasks core base - maps to task_items columns
     properties: [
       { id: 'title', name: 'Title', type: 'text', position: 0, width: 250 },
       { id: 'description', name: 'Description', type: 'text', position: 1, width: 300 },
@@ -454,17 +453,39 @@ The Notes base is your central hub for capturing and organizing all types of wri
         { value: 'web_clip', label: 'Web Clip' },
         { value: 'reference', label: 'Reference' },
         { value: 'idea', label: 'Idea' },
-        { value: 'plan', label: 'Plan' }
+        { value: 'plan', label: 'Plan' },
+        { value: 'definition', label: 'Definition' }
       ]},
       { id: 'content', name: 'Content', type: 'text', position: 2, width: 400 },
-      { id: 'url', name: 'URL', type: 'url', position: 3, width: 200 },
-      { id: 'note_date', name: 'Note Date', type: 'date', position: 4, width: 120 },
-      { id: 'review_date', name: 'Review Date', type: 'date', position: 5, width: 120 },
-      { id: 'favorite', name: 'Favorite', type: 'checkbox', position: 6, width: 100 },
-      { id: 'archived', name: 'Archived', type: 'checkbox', position: 7, width: 100 },
-      { id: 'tags', name: 'Tags', type: 'multi_select', position: 8, width: 200, options: [] },
-      { id: 'project_id', name: 'Project', type: 'text', position: 9, width: 150 },
-      { id: 'attachments', name: 'Attachments', type: 'files', position: 10, width: 200 }
+      { id: 'domain', name: 'Domain', type: 'multi_select', position: 3, width: 200, options: [
+        { value: 'javascript', label: 'JavaScript' },
+        { value: 'powershell', label: 'PowerShell' },
+        { value: 'css', label: 'CSS' },
+        { value: 'html', label: 'HTML' },
+        { value: 'react', label: 'React' },
+        { value: 'nodejs', label: 'Node.js' },
+        { value: 'git', label: 'Git' },
+        { value: 'docker', label: 'Docker' },
+        { value: 'typescript', label: 'TypeScript' },
+        { value: 'python', label: 'Python' },
+        { value: 'cpp', label: 'C++' },
+        { value: 'linux_cli', label: 'Linux/CLI' },
+        { value: 'ui_ux_design', label: 'UI/UX Design' },
+        { value: 'databases', label: 'Databases' },
+        { value: 'networking', label: 'Networking' },
+        { value: 'general_dev', label: 'General Dev' },
+        { value: 'iicrc_s500', label: 'IICRC S500' },
+        { value: 'estimating_xactimate', label: 'Estimating/Xactimate' },
+        { value: 'restoration_general', label: 'Restoration General' }
+      ]},
+      { id: 'url', name: 'URL', type: 'url', position: 4, width: 200 },
+      { id: 'note_date', name: 'Note Date', type: 'date', position: 5, width: 120 },
+      { id: 'review_date', name: 'Review Date', type: 'date', position: 6, width: 120 },
+      { id: 'favorite', name: 'Favorite', type: 'checkbox', position: 7, width: 100 },
+      { id: 'archived', name: 'Archived', type: 'checkbox', position: 8, width: 100 },
+      { id: 'tags', name: 'Tags', type: 'multi_select', position: 9, width: 200, options: [] },
+      { id: 'project_id', name: 'Project', type: 'text', position: 10, width: 150 },
+      { id: 'attachments', name: 'Attachments', type: 'files', position: 11, width: 200 }
     ]
   },
   'core-projects': {
@@ -550,16 +571,21 @@ Meta-collections or specific things (Apps, Books, Essays)
     ]
   }
 };
+
 /**
  * Get all core bases available to a user
  */
-function getAllCoreBases(userId) {
-  return Object.values(CORE_BASES).map(base => ({
-    ...base,
-    user_id: userId,
-    record_count: getRecordCount(base.id, userId),
-    column_count: base.properties.length
-  }));
+async function getAllCoreBases(userId) {
+  const results = [];
+  for (const base of Object.values(CORE_BASES)) {
+    results.push({
+      ...base,
+      user_id: userId,
+      record_count: await getRecordCount(base.id, userId),
+      column_count: base.properties.length
+    });
+  }
+  return results;
 }
 
 /**
@@ -572,26 +598,25 @@ function getCoreBase(baseId) {
 /**
  * Get record count for a core base
  */
-function getRecordCount(baseId, userId) {
+async function getRecordCount(baseId, userId) {
   if (baseId === 'core-tasks') {
-    const stmt = db.prepare('SELECT COUNT(*) as count FROM task_items WHERE user_id = ?');
-    const result = stmt.get(userId);
+    const result = await db.getOne('SELECT COUNT(*) as count FROM task_items WHERE user_id = $1', [userId]);
     return result ? result.count : 0;
   }
   if (baseId === 'core-people') {
-    return peopleDb.getPeopleCount(userId);
+    return await peopleDb.getPeopleCount(userId);
   }
   if (baseId === 'core-organizations') {
-    return organizationsDb.getOrganizationCount(userId);
+    return await organizationsDb.getOrganizationCount(userId);
   }
   if (baseId === 'core-notes') {
-    return notesDb.getNoteCount(userId);
+    return await notesDb.getNoteCount(userId);
   }
   if (baseId === 'core-projects') {
-    return projectsDb.getProjectCount(userId);
+    return await projectsDb.getProjectCount(userId);
   }
   if (baseId === 'core-tags') {
-    return tagsDb.getTagCount(userId);
+    return await tagsDb.getTagCount(userId);
   }
   return 0;
 }
@@ -599,23 +624,21 @@ function getRecordCount(baseId, userId) {
 /**
  * Get records for a core base
  */
-function getCoreBaseRecords(baseId, userId) {
+async function getCoreBaseRecords(baseId, userId) {
   if (baseId === 'core-tasks') {
-    const stmt = db.prepare(`
+    const rows = await db.getAll(`
       SELECT id, title, description, status, my_day, due_date, due_time, due_time_end,
              snooze_date, priority, energy, location, important, completed, completed_at,
              recurring, recurring_days, project_id, list_id, people_ids, note_ids, subtasks, user_id, created_at, updated_at
       FROM task_items
-      WHERE user_id = ?
+      WHERE user_id = $1
       ORDER BY created_at DESC
-    `);
-    const rows = stmt.all(userId);
+    `, [userId]);
 
-    // Convert to base record format
     return rows.map((row, index) => ({
       id: row.id,
       base_id: baseId,
-      global_id: index + 1,  // Simple sequential ID for display
+      global_id: index + 1,
       position: index,
       created_at: row.created_at,
       updated_at: row.updated_at,
@@ -646,9 +669,8 @@ function getCoreBaseRecords(baseId, userId) {
   }
 
   if (baseId === 'core-people') {
-    const rows = peopleDb.getAllPeople(userId);
+    const rows = await peopleDb.getAllPeople(userId);
 
-    // Convert to base record format
     return rows.map((row, index) => ({
       id: row.id,
       base_id: baseId,
@@ -721,43 +743,26 @@ function getCoreBaseRecords(baseId, userId) {
   }
 
   if (baseId === 'core-organizations') {
-    const rows = organizationsDb.getAllOrganizations(userId);
+    const rows = await organizationsDb.getAllOrganizations(userId);
     
-    return rows.map((row, index) => ({
-      id: row.id,
-      base_id: baseId,
-      global_id: index + 1,
-      position: index,
-      created_at: row.created_at,
-      updated_at: row.updated_at,
-      values: {
-        name: row.name || '',
-        type: row.type || '',
-        industry: row.industry || '',
-        description: row.description || '',
-        website: row.website || '',
-        linkedin: row.linkedin || '',
-        phone: row.phone || '',
-        email: row.email || '',
-        address: row.address || '',
-        city: row.city || '',
-        state: row.state || '',
-        country: row.country || '',
-        zip: row.zip || '',
-        founded_year: row.founded_year || null,
-        employee_count: row.employee_count || null,
-        notes: row.notes || '',
-        tags: safeJsonParse(row.tags, []),
-        important: !!row.important,
-        people: organizationsDb.getPeopleByOrganization(row.id, userId).map(p => p.id)
-      }
-    }));
+    const results = [];
+    for (let index = 0; index < rows.length; index++) {
+      const row = rows[index];
+      results.push({
+        id: row.id,
+        base_id: baseId,
+        global_id: index + 1,
+        position: index,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        values: await mapOrganizationToValues(row, userId)
+      });
+    }
+    return results;
   }
 
-
-
   if (baseId === 'core-notes') {
-    const rows = notesDb.getAllNotes(userId);
+    const rows = await notesDb.getAllNotes(userId);
     
     return rows.map((row, index) => ({
       id: row.id,
@@ -771,7 +776,7 @@ function getCoreBaseRecords(baseId, userId) {
   }
 
   if (baseId === 'core-projects') {
-    const rows = projectsDb.getAllProjects(userId);
+    const rows = await projectsDb.getAllProjects(userId);
     
     return rows.map((row, index) => ({
       id: row.id,
@@ -785,7 +790,7 @@ function getCoreBaseRecords(baseId, userId) {
   }
 
   if (baseId === 'core-tags') {
-    const rows = tagsDb.getAllTags(userId);
+    const rows = await tagsDb.getAllTags(userId);
     
     return rows.map((row, index) => ({
       id: row.id,
@@ -820,6 +825,7 @@ function safeJsonParse(str, defaultVal) {
     return defaultVal;
   }
 }
+
 /**
  * Map note database row to values object
  */
@@ -835,7 +841,8 @@ function mapNoteToValues(note) {
     archived: !!note.archived,
     tags: safeJsonParse(note.tags, []),
     project_id: note.project_id || '',
-    attachments: safeJsonParse(note.attachments, [])
+    attachments: safeJsonParse(note.attachments, []),
+    domain: safeJsonParse(note.domain, [])
   };
 }
 
@@ -855,13 +862,106 @@ function mapProjectToValues(project) {
   };
 }
 
+/**
+ * Map organization database row to values object
+ */
+async function mapOrganizationToValues(org, userId) {
+  const people = await organizationsDb.getPeopleByOrganization(org.id, userId);
+  return {
+    name: org.name || '',
+    type: org.type || '',
+    industry: org.industry || '',
+    description: org.description || '',
+    website: org.website || '',
+    linkedin: org.linkedin || '',
+    phone: org.phone || '',
+    email: org.email || '',
+    address: org.address || '',
+    city: org.city || '',
+    state: org.state || '',
+    country: org.country || '',
+    founded_year: org.founded_year || null,
+    employee_count: org.employee_count || null,
+    notes: org.notes || '',
+    tags: safeJsonParse(org.tags, []),
+    important: !!org.important,
+    people: people.map(p => p.id)
+  };
+}
+
+/**
+ * Map person database row to values object
+ */
+function mapPersonToValues(person) {
+  return {
+    name: person.name || '',
+    nickname: person.nickname || '',
+    photo_url: person.photo_url || '',
+    birthday: person.birthday || '',
+    gender: person.gender || '',
+    email: person.email || '',
+    email_secondary: person.email_secondary || '',
+    phone_mobile: person.phone_mobile || '',
+    phone_work: person.phone_work || '',
+    phone_home: person.phone_home || '',
+    address: person.address || '',
+    city: person.city || '',
+    state: person.state || '',
+    country: person.country || '',
+    zip: person.zip || '',
+    timezone: person.timezone || '',
+    company: person.company || '',
+    job_title: person.job_title || '',
+    industry: person.industry || '',
+    website: person.website || '',
+    linkedin: person.linkedin || '',
+    twitter: person.twitter || '',
+    instagram: person.instagram || '',
+    relationship: person.relationship || '',
+    how_we_met: person.how_we_met || '',
+    tags: safeJsonParse(person.tags, []),
+    introduced_by: person.introduced_by || '',
+    notes: person.notes || '',
+    last_contacted: person.last_contacted || '',
+    follow_up: person.follow_up || '',
+    important: !!person.important,
+    mbti_type: person.mbti_type || '',
+    enneagram: person.enneagram || '',
+    love_language: person.love_language || '',
+    communication_style: person.communication_style || '',
+    preferred_contact_method: person.preferred_contact_method || '',
+    best_time_to_reach: person.best_time_to_reach || '',
+    relationship_strength: person.relationship_strength || '',
+    energy_impact: person.energy_impact || '',
+    trust_level: person.trust_level || '',
+    reciprocity: person.reciprocity || '',
+    contact_frequency: person.contact_frequency || '',
+    desired_frequency: person.desired_frequency || '',
+    what_i_admire: person.what_i_admire || '',
+    what_i_can_learn: person.what_i_can_learn || '',
+    how_they_make_me_feel: person.how_they_make_me_feel || '',
+    shared_interests: safeJsonParse(person.shared_interests, []),
+    conversation_topics: safeJsonParse(person.conversation_topics, []),
+    sensitive_topics: safeJsonParse(person.sensitive_topics, []),
+    date_met: person.date_met || '',
+    how_relationship_evolved: person.how_relationship_evolved || '',
+    past_conflicts: person.past_conflicts || '',
+    gift_ideas: safeJsonParse(person.gift_ideas, []),
+    favorite_things: person.favorite_things || '',
+    allergies_dislikes: person.allergies_dislikes || '',
+    relationship_goals: person.relationship_goals || '',
+    how_i_can_support: person.how_i_can_support || '',
+    how_they_support_me: person.how_they_support_me || '',
+    organization: person.organization_id || null
+  };
+}
 
 /**
  * Create a record in a core base
  */
-function createCoreBaseRecord(baseId, values, userId) {
+async function createCoreBaseRecord(baseId, values, userId) {
   if (baseId === 'core-tasks') {
-    const task = taskItemsDb.createTaskItem({
+    const task = await taskItemsDb.createTaskItem({
       title: values.title || 'Untitled Task',
       description: values.description || '',
       status: values.status || 'todo',
@@ -916,7 +1016,7 @@ function createCoreBaseRecord(baseId, values, userId) {
   }
 
   if (baseId === 'core-people') {
-    const person = peopleDb.createPerson({
+    const person = await peopleDb.createPerson({
       name: values.name || 'Unnamed Person',
       nickname: values.nickname || '',
       photo_url: values.photo_url || '',
@@ -990,7 +1090,7 @@ function createCoreBaseRecord(baseId, values, userId) {
   }
 
   if (baseId === 'core-organizations') {
-    const org = organizationsDb.createOrganization({
+    const org = await organizationsDb.createOrganization({
       name: values.name || 'Unnamed Organization',
       type: values.type || '',
       industry: values.industry || '',
@@ -1018,12 +1118,12 @@ function createCoreBaseRecord(baseId, values, userId) {
       position: 0,
       created_at: org.created_at,
       updated_at: org.updated_at,
-      values: mapOrganizationToValues(org, userId)
+      values: await mapOrganizationToValues(org, userId)
     };
   }
 
   if (baseId === 'core-tags') {
-    const tag = tagsDb.createTag({
+    const tag = await tagsDb.createTag({
       name: values.name || 'Untitled Tag',
       type: values.type || 'resource',
       description: values.description || '',
@@ -1053,7 +1153,7 @@ function createCoreBaseRecord(baseId, values, userId) {
   }
 
   if (baseId === 'core-notes') {
-    const note = notesDb.createNote({
+    const note = await notesDb.createNote({
       name: values.name || 'Untitled Note',
       type: values.type || 'reference',
       content: values.content || '',
@@ -1063,7 +1163,8 @@ function createCoreBaseRecord(baseId, values, userId) {
       favorite: values.favorite || false,
       archived: values.archived || false,
       tags: values.tags || [],
-      project_id: values.project_id || null
+      project_id: values.project_id || null,
+      domain: values.domain || []
     }, userId);
 
     return {
@@ -1078,7 +1179,7 @@ function createCoreBaseRecord(baseId, values, userId) {
   }
 
   if (baseId === 'core-projects') {
-    const project = projectsDb.createProject({
+    const project = await projectsDb.createProject({
       name: values.name || 'Untitled Project',
       status: values.status || 'planned',
       target_deadline: values.target_deadline || null,
@@ -1103,106 +1204,12 @@ function createCoreBaseRecord(baseId, values, userId) {
   return null;
 }
 
-
-/**
- * Map organization database row to values object
- */
-function mapOrganizationToValues(org, userId) {
-  return {
-    name: org.name || '',
-    type: org.type || '',
-    industry: org.industry || '',
-    description: org.description || '',
-    website: org.website || '',
-    linkedin: org.linkedin || '',
-    phone: org.phone || '',
-    email: org.email || '',
-    address: org.address || '',
-    city: org.city || '',
-    state: org.state || '',
-    country: org.country || '',
-    founded_year: org.founded_year || null,
-    employee_count: org.employee_count || null,
-    notes: org.notes || '',
-    tags: safeJsonParse(org.tags, []),
-    important: !!org.important,
-    people: organizationsDb.getPeopleByOrganization(org.id, userId).map(p => p.id)
-  };
-}
-
-/**
- * Map person database row to values object
- */
-function mapPersonToValues(person) {
-  return {
-    name: person.name || '',
-    nickname: person.nickname || '',
-    photo_url: person.photo_url || '',
-    birthday: person.birthday || '',
-    gender: person.gender || '',
-    email: person.email || '',
-    email_secondary: person.email_secondary || '',
-    phone_mobile: person.phone_mobile || '',
-    phone_work: person.phone_work || '',
-    phone_home: person.phone_home || '',
-    address: person.address || '',
-    city: person.city || '',
-    state: person.state || '',
-    country: person.country || '',
-    zip: person.zip || '',
-    timezone: person.timezone || '',
-    company: person.company || '',
-    job_title: person.job_title || '',
-    industry: person.industry || '',
-    website: person.website || '',
-    linkedin: person.linkedin || '',
-    twitter: person.twitter || '',
-    instagram: person.instagram || '',
-    relationship: person.relationship || '',
-    how_we_met: person.how_we_met || '',
-    tags: safeJsonParse(person.tags, []),
-    introduced_by: person.introduced_by || '',
-    notes: person.notes || '',
-    last_contacted: person.last_contacted || '',
-    follow_up: person.follow_up || '',
-    important: !!person.important,
-    mbti_type: person.mbti_type || '',
-    enneagram: person.enneagram || '',
-    love_language: person.love_language || '',
-    communication_style: person.communication_style || '',
-    preferred_contact_method: person.preferred_contact_method || '',
-    best_time_to_reach: person.best_time_to_reach || '',
-    relationship_strength: person.relationship_strength || '',
-    energy_impact: person.energy_impact || '',
-    trust_level: person.trust_level || '',
-    reciprocity: person.reciprocity || '',
-    contact_frequency: person.contact_frequency || '',
-    desired_frequency: person.desired_frequency || '',
-    what_i_admire: person.what_i_admire || '',
-    what_i_can_learn: person.what_i_can_learn || '',
-    how_they_make_me_feel: person.how_they_make_me_feel || '',
-    shared_interests: safeJsonParse(person.shared_interests, []),
-    conversation_topics: safeJsonParse(person.conversation_topics, []),
-    sensitive_topics: safeJsonParse(person.sensitive_topics, []),
-    date_met: person.date_met || '',
-    how_relationship_evolved: person.how_relationship_evolved || '',
-    past_conflicts: person.past_conflicts || '',
-    gift_ideas: safeJsonParse(person.gift_ideas, []),
-    favorite_things: person.favorite_things || '',
-    allergies_dislikes: person.allergies_dislikes || '',
-    relationship_goals: person.relationship_goals || '',
-    how_i_can_support: person.how_i_can_support || '',
-    how_they_support_me: person.how_they_support_me || '',
-    organization: person.organization_id || null
-  };
-}
-
 /**
  * Update a record in a core base
  */
-function updateCoreBaseRecord(baseId, recordId, values, userId) {
+async function updateCoreBaseRecord(baseId, recordId, values, userId) {
   if (baseId === 'core-tasks') {
-    const task = taskItemsDb.updateTaskItem(recordId, {
+    const task = await taskItemsDb.updateTaskItem(recordId, {
       title: values.title,
       description: values.description,
       status: values.status,
@@ -1260,7 +1267,12 @@ function updateCoreBaseRecord(baseId, recordId, values, userId) {
   }
 
   if (baseId === 'core-people') {
-    const updateData = { ...values }; if (values.organization !== undefined) { updateData.organization_id = values.organization; delete updateData.organization; } const person = peopleDb.updatePerson(recordId, updateData, userId);
+    const updateData = { ...values };
+    if (values.organization !== undefined) {
+      updateData.organization_id = values.organization;
+      delete updateData.organization;
+    }
+    const person = await peopleDb.updatePerson(recordId, updateData, userId);
 
     if (!person) return null;
 
@@ -1276,7 +1288,7 @@ function updateCoreBaseRecord(baseId, recordId, values, userId) {
   }
 
   if (baseId === 'core-organizations') {
-    const org = organizationsDb.updateOrganization(recordId, values, userId);
+    const org = await organizationsDb.updateOrganization(recordId, values, userId);
 
     if (!org) return null;
 
@@ -1287,13 +1299,12 @@ function updateCoreBaseRecord(baseId, recordId, values, userId) {
       position: 0,
       created_at: org.created_at,
       updated_at: org.updated_at,
-      values: mapOrganizationToValues(org, userId)
+      values: await mapOrganizationToValues(org, userId)
     };
   }
 
-
   if (baseId === 'core-notes') {
-    const note = notesDb.updateNote(recordId, values, userId);
+    const note = await notesDb.updateNote(recordId, values, userId);
 
     if (!note) return null;
 
@@ -1309,7 +1320,7 @@ function updateCoreBaseRecord(baseId, recordId, values, userId) {
   }
 
   if (baseId === 'core-projects') {
-    const project = projectsDb.updateProject(recordId, values, userId);
+    const project = await projectsDb.updateProject(recordId, values, userId);
 
     if (!project) return null;
 
@@ -1325,7 +1336,7 @@ function updateCoreBaseRecord(baseId, recordId, values, userId) {
   }
 
   if (baseId === 'core-tags') {
-    const tag = tagsDb.updateTag(recordId, values, userId);
+    const tag = await tagsDb.updateTag(recordId, values, userId);
 
     if (!tag) return null;
 
@@ -1354,25 +1365,24 @@ function updateCoreBaseRecord(baseId, recordId, values, userId) {
 /**
  * Delete a record from a core base
  */
-function deleteCoreBaseRecord(baseId, recordId, userId) {
+async function deleteCoreBaseRecord(baseId, recordId, userId) {
   if (baseId === 'core-tasks') {
-    return taskItemsDb.deleteTaskItem(recordId, userId);
+    return await taskItemsDb.deleteTaskItem(recordId, userId);
   }
   if (baseId === 'core-people') {
-    return peopleDb.deletePerson(recordId, userId);
+    return await peopleDb.deletePerson(recordId, userId);
   }
-
   if (baseId === 'core-organizations') {
-    return organizationsDb.deleteOrganization(recordId, userId);
+    return await organizationsDb.deleteOrganization(recordId, userId);
   }
   if (baseId === 'core-notes') {
-    return notesDb.deleteNote(recordId, userId);
+    return await notesDb.deleteNote(recordId, userId);
   }
   if (baseId === 'core-projects') {
-    return projectsDb.deleteProject(recordId, userId);
+    return await projectsDb.deleteProject(recordId, userId);
   }
   if (baseId === 'core-tags') {
-    return tagsDb.deleteTag(recordId, userId);
+    return await tagsDb.deleteTag(recordId, userId);
   }
   return false;
 }

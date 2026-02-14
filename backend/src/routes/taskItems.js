@@ -28,14 +28,14 @@ router.use(authMiddleware);
  * List all task items for current user
  * Query params: ?view=my-day|important|scheduled|recurring|all
  */
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { view = 'all', today } = req.query;
     const userId = req.user.id;
     
     console.log(`[task-items] view=${view}, today=${today}, userId=${userId}`);
     
-    const items = getAllTaskItems(userId, view, today);
+    const items = await getAllTaskItems(userId, view, today);
     res.json({ items });
   } catch (err) {
     console.error('Error fetching task items:', err);
@@ -47,11 +47,11 @@ router.get('/', (req, res) => {
  * GET /api/task-items/counts
  * Get counts for sidebar badges
  */
-router.get('/counts', (req, res) => {
+router.get('/counts', async (req, res) => {
   try {
     const { today } = req.query;
     const userId = req.user.id;
-    const counts = getTaskItemCounts(userId, today);
+    const counts = await getTaskItemCounts(userId, today);
     res.json({ counts });
   } catch (err) {
     console.error('Error fetching counts:', err);
@@ -68,7 +68,7 @@ router.get('/counts', (req, res) => {
  * Get task items scheduled within a date range
  * Query params: ?start=YYYY-MM-DD&end=YYYY-MM-DD
  */
-router.get('/calendar', (req, res) => {
+router.get('/calendar', async (req, res) => {
   try {
     const { start, end } = req.query;
     const userId = req.user.id;
@@ -79,7 +79,7 @@ router.get('/calendar', (req, res) => {
       });
     }
 
-    const items = getTaskItemsForCalendar(userId, start, end);
+    const items = await getTaskItemsForCalendar(userId, start, end);
     res.json({ items });
   } catch (err) {
     console.error('Error fetching calendar task items:', err);
@@ -92,11 +92,11 @@ router.get('/calendar', (req, res) => {
  * Get all scheduled task items (have due_date)
  * Query params: ?calendars=id1,id2,id3 (optional filter)
  */
-router.get('/calendar/scheduled', (req, res) => {
+router.get('/calendar/scheduled', async (req, res) => {
   try {
     const userId = req.user.id;
     const calendarIds = req.query.calendars ? req.query.calendars.split(',') : null;
-    const items = getScheduledTaskItems(userId, calendarIds);
+    const items = await getScheduledTaskItems(userId, calendarIds);
     res.json({ items });
   } catch (err) {
     console.error('Error fetching scheduled task items:', err);
@@ -109,11 +109,11 @@ router.get('/calendar/scheduled', (req, res) => {
  * Get all unscheduled task items (no due_date)
  * Query params: ?calendars=id1,id2,id3 (optional filter)
  */
-router.get('/calendar/unscheduled', (req, res) => {
+router.get('/calendar/unscheduled', async (req, res) => {
   try {
     const userId = req.user.id;
     const calendarIds = req.query.calendars ? req.query.calendars.split(',') : null;
-    const items = getUnscheduledTaskItems(userId, calendarIds);
+    const items = await getUnscheduledTaskItems(userId, calendarIds);
     res.json({ items });
   } catch (err) {
     console.error('Error fetching unscheduled task items:', err);
@@ -126,7 +126,7 @@ router.get('/calendar/unscheduled', (req, res) => {
  * Schedule a task item on the calendar
  * Body: { due_date: "YYYY-MM-DD", due_time?: "HH:MM", due_time_end?: "HH:MM" }
  */
-router.patch('/:id/schedule', (req, res) => {
+router.patch('/:id/schedule', async (req, res) => {
   try {
     const { due_date, due_time, due_time_end } = req.body;
     const userId = req.user.id;
@@ -135,7 +135,7 @@ router.patch('/:id/schedule', (req, res) => {
       return res.status(400).json({ error: 'due_date is required (YYYY-MM-DD format)' });
     }
 
-    const item = scheduleTaskItem(req.params.id, { due_date, due_time, due_time_end }, userId);
+    const item = await scheduleTaskItem(req.params.id, { due_date, due_time, due_time_end }, userId);
 
     if (!item) {
       return res.status(404).json({ error: 'Task not found' });
@@ -143,8 +143,8 @@ router.patch('/:id/schedule', (req, res) => {
 
     // If task has no calendar associations, auto-link to Tasks calendar
     if (!item.calendar_ids || item.calendar_ids.length === 0) {
-      const tasksCalendar = ensureTasksCalendar(userId);
-      setTaskItemCalendars(item.id, [tasksCalendar.id], userId);
+      const tasksCalendar = await ensureTasksCalendar(userId);
+      await setTaskItemCalendars(item.id, [tasksCalendar.id], userId);
       item.calendar_ids = [tasksCalendar.id];
     }
 
@@ -159,10 +159,10 @@ router.patch('/:id/schedule', (req, res) => {
  * PATCH /api/task-items/:id/unschedule
  * Remove a task item from the calendar
  */
-router.patch('/:id/unschedule', (req, res) => {
+router.patch('/:id/unschedule', async (req, res) => {
   try {
     const userId = req.user.id;
-    const item = unscheduleTaskItem(req.params.id, userId);
+    const item = await unscheduleTaskItem(req.params.id, userId);
 
     if (!item) {
       return res.status(404).json({ error: 'Task not found' });
@@ -179,10 +179,10 @@ router.patch('/:id/unschedule', (req, res) => {
  * GET /api/task-items/:id
  * Get a single task item
  */
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const userId = req.user.id;
-    const item = getTaskItemById(req.params.id, userId);
+    const item = await getTaskItemById(req.params.id, userId);
     
     if (!item) {
       return res.status(404).json({ error: 'Task not found' });
@@ -199,7 +199,7 @@ router.get('/:id', (req, res) => {
  * POST /api/task-items
  * Create a new task item
  */
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const userId = req.user.id;
     const { title, description, status, my_day, due_date, due_time, due_time_end, snooze_date, priority, energy, location, recurring, recurring_days, important, subtasks, project_id, list_id, calendar_ids } = req.body;
@@ -208,7 +208,7 @@ router.post('/', (req, res) => {
       return res.status(400).json({ error: 'Title is required' });
     }
 
-    const item = createTaskItem({
+    const item = await createTaskItem({
       title: title.trim(),
       description,
       status,
@@ -232,10 +232,10 @@ router.post('/', (req, res) => {
     let finalCalendarIds = calendar_ids;
     if (!calendar_ids || !Array.isArray(calendar_ids) || calendar_ids.length === 0) {
       // Auto-link to the Tasks calendar
-      const tasksCalendar = ensureTasksCalendar(userId);
+      const tasksCalendar = await ensureTasksCalendar(userId);
       finalCalendarIds = [tasksCalendar.id];
     }
-    setTaskItemCalendars(item.id, finalCalendarIds, userId);
+    await setTaskItemCalendars(item.id, finalCalendarIds, userId);
     item.calendar_ids = finalCalendarIds;
 
     res.status(201).json({ item });
@@ -249,11 +249,11 @@ router.post('/', (req, res) => {
  * PATCH /api/task-items/:id
  * Update a task item
  */
-router.patch('/:id', (req, res) => {
+router.patch('/:id', async (req, res) => {
   try {
     const userId = req.user.id;
     const { calendar_ids, ...updateData } = req.body;
-    const item = updateTaskItem(req.params.id, updateData, userId);
+    const item = await updateTaskItem(req.params.id, updateData, userId);
 
     if (!item) {
       return res.status(404).json({ error: 'Task not found' });
@@ -261,7 +261,7 @@ router.patch('/:id', (req, res) => {
 
     // Update calendar associations if provided
     if (calendar_ids !== undefined) {
-      setTaskItemCalendars(item.id, calendar_ids || [], userId);
+      await setTaskItemCalendars(item.id, calendar_ids || [], userId);
       item.calendar_ids = calendar_ids || [];
     }
 
@@ -276,10 +276,10 @@ router.patch('/:id', (req, res) => {
  * POST /api/task-items/:id/toggle
  * Toggle task completion
  */
-router.post('/:id/toggle', (req, res) => {
+router.post('/:id/toggle', async (req, res) => {
   try {
     const userId = req.user.id;
-    const item = toggleTaskItemComplete(req.params.id, userId);
+    const item = await toggleTaskItemComplete(req.params.id, userId);
     
     if (!item) {
       return res.status(404).json({ error: 'Task not found' });
@@ -296,10 +296,10 @@ router.post('/:id/toggle', (req, res) => {
  * DELETE /api/task-items/:id
  * Delete a task item
  */
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const userId = req.user.id;
-    const deleted = deleteTaskItem(req.params.id, userId);
+    const deleted = await deleteTaskItem(req.params.id, userId);
     
     if (!deleted) {
       return res.status(404).json({ error: 'Task not found' });

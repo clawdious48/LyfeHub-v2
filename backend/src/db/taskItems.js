@@ -4,10 +4,11 @@ const { v4: uuidv4 } = require('uuid');
 /**
  * Get all task items for a user
  */
-function getAllTaskItems(userId, view = 'all', userDate = null) {
-  let sql = `SELECT * FROM task_items WHERE user_id = ?`;
+async function getAllTaskItems(userId, view = 'all', userDate = null) {
+  let sql = `SELECT * FROM task_items WHERE user_id = $1`;
   const params = [userId];
-  
+  let paramIdx = 2;
+
   // Use user-provided date if available, otherwise server date
   let today;
   if (userDate && /^\d{4}-\d{2}-\d{2}$/.test(userDate)) {
@@ -16,18 +17,18 @@ function getAllTaskItems(userId, view = 'all', userDate = null) {
     const now = new Date();
     today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   }
-  
+
   console.log(`[getAllTaskItems] view=${view}, userDate=${userDate}, today=${today}, userId=${userId}`);
-  
+
   // Handle list: prefix for custom lists
   if (view.startsWith('list:')) {
     const listId = view.substring(5);
-    sql += ` AND list_id = ?`;
+    sql += ` AND list_id = $${paramIdx++}`;
     params.push(listId);
   } else {
     switch (view) {
       case 'my-day':
-        sql += ` AND due_date = ?`;
+        sql += ` AND due_date = $${paramIdx++}`;
         params.push(today);
         break;
       case 'important':
@@ -44,66 +45,66 @@ function getAllTaskItems(userId, view = 'all', userDate = null) {
         break;
       case 'all':
       default:
-        // No additional filter
         break;
     }
   }
-  
-  sql += ` ORDER BY 
+
+  sql += ` ORDER BY
     completed ASC,
-    important DESC, 
+    important DESC,
     CASE WHEN due_date IS NULL THEN 1 ELSE 0 END,
     due_date ASC,
     created_at DESC`;
-  
-  const stmt = db.prepare(sql);
+
   console.log(`[getAllTaskItems] SQL: ${sql}`);
   console.log(`[getAllTaskItems] Params: ${JSON.stringify(params)}`);
-  const items = stmt.all(...params);
+  const items = await db.getAll(sql, params);
   console.log(`[getAllTaskItems] Found ${items.length} items`);
 
   // Parse JSON fields and add calendar_ids
-  return items.map(item => ({
-    ...item,
-    subtasks: JSON.parse(item.subtasks || '[]'),
-    recurring_days: JSON.parse(item.recurring_days || '[]'),
-    important: !!item.important,
-    completed: !!item.completed,
-    my_day: !!item.my_day,
-    people_ids: JSON.parse(item.people_ids || '[]'),
-    note_ids: JSON.parse(item.note_ids || '[]'),
-    calendar_ids: getTaskItemCalendarIds(item.id)
-  }));
+  const results = [];
+  for (const item of items) {
+    results.push({
+      ...item,
+      subtasks: JSON.parse(item.subtasks || '[]'),
+      recurring_days: JSON.parse(item.recurring_days || '[]'),
+      important: !!item.important,
+      completed: !!item.completed,
+      my_day: !!item.my_day,
+      people_ids: JSON.parse(item.people_ids || '[]'),
+      note_ids: JSON.parse(item.note_ids || '[]'),
+      calendar_ids: await getTaskItemCalendarIds(item.id)
+    });
+  }
+  return results;
 }
 
 /**
  * Get calendar IDs associated with a task item
  */
-function getTaskItemCalendarIds(taskItemId) {
-  const stmt = db.prepare(`SELECT calendar_id FROM task_item_calendars WHERE task_item_id = ?`);
-  const rows = stmt.all(taskItemId);
+async function getTaskItemCalendarIds(taskItemId) {
+  const rows = await db.getAll(`SELECT calendar_id FROM task_item_calendars WHERE task_item_id = $1`, [taskItemId]);
   return rows.map(r => r.calendar_id);
 }
 
 /**
  * Set calendar associations for a task item
  */
-function setTaskItemCalendars(taskItemId, calendarIds, userId) {
+async function setTaskItemCalendars(taskItemId, calendarIds, userId) {
   // First verify the task belongs to the user
-  const task = db.prepare(`SELECT id FROM task_items WHERE id = ? AND user_id = ?`).get(taskItemId, userId);
+  const task = await db.getOne(`SELECT id FROM task_items WHERE id = $1 AND user_id = $2`, [taskItemId, userId]);
   if (!task) return false;
 
   // Delete existing associations
-  db.prepare(`DELETE FROM task_item_calendars WHERE task_item_id = ?`).run(taskItemId);
+  await db.run(`DELETE FROM task_item_calendars WHERE task_item_id = $1`, [taskItemId]);
 
   // Insert new associations (only for calendars belonging to this user)
   if (calendarIds && calendarIds.length > 0) {
-    const insertStmt = db.prepare(`
-      INSERT INTO task_item_calendars (task_item_id, calendar_id)
-      SELECT ?, id FROM calendars WHERE id = ? AND user_id = ?
-    `);
     for (const calendarId of calendarIds) {
-      insertStmt.run(taskItemId, calendarId, userId);
+      await db.run(`
+        INSERT INTO task_item_calendars (task_item_id, calendar_id)
+        SELECT $1, id FROM calendars WHERE id = $2 AND user_id = $3
+      `, [taskItemId, calendarId, userId]);
     }
   }
 
@@ -113,9 +114,8 @@ function setTaskItemCalendars(taskItemId, calendarIds, userId) {
 /**
  * Get a single task item by ID
  */
-function getTaskItemById(id, userId) {
-  const stmt = db.prepare(`SELECT * FROM task_items WHERE id = ? AND user_id = ?`);
-  const item = stmt.get(id, userId);
+async function getTaskItemById(id, userId) {
+  const item = await db.getOne(`SELECT * FROM task_items WHERE id = $1 AND user_id = $2`, [id, userId]);
 
   if (!item) return null;
 
@@ -128,23 +128,21 @@ function getTaskItemById(id, userId) {
     my_day: !!item.my_day,
     people_ids: JSON.parse(item.people_ids || '[]'),
     note_ids: JSON.parse(item.note_ids || '[]'),
-    calendar_ids: getTaskItemCalendarIds(id)
+    calendar_ids: await getTaskItemCalendarIds(id)
   };
 }
 
 /**
  * Create a new task item
  */
-function createTaskItem(data, userId) {
+async function createTaskItem(data, userId) {
   const id = uuidv4();
   const now = new Date().toISOString();
 
-  const stmt = db.prepare(`
+  await db.run(`
     INSERT INTO task_items (id, title, description, status, my_day, due_date, due_time, due_time_end, snooze_date, priority, energy, location, important, recurring, recurring_days, project_id, list_id, people_ids, note_ids, subtasks, user_id, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-
-  stmt.run(
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
+  `, [
     id,
     data.title,
     data.description || '',
@@ -168,55 +166,52 @@ function createTaskItem(data, userId) {
     userId,
     now,
     now
-  );
+  ]);
 
   // Set calendar associations if provided
   if (data.calendar_ids && data.calendar_ids.length > 0) {
-    setTaskItemCalendars(id, data.calendar_ids, userId);
+    await setTaskItemCalendars(id, data.calendar_ids, userId);
   }
 
-  return getTaskItemById(id, userId);
+  return await getTaskItemById(id, userId);
 }
 
 /**
  * Update a task item
  */
-function updateTaskItem(id, data, userId) {
-  const existing = getTaskItemById(id, userId);
+async function updateTaskItem(id, data, userId) {
+  const existing = await getTaskItemById(id, userId);
   if (!existing) return null;
 
   const now = new Date().toISOString();
-
-  const stmt = db.prepare(`
-    UPDATE task_items SET
-      title = ?,
-      description = ?,
-      status = ?,
-      my_day = ?,
-      due_date = ?,
-      due_time = ?,
-      due_time_end = ?,
-      snooze_date = ?,
-      priority = ?,
-      energy = ?,
-      location = ?,
-      important = ?,
-      completed = ?,
-      completed_at = ?,
-      recurring = ?,
-      recurring_days = ?,
-      project_id = ?,
-      list_id = ?,
-      people_ids = ?,
-      note_ids = ?,
-      subtasks = ?,
-      updated_at = ?
-    WHERE id = ? AND user_id = ?
-  `);
-
   const completedAt = data.completed && !existing.completed ? now : (data.completed ? existing.completed_at : null);
 
-  stmt.run(
+  await db.run(`
+    UPDATE task_items SET
+      title = $1,
+      description = $2,
+      status = $3,
+      my_day = $4,
+      due_date = $5,
+      due_time = $6,
+      due_time_end = $7,
+      snooze_date = $8,
+      priority = $9,
+      energy = $10,
+      location = $11,
+      important = $12,
+      completed = $13,
+      completed_at = $14,
+      recurring = $15,
+      recurring_days = $16,
+      project_id = $17,
+      list_id = $18,
+      people_ids = $19,
+      note_ids = $20,
+      subtasks = $21,
+      updated_at = $22
+    WHERE id = $23 AND user_id = $24
+  `, [
     data.title ?? existing.title,
     data.description ?? existing.description,
     data.status ?? existing.status ?? 'todo',
@@ -241,58 +236,55 @@ function updateTaskItem(id, data, userId) {
     now,
     id,
     userId
-  );
+  ]);
 
   // Update calendar associations if provided
   if (data.calendar_ids !== undefined) {
-    setTaskItemCalendars(id, data.calendar_ids || [], userId);
+    await setTaskItemCalendars(id, data.calendar_ids || [], userId);
   }
 
-  return getTaskItemById(id, userId);
+  return await getTaskItemById(id, userId);
 }
 
 /**
  * Delete a task item
  */
-function deleteTaskItem(id, userId) {
-  const stmt = db.prepare(`DELETE FROM task_items WHERE id = ? AND user_id = ?`);
-  const result = stmt.run(id, userId);
-  return result.changes > 0;
+async function deleteTaskItem(id, userId) {
+  const result = await db.run(`DELETE FROM task_items WHERE id = $1 AND user_id = $2`, [id, userId]);
+  return result.rowCount > 0;
 }
 
 /**
  * Toggle task completion
  */
-function toggleTaskItemComplete(id, userId) {
-  const existing = getTaskItemById(id, userId);
+async function toggleTaskItemComplete(id, userId) {
+  const existing = await getTaskItemById(id, userId);
   if (!existing) return null;
-  
+
   const now = new Date().toISOString();
   const newCompleted = !existing.completed;
-  
-  const stmt = db.prepare(`
+
+  await db.run(`
     UPDATE task_items SET
-      completed = ?,
-      completed_at = ?,
-      updated_at = ?
-    WHERE id = ? AND user_id = ?
-  `);
-  
-  stmt.run(
+      completed = $1,
+      completed_at = $2,
+      updated_at = $3
+    WHERE id = $4 AND user_id = $5
+  `, [
     newCompleted ? 1 : 0,
     newCompleted ? now : null,
     now,
     id,
     userId
-  );
-  
-  return getTaskItemById(id, userId);
+  ]);
+
+  return await getTaskItemById(id, userId);
 }
 
 /**
  * Get task counts for sidebar
  */
-function getTaskItemCounts(userId, userDate = null) {
+async function getTaskItemCounts(userId, userDate = null) {
   let today;
   if (userDate && /^\d{4}-\d{2}-\d{2}$/.test(userDate)) {
     today = userDate;
@@ -300,7 +292,7 @@ function getTaskItemCounts(userId, userDate = null) {
     const now = new Date();
     today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   }
-  
+
   const counts = {
     'my-day': 0,
     'important': 0,
@@ -308,209 +300,206 @@ function getTaskItemCounts(userId, userDate = null) {
     'recurring': 0,
     'all': 0
   };
-  
-  const stmt = db.prepare(`
-    SELECT 
+
+  const result = await db.getOne(`
+    SELECT
       COUNT(*) as total,
-      SUM(CASE WHEN due_date = ? THEN 1 ELSE 0 END) as my_day,
+      SUM(CASE WHEN due_date = $1 THEN 1 ELSE 0 END) as my_day,
       SUM(CASE WHEN important = 1 THEN 1 ELSE 0 END) as important,
       SUM(CASE WHEN due_date IS NOT NULL THEN 1 ELSE 0 END) as scheduled,
       SUM(CASE WHEN recurring IS NOT NULL AND recurring != '' THEN 1 ELSE 0 END) as recurring
-    FROM task_items 
-    WHERE user_id = ? AND completed = 0
-  `);
-  
-  const result = stmt.get(today, userId);
-  
+    FROM task_items
+    WHERE user_id = $2 AND completed = 0
+  `, [today, userId]);
+
   if (result) {
-    counts['my-day'] = result.my_day || 0;
-    counts['important'] = result.important || 0;
-    counts['scheduled'] = result.scheduled || 0;
-    counts['recurring'] = result.recurring || 0;
-    counts['all'] = result.total || 0;
+    counts['my-day'] = parseInt(result.my_day) || 0;
+    counts['important'] = parseInt(result.important) || 0;
+    counts['scheduled'] = parseInt(result.scheduled) || 0;
+    counts['recurring'] = parseInt(result.recurring) || 0;
+    counts['all'] = parseInt(result.total) || 0;
   }
-  
+
   return counts;
 }
 
 /**
  * Get task items for calendar view (within a date range)
- * @param {string} userId
- * @param {string} startDate
- * @param {string} endDate
- * @param {string[]} calendarIds - Optional: filter by calendar IDs
  */
-function getTaskItemsForCalendar(userId, startDate, endDate, calendarIds = null) {
-  let sql = `
-    SELECT DISTINCT t.* FROM task_items t
-  `;
-
+async function getTaskItemsForCalendar(userId, startDate, endDate, calendarIds = null) {
+  let sql = `SELECT DISTINCT t.* FROM task_items t`;
   const params = [userId, startDate, endDate];
+  let paramIdx = 4;
 
-  // If filtering by calendars, join with junction table
   if (calendarIds && calendarIds.length > 0) {
+    const placeholders = calendarIds.map(() => `$${paramIdx++}`).join(',');
     sql += ` INNER JOIN task_item_calendars tc ON t.id = tc.task_item_id
-             WHERE t.user_id = ?
+             WHERE t.user_id = $1
              AND t.due_date IS NOT NULL
-             AND t.due_date >= ?
-             AND t.due_date <= ?
-             AND tc.calendar_id IN (${calendarIds.map(() => '?').join(',')})`;
+             AND t.due_date >= $2
+             AND t.due_date <= $3
+             AND tc.calendar_id IN (${placeholders})`;
     params.push(...calendarIds);
   } else {
-    sql += ` WHERE t.user_id = ?
+    sql += ` WHERE t.user_id = $1
              AND t.due_date IS NOT NULL
-             AND t.due_date >= ?
-             AND t.due_date <= ?`;
+             AND t.due_date >= $2
+             AND t.due_date <= $3`;
   }
 
   sql += ` ORDER BY t.due_date ASC, t.due_time ASC, t.created_at DESC`;
 
-  const stmt = db.prepare(sql);
-  const items = stmt.all(...params);
+  const items = await db.getAll(sql, params);
 
-  return items.map(item => ({
-    ...item,
-    subtasks: JSON.parse(item.subtasks || '[]'),
-    recurring_days: JSON.parse(item.recurring_days || '[]'),
-    important: !!item.important,
-    completed: !!item.completed,
-    my_day: !!item.my_day,
-    people_ids: JSON.parse(item.people_ids || '[]'),
-    note_ids: JSON.parse(item.note_ids || '[]'),
-    calendar_ids: getTaskItemCalendarIds(item.id)
-  }));
+  const results = [];
+  for (const item of items) {
+    results.push({
+      ...item,
+      subtasks: JSON.parse(item.subtasks || '[]'),
+      recurring_days: JSON.parse(item.recurring_days || '[]'),
+      important: !!item.important,
+      completed: !!item.completed,
+      my_day: !!item.my_day,
+      people_ids: JSON.parse(item.people_ids || '[]'),
+      note_ids: JSON.parse(item.note_ids || '[]'),
+      calendar_ids: await getTaskItemCalendarIds(item.id)
+    });
+  }
+  return results;
 }
 
 /**
  * Get scheduled task items (have due_date)
- * @param {string} userId
- * @param {string[]} calendarIds - Optional: filter by calendar IDs
  */
-function getScheduledTaskItems(userId, calendarIds = null) {
+async function getScheduledTaskItems(userId, calendarIds = null) {
   let sql = `SELECT DISTINCT t.* FROM task_items t`;
   const params = [userId];
+  let paramIdx = 2;
 
   if (calendarIds && calendarIds.length > 0) {
+    const placeholders = calendarIds.map(() => `$${paramIdx++}`).join(',');
     sql += ` INNER JOIN task_item_calendars tc ON t.id = tc.task_item_id
-             WHERE t.user_id = ?
+             WHERE t.user_id = $1
              AND t.due_date IS NOT NULL
              AND t.completed = 0
-             AND tc.calendar_id IN (${calendarIds.map(() => '?').join(',')})`;
+             AND tc.calendar_id IN (${placeholders})`;
     params.push(...calendarIds);
   } else {
-    sql += ` WHERE t.user_id = ?
+    sql += ` WHERE t.user_id = $1
              AND t.due_date IS NOT NULL
              AND t.completed = 0`;
   }
 
   sql += ` ORDER BY t.due_date ASC, t.due_time ASC`;
 
-  const stmt = db.prepare(sql);
-  const items = stmt.all(...params);
+  const items = await db.getAll(sql, params);
 
-  return items.map(item => ({
-    ...item,
-    subtasks: JSON.parse(item.subtasks || '[]'),
-    recurring_days: JSON.parse(item.recurring_days || '[]'),
-    important: !!item.important,
-    completed: !!item.completed,
-    my_day: !!item.my_day,
-    people_ids: JSON.parse(item.people_ids || '[]'),
-    note_ids: JSON.parse(item.note_ids || '[]'),
-    calendar_ids: getTaskItemCalendarIds(item.id)
-  }));
+  const results = [];
+  for (const item of items) {
+    results.push({
+      ...item,
+      subtasks: JSON.parse(item.subtasks || '[]'),
+      recurring_days: JSON.parse(item.recurring_days || '[]'),
+      important: !!item.important,
+      completed: !!item.completed,
+      my_day: !!item.my_day,
+      people_ids: JSON.parse(item.people_ids || '[]'),
+      note_ids: JSON.parse(item.note_ids || '[]'),
+      calendar_ids: await getTaskItemCalendarIds(item.id)
+    });
+  }
+  return results;
 }
 
 /**
  * Get unscheduled task items (no due_date)
- * @param {string} userId
- * @param {string[]} calendarIds - Optional: filter by calendar IDs
  */
-function getUnscheduledTaskItems(userId, calendarIds = null) {
+async function getUnscheduledTaskItems(userId, calendarIds = null) {
   let sql = `SELECT DISTINCT t.* FROM task_items t`;
   const params = [userId];
+  let paramIdx = 2;
 
   if (calendarIds && calendarIds.length > 0) {
+    const placeholders = calendarIds.map(() => `$${paramIdx++}`).join(',');
     sql += ` INNER JOIN task_item_calendars tc ON t.id = tc.task_item_id
-             WHERE t.user_id = ?
+             WHERE t.user_id = $1
              AND t.due_date IS NULL
              AND t.completed = 0
-             AND tc.calendar_id IN (${calendarIds.map(() => '?').join(',')})`;
+             AND tc.calendar_id IN (${placeholders})`;
     params.push(...calendarIds);
   } else {
-    sql += ` WHERE t.user_id = ?
+    sql += ` WHERE t.user_id = $1
              AND t.due_date IS NULL
              AND t.completed = 0`;
   }
 
   sql += ` ORDER BY t.important DESC, t.created_at DESC`;
 
-  const stmt = db.prepare(sql);
-  const items = stmt.all(...params);
+  const items = await db.getAll(sql, params);
 
-  return items.map(item => ({
-    ...item,
-    subtasks: JSON.parse(item.subtasks || '[]'),
-    recurring_days: JSON.parse(item.recurring_days || '[]'),
-    important: !!item.important,
-    completed: !!item.completed,
-    my_day: !!item.my_day,
-    people_ids: JSON.parse(item.people_ids || '[]'),
-    note_ids: JSON.parse(item.note_ids || '[]'),
-    calendar_ids: getTaskItemCalendarIds(item.id)
-  }));
+  const results = [];
+  for (const item of items) {
+    results.push({
+      ...item,
+      subtasks: JSON.parse(item.subtasks || '[]'),
+      recurring_days: JSON.parse(item.recurring_days || '[]'),
+      important: !!item.important,
+      completed: !!item.completed,
+      my_day: !!item.my_day,
+      people_ids: JSON.parse(item.people_ids || '[]'),
+      note_ids: JSON.parse(item.note_ids || '[]'),
+      calendar_ids: await getTaskItemCalendarIds(item.id)
+    });
+  }
+  return results;
 }
 
 /**
  * Schedule a task item (set due_date/due_time/due_time_end)
  */
-function scheduleTaskItem(id, scheduleData, userId) {
-  const existing = getTaskItemById(id, userId);
+async function scheduleTaskItem(id, scheduleData, userId) {
+  const existing = await getTaskItemById(id, userId);
   if (!existing) return null;
 
   const now = new Date().toISOString();
 
-  const stmt = db.prepare(`
+  await db.run(`
     UPDATE task_items SET
-      due_date = ?,
-      due_time = ?,
-      due_time_end = ?,
-      updated_at = ?
-    WHERE id = ? AND user_id = ?
-  `);
-
-  stmt.run(
+      due_date = $1,
+      due_time = $2,
+      due_time_end = $3,
+      updated_at = $4
+    WHERE id = $5 AND user_id = $6
+  `, [
     scheduleData.due_date,
     scheduleData.due_time || null,
     scheduleData.due_time_end || null,
     now,
     id,
     userId
-  );
+  ]);
 
-  return getTaskItemById(id, userId);
+  return await getTaskItemById(id, userId);
 }
 
 /**
  * Unschedule a task item (clear due_date/due_time)
  */
-function unscheduleTaskItem(id, userId) {
-  const existing = getTaskItemById(id, userId);
+async function unscheduleTaskItem(id, userId) {
+  const existing = await getTaskItemById(id, userId);
   if (!existing) return null;
 
   const now = new Date().toISOString();
 
-  const stmt = db.prepare(`
+  await db.run(`
     UPDATE task_items SET
       due_date = NULL,
       due_time = NULL,
-      updated_at = ?
-    WHERE id = ? AND user_id = ?
-  `);
+      updated_at = $1
+    WHERE id = $2 AND user_id = $3
+  `, [now, id, userId]);
 
-  stmt.run(now, id, userId);
-
-  return getTaskItemById(id, userId);
+  return await getTaskItemById(id, userId);
 }
 
 module.exports = {

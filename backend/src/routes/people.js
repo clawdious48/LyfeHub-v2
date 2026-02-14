@@ -21,9 +21,9 @@ router.use((req, res, next) => {
 // ============================================
 
 // GET /api/people/groups/list - List all groups for user
-router.get('/groups/list', (req, res) => {
+router.get('/groups/list', async (req, res) => {
   try {
-    const groups = peopleGroupsDb.getAllGroups(req.user.id);
+    const groups = await peopleGroupsDb.getAllGroups(req.user.id);
     res.json(groups);
   } catch (error) {
     console.error('Error fetching people groups:', error);
@@ -32,7 +32,7 @@ router.get('/groups/list', (req, res) => {
 });
 
 // POST /api/people/groups - Create new group
-router.post('/groups', (req, res) => {
+router.post('/groups', async (req, res) => {
   try {
     const { name, icon = '👥' } = req.body;
 
@@ -41,13 +41,13 @@ router.post('/groups', (req, res) => {
     }
 
     // Get max position
-    const groups = peopleGroupsDb.getAllGroups(req.user.id);
+    const groups = await peopleGroupsDb.getAllGroups(req.user.id);
     const maxPosition = groups.reduce((max, g) => Math.max(max, g.position), -1);
 
     const id = uuidv4();
-    peopleGroupsDb.insertGroup(id, name.trim(), icon, req.user.id, maxPosition + 1);
+    await peopleGroupsDb.insertGroup(id, name.trim(), icon, req.user.id, maxPosition + 1);
 
-    const group = peopleGroupsDb.getGroupById(id, req.user.id);
+    const group = await peopleGroupsDb.getGroupById(id, req.user.id);
     res.status(201).json(group);
   } catch (error) {
     console.error('Error creating people group:', error);
@@ -56,16 +56,16 @@ router.post('/groups', (req, res) => {
 });
 
 // PUT /api/people/groups/:groupId - Update group
-router.put('/groups/:groupId', (req, res) => {
+router.put('/groups/:groupId', async (req, res) => {
   try {
-    const existing = peopleGroupsDb.getGroupById(req.params.groupId, req.user.id);
+    const existing = await peopleGroupsDb.getGroupById(req.params.groupId, req.user.id);
     if (!existing) {
       return res.status(404).json({ error: 'Group not found' });
     }
 
     const { name, icon, position, collapsed } = req.body;
 
-    peopleGroupsDb.updateGroup(
+    await peopleGroupsDb.updateGroup(
       req.params.groupId,
       name ?? existing.name,
       icon ?? existing.icon,
@@ -74,7 +74,7 @@ router.put('/groups/:groupId', (req, res) => {
       req.user.id
     );
 
-    const group = peopleGroupsDb.getGroupById(req.params.groupId, req.user.id);
+    const group = await peopleGroupsDb.getGroupById(req.params.groupId, req.user.id);
     res.json(group);
   } catch (error) {
     console.error('Error updating people group:', error);
@@ -83,17 +83,17 @@ router.put('/groups/:groupId', (req, res) => {
 });
 
 // PUT /api/people/groups/:groupId/toggle - Toggle group collapsed state
-router.put('/groups/:groupId/toggle', (req, res) => {
+router.put('/groups/:groupId/toggle', async (req, res) => {
   try {
-    const existing = peopleGroupsDb.getGroupById(req.params.groupId, req.user.id);
+    const existing = await peopleGroupsDb.getGroupById(req.params.groupId, req.user.id);
     if (!existing) {
       return res.status(404).json({ error: 'Group not found' });
     }
 
     const newCollapsed = !existing.collapsed;
-    peopleGroupsDb.updateGroupCollapsed(req.params.groupId, newCollapsed, req.user.id);
+    await peopleGroupsDb.updateGroupCollapsed(req.params.groupId, newCollapsed, req.user.id);
 
-    const group = peopleGroupsDb.getGroupById(req.params.groupId, req.user.id);
+    const group = await peopleGroupsDb.getGroupById(req.params.groupId, req.user.id);
     res.json(group);
   } catch (error) {
     console.error('Error toggling people group:', error);
@@ -102,10 +102,10 @@ router.put('/groups/:groupId/toggle', (req, res) => {
 });
 
 // POST /api/people/groups/collapse-all - Collapse all groups
-router.post('/groups/collapse-all', (req, res) => {
+router.post('/groups/collapse-all', async (req, res) => {
   try {
-    peopleGroupsDb.collapseAllGroups(req.user.id);
-    const groups = peopleGroupsDb.getAllGroups(req.user.id);
+    await peopleGroupsDb.collapseAllGroups(req.user.id);
+    const groups = await peopleGroupsDb.getAllGroups(req.user.id);
     res.json(groups);
   } catch (error) {
     console.error('Error collapsing people groups:', error);
@@ -114,10 +114,10 @@ router.post('/groups/collapse-all', (req, res) => {
 });
 
 // POST /api/people/groups/expand-all - Expand all groups
-router.post('/groups/expand-all', (req, res) => {
+router.post('/groups/expand-all', async (req, res) => {
   try {
-    peopleGroupsDb.expandAllGroups(req.user.id);
-    const groups = peopleGroupsDb.getAllGroups(req.user.id);
+    await peopleGroupsDb.expandAllGroups(req.user.id);
+    const groups = await peopleGroupsDb.getAllGroups(req.user.id);
     res.json(groups);
   } catch (error) {
     console.error('Error expanding people groups:', error);
@@ -126,7 +126,7 @@ router.post('/groups/expand-all', (req, res) => {
 });
 
 // POST /api/people/groups/reorder - Reorder groups
-router.post('/groups/reorder', (req, res) => {
+router.post('/groups/reorder', async (req, res) => {
   try {
     const { order } = req.body; // Array of { id, position }
     if (!Array.isArray(order)) {
@@ -135,14 +135,14 @@ router.post('/groups/reorder', (req, res) => {
 
     // Validate all groups belong to user
     for (const item of order) {
-      const group = peopleGroupsDb.getGroupById(item.id, req.user.id);
+      const group = await peopleGroupsDb.getGroupById(item.id, req.user.id);
       if (!group) {
         return res.status(404).json({ error: `Group ${item.id} not found` });
       }
     }
 
-    peopleGroupsDb.reorderGroups(order, req.user.id);
-    const groups = peopleGroupsDb.getAllGroups(req.user.id);
+    await peopleGroupsDb.reorderGroups(order, req.user.id);
+    const groups = await peopleGroupsDb.getAllGroups(req.user.id);
     res.json(groups);
   } catch (error) {
     console.error('Error reordering people groups:', error);
@@ -151,22 +151,22 @@ router.post('/groups/reorder', (req, res) => {
 });
 
 // DELETE /api/people/groups/:groupId - Delete group (people become ungrouped)
-router.delete('/groups/:groupId', (req, res) => {
+router.delete('/groups/:groupId', async (req, res) => {
   try {
-    const existing = peopleGroupsDb.getGroupById(req.params.groupId, req.user.id);
+    const existing = await peopleGroupsDb.getGroupById(req.params.groupId, req.user.id);
     if (!existing) {
       return res.status(404).json({ error: 'Group not found' });
     }
 
     // Ungroup all people in this group
-    const people = peopleDb.getAllPeople(req.user.id);
+    const people = await peopleDb.getAllPeople(req.user.id);
     for (const person of people) {
       if (person.group_id === req.params.groupId) {
-        peopleGroupsDb.updatePersonGroup(person.id, null, 0, req.user.id);
+        await peopleGroupsDb.updatePersonGroup(person.id, null, 0, req.user.id);
       }
     }
 
-    peopleGroupsDb.deleteGroup(req.params.groupId, req.user.id);
+    await peopleGroupsDb.deleteGroup(req.params.groupId, req.user.id);
     res.json({ success: true });
   } catch (error) {
     console.error('Error deleting people group:', error);
@@ -179,9 +179,9 @@ router.delete('/groups/:groupId', (req, res) => {
 // ============================================
 
 // GET /api/people - List all people for user
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const people = peopleDb.getAllPeople(req.user.id);
+    const people = await peopleDb.getAllPeople(req.user.id);
     res.json(people);
   } catch (error) {
     console.error('Error fetching people:', error);
@@ -190,10 +190,10 @@ router.get('/', (req, res) => {
 });
 
 // GET /api/people/by-email/:email - Find person by email
-router.get("/by-email/:email", (req, res) => {
+router.get("/by-email/:email", async (req, res) => {
   try {
     const email = decodeURIComponent(req.params.email);
-    const person = peopleDb.findByEmail(req.user.id, email);
+    const person = await peopleDb.findByEmail(req.user.id, email);
     if (!person) {
       return res.status(404).json({ error: "Person not found", found: false });
     }
@@ -205,9 +205,9 @@ router.get("/by-email/:email", (req, res) => {
 });
 
 // POST /api/people - Create new person
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
-    const person = peopleDb.createPerson(req.body, req.user.id);
+    const person = await peopleDb.createPerson(req.body, req.user.id);
     res.status(201).json(person);
   } catch (error) {
     console.error('Error creating person:', error);
@@ -216,9 +216,9 @@ router.post('/', (req, res) => {
 });
 
 // GET /api/people/:id - Get single person
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const person = peopleDb.getPersonById(req.params.id, req.user.id);
+    const person = await peopleDb.getPersonById(req.params.id, req.user.id);
     if (!person) {
       return res.status(404).json({ error: 'Person not found' });
     }
@@ -230,9 +230,9 @@ router.get('/:id', (req, res) => {
 });
 
 // PUT /api/people/:id - Update person
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
-    const person = peopleDb.updatePerson(req.params.id, req.body, req.user.id);
+    const person = await peopleDb.updatePerson(req.params.id, req.body, req.user.id);
     if (!person) {
       return res.status(404).json({ error: 'Person not found' });
     }
@@ -244,9 +244,9 @@ router.put('/:id', (req, res) => {
 });
 
 // DELETE /api/people/:id - Delete person
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
-    const success = peopleDb.deletePerson(req.params.id, req.user.id);
+    const success = await peopleDb.deletePerson(req.params.id, req.user.id);
     if (!success) {
       return res.status(404).json({ error: 'Person not found' });
     }
@@ -258,9 +258,9 @@ router.delete('/:id', (req, res) => {
 });
 
 // PUT /api/people/:id/group - Assign person to group
-router.put('/:id/group', (req, res) => {
+router.put('/:id/group', async (req, res) => {
   try {
-    const person = peopleDb.getPersonById(req.params.id, req.user.id);
+    const person = await peopleDb.getPersonById(req.params.id, req.user.id);
     if (!person) {
       return res.status(404).json({ error: 'Person not found' });
     }
@@ -269,15 +269,15 @@ router.put('/:id/group', (req, res) => {
 
     // Validate group exists if provided
     if (group_id) {
-      const group = peopleGroupsDb.getGroupById(group_id, req.user.id);
+      const group = await peopleGroupsDb.getGroupById(group_id, req.user.id);
       if (!group) {
         return res.status(404).json({ error: 'Group not found' });
       }
     }
 
-    peopleGroupsDb.updatePersonGroup(req.params.id, group_id || null, position, req.user.id);
+    await peopleGroupsDb.updatePersonGroup(req.params.id, group_id || null, position, req.user.id);
 
-    const updatedPerson = peopleDb.getPersonById(req.params.id, req.user.id);
+    const updatedPerson = await peopleDb.getPersonById(req.params.id, req.user.id);
     res.json(updatedPerson);
   } catch (error) {
     console.error('Error updating person group:', error);

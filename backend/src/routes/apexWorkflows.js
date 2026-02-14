@@ -12,9 +12,9 @@ router.use(authMiddleware, requireOrgMember);
 // ============================================
 
 // GET / — list templates
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const templates = wf.getAllTemplates(req.org.id, {
+    const templates = await wf.getAllTemplates(req.org.id, {
       status: req.query.status,
       jobType: req.query.jobType
     });
@@ -26,9 +26,9 @@ router.get('/', (req, res) => {
 });
 
 // POST / — create template
-router.post('/', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.post('/', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const template = wf.createTemplate(req.org.id, { ...req.body, created_by: req.user.id });
+    const template = await wf.createTemplate(req.org.id, { ...req.body, created_by: req.user.id });
     res.status(201).json(template);
   } catch (err) {
     console.error('Error creating template:', err);
@@ -37,9 +37,9 @@ router.post('/', requireOrgRole('management', 'office_coordinator'), (req, res) 
 });
 
 // GET /:id — get template with steps and gates
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const template = wf.getTemplateById(req.params.id, req.org.id);
+    const template = await wf.getTemplateById(req.params.id, req.org.id);
     if (!template) return res.status(404).json({ error: 'Template not found' });
     res.json(template);
   } catch (err) {
@@ -49,9 +49,9 @@ router.get('/:id', (req, res) => {
 });
 
 // PATCH /:id — update template
-router.patch('/:id', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.patch('/:id', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const template = wf.updateTemplate(req.params.id, req.body, req.org.id);
+    const template = await wf.updateTemplate(req.params.id, req.body, req.org.id);
     if (!template) return res.status(404).json({ error: 'Template not found' });
     res.json(template);
   } catch (err) {
@@ -61,9 +61,9 @@ router.patch('/:id', requireOrgRole('management', 'office_coordinator'), (req, r
 });
 
 // POST /:id/publish — publish template
-router.post('/:id/publish', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.post('/:id/publish', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const template = wf.publishTemplate(req.params.id, req.org.id);
+    const template = await wf.publishTemplate(req.params.id, req.org.id);
     if (!template) return res.status(404).json({ error: 'Template not found' });
     res.json(template);
   } catch (err) {
@@ -73,9 +73,9 @@ router.post('/:id/publish', requireOrgRole('management', 'office_coordinator'), 
 });
 
 // POST /:id/duplicate — duplicate template
-router.post('/:id/duplicate', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.post('/:id/duplicate', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const template = wf.duplicateTemplate(req.params.id, req.org.id);
+    const template = await wf.duplicateTemplate(req.params.id, req.org.id);
     if (!template) return res.status(404).json({ error: 'Template not found' });
     res.status(201).json(template);
   } catch (err) {
@@ -85,9 +85,9 @@ router.post('/:id/duplicate', requireOrgRole('management', 'office_coordinator')
 });
 
 // DELETE /:id — archive template
-router.delete('/:id', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.delete('/:id', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const template = wf.archiveTemplate(req.params.id, req.org.id);
+    const template = await wf.archiveTemplate(req.params.id, req.org.id);
     if (!template) return res.status(404).json({ error: 'Template not found' });
     res.json(template);
   } catch (err) {
@@ -101,12 +101,12 @@ router.delete('/:id', requireOrgRole('management', 'office_coordinator'), (req, 
 // ============================================
 
 // POST /:id/steps — add step
-router.post('/:id/steps', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.post('/:id/steps', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     // Verify template belongs to org
-    const template = wf.getTemplateById(req.params.id, req.org.id);
+    const template = await wf.getTemplateById(req.params.id, req.org.id);
     if (!template) return res.status(404).json({ error: 'Template not found' });
-    const step = wf.addStep(req.params.id, req.body);
+    const step = await wf.addStep(req.params.id, req.body);
     res.status(201).json(step);
   } catch (err) {
     console.error('Error adding step:', err);
@@ -115,11 +115,11 @@ router.post('/:id/steps', requireOrgRole('management', 'office_coordinator'), (r
 });
 
 // PATCH /:id/steps/:stepId — update step
-router.patch('/:id/steps/:stepId', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.patch('/:id/steps/:stepId', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const template = wf.getTemplateById(req.params.id, req.org.id);
+    const template = await wf.getTemplateById(req.params.id, req.org.id);
     if (!template) return res.status(404).json({ error: 'Template not found' });
-    const step = wf.updateStep(req.params.stepId, req.body);
+    const step = await wf.updateStep(req.params.stepId, req.body);
     if (!step) return res.status(404).json({ error: 'Step not found' });
     res.json(step);
   } catch (err) {
@@ -129,11 +129,11 @@ router.patch('/:id/steps/:stepId', requireOrgRole('management', 'office_coordina
 });
 
 // DELETE /:id/steps/:stepId — delete step
-router.delete('/:id/steps/:stepId', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.delete('/:id/steps/:stepId', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const template = wf.getTemplateById(req.params.id, req.org.id);
+    const template = await wf.getTemplateById(req.params.id, req.org.id);
     if (!template) return res.status(404).json({ error: 'Template not found' });
-    const success = wf.deleteStep(req.params.stepId);
+    const success = await wf.deleteStep(req.params.stepId);
     if (!success) return res.status(404).json({ error: 'Step not found' });
     res.json({ success: true });
   } catch (err) {
@@ -143,11 +143,11 @@ router.delete('/:id/steps/:stepId', requireOrgRole('management', 'office_coordin
 });
 
 // POST /:id/steps/reorder — bulk reorder
-router.post('/:id/steps/reorder', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.post('/:id/steps/reorder', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const template = wf.getTemplateById(req.params.id, req.org.id);
+    const template = await wf.getTemplateById(req.params.id, req.org.id);
     if (!template) return res.status(404).json({ error: 'Template not found' });
-    const steps = wf.reorderSteps(req.params.id, req.body.stepIds);
+    const steps = await wf.reorderSteps(req.params.id, req.body.stepIds);
     res.json({ steps });
   } catch (err) {
     console.error('Error reordering steps:', err);
@@ -160,11 +160,11 @@ router.post('/:id/steps/reorder', requireOrgRole('management', 'office_coordinat
 // ============================================
 
 // POST /:id/steps/:stepId/gates — add gate
-router.post('/:id/steps/:stepId/gates', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.post('/:id/steps/:stepId/gates', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const template = wf.getTemplateById(req.params.id, req.org.id);
+    const template = await wf.getTemplateById(req.params.id, req.org.id);
     if (!template) return res.status(404).json({ error: 'Template not found' });
-    const gate = wf.addGate(req.params.stepId, req.body);
+    const gate = await wf.addGate(req.params.stepId, req.body);
     res.status(201).json(gate);
   } catch (err) {
     console.error('Error adding gate:', err);
@@ -173,11 +173,11 @@ router.post('/:id/steps/:stepId/gates', requireOrgRole('management', 'office_coo
 });
 
 // PATCH /:id/steps/:stepId/gates/:gateId — update gate
-router.patch('/:id/steps/:stepId/gates/:gateId', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.patch('/:id/steps/:stepId/gates/:gateId', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const template = wf.getTemplateById(req.params.id, req.org.id);
+    const template = await wf.getTemplateById(req.params.id, req.org.id);
     if (!template) return res.status(404).json({ error: 'Template not found' });
-    const gate = wf.updateGate(req.params.gateId, req.body);
+    const gate = await wf.updateGate(req.params.gateId, req.body);
     if (!gate) return res.status(404).json({ error: 'Gate not found' });
     res.json(gate);
   } catch (err) {
@@ -187,11 +187,11 @@ router.patch('/:id/steps/:stepId/gates/:gateId', requireOrgRole('management', 'o
 });
 
 // DELETE /:id/steps/:stepId/gates/:gateId — delete gate
-router.delete('/:id/steps/:stepId/gates/:gateId', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+router.delete('/:id/steps/:stepId/gates/:gateId', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const template = wf.getTemplateById(req.params.id, req.org.id);
+    const template = await wf.getTemplateById(req.params.id, req.org.id);
     if (!template) return res.status(404).json({ error: 'Template not found' });
-    const success = wf.deleteGate(req.params.gateId);
+    const success = await wf.deleteGate(req.params.gateId);
     if (!success) return res.status(404).json({ error: 'Gate not found' });
     res.json({ success: true });
   } catch (err) {

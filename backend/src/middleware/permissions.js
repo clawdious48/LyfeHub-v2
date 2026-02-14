@@ -32,20 +32,20 @@ function canEditEntry(req, entry) {
   return false;
 }
 
-const checkPhaseAssignment = db.prepare(
-  'SELECT 1 FROM phase_assignments WHERE phase_id = ? AND user_id = ?'
-);
-
 /**
  * Returns true if the user may access the given phase:
  *  - management and office_coordinator bypass
  *  - otherwise checks phase_assignments table
  */
-function requirePhaseAccess(req, phaseId) {
+async function requirePhaseAccess(req, phaseId) {
   const roles2 = req.user?.roles || req.user?.role || [];
   const rolesArr2 = Array.isArray(roles2) ? roles2 : [roles2];
   if (rolesArr2.includes('management') || rolesArr2.includes('office_coordinator')) return true;
-  return !!checkPhaseAssignment.get(phaseId, req.user?.id);
+  const row = await db.getOne(
+    'SELECT 1 FROM phase_assignments WHERE phase_id = $1 AND user_id = $2',
+    [phaseId, req.user?.id]
+  );
+  return !!row;
 }
 
 module.exports = { requireRole, canEditEntry, requirePhaseAccess };

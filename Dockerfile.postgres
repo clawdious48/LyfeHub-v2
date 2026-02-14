@@ -1,0 +1,55 @@
+# LyfeHub v2 — PostgreSQL Dockerfile
+# Multi-stage build for Node 20 Alpine
+
+# ============================================
+# Stage 1: Build
+# ============================================
+FROM node:20-alpine AS builder
+
+WORKDIR /build
+
+# Copy package files first (better layer caching)
+COPY backend/package*.json ./backend/
+
+# Install backend dependencies
+WORKDIR /build/backend
+RUN npm ci --only=production
+
+# Copy source files
+WORKDIR /build
+COPY backend ./backend
+COPY frontend ./frontend
+
+# ============================================
+# Stage 2: Runtime
+# ============================================
+FROM node:20-alpine AS runtime
+
+# Security: run as non-root user
+RUN addgroup -g 1001 kanban && \
+    adduser -u 1001 -G kanban -s /bin/sh -D kanban
+
+# Create app directory
+WORKDIR /app
+
+# Copy built application from builder stage
+COPY --from=builder --chown=kanban:kanban /build/backend ./backend
+COPY --from=builder --chown=kanban:kanban /build/frontend ./frontend
+
+# Set environment
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Expose port
+EXPOSE 3000
+
+# Switch to non-root user
+USER kanban
+
+# Health check - hits the API health endpoint
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
+
+# Start the server
+WORKDIR /app/backend
+CMD ["node", "src/index.js"]

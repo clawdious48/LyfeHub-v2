@@ -28,7 +28,7 @@ router.use(authMiddleware);
  * GET /api/users/me
  * Get current user profile
  */
-router.get('/me', (req, res) => {
+router.get('/me', async (req, res) => {
   try {
     // System users (API key) don't have a profile
     if (req.isSystemUser) {
@@ -38,7 +38,7 @@ router.get('/me', (req, res) => {
       });
     }
     
-    const user = findUserById(req.user.id);
+    const user = await findUserById(req.user.id);
     if (!user) {
       return res.status(404).json({
         error: 'User not found',
@@ -46,7 +46,7 @@ router.get('/me', (req, res) => {
       });
     }
     
-    res.json({ user: getSafeUser(user) });
+    res.json({ user: await getSafeUser(user) });
   } catch (err) {
     console.error('Error fetching profile:', err);
     res.status(500).json({ 
@@ -60,7 +60,7 @@ router.get('/me', (req, res) => {
  * PATCH /api/users/me
  * Update current user profile (name, settings)
  */
-router.patch('/me', (req, res) => {
+router.patch('/me', async (req, res) => {
   try {
     if (req.isSystemUser) {
       return res.status(400).json({
@@ -79,7 +79,7 @@ router.patch('/me', (req, res) => {
       });
     }
     
-    const user = updateUser(req.user.id, {
+    const user = await updateUser(req.user.id, {
       name: name?.trim(),
       settings
     });
@@ -91,7 +91,7 @@ router.patch('/me', (req, res) => {
       });
     }
     
-    res.json({ user: getSafeUser(user) });
+    res.json({ user: await getSafeUser(user) });
   } catch (err) {
     console.error('Error updating profile:', err);
     res.status(500).json({ 
@@ -160,10 +160,10 @@ router.put('/me/password', async (req, res) => {
  * GET /api/users/team-assignments
  * Returns all employees with per-role active job assignment counts
  */
-router.get('/team-assignments', requireRole('management', 'office_coordinator'), (req, res) => {
+router.get('/team-assignments', requireRole('management', 'office_coordinator'), async (req, res) => {
   try {
-    const users = getAllUsers();
-    const counts = getAssignmentCounts();
+    const users = await getAllUsers();
+    const counts = await getAssignmentCounts();
 
     const result = users.map(u => {
       const key = (u.name || '').toLowerCase().trim();
@@ -189,9 +189,9 @@ router.get('/team-assignments', requireRole('management', 'office_coordinator'),
  * GET /api/users/employees
  * List all users
  */
-router.get('/employees', requireRole('management'), (req, res) => {
+router.get('/employees', requireRole('management'), async (req, res) => {
   try {
-    const users = getAllUsers();
+    const users = await getAllUsers();
     res.json(users);
   } catch (err) {
     console.error('Error listing employees:', err);
@@ -203,7 +203,7 @@ router.get('/employees', requireRole('management'), (req, res) => {
  * POST /api/users/employees
  * Create a new employee account
  */
-router.post('/employees', requireRole('management'), (req, res) => {
+router.post('/employees', requireRole('management'), async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
@@ -219,12 +219,12 @@ router.post('/employees', requireRole('management'), (req, res) => {
       return res.status(400).json({ error: `Invalid role. Must be one of: ${VALID_ROLES.join(', ')}`, code: 'INVALID_ROLE' });
     }
 
-    const existing = findUserByEmail(email);
+    const existing = await findUserByEmail(email);
     if (existing) {
       return res.status(409).json({ error: 'A user with this email already exists', code: 'EMAIL_EXISTS' });
     }
 
-    const user = createUserSync({ name, email, password, role: role || 'field_tech' });
+    const user = await createUserSync({ name, email, password, role: role || 'field_tech' });
     res.status(201).json(user);
   } catch (err) {
     console.error('Error creating employee:', err);
@@ -236,10 +236,10 @@ router.post('/employees', requireRole('management'), (req, res) => {
  * PATCH /api/users/employees/:id
  * Update employee role or reset password
  */
-router.patch('/employees/:id', requireRole('management'), (req, res) => {
+router.patch('/employees/:id', requireRole('management'), async (req, res) => {
   try {
     const { role, password } = req.body;
-    const targetUser = findUserById(req.params.id);
+    const targetUser = await findUserById(req.params.id);
 
     if (!targetUser) {
       return res.status(404).json({ error: 'User not found', code: 'USER_NOT_FOUND' });
@@ -249,17 +249,17 @@ router.patch('/employees/:id', requireRole('management'), (req, res) => {
       if (!VALID_ROLES.includes(role)) {
         return res.status(400).json({ error: `Invalid role. Must be one of: ${VALID_ROLES.join(', ')}`, code: 'INVALID_ROLE' });
       }
-      updateUserRole(req.params.id, role);
+      await updateUserRole(req.params.id, role);
     }
 
     if (password) {
       if (password.length < 8) {
         return res.status(400).json({ error: 'Password must be at least 8 characters', code: 'WEAK_PASSWORD' });
       }
-      resetUserPassword(req.params.id, password);
+      await resetUserPassword(req.params.id, password);
     }
 
-    const updated = findUserById(req.params.id);
+    const updated = await findUserById(req.params.id);
     res.json({ id: updated.id, name: updated.name, email: updated.email, role: updated.role, created_at: updated.created_at });
   } catch (err) {
     console.error('Error updating employee:', err);
@@ -271,18 +271,18 @@ router.patch('/employees/:id', requireRole('management'), (req, res) => {
  * DELETE /api/users/employees/:id
  * Delete an employee account (prevent self-deletion)
  */
-router.delete('/employees/:id', requireRole('management'), (req, res) => {
+router.delete('/employees/:id', requireRole('management'), async (req, res) => {
   try {
     if (req.params.id === req.user.id) {
       return res.status(400).json({ error: 'Cannot delete your own account', code: 'SELF_DELETE' });
     }
 
-    const targetUser = findUserById(req.params.id);
+    const targetUser = await findUserById(req.params.id);
     if (!targetUser) {
       return res.status(404).json({ error: 'User not found', code: 'USER_NOT_FOUND' });
     }
 
-    deleteUser(req.params.id);
+    await deleteUser(req.params.id);
     res.json({ success: true });
   } catch (err) {
     console.error('Error deleting employee:', err);
@@ -294,7 +294,7 @@ router.delete('/employees/:id', requireRole('management'), (req, res) => {
  * POST /api/users/employees/bulk-delete
  * Delete multiple employee accounts at once
  */
-router.post('/employees/bulk-delete', requireRole('management'), (req, res) => {
+router.post('/employees/bulk-delete', requireRole('management'), async (req, res) => {
   try {
     const { ids } = req.body;
     if (!Array.isArray(ids) || ids.length === 0) {
@@ -307,12 +307,12 @@ router.post('/employees/bulk-delete', requireRole('management'), (req, res) => {
         results.skipped.push({ id, reason: 'Cannot delete your own account' });
         continue;
       }
-      const user = findUserById(id);
+      const user = await findUserById(id);
       if (!user) {
         results.skipped.push({ id, reason: 'User not found' });
         continue;
       }
-      deleteUser(id);
+      await deleteUser(id);
       results.deleted.push(id);
     }
 

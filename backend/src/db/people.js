@@ -8,34 +8,32 @@ const { v4: uuidv4 } = require('uuid');
 /**
  * Get all people for a user
  */
-function getAllPeople(userId) {
-  const stmt = db.prepare(`
+async function getAllPeople(userId) {
+  return await db.getAll(`
     SELECT * FROM people
-    WHERE user_id = ?
+    WHERE user_id = $1
     ORDER BY position ASC, name ASC
-  `);
-  return stmt.all(userId);
+  `, [userId]);
 }
 
 /**
  * Get a single person by ID
  */
-function getPersonById(id, userId) {
-  const stmt = db.prepare(`
+async function getPersonById(id, userId) {
+  return await db.getOne(`
     SELECT * FROM people
-    WHERE id = ? AND user_id = ?
-  `);
-  return stmt.get(id, userId);
+    WHERE id = $1 AND user_id = $2
+  `, [id, userId]);
 }
 
 /**
  * Create a new person
  */
-function createPerson(data, userId) {
+async function createPerson(data, userId) {
   const id = uuidv4();
   const now = new Date().toISOString();
 
-  const stmt = db.prepare(`
+  await db.run(`
     INSERT INTO people (
       id, user_id, name, nickname, photo_url, birthday, gender,
       email, email_secondary, phone_mobile, phone_work, phone_home,
@@ -53,25 +51,23 @@ function createPerson(data, userId) {
       organization_id,
       created_at, updated_at
     ) VALUES (
-      ?, ?, ?, ?, ?, ?, ?,
-      ?, ?, ?, ?, ?,
-      ?, ?, ?, ?, ?, ?,
-      ?, ?, ?,
-      ?, ?, ?, ?,
-      ?, ?, ?, ?,
-      ?, ?, ?, ?,
-      ?, ?, ?, ?, ?, ?,
-      ?, ?, ?, ?, ?, ?,
-      ?, ?, ?, ?, ?, ?,
-      ?, ?, ?,
-      ?, ?, ?,
-      ?, ?, ?,
-      ?,
-      ?, ?
+      $1, $2, $3, $4, $5, $6, $7,
+      $8, $9, $10, $11, $12,
+      $13, $14, $15, $16, $17, $18,
+      $19, $20, $21,
+      $22, $23, $24, $25,
+      $26, $27, $28, $29,
+      $30, $31, $32, $33,
+      $34, $35, $36, $37, $38, $39,
+      $40, $41, $42, $43, $44, $45,
+      $46, $47, $48, $49, $50, $51,
+      $52, $53, $54,
+      $55, $56, $57,
+      $58, $59, $60,
+      $61,
+      $62, $63
     )
-  `);
-
-  stmt.run(
+  `, [
     id, userId,
     data.name || 'Unnamed Person',
     data.nickname || '',
@@ -133,86 +129,20 @@ function createPerson(data, userId) {
     data.how_they_support_me || '',
     data.organization_id || null,
     now, now
-  );
+  ]);
 
-  return getPersonById(id, userId);
+  return await getPersonById(id, userId);
 }
 
 /**
  * Update a person
  */
-function updatePerson(id, data, userId) {
-  const existing = getPersonById(id, userId);
+async function updatePerson(id, data, userId) {
+  const existing = await getPersonById(id, userId);
   if (!existing) return null;
 
   const now = new Date().toISOString();
 
-  const stmt = db.prepare(`
-    UPDATE people SET
-      name = ?,
-      nickname = ?,
-      photo_url = ?,
-      birthday = ?,
-      gender = ?,
-      email = ?,
-      email_secondary = ?,
-      phone_mobile = ?,
-      phone_work = ?,
-      phone_home = ?,
-      address = ?,
-      city = ?,
-      state = ?,
-      country = ?,
-      zip = ?,
-      timezone = ?,
-      company = ?,
-      job_title = ?,
-      industry = ?,
-      website = ?,
-      linkedin = ?,
-      twitter = ?,
-      instagram = ?,
-      relationship = ?,
-      how_we_met = ?,
-      tags = ?,
-      introduced_by = ?,
-      notes = ?,
-      last_contacted = ?,
-      follow_up = ?,
-      important = ?,
-      mbti_type = ?,
-      enneagram = ?,
-      love_language = ?,
-      communication_style = ?,
-      preferred_contact_method = ?,
-      best_time_to_reach = ?,
-      relationship_strength = ?,
-      energy_impact = ?,
-      trust_level = ?,
-      reciprocity = ?,
-      contact_frequency = ?,
-      desired_frequency = ?,
-      what_i_admire = ?,
-      what_i_can_learn = ?,
-      how_they_make_me_feel = ?,
-      shared_interests = ?,
-      conversation_topics = ?,
-      sensitive_topics = ?,
-      date_met = ?,
-      how_relationship_evolved = ?,
-      past_conflicts = ?,
-      gift_ideas = ?,
-      favorite_things = ?,
-      allergies_dislikes = ?,
-      relationship_goals = ?,
-      how_i_can_support = ?,
-      how_they_support_me = ?,
-      organization_id = ?,
-      updated_at = ?
-    WHERE id = ? AND user_id = ?
-  `);
-
-  // Helper to get value with fallback to existing
   const val = (key, isJson = false) => {
     if (data[key] === undefined) {
       return isJson ? existing[key] : existing[key];
@@ -220,7 +150,70 @@ function updatePerson(id, data, userId) {
     return isJson ? JSON.stringify(data[key]) : data[key];
   };
 
-  stmt.run(
+  await db.run(`
+    UPDATE people SET
+      name = $1,
+      nickname = $2,
+      photo_url = $3,
+      birthday = $4,
+      gender = $5,
+      email = $6,
+      email_secondary = $7,
+      phone_mobile = $8,
+      phone_work = $9,
+      phone_home = $10,
+      address = $11,
+      city = $12,
+      state = $13,
+      country = $14,
+      zip = $15,
+      timezone = $16,
+      company = $17,
+      job_title = $18,
+      industry = $19,
+      website = $20,
+      linkedin = $21,
+      twitter = $22,
+      instagram = $23,
+      relationship = $24,
+      how_we_met = $25,
+      tags = $26,
+      introduced_by = $27,
+      notes = $28,
+      last_contacted = $29,
+      follow_up = $30,
+      important = $31,
+      mbti_type = $32,
+      enneagram = $33,
+      love_language = $34,
+      communication_style = $35,
+      preferred_contact_method = $36,
+      best_time_to_reach = $37,
+      relationship_strength = $38,
+      energy_impact = $39,
+      trust_level = $40,
+      reciprocity = $41,
+      contact_frequency = $42,
+      desired_frequency = $43,
+      what_i_admire = $44,
+      what_i_can_learn = $45,
+      how_they_make_me_feel = $46,
+      shared_interests = $47,
+      conversation_topics = $48,
+      sensitive_topics = $49,
+      date_met = $50,
+      how_relationship_evolved = $51,
+      past_conflicts = $52,
+      gift_ideas = $53,
+      favorite_things = $54,
+      allergies_dislikes = $55,
+      relationship_goals = $56,
+      how_i_can_support = $57,
+      how_they_support_me = $58,
+      organization_id = $59,
+      updated_at = $60
+    WHERE id = $61 AND user_id = $62
+  `, [
     data.name !== undefined ? data.name : existing.name,
     val('nickname'),
     val('photo_url'),
@@ -282,55 +275,51 @@ function updatePerson(id, data, userId) {
     data.organization_id !== undefined ? data.organization_id : existing.organization_id,
     now,
     id, userId
-  );
+  ]);
 
-  return getPersonById(id, userId);
+  return await getPersonById(id, userId);
 }
 
 /**
  * Delete a person
  */
-function deletePerson(id, userId) {
-  const stmt = db.prepare(`
+async function deletePerson(id, userId) {
+  const result = await db.run(`
     DELETE FROM people
-    WHERE id = ? AND user_id = ?
-  `);
-  const result = stmt.run(id, userId);
-  return result.changes > 0;
+    WHERE id = $1 AND user_id = $2
+  `, [id, userId]);
+  return result.rowCount > 0;
 }
 
 /**
  * Get people count for a user
  */
-function getPeopleCount(userId) {
-  const stmt = db.prepare('SELECT COUNT(*) as count FROM people WHERE user_id = ?');
-  const result = stmt.get(userId);
-  return result ? result.count : 0;
+async function getPeopleCount(userId) {
+  const result = await db.getOne('SELECT COUNT(*) as count FROM people WHERE user_id = $1', [userId]);
+  return result ? parseInt(result.count) : 0;
 }
 
 /**
  * Search people by name or other fields
  */
-function searchPeople(userId, query) {
+async function searchPeople(userId, query) {
   const searchTerm = `%${query}%`;
-  const stmt = db.prepare(`
+  return await db.getAll(`
     SELECT * FROM people
-    WHERE user_id = ?
-      AND (name LIKE ? OR nickname LIKE ? OR email LIKE ? OR company LIKE ? OR notes LIKE ?)
+    WHERE user_id = $1
+      AND (name ILIKE $2 OR nickname ILIKE $3 OR email ILIKE $4 OR company ILIKE $5 OR notes ILIKE $6)
     ORDER BY name ASC
-  `);
-  return stmt.all(userId, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
+  `, [userId, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm]);
 }
 
 /**
  * Find a person by email address
  */
-function findByEmail(userId, email) {
-  const stmt = db.prepare(`
+async function findByEmail(userId, email) {
+  return await db.getOne(`
     SELECT * FROM people
-    WHERE user_id = ? AND (LOWER(email) = LOWER(?) OR LOWER(email_secondary) = LOWER(?))
-  `);
-  return stmt.get(userId, email, email);
+    WHERE user_id = $1 AND (LOWER(email) = LOWER($2) OR LOWER(email_secondary) = LOWER($3))
+  `, [userId, email, email]);
 }
 
 module.exports = {

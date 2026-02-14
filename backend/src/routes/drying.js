@@ -29,8 +29,8 @@ const ALLOWED_IMAGE_TYPES = [
  * @param {string} jobId - The apex_jobs.id
  * @returns {object|null} The drying log row or null
  */
-function requireLog(jobId) {
-  return dryingLogs.getLogByJobId(jobId);
+async function requireLog(jobId) {
+  return await dryingLogs.getLogByJobId(jobId);
 }
 
 // ============================================
@@ -62,9 +62,9 @@ const upload = multer({ storage, fileFilter });
 // ============================================
 
 // GET /log - Get the drying log for this job
-router.get('/log', (req, res) => {
+router.get('/log', async (req, res) => {
   try {
-    const log = requireLog(req.params.id);
+    const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
     res.json(log);
   } catch (err) {
@@ -74,18 +74,18 @@ router.get('/log', (req, res) => {
 });
 
 // POST /log - Create a drying log for this job (with rooms pre-populated from areas_affected)
-router.post('/log', (req, res) => {
+router.post('/log', async (req, res) => {
   try {
     // Check if log already exists
-    const existing = requireLog(req.params.id);
+    const existing = await requireLog(req.params.id);
     if (existing) return res.status(409).json({ error: 'Drying log already exists for this job', log: existing });
 
     // Read the job's areas_affected field and parse into room names
-    const job = db.prepare('SELECT areas_affected FROM apex_jobs WHERE id = ?').get(req.params.id);
+    const job = await db.getOne('SELECT areas_affected FROM apex_jobs WHERE id = $1', [req.params.id]);
     const areasText = (job && job.areas_affected) || '';
     const roomNames = areasText.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
 
-    const result = dryingLogs.createDryingLogWithRooms(req.params.id, roomNames);
+    const result = await dryingLogs.createDryingLogWithRooms(req.params.id, roomNames);
     res.status(201).json(result);
   } catch (err) {
     console.error('Error creating drying log:', err);
@@ -94,17 +94,17 @@ router.post('/log', (req, res) => {
 });
 
 // PATCH /log - Update drying log properties (e.g. setup_complete)
-router.patch('/log', (req, res) => {
+router.patch('/log', async (req, res) => {
     try {
-        const log = requireLog(req.params.id);
+        const log = await requireLog(req.params.id);
         if (!log) return res.status(404).json({ error: 'No drying log for this job' });
 
         if (req.body.setup_complete !== undefined) {
             const value = req.body.setup_complete ? 1 : 0;
-            dryingLogs.updateSetupComplete(log.id, value);
+            await dryingLogs.updateSetupComplete(log.id, value);
         }
 
-        const updated = dryingLogs.getLogByJobId(req.params.id);
+        const updated = await dryingLogs.getLogByJobId(req.params.id);
         res.json(updated);
     } catch (err) {
         console.error('Error updating drying log:', err);
@@ -117,11 +117,11 @@ router.patch('/log', (req, res) => {
 // ============================================
 
 // GET /chambers - List all chambers for this job's drying log
-router.get('/chambers', (req, res) => {
+router.get('/chambers', async (req, res) => {
   try {
-    const log = requireLog(req.params.id);
+    const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
-    const chambers = dryingLogs.getChambersByLogId(log.id);
+    const chambers = await dryingLogs.getChambersByLogId(log.id);
     res.json(chambers);
   } catch (err) {
     console.error('Error getting chambers:', err);
@@ -130,15 +130,15 @@ router.get('/chambers', (req, res) => {
 });
 
 // POST /chambers - Create a chamber
-router.post('/chambers', (req, res) => {
+router.post('/chambers', async (req, res) => {
   try {
-    const log = requireLog(req.params.id);
+    const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
 
     const { name, color, position } = req.body;
     if (!name) return res.status(400).json({ error: 'name is required' });
 
-    const chamber = dryingLogs.insertChamber(log.id, name, color, position);
+    const chamber = await dryingLogs.insertChamber(log.id, name, color, position);
     res.status(201).json(chamber);
   } catch (err) {
     console.error('Error creating chamber:', err);
@@ -147,9 +147,9 @@ router.post('/chambers', (req, res) => {
 });
 
 // PATCH /chambers/:chamberId - Update a chamber
-router.patch('/chambers/:chamberId', (req, res) => {
+router.patch('/chambers/:chamberId', async (req, res) => {
   try {
-    const existing = dryingLogs.getChamberById(req.params.chamberId);
+    const existing = await dryingLogs.getChamberById(req.params.chamberId);
     if (!existing) return res.status(404).json({ error: 'Chamber not found' });
 
     const data = {
@@ -158,7 +158,7 @@ router.patch('/chambers/:chamberId', (req, res) => {
       position: req.body.position !== undefined ? req.body.position : existing.position
     };
 
-    const chamber = dryingLogs.updateChamber(req.params.chamberId, data);
+    const chamber = await dryingLogs.updateChamber(req.params.chamberId, data);
     res.json(chamber);
   } catch (err) {
     console.error('Error updating chamber:', err);
@@ -167,12 +167,12 @@ router.patch('/chambers/:chamberId', (req, res) => {
 });
 
 // DELETE /chambers/:chamberId - Delete a chamber
-router.delete('/chambers/:chamberId', (req, res) => {
+router.delete('/chambers/:chamberId', async (req, res) => {
   try {
-    const existing = dryingLogs.getChamberById(req.params.chamberId);
+    const existing = await dryingLogs.getChamberById(req.params.chamberId);
     if (!existing) return res.status(404).json({ error: 'Chamber not found' });
 
-    dryingLogs.deleteChamber(req.params.chamberId);
+    await dryingLogs.deleteChamber(req.params.chamberId);
     res.json({ success: true });
   } catch (err) {
     console.error('Error deleting chamber:', err);
@@ -185,17 +185,17 @@ router.delete('/chambers/:chamberId', (req, res) => {
 // ============================================
 
 // GET /rooms - List rooms (all for log, or filtered by chamberId query param)
-router.get('/rooms', (req, res) => {
+router.get('/rooms', async (req, res) => {
   try {
-    const log = requireLog(req.params.id);
+    const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
 
     if (req.query.chamberId) {
-      const rooms = dryingLogs.getRoomsByChamber(req.query.chamberId);
+      const rooms = await dryingLogs.getRoomsByChamber(req.query.chamberId);
       return res.json(rooms);
     }
 
-    const rooms = dryingLogs.getRoomsByLogId(log.id);
+    const rooms = await dryingLogs.getRoomsByLogId(log.id);
     res.json(rooms);
   } catch (err) {
     console.error('Error getting rooms:', err);
@@ -204,21 +204,21 @@ router.get('/rooms', (req, res) => {
 });
 
 // POST /rooms - Create a room
-router.post('/rooms', (req, res) => {
+router.post('/rooms', async (req, res) => {
   try {
-    const log = requireLog(req.params.id);
+    const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
 
     const { chamber_id, name, position } = req.body;
     if (!chamber_id) return res.status(400).json({ error: 'chamber_id is required' });
 
     // Verify chamber exists and belongs to this log
-    const chamber = dryingLogs.getChamberById(chamber_id);
+    const chamber = await dryingLogs.getChamberById(chamber_id);
     if (!chamber || chamber.log_id !== log.id) {
       return res.status(400).json({ error: 'Invalid chamber_id for this job' });
     }
 
-    const room = dryingLogs.insertRoom(chamber_id, name || '', position);
+    const room = await dryingLogs.insertRoom(chamber_id, name || '', position);
     res.status(201).json(room);
   } catch (err) {
     console.error('Error creating room:', err);
@@ -227,9 +227,9 @@ router.post('/rooms', (req, res) => {
 });
 
 // PATCH /rooms/:roomId - Update a room
-router.patch('/rooms/:roomId', (req, res) => {
+router.patch('/rooms/:roomId', async (req, res) => {
   try {
-    const existing = dryingLogs.getRoomById(req.params.roomId);
+    const existing = await dryingLogs.getRoomById(req.params.roomId);
     if (!existing) return res.status(404).json({ error: 'Room not found' });
 
     const data = {
@@ -238,7 +238,7 @@ router.patch('/rooms/:roomId', (req, res) => {
       chamber_id: req.body.chamber_id !== undefined ? req.body.chamber_id : existing.chamber_id
     };
 
-    const room = dryingLogs.updateRoom(req.params.roomId, data);
+    const room = await dryingLogs.updateRoom(req.params.roomId, data);
     res.json(room);
   } catch (err) {
     console.error('Error updating room:', err);
@@ -247,12 +247,12 @@ router.patch('/rooms/:roomId', (req, res) => {
 });
 
 // DELETE /rooms/:roomId - Delete a room
-router.delete('/rooms/:roomId', (req, res) => {
+router.delete('/rooms/:roomId', async (req, res) => {
   try {
-    const existing = dryingLogs.getRoomById(req.params.roomId);
+    const existing = await dryingLogs.getRoomById(req.params.roomId);
     if (!existing) return res.status(404).json({ error: 'Room not found' });
 
-    dryingLogs.deleteRoom(req.params.roomId);
+    await dryingLogs.deleteRoom(req.params.roomId);
     res.json({ success: true });
   } catch (err) {
     console.error('Error deleting room:', err);
@@ -265,12 +265,12 @@ router.delete('/rooms/:roomId', (req, res) => {
 // ============================================
 
 // GET /ref-points - List all reference points for this log
-router.get('/ref-points', (req, res) => {
+router.get('/ref-points', async (req, res) => {
   try {
-    const log = requireLog(req.params.id);
+    const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
 
-    const refPoints = dryingLogs.getRefPointsByLog(log.id);
+    const refPoints = await dryingLogs.getRefPointsByLog(log.id);
     res.json(refPoints);
   } catch (err) {
     console.error('Error getting reference points:', err);
@@ -279,16 +279,16 @@ router.get('/ref-points', (req, res) => {
 });
 
 // POST /ref-points - Add a reference point (auto-assigns ref_number)
-router.post('/ref-points', (req, res) => {
+router.post('/ref-points', async (req, res) => {
   try {
-    const log = requireLog(req.params.id);
+    const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
 
     const { room_id, material_code, label } = req.body;
     if (!room_id) return res.status(400).json({ error: 'room_id is required' });
     if (!material_code) return res.status(400).json({ error: 'material_code is required' });
 
-    const refPoint = dryingLogs.addRefPoint(log.id, room_id, material_code, label);
+    const refPoint = await dryingLogs.addRefPoint(log.id, room_id, material_code, label);
     res.status(201).json(refPoint);
   } catch (err) {
     console.error('Error adding reference point:', err);
@@ -297,9 +297,9 @@ router.post('/ref-points', (req, res) => {
 });
 
 // PATCH /ref-points/:rpId - Update a reference point
-router.patch('/ref-points/:rpId', (req, res) => {
+router.patch('/ref-points/:rpId', async (req, res) => {
   try {
-    const existing = dryingLogs.getRefPointById(req.params.rpId);
+    const existing = await dryingLogs.getRefPointById(req.params.rpId);
     if (!existing) return res.status(404).json({ error: 'Reference point not found' });
 
     const data = {
@@ -307,7 +307,7 @@ router.patch('/ref-points/:rpId', (req, res) => {
       label: req.body.label !== undefined ? req.body.label : existing.label
     };
 
-    const refPoint = dryingLogs.updateRefPoint(req.params.rpId, data);
+    const refPoint = await dryingLogs.updateRefPoint(req.params.rpId, data);
     res.json(refPoint);
   } catch (err) {
     console.error('Error updating reference point:', err);
@@ -316,12 +316,12 @@ router.patch('/ref-points/:rpId', (req, res) => {
 });
 
 // DELETE /ref-points/:rpId - Delete a reference point (only before any visits reference it)
-router.delete('/ref-points/:rpId', (req, res) => {
+router.delete('/ref-points/:rpId', async (req, res) => {
   try {
-    const existing = dryingLogs.getRefPointById(req.params.rpId);
+    const existing = await dryingLogs.getRefPointById(req.params.rpId);
     if (!existing) return res.status(404).json({ error: 'Reference point not found' });
 
-    dryingLogs.deleteRefPoint(req.params.rpId);
+    await dryingLogs.deleteRefPoint(req.params.rpId);
     res.json({ success: true });
   } catch (err) {
     console.error('Error deleting reference point:', err);
@@ -330,16 +330,16 @@ router.delete('/ref-points/:rpId', (req, res) => {
 });
 
 // POST /ref-points/:rpId/demolish - Mark a reference point as demolished
-router.post('/ref-points/:rpId/demolish', (req, res) => {
+router.post('/ref-points/:rpId/demolish', async (req, res) => {
   try {
-    const existing = dryingLogs.getRefPointById(req.params.rpId);
+    const existing = await dryingLogs.getRefPointById(req.params.rpId);
     if (!existing) return res.status(404).json({ error: 'Reference point not found' });
 
     const { visit_id } = req.body;
     if (!visit_id) return res.status(400).json({ error: 'visit_id is required' });
 
-    dryingLogs.demolishRefPoint(req.params.rpId, visit_id);
-    const updated = dryingLogs.getRefPointById(req.params.rpId);
+    await dryingLogs.demolishRefPoint(req.params.rpId, visit_id);
+    const updated = await dryingLogs.getRefPointById(req.params.rpId);
     res.json(updated);
   } catch (err) {
     console.error('Error demolishing reference point:', err);
@@ -348,14 +348,14 @@ router.post('/ref-points/:rpId/demolish', (req, res) => {
 });
 
 // POST /ref-points/:rpId/undemolish - Undo demolish on a reference point
-router.post('/ref-points/:rpId/undemolish', (req, res) => {
+router.post('/ref-points/:rpId/undemolish', async (req, res) => {
   try {
-    const existing = dryingLogs.getRefPointById(req.params.rpId);
+    const existing = await dryingLogs.getRefPointById(req.params.rpId);
     if (!existing) return res.status(404).json({ error: 'Reference point not found' });
     if (!existing.demolished_at) return res.status(400).json({ error: 'Reference point is not demolished' });
 
-    dryingLogs.undemolishRefPoint(req.params.rpId);
-    const updated = dryingLogs.getRefPointById(req.params.rpId);
+    await dryingLogs.undemolishRefPoint(req.params.rpId);
+    const updated = await dryingLogs.getRefPointById(req.params.rpId);
     res.json(updated);
   } catch (err) {
     console.error('Error undoing demolish:', err);
@@ -368,12 +368,12 @@ router.post('/ref-points/:rpId/undemolish', (req, res) => {
 // ============================================
 
 // GET /baselines - List all baselines for this log
-router.get('/baselines', (req, res) => {
+router.get('/baselines', async (req, res) => {
   try {
-    const log = requireLog(req.params.id);
+    const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
 
-    const baselines = dryingLogs.getBaselinesByLog(log.id);
+    const baselines = await dryingLogs.getBaselinesByLog(log.id);
     res.json(baselines);
   } catch (err) {
     console.error('Error getting baselines:', err);
@@ -382,9 +382,9 @@ router.get('/baselines', (req, res) => {
 });
 
 // PUT /baselines - Upsert a baseline for a material code
-router.put('/baselines', (req, res) => {
+router.put('/baselines', async (req, res) => {
   try {
-    const log = requireLog(req.params.id);
+    const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
 
     const { material_code, baseline_value } = req.body;
@@ -393,7 +393,7 @@ router.put('/baselines', (req, res) => {
       return res.status(400).json({ error: 'baseline_value is required' });
     }
 
-    const baseline = dryingLogs.upsertBaseline(log.id, material_code, baseline_value);
+    const baseline = await dryingLogs.upsertBaseline(log.id, material_code, baseline_value);
     res.json(baseline);
   } catch (err) {
     console.error('Error upserting baseline:', err);
@@ -406,12 +406,12 @@ router.put('/baselines', (req, res) => {
 // ============================================
 
 // GET /visits - List all visits for this log
-router.get('/visits', (req, res) => {
+router.get('/visits', async (req, res) => {
   try {
-    const log = requireLog(req.params.id);
+    const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
 
-    const visits = dryingLogs.getVisitsByLog(log.id);
+    const visits = await dryingLogs.getVisitsByLog(log.id);
     res.json(visits);
   } catch (err) {
     console.error('Error getting visits:', err);
@@ -420,13 +420,13 @@ router.get('/visits', (req, res) => {
 });
 
 // POST /visits - Create a visit (auto-assigns visit_number)
-router.post('/visits', (req, res) => {
+router.post('/visits', async (req, res) => {
   try {
-    const log = requireLog(req.params.id);
+    const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
 
     const { visited_at } = req.body;
-    const visit = dryingLogs.createVisit(log.id, visited_at);
+    const visit = await dryingLogs.createVisit(log.id, visited_at);
     res.status(201).json(visit);
   } catch (err) {
     console.error('Error creating visit:', err);
@@ -435,21 +435,21 @@ router.post('/visits', (req, res) => {
 });
 
 // GET /visits/:visitId - Get composite visit data (visit + atmospheric + moisture + equipment + notes)
-router.get('/visits/:visitId', (req, res) => {
+router.get('/visits/:visitId', async (req, res) => {
   try {
-    const visit = dryingLogs.getVisitById(req.params.visitId);
+    const visit = await dryingLogs.getVisitById(req.params.visitId);
     if (!visit) return res.status(404).json({ error: 'Visit not found' });
 
     // Verify visit belongs to this job's log
-    const log = requireLog(req.params.id);
+    const log = await requireLog(req.params.id);
     if (!log || visit.log_id !== log.id) {
       return res.status(404).json({ error: 'Visit not found for this job' });
     }
 
-    const atmospheric = dryingLogs.getAtmosphericByVisit(req.params.visitId);
-    const moisture = dryingLogs.getMoistureByVisit(req.params.visitId);
-    const equipment = dryingLogs.getEquipmentByVisit(req.params.visitId);
-    const notes = dryingLogs.getNotesByVisit(req.params.visitId);
+    const atmospheric = await dryingLogs.getAtmosphericByVisit(req.params.visitId);
+    const moisture = await dryingLogs.getMoistureByVisit(req.params.visitId);
+    const equipment = await dryingLogs.getEquipmentByVisit(req.params.visitId);
+    const notes = await dryingLogs.getNotesByVisit(req.params.visitId);
 
     res.json({ visit, atmospheric, moisture, equipment, notes });
   } catch (err) {
@@ -459,13 +459,13 @@ router.get('/visits/:visitId', (req, res) => {
 });
 
 // POST /visits/:visitId/save - Bulk save visit data (atmospheric + moisture + equipment)
-router.post('/visits/:visitId/save', (req, res) => {
+router.post('/visits/:visitId/save', async (req, res) => {
   try {
-    const visit = dryingLogs.getVisitById(req.params.visitId);
+    const visit = await dryingLogs.getVisitById(req.params.visitId);
     if (!visit) return res.status(404).json({ error: 'Visit not found' });
 
     // Verify visit belongs to this job's log
-    const log = requireLog(req.params.id);
+    const log = await requireLog(req.params.id);
     if (!log || visit.log_id !== log.id) {
       return res.status(404).json({ error: 'Visit not found for this job' });
     }
@@ -473,25 +473,24 @@ router.post('/visits/:visitId/save', (req, res) => {
     const { atmospheric, moisture, equipment } = req.body;
 
     // Wrap all saves in an outer transaction for atomicity
-    const bulkSave = db.transaction(() => {
+    await db.transaction(async (client) => {
       if (atmospheric && Array.isArray(atmospheric)) {
-        dryingLogs.saveAtmosphericReadings(req.params.visitId, atmospheric);
+        await dryingLogs.saveAtmosphericReadings(req.params.visitId, atmospheric);
       }
       if (moisture && Array.isArray(moisture)) {
-        dryingLogs.saveMoistureReadings(req.params.visitId, moisture, log.id);
+        await dryingLogs.saveMoistureReadings(req.params.visitId, moisture, log.id);
       }
       if (equipment && Array.isArray(equipment)) {
-        dryingLogs.saveEquipment(req.params.visitId, equipment);
+        await dryingLogs.saveEquipment(req.params.visitId, equipment);
       }
     });
 
-    bulkSave();
 
     // Return the updated composite visit data
-    const updatedVisit = dryingLogs.getVisitById(req.params.visitId);
-    const updatedAtmospheric = dryingLogs.getAtmosphericByVisit(req.params.visitId);
-    const updatedMoisture = dryingLogs.getMoistureByVisit(req.params.visitId);
-    const updatedEquipment = dryingLogs.getEquipmentByVisit(req.params.visitId);
+    const updatedVisit = await dryingLogs.getVisitById(req.params.visitId);
+    const updatedAtmospheric = await dryingLogs.getAtmosphericByVisit(req.params.visitId);
+    const updatedMoisture = await dryingLogs.getMoistureByVisit(req.params.visitId);
+    const updatedEquipment = await dryingLogs.getEquipmentByVisit(req.params.visitId);
 
     res.json({
       success: true,
@@ -507,18 +506,18 @@ router.post('/visits/:visitId/save', (req, res) => {
 });
 
 // DELETE /visits/:visitId - Delete a visit
-router.delete('/visits/:visitId', (req, res) => {
+router.delete('/visits/:visitId', async (req, res) => {
   try {
-    const visit = dryingLogs.getVisitById(req.params.visitId);
+    const visit = await dryingLogs.getVisitById(req.params.visitId);
     if (!visit) return res.status(404).json({ error: 'Visit not found' });
 
     // Verify visit belongs to this job's log
-    const log = requireLog(req.params.id);
+    const log = await requireLog(req.params.id);
     if (!log || visit.log_id !== log.id) {
       return res.status(404).json({ error: 'Visit not found for this job' });
     }
 
-    dryingLogs.deleteVisit(req.params.visitId);
+    await dryingLogs.deleteVisit(req.params.visitId);
     res.json({ success: true });
   } catch (err) {
     console.error('Error deleting visit:', err);
@@ -531,12 +530,12 @@ router.delete('/visits/:visitId', (req, res) => {
 // ============================================
 
 // GET /visits/:visitId/notes - List notes for a visit
-router.get('/visits/:visitId/notes', (req, res) => {
+router.get('/visits/:visitId/notes', async (req, res) => {
   try {
-    const visit = dryingLogs.getVisitById(req.params.visitId);
+    const visit = await dryingLogs.getVisitById(req.params.visitId);
     if (!visit) return res.status(404).json({ error: 'Visit not found' });
 
-    const notes = dryingLogs.getNotesByVisit(req.params.visitId);
+    const notes = await dryingLogs.getNotesByVisit(req.params.visitId);
     res.json(notes);
   } catch (err) {
     console.error('Error getting visit notes:', err);
@@ -545,14 +544,14 @@ router.get('/visits/:visitId/notes', (req, res) => {
 });
 
 // POST /visits/:visitId/notes - Create a visit note
-router.post('/visits/:visitId/notes', (req, res) => {
+router.post('/visits/:visitId/notes', async (req, res) => {
   try {
-    const visit = dryingLogs.getVisitById(req.params.visitId);
+    const visit = await dryingLogs.getVisitById(req.params.visitId);
     if (!visit) return res.status(404).json({ error: 'Visit not found' });
 
     const { content, photos } = req.body;
     const photosJson = photos ? JSON.stringify(photos) : '[]';
-    const note = dryingLogs.insertNote(req.params.visitId, content, photosJson);
+    const note = await dryingLogs.insertNote(req.params.visitId, content, photosJson);
     res.status(201).json(note);
   } catch (err) {
     console.error('Error creating visit note:', err);
@@ -561,9 +560,9 @@ router.post('/visits/:visitId/notes', (req, res) => {
 });
 
 // DELETE /visits/:visitId/notes/:noteId - Delete a visit note
-router.delete('/visits/:visitId/notes/:noteId', (req, res) => {
+router.delete('/visits/:visitId/notes/:noteId', async (req, res) => {
   try {
-    const note = dryingLogs.getNoteById(req.params.noteId);
+    const note = await dryingLogs.getNoteById(req.params.noteId);
     if (!note) return res.status(404).json({ error: 'Note not found' });
 
     // Verify note belongs to this visit
@@ -571,7 +570,7 @@ router.delete('/visits/:visitId/notes/:noteId', (req, res) => {
       return res.status(404).json({ error: 'Note not found for this visit' });
     }
 
-    dryingLogs.deleteNote(req.params.noteId);
+    await dryingLogs.deleteNote(req.params.noteId);
     res.json({ success: true });
   } catch (err) {
     console.error('Error deleting visit note:', err);
@@ -652,7 +651,7 @@ router.post('/photos', upload.array('photos', 20), async (req, res) => {
 });
 
 // GET /photos/:filename - Serve a photo (auth-gated via parent router)
-router.get('/photos/:filename', (req, res) => {
+router.get('/photos/:filename', async (req, res) => {
   try {
     const jobId = req.params.id;
     const filename = req.params.filename;

@@ -36,7 +36,7 @@ function getUserId(req) {
  * List all tasks for current user, optionally filtered by status
  * Query params: ?status=ready
  */
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { status } = req.query;
     const userId = getUserId(req);
@@ -50,7 +50,7 @@ router.get('/', (req, res) => {
       });
     }
     
-    const tasks = getAllTasks(userId, status);
+    const tasks = await getAllTasks(userId, status);
     res.json({ tasks });
   } catch (err) {
     console.error('Error fetching tasks:', err);
@@ -65,7 +65,7 @@ router.get('/', (req, res) => {
  * POST /api/tasks
  * Create a new task for current user
  */
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { title, description, acceptance_criteria, status, priority, context_links, notes } = req.body;
     const userId = getUserId(req);
@@ -109,7 +109,7 @@ router.post('/', (req, res) => {
       });
     }
     
-    const task = createTask({
+    const task = await createTask({
       title: title.trim(),
       description,
       acceptance_criteria,
@@ -138,7 +138,7 @@ router.post('/', (req, res) => {
  * Get tasks scheduled within a date range
  * Query params: ?start=YYYY-MM-DD&end=YYYY-MM-DD
  */
-router.get('/calendar', (req, res) => {
+router.get('/calendar', async (req, res) => {
   try {
     const { start, end } = req.query;
     const userId = getUserId(req);
@@ -159,7 +159,7 @@ router.get('/calendar', (req, res) => {
       });
     }
 
-    const tasks = getTasksForCalendar(userId, start, end);
+    const tasks = await getTasksForCalendar(userId, start, end);
     res.json({ tasks });
   } catch (err) {
     console.error('Error fetching calendar tasks:', err);
@@ -174,10 +174,10 @@ router.get('/calendar', (req, res) => {
  * GET /api/tasks/scheduled
  * Get all scheduled tasks (tasks with a scheduled_date)
  */
-router.get('/scheduled', (req, res) => {
+router.get('/scheduled', async (req, res) => {
   try {
     const userId = getUserId(req);
-    const tasks = getScheduledTasks(userId);
+    const tasks = await getScheduledTasks(userId);
     res.json({ tasks });
   } catch (err) {
     console.error('Error fetching scheduled tasks:', err);
@@ -192,10 +192,10 @@ router.get('/scheduled', (req, res) => {
  * GET /api/tasks/unscheduled
  * Get all unscheduled tasks (tasks without a scheduled_date)
  */
-router.get('/unscheduled', (req, res) => {
+router.get('/unscheduled', async (req, res) => {
   try {
     const userId = getUserId(req);
-    const tasks = getUnscheduledTasks(userId);
+    const tasks = await getUnscheduledTasks(userId);
     res.json({ tasks });
   } catch (err) {
     console.error('Error fetching unscheduled tasks:', err);
@@ -210,10 +210,10 @@ router.get('/unscheduled', (req, res) => {
  * GET /api/tasks/:id
  * Get a single task by ID (must belong to current user)
  */
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const userId = getUserId(req);
-    const task = getTaskById(req.params.id, userId);
+    const task = await getTaskById(req.params.id, userId);
     
     if (!task) {
       return res.status(404).json({
@@ -237,7 +237,7 @@ router.get('/:id', (req, res) => {
  * Update a task (must belong to current user)
  * Body can include status_reason for logging status changes
  */
-router.patch('/:id', (req, res) => {
+router.patch('/:id', async (req, res) => {
   try {
     const { title, description, acceptance_criteria, status, priority, context_links, notes, session_id, status_reason, log_entry } = req.body;
     const userId = getUserId(req);
@@ -267,7 +267,7 @@ router.patch('/:id', (req, res) => {
       });
     }
     
-    const task = updateTask(req.params.id, {
+    const task = await updateTask(req.params.id, {
       title: title?.trim(),
       description,
       acceptance_criteria,
@@ -302,7 +302,7 @@ router.patch('/:id', (req, res) => {
  * Add an entry to the task's activity log
  * Body: { type: "note", message: "Did something", details: {} }
  */
-router.post('/:id/log', (req, res) => {
+router.post('/:id/log', async (req, res) => {
   try {
     const { type, message, details } = req.body;
     const userId = getUserId(req);
@@ -314,7 +314,7 @@ router.post('/:id/log', (req, res) => {
       });
     }
     
-    const task = addLogEntry(req.params.id, type || 'note', message, details || {}, userId);
+    const task = await addLogEntry(req.params.id, type || 'note', message, details || {}, userId);
     
     if (!task) {
       return res.status(404).json({
@@ -337,10 +337,10 @@ router.post('/:id/log', (req, res) => {
  * DELETE /api/tasks/:id
  * Delete a task (must belong to current user)
  */
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const userId = getUserId(req);
-    const deleted = deleteTask(req.params.id, userId);
+    const deleted = await deleteTask(req.params.id, userId);
     
     if (!deleted) {
       return res.status(404).json({
@@ -367,11 +367,11 @@ router.delete('/:id', (req, res) => {
  * Claim a task for work (sets status to in_progress)
  * Body: { session_id: "optional session identifier" }
  */
-router.post('/:id/pick', (req, res) => {
+router.post('/:id/pick', async (req, res) => {
   try {
     const sessionId = req.body.session_id || req.sessionId;
     const userId = getUserId(req);
-    const result = pickTask(req.params.id, sessionId, userId);
+    const result = await pickTask(req.params.id, sessionId, userId);
     
     if (result.error) {
       return res.status(result.status).json({
@@ -395,11 +395,11 @@ router.post('/:id/pick', (req, res) => {
  * Mark a task as complete (sets status to review)
  * Body: { notes: "optional completion notes" }
  */
-router.post('/:id/complete', (req, res) => {
+router.post('/:id/complete', async (req, res) => {
   try {
     const { notes } = req.body;
     const userId = getUserId(req);
-    const result = completeTask(req.params.id, notes, userId);
+    const result = await completeTask(req.params.id, notes, userId);
     
     if (result.error) {
       return res.status(result.status).json({
@@ -423,7 +423,7 @@ router.post('/:id/complete', (req, res) => {
  * Submit a review with criteria feedback
  * Body: { criteria: [{ index: 0, status: "approved"|"needs_work", comment: "..." }] }
  */
-router.post('/:id/review', (req, res) => {
+router.post('/:id/review', async (req, res) => {
   try {
     const { criteria, generalComment } = req.body;
     const userId = getUserId(req);
@@ -445,7 +445,7 @@ router.post('/:id/review', (req, res) => {
       }
     }
     
-    const result = submitReview(req.params.id, { criteria, generalComment }, userId);
+    const result = await submitReview(req.params.id, { criteria, generalComment }, userId);
     
     if (result.error) {
       return res.status(result.status).json({
@@ -474,7 +474,7 @@ router.post('/:id/review', (req, res) => {
  * Schedule a task on the calendar
  * Body: { scheduled_date: "YYYY-MM-DD", scheduled_start?: "HH:MM", scheduled_end?: "HH:MM", is_all_day?: boolean }
  */
-router.patch('/:id/schedule', (req, res) => {
+router.patch('/:id/schedule', async (req, res) => {
   try {
     const { scheduled_date, scheduled_start, scheduled_end, is_all_day } = req.body;
     const userId = getUserId(req);
@@ -510,7 +510,7 @@ router.patch('/:id/schedule', (req, res) => {
       });
     }
 
-    const task = scheduleTask(req.params.id, {
+    const task = await scheduleTask(req.params.id, {
       scheduled_date,
       scheduled_start,
       scheduled_end,
@@ -538,10 +538,10 @@ router.patch('/:id/schedule', (req, res) => {
  * PATCH /api/tasks/:id/unschedule
  * Remove a task from the calendar
  */
-router.patch('/:id/unschedule', (req, res) => {
+router.patch('/:id/unschedule', async (req, res) => {
   try {
     const userId = getUserId(req);
-    const task = unscheduleTask(req.params.id, userId);
+    const task = await unscheduleTask(req.params.id, userId);
 
     if (!task) {
       return res.status(404).json({
@@ -565,7 +565,7 @@ router.patch('/:id/unschedule', (req, res) => {
  * Submit a plan review with criteria feedback (for tasks in 'planned' status)
  * Body: { criteria: [{ index: 0, status: "approved"|"needs_work", comment: "..." }] }
  */
-router.post('/:id/plan-review', (req, res) => {
+router.post('/:id/plan-review', async (req, res) => {
   try {
     const { criteria, generalComment } = req.body;
     const userId = getUserId(req);
@@ -587,7 +587,7 @@ router.post('/:id/plan-review', (req, res) => {
       }
     }
     
-    const result = submitPlanReview(req.params.id, { criteria, generalComment }, userId);
+    const result = await submitPlanReview(req.params.id, { criteria, generalComment }, userId);
     
     if (result.error) {
       return res.status(result.status).json({
