@@ -334,7 +334,8 @@ const jobDetailTabs = {
     // ========================================
     renderExpensesTab(job, phaseId) {
         const esc = apexJobs.escapeHtml;
-        const fmt = (amount) => `$${Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+        const canSeeFinancials = typeof userHasRole === 'function' && userHasRole('management', 'office_coordinator', 'estimator');
+        const fmt = (amount) => canSeeFinancials ? `$${Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '—';
         const phaseFilter = (item) => !phaseId || !item.phase_id || item.phase_id === phaseId;
 
         const labor = (job.labor || []).filter(phaseFilter);
@@ -455,13 +456,133 @@ const jobDetailTabs = {
             </div>
         `;
 
+        // ---- Materials / Consumables section ----
+        const materials = (job.materials || []).filter(phaseFilter);
+        const totalMaterials = materials.reduce((s, m) => s + (m.quantity || 0) * (m.unit_cost || 0), 0);
+
+        const materialRows = materials.length > 0
+            ? materials.map(m => `
+                <div class="jdt-expense-row">
+                    <span class="jdt-expense-icon" style="color: var(--neon-green)">&#128230;</span>
+                    <span class="jdt-expense-desc">${esc(m.item_name || 'Material')}</span>
+                    <span class="jdt-category-badge">${esc(m.category || '')}</span>
+                    <span class="jdt-expense-desc" style="opacity:0.7">${m.quantity || 0} × ${fmt(m.unit_cost || 0)}</span>
+                    <span class="jdt-expense-amount">${fmt((m.quantity || 0) * (m.unit_cost || 0))}</span>
+                    <span class="jdt-expense-date">${m.allocated_at ? new Date(m.allocated_at).toLocaleDateString() : ''}</span>
+                </div>
+            `).join('')
+            : '<div class="apex-empty-state">No materials allocated yet</div>';
+
+        const materialSection = `
+            <div class="jdt-collapsible-section" data-section="materials">
+                <div class="jdt-section-header" onclick="jobDetailTabs._toggleSection(this)">
+                    <span class="jdt-section-arrow">&#9660;</span>
+                    <h4 class="apex-phase-section-title">Materials / Consumables</h4>
+                    <span class="jdt-section-meta">${materials.length} entries - ${fmt(totalMaterials)}</span>
+                </div>
+                <div class="jdt-section-body">
+                    ${materialRows}
+                    <button class="jdt-add-btn" onclick="jobDetailTabs._openAddMaterialModal('${job.id}')">+ Add Material</button>
+                </div>
+            </div>
+        `;
+
+        // ---- Subcontractor Invoices section ----
+        const subInvoices = (job.sub_invoices || []).filter(phaseFilter);
+        const totalSubs = subInvoices.reduce((s, si) => s + Number(si.amount || 0), 0);
+
+        const subStatusBadge = (status) => {
+            const colors = { received: 'rgba(0,170,255,0.3)', approved: 'rgba(5,255,161,0.3)', paid: 'rgba(5,255,161,0.5)', pending: 'rgba(255,200,0,0.3)' };
+            return `<span class="jdt-category-badge" style="background:${colors[status] || 'rgba(128,128,128,0.3)'}">${esc((status || 'pending').replace(/_/g, ' '))}</span>`;
+        };
+
+        const subRows = subInvoices.length > 0
+            ? subInvoices.map(si => `
+                <div class="jdt-expense-row">
+                    <span class="jdt-expense-icon" style="color: var(--neon-purple)">&#128179;</span>
+                    <span class="jdt-expense-desc">${esc(si.sub_name || si.organization_name || 'Subcontractor')}</span>
+                    ${subStatusBadge(si.status)}
+                    <span class="jdt-expense-desc" style="opacity:0.7;font-size:0.75rem">${esc(si.description || '')}</span>
+                    <span class="jdt-expense-amount">${fmt(si.amount)}</span>
+                    <span class="jdt-expense-date">${si.invoice_date ? new Date(si.invoice_date).toLocaleDateString() : ''}</span>
+                </div>
+            `).join('')
+            : '<div class="apex-empty-state">No sub invoices yet</div>';
+
+        const subSection = `
+            <div class="jdt-collapsible-section" data-section="subinvoices">
+                <div class="jdt-section-header" onclick="jobDetailTabs._toggleSection(this)">
+                    <span class="jdt-section-arrow">&#9660;</span>
+                    <h4 class="apex-phase-section-title">Subcontractor Invoices</h4>
+                    <span class="jdt-section-meta">${subInvoices.length} entries - ${fmt(totalSubs)}</span>
+                </div>
+                <div class="jdt-section-body">
+                    ${subRows}
+                    <button class="jdt-add-btn" onclick="jobDetailTabs._openAddSubInvoiceModal('${job.id}')">+ Add Sub Invoice</button>
+                </div>
+            </div>
+        `;
+
+        // ---- Fuel / Mileage section ----
+        const fuel = (job.fuel || []).filter(phaseFilter);
+        const totalFuel = fuel.reduce((s, f) => s + Number(f.cost || 0), 0);
+
+        const fuelRows = fuel.length > 0
+            ? fuel.map(f => `
+                <div class="jdt-expense-row">
+                    <span class="jdt-expense-icon" style="color: var(--neon-orange)">&#9981;</span>
+                    <span class="jdt-expense-desc">${esc(f.employee_name || '')} - ${esc(f.vehicle || '')}</span>
+                    <span class="jdt-expense-desc" style="opacity:0.7;font-size:0.75rem">${f.miles ? f.miles + ' mi' : ''}${f.miles && f.gallons ? ' / ' : ''}${f.gallons ? f.gallons + ' gal' : ''}</span>
+                    <span class="jdt-expense-amount">${fmt(f.cost)}</span>
+                    <span class="jdt-expense-date">${f.entry_date ? new Date(f.entry_date).toLocaleDateString() : ''}</span>
+                </div>
+            `).join('')
+            : '<div class="apex-empty-state">No fuel entries yet</div>';
+
+        const fuelSection = `
+            <div class="jdt-collapsible-section" data-section="fuel">
+                <div class="jdt-section-header" onclick="jobDetailTabs._toggleSection(this)">
+                    <span class="jdt-section-arrow">&#9660;</span>
+                    <h4 class="apex-phase-section-title">Fuel / Mileage</h4>
+                    <span class="jdt-section-meta">${fuel.length} entries - ${fmt(totalFuel)}</span>
+                </div>
+                <div class="jdt-section-body">
+                    ${fuelRows}
+                    <button class="jdt-add-btn" onclick="jobDetailTabs._openAddFuelModal('${job.id}')">+ Add Fuel Entry</button>
+                </div>
+            </div>
+        `;
+
+        // Update summary to include new categories
+        const allExpenses = grandTotal + totalMaterials + totalSubs + totalFuel;
+
+        const fullSummary = `
+            <div class="jdt-expenses-summary">
+                <div class="jdt-expense-total">
+                    <span class="apex-detail-label">Total Expenses</span>
+                    <span class="jdt-expense-amount">${fmt(allExpenses)}</span>
+                </div>
+                <div class="jdt-expense-breakdown">
+                    <span>Labor: ${fmt(totalLabor)}</span>
+                    <span>Receipts: ${fmt(totalReceipts)}</span>
+                    <span>Work Orders: ${fmt(totalWO)}</span>
+                    <span>Materials: ${fmt(totalMaterials)}</span>
+                    <span>Subs: ${fmt(totalSubs)}</span>
+                    <span>Fuel: ${fmt(totalFuel)}</span>
+                </div>
+            </div>
+        `;
+
         return `
             <div class="apex-modal-section">
                 <h3 class="apex-section-title">Expenses</h3>
-                ${summary}
+                ${fullSummary}
                 ${laborSection}
                 ${receiptSection}
                 ${woSection}
+                ${materialSection}
+                ${subSection}
+                ${fuelSection}
             </div>
         `;
     },
@@ -646,6 +767,224 @@ const jobDetailTabs = {
         } catch (err) {
             console.error('Failed to complete drying:', err);
         }
+    },
+
+    // ========================================
+    // Add Material Modal
+    // ========================================
+    async _openAddMaterialModal(jobId) {
+        let items = [];
+        try { items = await api.getInventoryItems(); } catch(e) { console.error(e); }
+        if (!Array.isArray(items)) items = items?.items || [];
+
+        const itemOptions = items.map(i =>
+            `<option value="${i.id}" data-cost="${i.unit_cost || 0}" data-name="${(i.name || '').replace(/"/g, '&quot;')}" data-category="${i.category || ''}">${i.name} (${i.unit || 'ea'} - $${Number(i.unit_cost || 0).toFixed(2)})</option>`
+        ).join('');
+
+        const modal = document.createElement('div');
+        modal.className = 'jdt-modal-overlay';
+        modal.innerHTML = `
+            <div class="jdt-modal">
+                <h3>Add Material to Job</h3>
+                <div class="jdt-form-group">
+                    <label>Item</label>
+                    <select id="jdt-mat-item" class="jdt-select">
+                        <option value="">Select item...</option>
+                        ${itemOptions}
+                    </select>
+                </div>
+                <div class="jdt-form-group">
+                    <label>Quantity</label>
+                    <input type="number" id="jdt-mat-qty" class="jdt-input" min="0.01" step="0.01" value="1">
+                </div>
+                <div class="jdt-form-group">
+                    <label>Unit Cost Override (optional)</label>
+                    <input type="number" id="jdt-mat-cost" class="jdt-input" step="0.01" placeholder="Auto from catalog">
+                </div>
+                <div class="jdt-modal-actions">
+                    <button class="jdt-submit-btn" onclick="jobDetailTabs._submitMaterial('${jobId}')">Add</button>
+                    <button class="jdt-cancel-btn" onclick="this.closest('.jdt-modal-overlay').remove()">Cancel</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        // Auto-fill cost from selected item
+        modal.querySelector('#jdt-mat-item').addEventListener('change', (e) => {
+            const opt = e.target.selectedOptions[0];
+            if (opt) {
+                const costInput = modal.querySelector('#jdt-mat-cost');
+                costInput.placeholder = `$${opt.dataset.cost || 0}`;
+            }
+        });
+    },
+
+    async _submitMaterial(jobId) {
+        const select = document.getElementById('jdt-mat-item');
+        const opt = select?.selectedOptions[0];
+        if (!opt || !opt.value) return;
+
+        const data = {
+            item_id: opt.value,
+            item_name: opt.dataset.name,
+            category: opt.dataset.category,
+            quantity: parseFloat(document.getElementById('jdt-mat-qty')?.value || 1),
+            unit_cost: parseFloat(document.getElementById('jdt-mat-cost')?.value) || parseFloat(opt.dataset.cost || 0),
+            phase_id: window.apexJobs?.selectedPhaseId || null
+        };
+
+        try {
+            await api.createJobMaterial(jobId, data);
+            document.querySelector('.jdt-modal-overlay')?.remove();
+            // Refresh
+            const materials = await api.getJobMaterials(jobId);
+            if (window.apexJobs?.currentJob) {
+                window.apexJobs.currentJob.materials = materials;
+                const panel = document.getElementById('job-detail-tab-panel');
+                if (panel) panel.innerHTML = jobDetailTabs.renderExpensesTab(window.apexJobs.currentJob, window.apexJobs.selectedPhaseId);
+                apexJobs.refreshSidebarData();
+            }
+        } catch(e) { console.error('Failed to add material:', e); }
+    },
+
+    // ========================================
+    // Add Sub Invoice Modal
+    // ========================================
+    async _openAddSubInvoiceModal(jobId) {
+        const modal = document.createElement('div');
+        modal.className = 'jdt-modal-overlay';
+        modal.innerHTML = `
+            <div class="jdt-modal">
+                <h3>Add Subcontractor Invoice</h3>
+                <div class="jdt-form-group">
+                    <label>Sub Name / Organization</label>
+                    <input type="text" id="jdt-sub-name" class="jdt-input" placeholder="e.g. ABC Plumbing">
+                </div>
+                <div class="jdt-form-group">
+                    <label>Description</label>
+                    <input type="text" id="jdt-sub-desc" class="jdt-input" placeholder="Work performed">
+                </div>
+                <div class="jdt-form-group">
+                    <label>Amount</label>
+                    <input type="number" id="jdt-sub-amount" class="jdt-input" step="0.01" min="0">
+                </div>
+                <div class="jdt-form-group">
+                    <label>Invoice Date</label>
+                    <input type="date" id="jdt-sub-date" class="jdt-input" value="${new Date().toISOString().split('T')[0]}">
+                </div>
+                <div class="jdt-form-group">
+                    <label>Status</label>
+                    <select id="jdt-sub-status" class="jdt-select">
+                        <option value="received">Received</option>
+                        <option value="approved">Approved</option>
+                        <option value="paid">Paid</option>
+                    </select>
+                </div>
+                <div class="jdt-form-group">
+                    <label>Invoice # (optional)</label>
+                    <input type="text" id="jdt-sub-number" class="jdt-input" placeholder="INV-001">
+                </div>
+                <div class="jdt-modal-actions">
+                    <button class="jdt-submit-btn" onclick="jobDetailTabs._submitSubInvoice('${jobId}')">Add</button>
+                    <button class="jdt-cancel-btn" onclick="this.closest('.jdt-modal-overlay').remove()">Cancel</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    },
+
+    async _submitSubInvoice(jobId) {
+        const data = {
+            sub_name: document.getElementById('jdt-sub-name')?.value || '',
+            description: document.getElementById('jdt-sub-desc')?.value || '',
+            amount: parseFloat(document.getElementById('jdt-sub-amount')?.value || 0),
+            invoice_date: document.getElementById('jdt-sub-date')?.value || null,
+            status: document.getElementById('jdt-sub-status')?.value || 'received',
+            invoice_number: document.getElementById('jdt-sub-number')?.value || '',
+            phase_id: window.apexJobs?.selectedPhaseId || null
+        };
+        if (!data.sub_name || !data.amount) return;
+
+        try {
+            await api.createJobSubInvoice(jobId, data);
+            document.querySelector('.jdt-modal-overlay')?.remove();
+            const subInvoices = await api.getJobSubInvoices(jobId);
+            if (window.apexJobs?.currentJob) {
+                window.apexJobs.currentJob.sub_invoices = subInvoices;
+                const panel = document.getElementById('job-detail-tab-panel');
+                if (panel) panel.innerHTML = jobDetailTabs.renderExpensesTab(window.apexJobs.currentJob, window.apexJobs.selectedPhaseId);
+                apexJobs.refreshSidebarData();
+            }
+        } catch(e) { console.error('Failed to add sub invoice:', e); }
+    },
+
+    // ========================================
+    // Add Fuel Entry Modal
+    // ========================================
+    _openAddFuelModal(jobId) {
+        const modal = document.createElement('div');
+        modal.className = 'jdt-modal-overlay';
+        modal.innerHTML = `
+            <div class="jdt-modal">
+                <h3>Add Fuel / Mileage Entry</h3>
+                <div class="jdt-form-group">
+                    <label>Employee</label>
+                    <input type="text" id="jdt-fuel-employee" class="jdt-input" placeholder="Employee name">
+                </div>
+                <div class="jdt-form-group">
+                    <label>Vehicle</label>
+                    <input type="text" id="jdt-fuel-vehicle" class="jdt-input" placeholder="e.g. White F-150">
+                </div>
+                <div class="jdt-form-group">
+                    <label>Date</label>
+                    <input type="date" id="jdt-fuel-date" class="jdt-input" value="${new Date().toISOString().split('T')[0]}">
+                </div>
+                <div style="display:flex;gap:8px">
+                    <div class="jdt-form-group" style="flex:1">
+                        <label>Miles</label>
+                        <input type="number" id="jdt-fuel-miles" class="jdt-input" step="0.1" min="0">
+                    </div>
+                    <div class="jdt-form-group" style="flex:1">
+                        <label>Gallons</label>
+                        <input type="number" id="jdt-fuel-gallons" class="jdt-input" step="0.01" min="0">
+                    </div>
+                </div>
+                <div class="jdt-form-group">
+                    <label>Cost ($)</label>
+                    <input type="number" id="jdt-fuel-cost" class="jdt-input" step="0.01" min="0">
+                </div>
+                <div class="jdt-modal-actions">
+                    <button class="jdt-submit-btn" onclick="jobDetailTabs._submitFuel('${jobId}')">Add</button>
+                    <button class="jdt-cancel-btn" onclick="this.closest('.jdt-modal-overlay').remove()">Cancel</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    },
+
+    async _submitFuel(jobId) {
+        const data = {
+            employee_name: document.getElementById('jdt-fuel-employee')?.value || '',
+            vehicle: document.getElementById('jdt-fuel-vehicle')?.value || '',
+            entry_date: document.getElementById('jdt-fuel-date')?.value || null,
+            miles: parseFloat(document.getElementById('jdt-fuel-miles')?.value) || null,
+            gallons: parseFloat(document.getElementById('jdt-fuel-gallons')?.value) || null,
+            cost: parseFloat(document.getElementById('jdt-fuel-cost')?.value || 0),
+            phase_id: window.apexJobs?.selectedPhaseId || null
+        };
+        if (!data.cost) return;
+
+        try {
+            await api.createJobFuel(jobId, data);
+            document.querySelector('.jdt-modal-overlay')?.remove();
+            const fuel = await api.getJobFuel(jobId);
+            if (window.apexJobs?.currentJob) {
+                window.apexJobs.currentJob.fuel = fuel;
+                const panel = document.getElementById('job-detail-tab-panel');
+                if (panel) panel.innerHTML = jobDetailTabs.renderExpensesTab(window.apexJobs.currentJob, window.apexJobs.selectedPhaseId);
+                apexJobs.refreshSidebarData();
+            }
+        } catch(e) { console.error('Failed to add fuel entry:', e); }
     },
 
     async _editDryingSetup(jobId) {

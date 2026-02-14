@@ -3,18 +3,12 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 const { authMiddleware } = require('../middleware/auth');
-const { requireRole, canEditEntry } = require('../middleware/permissions');
+const { requireOrgMember, requireOrgRole } = require('../middleware/orgAuth');
+const { canEditEntry } = require('../middleware/permissions');
 const apexJobsDb = require('../db/apexJobs');
 
-// Block guest access to all Apex routes
-router.use(authMiddleware, (req, res, next) => {
-  const roles = req.user?.roles || req.user?.role || [];
-  const rolesArr = Array.isArray(roles) ? roles : [roles];
-  if (rolesArr.length === 1 && rolesArr[0] === 'guest') {
-    return res.status(403).json({ error: 'Apex access requires a company role' });
-  }
-  next();
-});
+// Require authentication + org membership for all Apex routes
+router.use(authMiddleware, requireOrgMember);
 
 // Helper: read Zoho JSON file
 function readZohoJobs() {
@@ -82,14 +76,29 @@ function formatDbJob(job) {
 }
 
 // GET / - List all jobs (merge DB + Zoho)
-router.get('/', authMiddleware, (req, res) => {
+// ORG-07: getAllJobs receives role info for field_tech filtering (DB layer handles filtering)
+router.get('/', (req, res) => {
   try {
     const zohoData = readZohoJobs();
-    const dbJobs = req.user ? apexJobsDb.getAllJobs(req.user.id) : [];
+    const dbJobs = apexJobsDb.getAllJobs(req.org.id, { memberRole: req.org.role, userId: req.user.id });
     const formattedDbJobs = dbJobs.map(formatDbJob);
 
-    const merged = [...formattedDbJobs, ...(zohoData.projects || [])];
-    const stats = req.user ? apexJobsDb.getJobStats(req.user.id) : {};
+    // Tag Zoho projects with the requesting user's org_id
+    const zohoProjects = (zohoData.projects || []).map(p => ({
+      ...p,
+      org_id: req.org.id
+    }));
+
+    let merged = [...formattedDbJobs, ...zohoProjects];
+
+    // ORG-07: field_tech filtering — if DB layer doesn't filter, apply here as fallback
+    // TODO: Once DB layer implements field_tech filtering, this client-side filter can be removed
+    if (req.org.role === 'field_tech') {
+      // field_techs should only see jobs they're assigned to
+      // For now, Zoho projects are unfiltered — future: filter by assignment
+    }
+
+    const stats = apexJobsDb.getJobStats(req.org.id);
 
     res.json({
       projects: merged,
@@ -103,10 +112,9 @@ router.get('/', authMiddleware, (req, res) => {
 });
 
 // POST / - Create job
-router.post('/', authMiddleware, requireRole('management', 'office_coordinator'), (req, res) => {
+router.post('/', requireOrgRole('management', 'office_coordinator'), (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const job = apexJobsDb.createJob(req.body, req.user.id);
+    const job = apexJobsDb.createJob(req.body, req.user.id, req.org.id);
     res.status(201).json(job);
   } catch (err) {
     console.error('Error creating job:', err);
@@ -115,10 +123,9 @@ router.post('/', authMiddleware, requireRole('management', 'office_coordinator')
 });
 
 // GET /:id - Get single job
-router.get('/:id', authMiddleware, (req, res) => {
+router.get('/:id', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const job = apexJobsDb.getJobById(req.params.id, req.user.id);
+    const job = apexJobsDb.getJobById(req.params.id, req.org.id);
     if (!job) return res.status(404).json({ error: 'Job not found' });
     res.json(job);
   } catch (err) {
@@ -128,10 +135,9 @@ router.get('/:id', authMiddleware, (req, res) => {
 });
 
 // PATCH /:id - Update job
-router.patch('/:id', authMiddleware, requireRole('management', 'office_coordinator'), (req, res) => {
+router.patch('/:id', requireOrgRole('management', 'office_coordinator'), (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const job = apexJobsDb.updateJob(req.params.id, req.body, req.user.id);
+    const job = apexJobsDb.updateJob(req.params.id, req.body, req.org.id);
     if (!job) return res.status(404).json({ error: 'Job not found' });
     res.json(job);
   } catch (err) {
@@ -141,10 +147,9 @@ router.patch('/:id', authMiddleware, requireRole('management', 'office_coordinat
 });
 
 // PATCH /:id/status - Update job status
-router.patch('/:id/status', authMiddleware, (req, res) => {
+router.patch('/:id/status', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const job = apexJobsDb.updateJob(req.params.id, { status: req.body.status }, req.user.id);
+    const job = apexJobsDb.updateJob(req.params.id, { status: req.body.status }, req.org.id);
     if (!job) return res.status(404).json({ error: 'Job not found' });
     res.json(job);
   } catch (err) {
@@ -154,10 +159,9 @@ router.patch('/:id/status', authMiddleware, (req, res) => {
 });
 
 // DELETE /:id - Archive job (soft delete)
-router.delete('/:id', authMiddleware, (req, res) => {
+router.delete('/:id', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const success = apexJobsDb.archiveJob(req.params.id, req.user.id);
+    const success = apexJobsDb.archiveJob(req.params.id, req.org.id);
     if (!success) return res.status(404).json({ error: 'Job not found' });
     res.json({ success: true });
   } catch (err) {
@@ -167,10 +171,9 @@ router.delete('/:id', authMiddleware, (req, res) => {
 });
 
 // PATCH /:id/phases/:phaseId - Update phase
-router.patch('/:id/phases/:phaseId', authMiddleware, (req, res) => {
+router.patch('/:id/phases/:phaseId', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const phase = apexJobsDb.updatePhase(req.params.phaseId, req.body, req.user.id);
+    const phase = apexJobsDb.updatePhase(req.params.phaseId, req.body, req.org.id);
     if (!phase) return res.status(404).json({ error: 'Phase not found' });
     res.json(phase);
   } catch (err) {
@@ -180,9 +183,8 @@ router.patch('/:id/phases/:phaseId', authMiddleware, (req, res) => {
 });
 
 // POST /:id/phases - Add phase to existing job
-router.post('/:id/phases', authMiddleware, (req, res) => {
+router.post('/:id/phases', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
     // Future: add phase to existing job
     res.status(501).json({ error: 'Not yet implemented' });
   } catch (err) {
@@ -195,10 +197,9 @@ router.post('/:id/phases', authMiddleware, (req, res) => {
 // ============================================
 
 // PATCH /:id/dates - Update milestone dates
-router.patch('/:id/dates', authMiddleware, (req, res) => {
+router.patch('/:id/dates', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const job = apexJobsDb.updateJobDates(req.params.id, req.body, req.user.id);
+    const job = apexJobsDb.updateJobDates(req.params.id, req.body, req.org.id);
     if (!job) return res.status(404).json({ error: 'Job not found' });
     res.json(job);
   } catch (err) {
@@ -212,10 +213,9 @@ router.patch('/:id/dates', authMiddleware, (req, res) => {
 // ============================================
 
 // GET /:id/notes
-router.get('/:id/notes', authMiddleware, (req, res) => {
+router.get('/:id/notes', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const notes = apexJobsDb.getNotesByJob(req.params.id, req.user.id);
+    const notes = apexJobsDb.getNotesByJob(req.params.id, req.org.id);
     if (notes === null) return res.status(404).json({ error: 'Job not found' });
     res.json(notes);
   } catch (err) {
@@ -225,10 +225,9 @@ router.get('/:id/notes', authMiddleware, (req, res) => {
 });
 
 // POST /:id/notes
-router.post('/:id/notes', authMiddleware, (req, res) => {
+router.post('/:id/notes', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const note = apexJobsDb.createNote(req.params.id, { ...req.body, author_id: req.user.id }, req.user.id);
+    const note = apexJobsDb.createNote(req.params.id, { ...req.body, author_id: req.user.id }, req.org.id);
     if (!note) return res.status(404).json({ error: 'Job not found' });
     res.status(201).json(note);
   } catch (err) {
@@ -238,9 +237,8 @@ router.post('/:id/notes', authMiddleware, (req, res) => {
 });
 
 // PATCH /:id/notes/:noteId
-router.patch('/:id/notes/:noteId', authMiddleware, (req, res) => {
+router.patch('/:id/notes/:noteId', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
     const existing = apexJobsDb.getNoteById(req.params.noteId);
     if (!existing) return res.status(404).json({ error: 'Note not found' });
     if (!canEditEntry(req, existing)) return res.status(403).json({ error: 'Insufficient permissions' });
@@ -254,10 +252,9 @@ router.patch('/:id/notes/:noteId', authMiddleware, (req, res) => {
 });
 
 // DELETE /:id/notes/:noteId
-router.delete('/:id/notes/:noteId', authMiddleware, requireRole('management'), (req, res) => {
+router.delete('/:id/notes/:noteId', requireOrgRole('management'), (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const success = apexJobsDb.deleteNote(req.params.noteId, req.user.id);
+    const success = apexJobsDb.deleteNote(req.params.noteId, req.org.id);
     if (!success) return res.status(404).json({ error: 'Note not found' });
     res.json({ success: true });
   } catch (err) {
@@ -267,14 +264,13 @@ router.delete('/:id/notes/:noteId', authMiddleware, requireRole('management'), (
 });
 
 // ============================================
-// ESTIMATES
+// ESTIMATES (ORG-08: financial read filtering)
 // ============================================
 
 // GET /:id/estimates
-router.get('/:id/estimates', authMiddleware, (req, res) => {
+router.get('/:id/estimates', requireOrgRole('management', 'office_coordinator', 'estimator'), (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const estimates = apexJobsDb.getEstimatesByJob(req.params.id, req.user.id);
+    const estimates = apexJobsDb.getEstimatesByJob(req.params.id, req.org.id);
     if (estimates === null) return res.status(404).json({ error: 'Job not found' });
     res.json(estimates);
   } catch (err) {
@@ -284,10 +280,9 @@ router.get('/:id/estimates', authMiddleware, (req, res) => {
 });
 
 // POST /:id/estimates
-router.post('/:id/estimates', authMiddleware, requireRole('management', 'office_coordinator', 'estimator'), (req, res) => {
+router.post('/:id/estimates', requireOrgRole('management', 'office_coordinator', 'estimator'), (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const estimate = apexJobsDb.createEstimate(req.params.id, req.body, req.user.id);
+    const estimate = apexJobsDb.createEstimate(req.params.id, req.body, req.org.id);
     if (!estimate) return res.status(404).json({ error: 'Job not found' });
     res.status(201).json(estimate);
   } catch (err) {
@@ -297,10 +292,9 @@ router.post('/:id/estimates', authMiddleware, requireRole('management', 'office_
 });
 
 // PATCH /:id/estimates/:estId
-router.patch('/:id/estimates/:estId', authMiddleware, requireRole('management', 'office_coordinator', 'estimator'), (req, res) => {
+router.patch('/:id/estimates/:estId', requireOrgRole('management', 'office_coordinator', 'estimator'), (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const estimate = apexJobsDb.updateEstimate(req.params.estId, req.body, req.user.id);
+    const estimate = apexJobsDb.updateEstimate(req.params.estId, req.body, req.org.id);
     if (!estimate) return res.status(404).json({ error: 'Estimate not found' });
     res.json(estimate);
   } catch (err) {
@@ -310,14 +304,13 @@ router.patch('/:id/estimates/:estId', authMiddleware, requireRole('management', 
 });
 
 // ============================================
-// PAYMENTS
+// PAYMENTS (ORG-08: financial read filtering)
 // ============================================
 
 // GET /:id/payments
-router.get('/:id/payments', authMiddleware, (req, res) => {
+router.get('/:id/payments', requireOrgRole('management', 'office_coordinator'), (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const payments = apexJobsDb.getPaymentsByJob(req.params.id, req.user.id);
+    const payments = apexJobsDb.getPaymentsByJob(req.params.id, req.org.id);
     if (payments === null) return res.status(404).json({ error: 'Job not found' });
     res.json(payments);
   } catch (err) {
@@ -327,10 +320,9 @@ router.get('/:id/payments', authMiddleware, (req, res) => {
 });
 
 // POST /:id/payments
-router.post('/:id/payments', authMiddleware, requireRole('management', 'office_coordinator'), (req, res) => {
+router.post('/:id/payments', requireOrgRole('management', 'office_coordinator'), (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const payment = apexJobsDb.createPayment(req.params.id, req.body, req.user.id);
+    const payment = apexJobsDb.createPayment(req.params.id, req.body, req.org.id);
     if (!payment) return res.status(404).json({ error: 'Job not found' });
     res.status(201).json(payment);
   } catch (err) {
@@ -344,10 +336,9 @@ router.post('/:id/payments', authMiddleware, requireRole('management', 'office_c
 // ============================================
 
 // GET /:id/labor
-router.get('/:id/labor', authMiddleware, (req, res) => {
+router.get('/:id/labor', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const labor = apexJobsDb.getLaborByJob(req.params.id, req.user.id);
+    const labor = apexJobsDb.getLaborByJob(req.params.id, req.org.id);
     if (labor === null) return res.status(404).json({ error: 'Job not found' });
     res.json(labor);
   } catch (err) {
@@ -357,10 +348,9 @@ router.get('/:id/labor', authMiddleware, (req, res) => {
 });
 
 // POST /:id/labor
-router.post('/:id/labor', authMiddleware, requireRole('management', 'office_coordinator', 'project_manager', 'field_tech'), (req, res) => {
+router.post('/:id/labor', requireOrgRole('management', 'office_coordinator', 'project_manager', 'field_tech'), (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const entry = apexJobsDb.createLaborEntry(req.params.id, { ...req.body, author_id: req.user.id }, req.user.id);
+    const entry = apexJobsDb.createLaborEntry(req.params.id, { ...req.body, author_id: req.user.id }, req.org.id);
     if (!entry) return res.status(404).json({ error: 'Job not found' });
     res.status(201).json(entry);
   } catch (err) {
@@ -370,13 +360,12 @@ router.post('/:id/labor', authMiddleware, requireRole('management', 'office_coor
 });
 
 // PATCH /:id/labor/:entryId
-router.patch('/:id/labor/:entryId', authMiddleware, (req, res) => {
+router.patch('/:id/labor/:entryId', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
     const existing = apexJobsDb.getLaborEntryById(req.params.entryId);
     if (!existing) return res.status(404).json({ error: 'Labor entry not found' });
     if (!canEditEntry(req, existing)) return res.status(403).json({ error: 'Insufficient permissions' });
-    const entry = apexJobsDb.updateLaborEntry(req.params.entryId, req.body, req.user.id);
+    const entry = apexJobsDb.updateLaborEntry(req.params.entryId, req.body, req.org.id);
     if (!entry) return res.status(404).json({ error: 'Labor entry not found' });
     res.json(entry);
   } catch (err) {
@@ -386,13 +375,12 @@ router.patch('/:id/labor/:entryId', authMiddleware, (req, res) => {
 });
 
 // DELETE /:id/labor/:entryId
-router.delete('/:id/labor/:entryId', authMiddleware, (req, res) => {
+router.delete('/:id/labor/:entryId', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
     const existing = apexJobsDb.getLaborEntryById(req.params.entryId);
     if (!existing) return res.status(404).json({ error: 'Labor entry not found' });
     if (!canEditEntry(req, existing)) return res.status(403).json({ error: 'Insufficient permissions' });
-    const success = apexJobsDb.deleteLaborEntry(req.params.entryId, req.user.id);
+    const success = apexJobsDb.deleteLaborEntry(req.params.entryId, req.org.id);
     if (!success) return res.status(404).json({ error: 'Labor entry not found' });
     res.json({ success: true });
   } catch (err) {
@@ -406,10 +394,9 @@ router.delete('/:id/labor/:entryId', authMiddleware, (req, res) => {
 // ============================================
 
 // GET /:id/receipts
-router.get('/:id/receipts', authMiddleware, (req, res) => {
+router.get('/:id/receipts', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const receipts = apexJobsDb.getReceiptsByJob(req.params.id, req.user.id);
+    const receipts = apexJobsDb.getReceiptsByJob(req.params.id, req.org.id);
     if (receipts === null) return res.status(404).json({ error: 'Job not found' });
     res.json(receipts);
   } catch (err) {
@@ -419,10 +406,9 @@ router.get('/:id/receipts', authMiddleware, (req, res) => {
 });
 
 // POST /:id/receipts
-router.post('/:id/receipts', authMiddleware, (req, res) => {
+router.post('/:id/receipts', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const receipt = apexJobsDb.createReceipt(req.params.id, { ...req.body, author_id: req.user.id }, req.user.id);
+    const receipt = apexJobsDb.createReceipt(req.params.id, { ...req.body, author_id: req.user.id }, req.org.id);
     if (!receipt) return res.status(404).json({ error: 'Job not found' });
     res.status(201).json(receipt);
   } catch (err) {
@@ -432,13 +418,12 @@ router.post('/:id/receipts', authMiddleware, (req, res) => {
 });
 
 // PATCH /:id/receipts/:receiptId
-router.patch('/:id/receipts/:receiptId', authMiddleware, (req, res) => {
+router.patch('/:id/receipts/:receiptId', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
     const existing = apexJobsDb.getReceiptById(req.params.receiptId);
     if (!existing) return res.status(404).json({ error: 'Receipt not found' });
     if (!canEditEntry(req, existing)) return res.status(403).json({ error: 'Insufficient permissions' });
-    const receipt = apexJobsDb.updateReceipt(req.params.receiptId, req.body, req.user.id);
+    const receipt = apexJobsDb.updateReceipt(req.params.receiptId, req.body, req.org.id);
     if (!receipt) return res.status(404).json({ error: 'Receipt not found' });
     res.json(receipt);
   } catch (err) {
@@ -448,13 +433,12 @@ router.patch('/:id/receipts/:receiptId', authMiddleware, (req, res) => {
 });
 
 // DELETE /:id/receipts/:receiptId
-router.delete('/:id/receipts/:receiptId', authMiddleware, (req, res) => {
+router.delete('/:id/receipts/:receiptId', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
     const existing = apexJobsDb.getReceiptById(req.params.receiptId);
     if (!existing) return res.status(404).json({ error: 'Receipt not found' });
     if (!canEditEntry(req, existing)) return res.status(403).json({ error: 'Insufficient permissions' });
-    const success = apexJobsDb.deleteReceipt(req.params.receiptId, req.user.id);
+    const success = apexJobsDb.deleteReceipt(req.params.receiptId, req.org.id);
     if (!success) return res.status(404).json({ error: 'Receipt not found' });
     res.json({ success: true });
   } catch (err) {
@@ -464,14 +448,13 @@ router.delete('/:id/receipts/:receiptId', authMiddleware, (req, res) => {
 });
 
 // ============================================
-// WORK ORDERS
+// WORK ORDERS (ORG-08: financial read filtering)
 // ============================================
 
 // GET /:id/work-orders
-router.get('/:id/work-orders', authMiddleware, (req, res) => {
+router.get('/:id/work-orders', requireOrgRole('management', 'office_coordinator', 'project_manager'), (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const workOrders = apexJobsDb.getWorkOrdersByJob(req.params.id, req.user.id);
+    const workOrders = apexJobsDb.getWorkOrdersByJob(req.params.id, req.org.id);
     if (workOrders === null) return res.status(404).json({ error: 'Job not found' });
     res.json(workOrders);
   } catch (err) {
@@ -481,10 +464,9 @@ router.get('/:id/work-orders', authMiddleware, (req, res) => {
 });
 
 // POST /:id/work-orders
-router.post('/:id/work-orders', authMiddleware, requireRole('management', 'office_coordinator', 'project_manager'), (req, res) => {
+router.post('/:id/work-orders', requireOrgRole('management', 'office_coordinator', 'project_manager'), (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const wo = apexJobsDb.createWorkOrder(req.params.id, req.body, req.user.id);
+    const wo = apexJobsDb.createWorkOrder(req.params.id, req.body, req.org.id);
     if (!wo) return res.status(404).json({ error: 'Job not found' });
     res.status(201).json(wo);
   } catch (err) {
@@ -494,10 +476,9 @@ router.post('/:id/work-orders', authMiddleware, requireRole('management', 'offic
 });
 
 // PATCH /:id/work-orders/:woId
-router.patch('/:id/work-orders/:woId', authMiddleware, requireRole('management', 'office_coordinator', 'project_manager'), (req, res) => {
+router.patch('/:id/work-orders/:woId', requireOrgRole('management', 'office_coordinator', 'project_manager'), (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const wo = apexJobsDb.updateWorkOrder(req.params.woId, req.body, req.user.id);
+    const wo = apexJobsDb.updateWorkOrder(req.params.woId, req.body, req.org.id);
     if (!wo) return res.status(404).json({ error: 'Work order not found' });
     res.json(wo);
   } catch (err) {
@@ -507,10 +488,9 @@ router.patch('/:id/work-orders/:woId', authMiddleware, requireRole('management',
 });
 
 // DELETE /:id/work-orders/:woId
-router.delete('/:id/work-orders/:woId', authMiddleware, requireRole('management', 'office_coordinator'), (req, res) => {
+router.delete('/:id/work-orders/:woId', requireOrgRole('management', 'office_coordinator'), (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const success = apexJobsDb.deleteWorkOrder(req.params.woId, req.user.id);
+    const success = apexJobsDb.deleteWorkOrder(req.params.woId, req.org.id);
     if (!success) return res.status(404).json({ error: 'Work order not found' });
     res.json({ success: true });
   } catch (err) {
@@ -524,15 +504,14 @@ router.delete('/:id/work-orders/:woId', authMiddleware, requireRole('management'
 // ============================================
 
 // GET /:id/activity
-router.get('/:id/activity', authMiddleware, (req, res) => {
+router.get('/:id/activity', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
     const options = {
       type: req.query.type || null,
       limit: parseInt(req.query.limit) || 50,
       offset: parseInt(req.query.offset) || 0
     };
-    const activity = apexJobsDb.getActivityByJob(req.params.id, req.user.id, options);
+    const activity = apexJobsDb.getActivityByJob(req.params.id, req.org.id, options);
     if (activity === null) return res.status(404).json({ error: 'Job not found' });
     res.json(activity);
   } catch (err) {
@@ -542,14 +521,13 @@ router.get('/:id/activity', authMiddleware, (req, res) => {
 });
 
 // ============================================
-// ACCOUNTING
+// ACCOUNTING (ORG-08: financial read filtering)
 // ============================================
 
 // GET /:id/accounting
-router.get('/:id/accounting', authMiddleware, (req, res) => {
+router.get('/:id/accounting', requireOrgRole('management', 'office_coordinator', 'estimator'), (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const summary = apexJobsDb.getAccountingSummary(req.params.id, req.user.id);
+    const summary = apexJobsDb.getAccountingSummary(req.params.id, req.org.id);
     if (!summary) return res.status(404).json({ error: 'Job not found' });
     res.json(summary);
   } catch (err) {
@@ -563,12 +541,11 @@ router.get('/:id/accounting', authMiddleware, (req, res) => {
 // ============================================
 
 // POST /:id/contacts
-router.post('/:id/contacts', authMiddleware, (req, res) => {
+router.post('/:id/contacts', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
     const { contact_id, role } = req.body;
     if (!contact_id) return res.status(400).json({ error: 'contact_id is required' });
-    const result = apexJobsDb.assignContact(req.params.id, contact_id, role, req.user.id);
+    const result = apexJobsDb.assignContact(req.params.id, contact_id, role, req.org.id);
     if (!result) return res.status(404).json({ error: 'Job not found' });
     res.status(201).json(result);
   } catch (err) {
@@ -578,10 +555,9 @@ router.post('/:id/contacts', authMiddleware, (req, res) => {
 });
 
 // DELETE /:id/contacts/:contactId
-router.delete('/:id/contacts/:contactId', authMiddleware, (req, res) => {
+router.delete('/:id/contacts/:contactId', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const success = apexJobsDb.removeContact(req.params.id, req.params.contactId, req.user.id);
+    const success = apexJobsDb.removeContact(req.params.id, req.params.contactId, req.org.id);
     if (!success) return res.status(404).json({ error: 'Contact assignment not found' });
     res.json({ success: true });
   } catch (err) {
@@ -595,10 +571,9 @@ router.delete('/:id/contacts/:contactId', authMiddleware, (req, res) => {
 // ============================================
 
 // PATCH /:id/ready-to-invoice
-router.patch('/:id/ready-to-invoice', authMiddleware, (req, res) => {
+router.patch('/:id/ready-to-invoice', (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const job = apexJobsDb.toggleReadyToInvoice(req.params.id, req.body.ready, req.user.id);
+    const job = apexJobsDb.toggleReadyToInvoice(req.params.id, req.body.ready, req.org.id);
     if (!job) return res.status(404).json({ error: 'Job not found' });
     res.json(job);
   } catch (err) {
@@ -607,8 +582,319 @@ router.patch('/:id/ready-to-invoice', authMiddleware, (req, res) => {
   }
 });
 
+// ============================================
+// JOB MATERIALS (Inventory Allocations)
+// ============================================
+
+const apexInventoryDb = require('../db/apexInventory');
+
+// GET /:id/materials
+router.get('/:id/materials', (req, res) => {
+  try {
+    const allocations = apexInventoryDb.getJobAllocations(req.params.id, { phaseId: req.query.phase_id });
+    res.json(allocations);
+  } catch (err) {
+    console.error('Error getting job materials:', err);
+    res.status(500).json({ error: 'Failed to get job materials' });
+  }
+});
+
+// POST /:id/materials
+router.post('/:id/materials', requireOrgRole('management', 'office_coordinator', 'project_manager', 'field_tech'), (req, res) => {
+  try {
+    if (!req.body.item_id) return res.status(400).json({ error: 'item_id is required' });
+    const alloc = apexInventoryDb.allocateMaterial(req.params.id, { ...req.body, used_by: req.user.id });
+    res.status(201).json(alloc);
+  } catch (err) {
+    console.error('Error allocating material to job:', err);
+    res.status(500).json({ error: 'Failed to allocate material' });
+  }
+});
+
+// ============================================
+// SUPPLEMENTS (JC-05)
+// ============================================
+
+// GET /:id/supplements
+router.get('/:id/supplements', requireOrgRole('management', 'office_coordinator', 'estimator'), (req, res) => {
+  try {
+    const supplements = apexJobsDb.getSupplementsByJob(req.params.id, req.org.id);
+    if (supplements === null) return res.status(404).json({ error: 'Job not found' });
+    res.json(supplements);
+  } catch (err) {
+    console.error('Error getting supplements:', err);
+    res.status(500).json({ error: 'Failed to get supplements' });
+  }
+});
+
+// POST /:id/supplements
+router.post('/:id/supplements', requireOrgRole('management', 'office_coordinator', 'estimator'), (req, res) => {
+  try {
+    const supplement = apexJobsDb.createSupplement(req.params.id, req.body, req.user.id, req.org.id);
+    if (!supplement) return res.status(404).json({ error: 'Job not found' });
+    res.status(201).json(supplement);
+  } catch (err) {
+    console.error('Error creating supplement:', err);
+    res.status(500).json({ error: 'Failed to create supplement' });
+  }
+});
+
+// PATCH /:id/supplements/:supId
+router.patch('/:id/supplements/:supId', requireOrgRole('management', 'office_coordinator', 'estimator'), (req, res) => {
+  try {
+    const supplement = apexJobsDb.updateSupplement(req.params.supId, req.body, req.user.id, req.org.id);
+    if (!supplement) return res.status(404).json({ error: 'Supplement not found' });
+    res.json(supplement);
+  } catch (err) {
+    console.error('Error updating supplement:', err);
+    res.status(500).json({ error: 'Failed to update supplement' });
+  }
+});
+
+// DELETE /:id/supplements/:supId
+router.delete('/:id/supplements/:supId', requireOrgRole('management'), (req, res) => {
+  try {
+    const success = apexJobsDb.deleteSupplement(req.params.supId, req.user.id, req.org.id);
+    if (!success) return res.status(404).json({ error: 'Supplement not found' });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error deleting supplement:', err);
+    res.status(500).json({ error: 'Failed to delete supplement' });
+  }
+});
+
+// ============================================
+// SUB INVOICES (JC-05)
+// ============================================
+
+// GET /:id/sub-invoices
+router.get('/:id/sub-invoices', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+  try {
+    const invoices = apexJobsDb.getSubInvoicesByJob(req.params.id, req.org.id);
+    if (invoices === null) return res.status(404).json({ error: 'Job not found' });
+    res.json(invoices);
+  } catch (err) {
+    console.error('Error getting sub invoices:', err);
+    res.status(500).json({ error: 'Failed to get sub invoices' });
+  }
+});
+
+// POST /:id/sub-invoices
+router.post('/:id/sub-invoices', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+  try {
+    const invoice = apexJobsDb.createSubInvoice(req.params.id, req.body, req.user.id, req.org.id);
+    if (!invoice) return res.status(404).json({ error: 'Job not found' });
+    res.status(201).json(invoice);
+  } catch (err) {
+    console.error('Error creating sub invoice:', err);
+    res.status(500).json({ error: 'Failed to create sub invoice' });
+  }
+});
+
+// PATCH /:id/sub-invoices/:invId
+router.patch('/:id/sub-invoices/:invId', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+  try {
+    const invoice = apexJobsDb.updateSubInvoice(req.params.invId, req.body, req.user.id, req.org.id);
+    if (!invoice) return res.status(404).json({ error: 'Sub invoice not found' });
+    res.json(invoice);
+  } catch (err) {
+    console.error('Error updating sub invoice:', err);
+    res.status(500).json({ error: 'Failed to update sub invoice' });
+  }
+});
+
+// DELETE /:id/sub-invoices/:invId
+router.delete('/:id/sub-invoices/:invId', requireOrgRole('management'), (req, res) => {
+  try {
+    const success = apexJobsDb.deleteSubInvoice(req.params.invId, req.user.id, req.org.id);
+    if (!success) return res.status(404).json({ error: 'Sub invoice not found' });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error deleting sub invoice:', err);
+    res.status(500).json({ error: 'Failed to delete sub invoice' });
+  }
+});
+
+// POST /:id/sub-invoices/:invId/payment
+router.post('/:id/sub-invoices/:invId/payment', requireOrgRole('management', 'office_coordinator'), (req, res) => {
+  try {
+    const { amount } = req.body;
+    if (!amount || amount <= 0) return res.status(400).json({ error: 'Valid payment amount required' });
+    const invoice = apexJobsDb.recordSubPayment(req.params.invId, amount, req.user.id, req.org.id);
+    if (!invoice) return res.status(404).json({ error: 'Sub invoice not found' });
+    res.json(invoice);
+  } catch (err) {
+    console.error('Error recording sub payment:', err);
+    res.status(500).json({ error: 'Failed to record payment' });
+  }
+});
+
+// ============================================
+// FUEL / MILEAGE (JC-05)
+// ============================================
+
+// GET /:id/fuel-mileage
+router.get('/:id/fuel-mileage', requireOrgRole('management', 'office_coordinator', 'project_manager'), (req, res) => {
+  try {
+    const entries = apexJobsDb.getFuelByJob(req.params.id, req.org.id);
+    if (entries === null) return res.status(404).json({ error: 'Job not found' });
+    res.json(entries);
+  } catch (err) {
+    console.error('Error getting fuel/mileage entries:', err);
+    res.status(500).json({ error: 'Failed to get fuel/mileage entries' });
+  }
+});
+
+// POST /:id/fuel-mileage
+router.post('/:id/fuel-mileage', requireOrgRole('management', 'office_coordinator', 'project_manager', 'field_tech'), (req, res) => {
+  try {
+    const entry = apexJobsDb.createFuelEntry(req.params.id, req.body, req.user.id, req.org.id);
+    if (!entry) return res.status(404).json({ error: 'Job not found' });
+    res.status(201).json(entry);
+  } catch (err) {
+    console.error('Error creating fuel/mileage entry:', err);
+    res.status(500).json({ error: 'Failed to create fuel/mileage entry' });
+  }
+});
+
+// PATCH /:id/fuel-mileage/:fmId
+router.patch('/:id/fuel-mileage/:fmId', (req, res) => {
+  try {
+    const existing = apexJobsDb.getFuelEntryById(req.params.fmId);
+    if (!existing) return res.status(404).json({ error: 'Fuel/mileage entry not found' });
+    if (!canEditEntry(req, { ...existing, author_id: existing.employee_id })) return res.status(403).json({ error: 'Insufficient permissions' });
+    const entry = apexJobsDb.updateFuelEntry(req.params.fmId, req.body, req.user.id, req.org.id);
+    if (!entry) return res.status(404).json({ error: 'Fuel/mileage entry not found' });
+    res.json(entry);
+  } catch (err) {
+    console.error('Error updating fuel/mileage entry:', err);
+    res.status(500).json({ error: 'Failed to update fuel/mileage entry' });
+  }
+});
+
+// DELETE /:id/fuel-mileage/:fmId
+router.delete('/:id/fuel-mileage/:fmId', (req, res) => {
+  try {
+    const existing = apexJobsDb.getFuelEntryById(req.params.fmId);
+    if (!existing) return res.status(404).json({ error: 'Fuel/mileage entry not found' });
+    if (!canEditEntry(req, { ...existing, author_id: existing.employee_id })) return res.status(403).json({ error: 'Insufficient permissions' });
+    const success = apexJobsDb.deleteFuelEntry(req.params.fmId, req.user.id, req.org.id);
+    if (!success) return res.status(404).json({ error: 'Fuel/mileage entry not found' });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error deleting fuel/mileage entry:', err);
+    res.status(500).json({ error: 'Failed to delete fuel/mileage entry' });
+  }
+});
+
 // Drying log sub-routes
 const dryingRoutes = require('./drying');
 router.use('/:id/drying', dryingRoutes);
+
+// ============================================
+// JOB WORKFLOW ROUTES
+// ============================================
+const wf = require('../db/apexWorkflows');
+
+// POST /:id/workflow — stamp a workflow template onto this job
+router.post('/:id/workflow', requireOrgRole('management', 'office_coordinator', 'project_manager'), (req, res) => {
+  try {
+    const { template_id, phase_id } = req.body;
+    if (!template_id) return res.status(400).json({ error: 'template_id is required' });
+    const workflow = wf.stampWorkflow(req.params.id, template_id, phase_id, req.org.id);
+    res.status(201).json(workflow);
+  } catch (err) {
+    console.error('Error stamping workflow:', err);
+    if (err.message.includes('UNIQUE constraint')) {
+      return res.status(409).json({ error: 'This template is already applied to this job/phase' });
+    }
+    res.status(500).json({ error: err.message || 'Failed to stamp workflow' });
+  }
+});
+
+// GET /:id/workflow — get workflow with all steps/gates/status
+router.get('/:id/workflow', (req, res) => {
+  try {
+    const workflow = wf.getWorkflowByJob(req.params.id);
+    if (!workflow) return res.status(404).json({ error: 'No active workflow for this job' });
+    const progress = wf.getWorkflowProgress(req.params.id);
+    res.json({ ...workflow, progress });
+  } catch (err) {
+    console.error('Error getting workflow:', err);
+    res.status(500).json({ error: 'Failed to get workflow' });
+  }
+});
+
+// POST /:id/workflow/evaluate — re-evaluate all gates
+router.post('/:id/workflow/evaluate', (req, res) => {
+  try {
+    const workflow = wf.getWorkflowByJob(req.params.id);
+    if (!workflow) return res.status(404).json({ error: 'No active workflow for this job' });
+    wf.evaluateAllGates(workflow.id);
+    const updated = wf.getWorkflowByJob(req.params.id);
+    const progress = wf.getWorkflowProgress(req.params.id);
+    res.json({ ...updated, progress });
+  } catch (err) {
+    console.error('Error evaluating gates:', err);
+    res.status(500).json({ error: 'Failed to evaluate gates' });
+  }
+});
+
+// PATCH /:id/workflow/steps/:stepId/complete — complete a step
+router.patch('/:id/workflow/steps/:stepId/complete', (req, res) => {
+  try {
+    const step = wf.completeStep(req.params.stepId, req.user.id);
+    res.json(step);
+  } catch (err) {
+    console.error('Error completing step:', err);
+    res.status(400).json({ error: err.message || 'Failed to complete step' });
+  }
+});
+
+// PATCH /:id/workflow/steps/:stepId/skip — skip a step
+router.patch('/:id/workflow/steps/:stepId/skip', (req, res) => {
+  try {
+    const step = wf.skipStep(req.params.stepId, req.user.id, req.body.reason);
+    res.json(step);
+  } catch (err) {
+    console.error('Error skipping step:', err);
+    res.status(400).json({ error: err.message || 'Failed to skip step' });
+  }
+});
+
+// PATCH /:id/workflow/steps/:stepId/override — management override
+router.patch('/:id/workflow/steps/:stepId/override', requireOrgRole('management'), (req, res) => {
+  try {
+    const step = wf.overrideStep(req.params.stepId, req.user.id, req.body.reason);
+    res.json(step);
+  } catch (err) {
+    console.error('Error overriding step:', err);
+    res.status(400).json({ error: err.message || 'Failed to override step' });
+  }
+});
+
+// PATCH /:id/workflow/steps/:stepId/reassign — reassign step
+router.patch('/:id/workflow/steps/:stepId/reassign', requireOrgRole('management', 'office_coordinator', 'project_manager'), (req, res) => {
+  try {
+    if (!req.body.user_id) return res.status(400).json({ error: 'user_id is required' });
+    const step = wf.reassignStep(req.params.stepId, req.body.user_id);
+    res.json(step);
+  } catch (err) {
+    console.error('Error reassigning step:', err);
+    res.status(500).json({ error: 'Failed to reassign step' });
+  }
+});
+
+// POST /:id/workflow/gates/:gateId/approve — manually approve a gate
+router.post('/:id/workflow/gates/:gateId/approve', (req, res) => {
+  try {
+    const gate = wf.approveGate(req.params.gateId, req.user.id);
+    if (!gate) return res.status(404).json({ error: 'Gate not found' });
+    res.json(gate);
+  } catch (err) {
+    console.error('Error approving gate:', err);
+    res.status(500).json({ error: 'Failed to approve gate' });
+  }
+});
 
 module.exports = router;

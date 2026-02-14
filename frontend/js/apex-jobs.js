@@ -8,7 +8,7 @@ const TYPE_CODE_LABELS = { mitigation: 'Mitigation', reconstruction: 'Reconstruc
 
 // Permission helpers
 function userHasRole(...roles) {
-    const role = window.currentUser?.role;
+    const role = window.currentOrg?.role;
     return role && roles.includes(role);
 }
 function canEditJob() { return userHasRole('management', 'office_coordinator'); }
@@ -38,6 +38,25 @@ const apexJobs = {
             window.currentUser = profileData.user || {};
         } catch(e) {
             window.currentUser = {};
+        }
+
+        // Fetch org membership for Apex RBAC
+        try {
+            const resp = await fetch('/api/apex-orgs/mine', { credentials: 'include' });
+            if (resp.ok) {
+                const data = await resp.json();
+                window.currentOrg = data.org || null;
+            } else {
+                window.currentOrg = null;
+            }
+        } catch(e) {
+            window.currentOrg = null;
+        }
+
+        // Hide the Apex tab if user is not in any org
+        if (!window.currentOrg) {
+            const apexTab = document.querySelector('.tab[data-tab="apex"]');
+            if (apexTab) apexTab.style.display = 'none';
         }
 
         this.bindEvents();
@@ -479,17 +498,20 @@ const apexJobs = {
 
         try {
             // Fetch full job data + related data in parallel
-            const [fullJob, accounting, activity, notes, contacts, estimates, labor, receipts, workOrders] = await Promise.all([
+            const [fullJob, accounting, activity, notes, contacts, estimates, labor, receipts, workOrders, materials, supplements, subInvoices, fuel] = await Promise.all([
                 api.getApexJob(job.id),
                 api.getApexJobAccounting(job.id).catch(() => ({})),
                 api.getApexJobActivity(job.id).catch(() => []),
                 api.getApexJobNotes(job.id).catch(() => []),
-                // Contacts — placeholder until People module integration
-                Promise.resolve([]),
+                api.getCrmJobContacts(job.id).catch(() => []),
                 api.getApexJobEstimates(job.id).catch(() => []),
                 api.getApexJobLabor(job.id).catch(() => []),
                 api.getApexJobReceipts(job.id).catch(() => []),
-                api.getApexJobWorkOrders(job.id).catch(() => [])
+                api.getApexJobWorkOrders(job.id).catch(() => []),
+                api.getJobMaterials(job.id).catch(() => []),
+                api.getJobSupplements(job.id).catch(() => []),
+                api.getJobSubInvoices(job.id).catch(() => []),
+                api.getJobFuel(job.id).catch(() => [])
             ]);
 
             fullJob.accounting_summary = accounting;
@@ -500,6 +522,10 @@ const apexJobs = {
             fullJob.labor = labor || [];
             fullJob.receipts = receipts || [];
             fullJob.work_orders = workOrders || [];
+            fullJob.materials = materials || [];
+            fullJob.supplements = supplements || [];
+            fullJob.sub_invoices = subInvoices || [];
+            fullJob.fuel = fuel || [];
             this.currentJob = fullJob;
 
             // Set initial phase and accounting type from first phase
@@ -748,6 +774,12 @@ const apexJobs = {
     },
 
     renderAccountingSidebar(accounting, estimates) {
+        // Hide accounting sidebar for roles without financial access
+        const canSeeFinancials = userHasRole('management', 'office_coordinator', 'estimator');
+        if (!canSeeFinancials) {
+            return '<div class="job-accounting"></div>';
+        }
+
         estimates = estimates || [];
         const type = this.selectedAccountingType;
         const job = this.currentJob || {};
@@ -768,8 +800,17 @@ const apexJobs = {
         const approvedEstimates = metrics.approved_estimates || 0;
         const totalPayments = metrics.total_paid || 0;
         const totalCosts = metrics.total_cost || 0;
+        
+        // Additional cost categories from job data
+        const jobData = this.currentJob || {};
+        const totalMaterials = (jobData.materials || []).reduce((s, m) => s + (m.quantity || 0) * (m.unit_cost || 0), 0);
+        const totalSubInvoices = (jobData.sub_invoices || []).reduce((s, si) => s + Number(si.amount || 0), 0);
+        const totalFuel = (jobData.fuel || []).reduce((s, f) => s + Number(f.cost || 0), 0);
+        const totalSupplements = (jobData.supplements || []).reduce((s, sup) => s + Number(sup.amount || 0), 0);
+        const allCosts = totalCosts + totalMaterials + totalSubInvoices + totalFuel;
+        
         const balanceDue = metrics.balance_due != null ? metrics.balance_due : (totalEstimates - totalPayments);
-        const grossProfit = approvedEstimates - totalCosts;
+        const grossProfit = approvedEstimates - allCosts;
         const gpMargin = approvedEstimates > 0 ? ((grossProfit / approvedEstimates) * 100) : 0;
 
         let gpClass = 'gp-good';
@@ -793,8 +834,24 @@ const apexJobs = {
                     </div>
                     <div class="accounting-metric">
                         <span class="metric-label">Total Costs</span>
-                        <span class="metric-value">$${totalCosts.toLocaleString()}</span>
+                        <span class="metric-value">$${allCosts.toLocaleString()}</span>
                     </div>
+                    ${totalMaterials > 0 ? `<div class="accounting-metric sub-metric">
+                        <span class="metric-label">├ Materials</span>
+                        <span class="metric-value">$${totalMaterials.toLocaleString()}</span>
+                    </div>` : ''}
+                    ${totalSubInvoices > 0 ? `<div class="accounting-metric sub-metric">
+                        <span class="metric-label">├ Subcontractors</span>
+                        <span class="metric-value">$${totalSubInvoices.toLocaleString()}</span>
+                    </div>` : ''}
+                    ${totalFuel > 0 ? `<div class="accounting-metric sub-metric">
+                        <span class="metric-label">├ Fuel/Mileage</span>
+                        <span class="metric-value">$${totalFuel.toLocaleString()}</span>
+                    </div>` : ''}
+                    ${totalSupplements > 0 ? `<div class="accounting-metric sub-metric">
+                        <span class="metric-label">├ Supplements</span>
+                        <span class="metric-value supplement-value">+$${totalSupplements.toLocaleString()}</span>
+                    </div>` : ''}
                     <div class="accounting-metric">
                         <span class="metric-label">GP Margin</span>
                         <span class="metric-value ${gpClass}">${gpMargin.toFixed(1)}%</span>
@@ -1125,27 +1182,41 @@ const apexJobs = {
     },
 
     renderContactCard(contact) {
-        const name = [contact.first_name, contact.last_name].filter(Boolean).join(' ');
+        const name = [contact.first_name, contact.last_name].filter(Boolean).join(' ') || contact.name || 'Unknown';
+        const role = contact.job_role || contact.role_on_project || '';
+        const orgName = contact.organization_name || contact.crm_org_name || '';
         return `
-            <div class="contact-card">
+            <div class="contact-card" onclick="apexCrm.show(); apexCrm.switchView('contacts'); apexCrm.searchQuery='${this.escapeHtml(name).replace(/'/g, "\\'")}'; apexCrm.render();" style="cursor:pointer" title="View in CRM">
                 <div class="contact-card-top">
                     <div>
                         <span class="contact-name">${this.escapeHtml(name)}</span>
-                        ${contact.role_on_project ? `<span class="contact-role"> (${this.escapeHtml(contact.role_on_project)})</span>` : ''}
-                        ${contact.has_msa ? '<span class="msa-badge">MSA</span>' : ''}
+                        ${role ? `<span class="contact-role"> (${this.escapeHtml(role)})</span>` : ''}
                     </div>
                 </div>
-                ${contact.organization_name ? `<div class="contact-org">${this.escapeHtml(contact.organization_name)}</div>` : ''}
+                ${orgName ? `<div class="contact-org">${this.escapeHtml(orgName)}</div>` : ''}
                 <div class="contact-card-actions">
-                    ${contact.phone ? `<a href="tel:${this.escapeHtml(contact.phone)}" title="Call">
+                    ${contact.phone ? `<a href="tel:${this.escapeHtml(contact.phone)}" title="Call" onclick="event.stopPropagation()">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                     </a>` : ''}
-                    ${contact.email ? `<a href="mailto:${this.escapeHtml(contact.email)}" title="Email">
+                    ${contact.email ? `<a href="mailto:${this.escapeHtml(contact.email)}" title="Email" onclick="event.stopPropagation()">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                     </a>` : ''}
+                    ${contact.link_id ? `<button class="contact-remove-btn" onclick="event.stopPropagation(); apexJobs.removeJobContact('${contact.link_id}')" title="Remove from job">×</button>` : ''}
                 </div>
             </div>
         `;
+    },
+
+    async removeJobContact(linkId) {
+        if (!confirm('Remove this contact from the job?')) return;
+        const jobId = this.currentJob?.id;
+        if (!jobId) return;
+        try {
+            await api.unlinkCrmContactFromJob(jobId, linkId);
+            this.openJobDetail(this.currentJob);
+        } catch (err) {
+            console.error('Failed to remove job contact:', err);
+        }
     },
 
     bindDetailEvents() {

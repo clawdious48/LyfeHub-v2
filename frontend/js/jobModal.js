@@ -595,7 +595,23 @@ const jobModal = {
         const fields = ['mitigation_pm', 'reconstruction_pm', 'estimator', 'project_coordinator', 'mitigation_techs'];
         let team = [];
         try {
-            team = await api.getTeamAssignments();
+            // Use org members endpoint if user is in an org, fall back to legacy
+            if (window.currentOrg && window.currentOrg.id) {
+                const resp = await fetch(`/api/apex-orgs/${window.currentOrg.id}/members`, { credentials: 'include' });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    // Map org members to team format expected by teamSelect
+                    team = (data.members || []).map(m => ({
+                        name: m.name || m.user_name || '',
+                        role: m.role,
+                        assignments: m.assignments || {}
+                    }));
+                } else {
+                    team = await api.getTeamAssignments();
+                }
+            } else {
+                team = await api.getTeamAssignments();
+            }
         } catch (err) {
             console.warn('Failed to load team assignments:', err);
         }

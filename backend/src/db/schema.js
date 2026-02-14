@@ -749,3 +749,17 @@ try {
   db.exec(`ALTER TABLE api_keys ADD COLUMN key_encrypted TEXT`);
   console.log("Added key_encrypted column to api_keys");
 } catch (e) { /* Column exists */ }
+
+
+// ============================================
+// SCH-06: Personal Bridge — add apex_job_ref to notes and tasks
+// ============================================
+try {
+  db.exec("ALTER TABLE notes ADD COLUMN apex_job_ref TEXT DEFAULT ''");
+  console.log('Added apex_job_ref column to notes');
+} catch (e) { /* already exists */ }
+
+try {
+  db.exec("ALTER TABLE tasks ADD COLUMN apex_job_ref TEXT DEFAULT ''");
+  console.log('Added apex_job_ref column to tasks');
+} catch (e) { /* already exists */ }

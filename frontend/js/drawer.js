@@ -133,7 +133,13 @@
         drawer.setAttribute('aria-label', 'Main navigation');
         
         // Build HTML
-        let navItemsHTML = TABS.map(tab => `
+        // Filter out Apex tab if user is not in an org
+        const visibleTabs = TABS.filter(tab => {
+            if (tab.id === 'apex' && !global.currentOrg) return false;
+            return true;
+        });
+
+        let navItemsHTML = visibleTabs.map(tab => `
             <li class="drawer-nav-item">
                 <button class="drawer-nav-link${tab.id === activeTab ? ' is-active' : ''}" 
                         data-tab="${tab.id}"

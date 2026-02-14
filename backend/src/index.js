@@ -56,7 +56,12 @@ app.use('/api/people', peopleRoutes);
 app.use('/api/uploads', uploadsRoutes);
 
 app.use('/api/apex-jobs', apexJobsRoutes);
+app.use('/api/apex-orgs', require('./routes/apexOrgs'));
+app.use('/api/apex-crm', require('./routes/apexCrm'));
+app.use('/api/apex-inventory', require('./routes/apexInventory'));
+app.use('/api/apex-workflows', require('./routes/apexWorkflows'));
 app.use('/api/api-keys', apiKeysRoutes);
+app.use('/api/apex-docs', require('./routes/apexDocuments'));
 
 
 // Health check endpoint

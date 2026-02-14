@@ -1000,48 +1000,154 @@ const jobDetailModals = {
     // ========================================
     // 8.8 Add Contact Modal
     // ========================================
+    _crmSearchDebounce: null,
+    _crmSearchResults: [],
+
     openAddContactModal(jobId, onSave) {
         const esc = apexJobs.escapeHtml;
         this._pendingOnSave = onSave;
+        this._crmSearchResults = [];
 
         const roleOpts = [
-            'primary_adjuster', 'field_adjuster', 'project_manager',
-            'technician', 'claims_rep', 'contractor', 'other'
+            'homeowner', 'primary_adjuster', 'field_adjuster', 'project_manager',
+            'technician', 'claims_rep', 'contractor', 'agent', 'property_manager', 'other'
         ].map(r => {
             const label = r.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             return `<option value="${r}">${esc(label)}</option>`;
         }).join('');
 
         const html = `
-            <form id="jdm-contact-form">
-                <div class="apex-detail-grid">
-                    <div class="apex-detail-item full-width">
-                        <label class="apex-detail-label">Contact Name</label>
-                        <input type="text" class="jdm-input" name="name" placeholder="Enter contact name" required>
-                    </div>
-                    <div class="apex-detail-item full-width">
-                        <label class="apex-detail-label">Role</label>
-                        <select class="jdm-select" name="role">${roleOpts}</select>
-                    </div>
+            <div id="jdm-contact-mode-search">
+                <div class="apex-detail-item full-width" style="margin-bottom:0.75rem">
+                    <label class="apex-detail-label">Search Existing CRM Contacts</label>
+                    <input type="text" class="jdm-input" id="jdm-crm-contact-search" placeholder="Type a name..." oninput="jobDetailModals._searchCrmContacts(this.value, '${jobId}')">
                 </div>
-                ${this._formFooter('Cancel', 'Add Contact', "jobDetailModals._saveContact('" + jobId + "')")}
-            </form>
+                <div id="jdm-crm-search-results" class="crm-contact-search-results"></div>
+                <div style="margin:0.75rem 0; text-align:center; color:var(--text-secondary,#aaa); font-size:0.8rem;">— or —</div>
+                <button type="button" class="jdm-btn jdm-btn-action" style="width:100%" onclick="jobDetailModals._showCreateContactForm('${jobId}')">+ Create New Contact</button>
+            </div>
+            <div id="jdm-contact-mode-create" style="display:none">
+                <form id="jdm-contact-form">
+                    <div class="apex-detail-grid">
+                        <div class="apex-detail-item">
+                            <label class="apex-detail-label">First Name *</label>
+                            <input type="text" class="jdm-input" name="first_name" required>
+                        </div>
+                        <div class="apex-detail-item">
+                            <label class="apex-detail-label">Last Name</label>
+                            <input type="text" class="jdm-input" name="last_name">
+                        </div>
+                        <div class="apex-detail-item">
+                            <label class="apex-detail-label">Email</label>
+                            <input type="email" class="jdm-input" name="email">
+                        </div>
+                        <div class="apex-detail-item">
+                            <label class="apex-detail-label">Phone</label>
+                            <input type="text" class="jdm-input" name="phone">
+                        </div>
+                        <div class="apex-detail-item full-width">
+                            <label class="apex-detail-label">Title</label>
+                            <input type="text" class="jdm-input" name="title" placeholder="e.g. Adjuster, PM">
+                        </div>
+                        <div class="apex-detail-item full-width">
+                            <label class="apex-detail-label">Role on this Job</label>
+                            <select class="jdm-select" name="job_role">${roleOpts}</select>
+                        </div>
+                    </div>
+                    ${this._formFooter('Back', 'Create & Link', "jobDetailModals._createAndLinkContact('" + jobId + "')")}
+                </form>
+            </div>
+            <div id="jdm-contact-mode-link" style="display:none">
+                <p style="color:var(--text-primary,#fff);margin:0 0 0.75rem">Linking: <strong id="jdm-link-contact-name"></strong></p>
+                <div class="apex-detail-item full-width" style="margin-bottom:0.75rem">
+                    <label class="apex-detail-label">Role on this Job</label>
+                    <select class="jdm-select" id="jdm-link-role">${roleOpts}</select>
+                </div>
+                <input type="hidden" id="jdm-link-contact-id">
+                <input type="hidden" id="jdm-link-org-id">
+                ${this._formFooter('Back', 'Link Contact', "jobDetailModals._linkExistingContact('" + jobId + "')")}
+            </div>
         `;
 
-        this.openModal('Add Contact', html);
+        this.openModal('Add Contact to Job', html);
     },
 
-    async _saveContact(jobId) {
+    async _searchCrmContacts(query, jobId) {
+        clearTimeout(this._crmSearchDebounce);
+        if (!query || query.length < 2) {
+            document.getElementById('jdm-crm-search-results').innerHTML = '';
+            return;
+        }
+        this._crmSearchDebounce = setTimeout(async () => {
+            try {
+                const results = await api.getCrmContacts({ search: query, limit: 10 });
+                const list = Array.isArray(results) ? results : (results.data || []);
+                const container = document.getElementById('jdm-crm-search-results');
+                if (!container) return;
+                if (list.length === 0) {
+                    container.innerHTML = '<div style="padding:0.5rem;color:var(--text-secondary,#aaa);font-size:0.85rem">No contacts found</div>';
+                    return;
+                }
+                container.innerHTML = list.map(c => {
+                    const name = [c.first_name, c.last_name].filter(Boolean).join(' ');
+                    const orgName = (c.organizations || c.orgs || []).map(o => o.name || o.org_name).filter(Boolean).join(', ');
+                    return `<div class="crm-contact-search-item" onclick="jobDetailModals._selectExistingContact('${c.id}', '${apexJobs.escapeHtml(name).replace(/'/g, "\\'")}', '${(c.organizations?.[0]?.crm_org_id || c.orgs?.[0]?.id || '').replace(/'/g, "\\'")}')">
+                        <div>
+                            <div class="name">${apexJobs.escapeHtml(name)}</div>
+                            ${orgName ? `<div class="meta">${apexJobs.escapeHtml(orgName)}</div>` : ''}
+                        </div>
+                        <div class="meta">${apexJobs.escapeHtml(c.phone || c.email || '')}</div>
+                    </div>`;
+                }).join('');
+            } catch (err) {
+                console.error('CRM search failed:', err);
+            }
+        }, 300);
+    },
+
+    _selectExistingContact(contactId, name, orgId) {
+        document.getElementById('jdm-contact-mode-search').style.display = 'none';
+        document.getElementById('jdm-contact-mode-link').style.display = 'block';
+        document.getElementById('jdm-link-contact-name').textContent = name;
+        document.getElementById('jdm-link-contact-id').value = contactId;
+        document.getElementById('jdm-link-org-id').value = orgId || '';
+    },
+
+    _showCreateContactForm(jobId) {
+        document.getElementById('jdm-contact-mode-search').style.display = 'none';
+        document.getElementById('jdm-contact-mode-create').style.display = 'block';
+    },
+
+    async _createAndLinkContact(jobId) {
         const form = document.getElementById('jdm-contact-form');
         if (!form) return;
         const data = Object.fromEntries(new FormData(form));
-        if (!data.name?.trim()) return;
+        if (!data.first_name?.trim()) return alert('First name is required');
+        const job_role = data.job_role;
+        delete data.job_role;
         try {
-            await api.assignApexJobContact(jobId, data);
+            const contact = await api.createCrmContact(data);
+            await api.linkCrmContactToJob(jobId, contact.id, null, job_role);
             this.closeModal();
             if (this._pendingOnSave) this._pendingOnSave();
         } catch (err) {
-            console.error('Failed to assign contact:', err);
+            console.error('Failed to create and link contact:', err);
+            alert('Failed to create contact');
+        }
+    },
+
+    async _linkExistingContact(jobId) {
+        const contactId = document.getElementById('jdm-link-contact-id')?.value;
+        const orgId = document.getElementById('jdm-link-org-id')?.value || null;
+        const role = document.getElementById('jdm-link-role')?.value || null;
+        if (!contactId) return;
+        try {
+            await api.linkCrmContactToJob(jobId, contactId, orgId, role);
+            this.closeModal();
+            if (this._pendingOnSave) this._pendingOnSave();
+        } catch (err) {
+            console.error('Failed to link contact:', err);
+            alert('Failed to link contact to job');
         }
     }
 };

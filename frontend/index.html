@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="css/style.css?v=1770688306">
     <link rel="stylesheet" href="css/apex-theme.css">
     <link rel="stylesheet" href="css/apex-jobs.css">
+    <link rel="stylesheet" href="css/apex-crm.css">
     <link rel="stylesheet" href="css/drying.css">
     <link rel="stylesheet" href="css/sidebar-responsive.css">
     <link rel="stylesheet" href="css/table-cards.css">
@@ -197,10 +198,14 @@
 
     <!-- Apex Tab Content -->
     <main class="tab-content active" data-tab="apex">
+        <!-- Inventory Management (hidden by default) -->
+        <div id="apex-inventory-content" class="apex-content" style="display:none;"></div>
         <div class="apex-content active" id="apex-jobs-content">
             <!-- Apex View Controls -->
             <div class="apex-view-controls">
-                <button id="new-job-btn" class="btn btn-primary" onclick="jobModal.open()" style="margin-right: 1rem;">+ New Job</button>
+                <button id="new-job-btn" class="btn btn-primary" onclick="jobModal.open()" style="margin-right: 0.5rem;">+ New Job</button>
+                <button class="btn btn-secondary" onclick="apexInventory.open()" style="margin-right: 0.5rem;">📦 Inventory</button>
+                <button id="apex-crm-nav-btn" class="btn btn-secondary" style="margin-right: 1rem;">👥 CRM</button>
                 <div class="apex-view-toggle">
                     <button class="apex-view-btn active" data-view="kanban" title="Kanban View">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -306,6 +311,9 @@
                 <!-- Populated dynamically by apex-jobs.js openJobDetail() -->
             </div>
         </div><!-- End apex-jobs-content -->
+        <div id="apex-crm-content" style="display: none;">
+            <!-- Populated dynamically by apex-crm.js -->
+        </div>
     </main>
 
     <!-- Tasks Tab Content -->
@@ -2063,8 +2071,10 @@
     <script src="js/people.js"></script>
     <script src="js/calendar.js"></script>
     <script src="js/apex-jobs.js"></script>
+    <script src="js/apex-inventory.js"></script>
     <script src="js/table-cards.js"></script>
     <script src="js/jobDetailTabs.js"></script>
+    <script src="js/apex-crm.js"></script>
     <script src="js/jobDetailModals.js"></script>
     <script src="js/dryingUtils.js"></script>
     <script src="js/dryingSetup.js"></script>

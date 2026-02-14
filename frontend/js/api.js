@@ -956,6 +956,99 @@ const api = {
      * @param {string} jobId - Job ID
      * @param {FileList|File[]} files - Files to upload
      */
+    // ========================================
+    // Inventory Management
+    // ========================================
+    async getInventoryItems(params = {}) {
+        const qs = new URLSearchParams(params).toString();
+        return this.request(`/apex-inventory/items${qs ? '?' + qs : ''}`);
+    },
+    async createInventoryItem(data) {
+        return this.request('/apex-inventory/items', { method: 'POST', body: data });
+    },
+    async updateInventoryItem(id, data) {
+        return this.request(`/apex-inventory/items/${id}`, { method: 'PATCH', body: data });
+    },
+    async archiveInventoryItem(id) {
+        return this.request(`/apex-inventory/items/${id}`, { method: 'DELETE' });
+    },
+    async getInventoryStock(params = {}) {
+        const qs = new URLSearchParams(params).toString();
+        return this.request(`/apex-inventory/stock${qs ? '?' + qs : ''}`);
+    },
+    async getInventoryPurchases(params = {}) {
+        const qs = new URLSearchParams(params).toString();
+        return this.request(`/apex-inventory/purchases${qs ? '?' + qs : ''}`);
+    },
+    async createInventoryPurchase(data) {
+        return this.request('/apex-inventory/purchases', { method: 'POST', body: data });
+    },
+    async getInventoryAllocations(params = {}) {
+        const qs = new URLSearchParams(params).toString();
+        return this.request(`/apex-inventory/allocations${qs ? '?' + qs : ''}`);
+    },
+
+    // ========================================
+    // Job Materials (Consumable Allocations)
+    // ========================================
+    async getJobMaterials(jobId) {
+        return this.request(`/apex-jobs/${jobId}/materials`);
+    },
+    async createJobMaterial(jobId, data) {
+        return this.request(`/apex-jobs/${jobId}/materials`, { method: 'POST', body: data });
+    },
+    async deleteJobMaterial(jobId, id) {
+        return this.request(`/apex-jobs/${jobId}/materials/${id}`, { method: 'DELETE' });
+    },
+
+    // ========================================
+    // Job Supplements
+    // ========================================
+    async getJobSupplements(jobId) {
+        return this.request(`/apex-jobs/${jobId}/supplements`);
+    },
+    async createJobSupplement(jobId, data) {
+        return this.request(`/apex-jobs/${jobId}/supplements`, { method: 'POST', body: data });
+    },
+    async updateJobSupplement(jobId, id, data) {
+        return this.request(`/apex-jobs/${jobId}/supplements/${id}`, { method: 'PATCH', body: data });
+    },
+    async deleteJobSupplement(jobId, id) {
+        return this.request(`/apex-jobs/${jobId}/supplements/${id}`, { method: 'DELETE' });
+    },
+
+    // ========================================
+    // Job Sub-Invoices
+    // ========================================
+    async getJobSubInvoices(jobId) {
+        return this.request(`/apex-jobs/${jobId}/sub-invoices`);
+    },
+    async createJobSubInvoice(jobId, data) {
+        return this.request(`/apex-jobs/${jobId}/sub-invoices`, { method: 'POST', body: data });
+    },
+    async updateJobSubInvoice(jobId, id, data) {
+        return this.request(`/apex-jobs/${jobId}/sub-invoices/${id}`, { method: 'PATCH', body: data });
+    },
+    async deleteJobSubInvoice(jobId, id) {
+        return this.request(`/apex-jobs/${jobId}/sub-invoices/${id}`, { method: 'DELETE' });
+    },
+
+    // ========================================
+    // Job Fuel/Mileage
+    // ========================================
+    async getJobFuel(jobId) {
+        return this.request(`/apex-jobs/${jobId}/fuel`);
+    },
+    async createJobFuel(jobId, data) {
+        return this.request(`/apex-jobs/${jobId}/fuel`, { method: 'POST', body: data });
+    },
+    async updateJobFuel(jobId, id, data) {
+        return this.request(`/apex-jobs/${jobId}/fuel/${id}`, { method: 'PATCH', body: data });
+    },
+    async deleteJobFuel(jobId, id) {
+        return this.request(`/apex-jobs/${jobId}/fuel/${id}`, { method: 'DELETE' });
+    },
+
     async uploadDryingPhotos(jobId, files) {
         const formData = new FormData();
         for (const file of files) {
@@ -965,6 +1058,94 @@ const api = {
             method: 'POST',
             body: formData,
         });
+    },
+
+    // ========================================
+    // APEX CRM
+    // ========================================
+
+    // CRM Organizations
+    async getCrmOrgs(params = {}) {
+        const qs = new URLSearchParams(params).toString();
+        return this.request(`/apex-crm/orgs${qs ? '?' + qs : ''}`);
+    },
+    async getCrmOrg(id) {
+        return this.request(`/apex-crm/orgs/${id}`);
+    },
+    async createCrmOrg(data) {
+        return this.request('/apex-crm/orgs', { method: 'POST', body: data });
+    },
+    async updateCrmOrg(id, data) {
+        return this.request(`/apex-crm/orgs/${id}`, { method: 'PATCH', body: data });
+    },
+    async deleteCrmOrg(id) {
+        return this.request(`/apex-crm/orgs/${id}`, { method: 'DELETE' });
+    },
+    async setCrmOrgTags(id, tag_ids) {
+        return this.request(`/apex-crm/orgs/${id}/tags`, { method: 'PUT', body: { tag_ids } });
+    },
+    async getCrmOrgContacts(id) {
+        return this.request(`/apex-crm/orgs/${id}/contacts`);
+    },
+
+    // CRM Org Tags
+    async getCrmOrgTags() {
+        return this.request('/apex-crm/org-tags');
+    },
+    async createCrmOrgTag(name, color) {
+        return this.request('/apex-crm/org-tags', { method: 'POST', body: { name, color } });
+    },
+    async deleteCrmOrgTag(id) {
+        return this.request(`/apex-crm/org-tags/${id}`, { method: 'DELETE' });
+    },
+
+    // CRM Contacts
+    async getCrmContacts(params = {}) {
+        const qs = new URLSearchParams(params).toString();
+        return this.request(`/apex-crm/contacts${qs ? '?' + qs : ''}`);
+    },
+    async getCrmContact(id) {
+        return this.request(`/apex-crm/contacts/${id}`);
+    },
+    async createCrmContact(data) {
+        return this.request('/apex-crm/contacts', { method: 'POST', body: data });
+    },
+    async updateCrmContact(id, data) {
+        return this.request(`/apex-crm/contacts/${id}`, { method: 'PATCH', body: data });
+    },
+    async deleteCrmContact(id) {
+        return this.request(`/apex-crm/contacts/${id}`, { method: 'DELETE' });
+    },
+    async setCrmContactTags(id, tag_ids) {
+        return this.request(`/apex-crm/contacts/${id}/tags`, { method: 'PUT', body: { tag_ids } });
+    },
+    async addCrmContactToOrg(contactId, crm_org_id, role_title, is_primary) {
+        return this.request(`/apex-crm/contacts/${contactId}/orgs`, { method: 'POST', body: { crm_org_id, role_title, is_primary } });
+    },
+    async removeCrmContactFromOrg(contactId, crmOrgId) {
+        return this.request(`/apex-crm/contacts/${contactId}/orgs/${crmOrgId}`, { method: 'DELETE' });
+    },
+
+    // CRM Contact Tags
+    async getCrmContactTags() {
+        return this.request('/apex-crm/contact-tags');
+    },
+    async createCrmContactTag(name, color) {
+        return this.request('/apex-crm/contact-tags', { method: 'POST', body: { name, color } });
+    },
+    async deleteCrmContactTag(id) {
+        return this.request(`/apex-crm/contact-tags/${id}`, { method: 'DELETE' });
+    },
+
+    // CRM Job Contacts
+    async getCrmJobContacts(jobId) {
+        return this.request(`/apex-crm/jobs/${jobId}/contacts`);
+    },
+    async linkCrmContactToJob(jobId, contact_id, crm_organization_id, job_role, notes) {
+        return this.request(`/apex-crm/jobs/${jobId}/contacts`, { method: 'POST', body: { contact_id, crm_organization_id, job_role, notes } });
+    },
+    async unlinkCrmContactFromJob(jobId, linkId) {
+        return this.request(`/apex-crm/jobs/${jobId}/contacts/${linkId}`, { method: 'DELETE' });
     },
 };
 
