@@ -54,10 +54,9 @@ const dryingVisit = {
             this._state.refPoints = refPoints;
             this._state.baselines = baselines;
 
-            // Create a new visit
-            const newVisit = await api.createDryingVisit(jobId);
-            this._state.visit = newVisit;
-            this._state.visitId = newVisit.id;
+            // DON'T create visit yet — defer until Save
+            this._state.visitId = null;
+            this._state.visit = null;
 
             // Load prior visit data for comparison
             const sorted = allVisits.sort((a, b) => a.visit_number - b.visit_number);
@@ -69,6 +68,15 @@ const dryingVisit = {
 
             // Pre-populate equipment from prior visit
             this._initEquipmentFromPrior();
+
+            // Restore draft if one exists
+            const draft = this._loadDraft(jobId);
+            if (draft) {
+                if (draft.atmospheric) this._state.atmospheric = draft.atmospheric;
+                if (draft.moisture) this._state.moisture = draft.moisture;
+                if (draft.equipment) this._state.equipment = draft.equipment;
+                if (draft.noteText) this._state.noteText = draft.noteText;
+            }
 
             // Set first room active
             if (rooms.length > 0) {
@@ -182,11 +190,26 @@ const dryingVisit = {
         if (this._overlay) {
             this._overlay.style.display = 'none';
         }
+        // If in add mode and there's data entered, save as draft
+        if (this._state.mode === 'add' && this._state.jobId && !this._state._saved) {
+            const hasData = Object.keys(this._state.atmospheric).length > 0 ||
+                Object.keys(this._state.moisture).length > 0 ||
+                Object.values(this._state.equipment).some(v => v > 0) ||
+                this._state.noteText.trim();
+            if (hasData) {
+                this._saveDraft();
+            } else {
+                this._clearDraft(this._state.jobId);
+            }
+        }
         // Revoke object URLs
         for (const url of this._state.photoPreviewUrls) {
             URL.revokeObjectURL(url);
         }
+        // Update Add Visit button styling
+        const jobId = this._state.jobId;
         this._resetState();
+        if (jobId) this._updateAddVisitButton(jobId);
     },
 
     // ========================================
@@ -465,13 +488,16 @@ const dryingVisit = {
             const materialLabel = this._materialLabel(rp.material_code);
 
             if (isDemolished) {
+                // Show Undo Demo if demolished on THIS visit (or visit not yet created — same session)
+                const demoedThisVisit = isInput && (rp.demolished_visit_id === this._state.visitId ||
+                    (!this._state.visitId && !rp.demolished_visit_id));
                 html += `<div class="dry-moisture-row${rowClass}">
                     <div class="dry-moisture-cell">${esc(String(rp.ref_number))}</div>
                     <div class="dry-moisture-cell">${esc(materialLabel)}</div>
                     <div class="dry-moisture-cell">${priorVal != null ? priorVal : '--'}</div>
-                    <div class="dry-moisture-cell">Demolished</div>
+                    <div class="dry-moisture-cell" style="opacity:0.5">Demolished</div>
                     <div class="dry-moisture-cell">--</div>
-                    <div class="dry-moisture-cell"></div>
+                    <div class="dry-moisture-cell">${demoedThisVisit ? `<button class="dry-btn dry-btn-secondary dry-btn-sm dv-undo-demo-btn" data-rp-id="${esc(rp.id)}">Undo</button>` : ''}</div>
                 </div>`;
             } else if (isInput) {
                 html += `<div class="dry-moisture-row${rowClass}" data-rp-id="${esc(rp.id)}">
@@ -607,9 +633,8 @@ const dryingVisit = {
     // ── Save Bar ────────────────────────────
 
     _renderSaveBar() {
-        const canSave = this._canSave();
         return `<div class="dry-save-bar">
-            <button class="dry-save-btn" id="dv-save-btn" ${canSave ? '' : 'disabled'}>Save Visit</button>
+            <button class="dry-save-btn" id="dv-save-btn">Save Visit</button>
         </div>`;
     },
 
@@ -657,6 +682,13 @@ const dryingVisit = {
             });
         });
 
+        // Undo Demo buttons
+        modal.querySelectorAll('.dv-undo-demo-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this._undoDemolish(btn.dataset.rpId);
+            });
+        });
+
         // Add reference point buttons
         modal.querySelectorAll('.dv-add-rp-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -685,6 +717,30 @@ const dryingVisit = {
         if (saveBtn) {
             saveBtn.addEventListener('click', () => {
                 this._save();
+            });
+        }
+
+        // Enter key navigates horizontally then down across all number inputs
+        // Only bind once on the modal element
+        if (!modal._enterNavBound) {
+            modal._enterNavBound = true;
+            modal.addEventListener('keydown', (e) => {
+                if (e.key !== 'Enter') return;
+                const active = document.activeElement;
+                if (!active || active.tagName === 'TEXTAREA') return;
+                if (active.tagName !== 'INPUT') return;
+                e.preventDefault();
+
+                // Gather all visible number/text inputs in the modal (not buttons, not textareas)
+                const allInputs = [...modal.querySelectorAll('input[type="number"], input[type="text"], input:not([type])')].filter(
+                    el => el.offsetParent !== null && !el.disabled && !el.readOnly && el.type !== 'file'
+                );
+                const idx = allInputs.indexOf(active);
+                if (idx === -1) return;
+
+                const next = idx + 1 < allInputs.length ? allInputs[idx + 1] : allInputs[0];
+                next.focus();
+                next.select();
             });
         }
     },
@@ -726,6 +782,12 @@ const dryingVisit = {
         panel.querySelectorAll('.dv-demo-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 this._demolishRefPoint(btn.dataset.rpId);
+            });
+        });
+
+        panel.querySelectorAll('.dv-undo-demo-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this._undoDemolish(btn.dataset.rpId);
             });
         });
 
@@ -839,17 +901,44 @@ const dryingVisit = {
     // Actions
     // ========================================
 
+    async _ensureVisitCreated() {
+        if (!this._state.visitId) {
+            const newVisit = await api.createDryingVisit(this._state.jobId);
+            this._state.visitId = newVisit.id;
+            this._state.visit = newVisit;
+        }
+        return this._state.visitId;
+    },
+
     async _demolishRefPoint(rpId) {
-        const { jobId, visitId } = this._state;
-        if (!confirm('Demolish this reference point?')) return;
+        const { jobId } = this._state;
+        const rp = this._state.refPoints.find(r => r.id === rpId);
+        const mat = rp ? (dryingUtils.MATERIAL_CODES.find(m => m.code === rp.material_code) || { label: rp.material_code }) : { label: 'this point' };
+
+        const confirmed = await dryingUtils.confirm({
+            icon: '🔨',
+            title: 'Demolish Reference Point',
+            message: `Mark <strong>#${rp ? rp.ref_number : '?'} ${dryingUtils.escapeHtml(mat.label)}</strong> as demolished? It won't require readings on future visits.`,
+            confirmText: 'Demolish',
+            cancelText: 'Cancel',
+            confirmClass: 'dry-btn-danger'
+        });
+        if (!confirmed) return;
 
         try {
+            const visitId = await this._ensureVisitCreated();
             await api.demolishDryingRefPoint(jobId, rpId, visitId);
 
             // Ask about replacement
-            const addNew = confirm('Add new reference point to replace it?');
+            const addNew = await dryingUtils.confirm({
+                icon: '➕',
+                title: 'Add Replacement?',
+                message: `Material was removed — do you want to add a new reference point for what's behind it? (e.g., framing behind demolished drywall)`,
+                confirmText: 'Add New Point',
+                cancelText: 'No Thanks',
+                confirmClass: 'dry-btn-primary'
+            });
             if (addNew) {
-                const rp = this._state.refPoints.find(r => r.id === rpId);
                 const roomId = rp ? rp.room_id : this._state.activeRoomId;
                 await this._promptAddRefPoint(roomId);
             }
@@ -862,25 +951,110 @@ const dryingVisit = {
         }
     },
 
+    async _undoDemolish(rpId) {
+        const rp = this._state.refPoints.find(r => r.id === rpId);
+        const mat = rp ? (dryingUtils.MATERIAL_CODES.find(m => m.code === rp.material_code) || { label: rp.material_code }) : { label: 'this point' };
+
+        const confirmed = await dryingUtils.confirm({
+            icon: '↩️',
+            title: 'Undo Demolish',
+            message: `Restore <strong>#${rp ? rp.ref_number : '?'} ${dryingUtils.escapeHtml(mat.label)}</strong> back to active? It will require readings again.`,
+            confirmText: 'Restore',
+            cancelText: 'Cancel',
+            confirmClass: 'dry-btn-primary'
+        });
+        if (!confirmed) return;
+
+        try {
+            await api.undoDemolishRefPoint(this._state.jobId, rpId);
+            this._state.refPoints = await api.getDryingRefPoints(this._state.jobId);
+            this._switchRoom(this._state.activeRoomId);
+        } catch (err) {
+            console.error('Failed to undo demolish:', err);
+        }
+    },
+
     async _addRefPoint(roomId) {
         await this._promptAddRefPoint(roomId);
     },
 
     async _promptAddRefPoint(roomId) {
-        // Build a simple material select prompt
-        const codes = dryingUtils.MATERIAL_CODES;
-        const labels = codes.map(m => `${m.code} - ${m.label}`);
-        const choice = prompt('Select material code:\n' + labels.map((l, i) => `${i + 1}. ${l}`).join('\n') + '\n\nEnter number:');
-        if (!choice) return;
+        const esc = dryingUtils.escapeHtml;
 
-        const idx = parseInt(choice) - 1;
-        if (idx < 0 || idx >= codes.length) return;
+        // Build surface type chips HTML
+        let surfaceChips = '';
+        for (const st of dryingUtils.SURFACE_TYPES) {
+            surfaceChips += `<button class="dry-chip dry-chip-surface" data-surface="${esc(st.key)}">${esc(st.label)}</button>`;
+        }
 
-        const materialCode = codes[idx].code;
+        const materialCode = await new Promise((resolve) => {
+            const overlay = document.createElement('div');
+            overlay.className = 'dry-confirm-overlay';
+            overlay.innerHTML = `
+                <div class="dry-confirm-backdrop"></div>
+                <div class="dry-confirm-card" style="max-width:440px;">
+                    <div class="dry-confirm-icon">📍</div>
+                    <h3 class="dry-confirm-title">Add Reference Point</h3>
+                    <p class="dry-confirm-message">Pick a surface type, then select the material.</p>
+                    <div class="dry-material-picker">
+                        <div class="dry-surface-chips" style="display:flex;flex-wrap:wrap;gap:0.4rem;justify-content:center;margin-bottom:0.75rem;">
+                            ${surfaceChips}
+                        </div>
+                        <div class="dry-material-chips" style="display:flex;flex-wrap:wrap;gap:0.4rem;justify-content:center;min-height:2rem;"></div>
+                    </div>
+                    <div class="dry-confirm-actions" style="margin-top:1rem;">
+                        <button class="dry-btn dry-btn-secondary dry-btn-sm dry-confirm-cancel">Cancel</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            requestAnimationFrame(() => overlay.classList.add('visible'));
+
+            const cleanup = (result) => {
+                overlay.classList.remove('visible');
+                setTimeout(() => overlay.remove(), 200);
+                resolve(result);
+            };
+
+            overlay.querySelector('.dry-confirm-backdrop').addEventListener('click', () => cleanup(null));
+            overlay.querySelector('.dry-confirm-cancel').addEventListener('click', () => cleanup(null));
+
+            const matContainer = overlay.querySelector('.dry-material-chips');
+
+            overlay.querySelectorAll('.dry-chip-surface').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    overlay.querySelectorAll('.dry-chip-surface').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    const surfaceKey = chip.dataset.surface;
+                    const codes = dryingUtils.SURFACE_MATERIALS[surfaceKey] || [];
+                    let html = '';
+                    for (const code of codes) {
+                        const m = dryingUtils.MATERIAL_CODES.find(mc => mc.code === code);
+                        if (m) html += `<button class="dry-chip dry-chip-material" data-mat-code="${esc(m.code)}">${esc(m.label)}</button>`;
+                    }
+                    matContainer.innerHTML = html;
+                    matContainer.querySelectorAll('.dry-chip-material').forEach(matChip => {
+                        matChip.addEventListener('click', () => cleanup(matChip.dataset.matCode));
+                    });
+                });
+            });
+        });
+
+        if (!materialCode) return;
+
         try {
+            // Determine surface label for the ref point
+            let surfaceLabel = '';
+            for (const st of dryingUtils.SURFACE_TYPES) {
+                if ((dryingUtils.SURFACE_MATERIALS[st.key] || []).includes(materialCode)) {
+                    surfaceLabel = st.label;
+                    break;
+                }
+            }
             await api.createDryingRefPoint(this._state.jobId, {
                 room_id: roomId,
-                material_code: materialCode
+                material_code: materialCode,
+                label: surfaceLabel
             });
             this._state.refPoints = await api.getDryingRefPoints(this._state.jobId);
             this._switchRoom(this._state.activeRoomId);
@@ -928,8 +1102,17 @@ const dryingVisit = {
                 }
             }
 
+            // Create the visit now (deferred from open)
+            let actualVisitId = visitId;
+            if (!actualVisitId) {
+                const newVisit = await api.createDryingVisit(jobId);
+                actualVisitId = newVisit.id;
+                this._state.visitId = actualVisitId;
+                this._state.visit = newVisit;
+            }
+
             // Save visit data
-            await api.saveDryingVisit(jobId, visitId, { atmospheric, moisture, equipment });
+            await api.saveDryingVisit(jobId, actualVisitId, { atmospheric, moisture, equipment });
 
             // Save note if any
             if (this._state.noteText.trim() || this._state.photoFiles.length > 0) {
@@ -939,13 +1122,16 @@ const dryingVisit = {
                     photos = uploaded;
                 }
                 if (this._state.noteText.trim() || photos.length > 0) {
-                    await api.createDryingVisitNote(jobId, visitId, {
+                    await api.createDryingVisitNote(jobId, actualVisitId, {
                         content: this._state.noteText.trim(),
                         photos
                     });
                 }
             }
 
+            // Mark as saved so close() doesn't create a draft
+            this._state._saved = true;
+            this._clearDraft(jobId);
             this.close();
 
             // Refresh drying tab
@@ -981,10 +1167,7 @@ const dryingVisit = {
     },
 
     _updateSaveBtn() {
-        const btn = this._overlay.querySelector('#dv-save-btn');
-        if (btn) {
-            btn.disabled = !this._canSave();
-        }
+        // Save is always enabled — partial data is fine
     },
 
     // ========================================
@@ -1089,6 +1272,53 @@ const dryingVisit = {
         if (diff < 0) return 'dry-delta-down';
         if (diff > 0) return 'dry-delta-up';
         return 'dry-delta-flat';
+    },
+
+    // ========================================
+    // Draft persistence
+    // ========================================
+
+    _draftKey(jobId) {
+        return `drying-visit-draft-${jobId}`;
+    },
+
+    _saveDraft() {
+        const { jobId, atmospheric, moisture, equipment, noteText } = this._state;
+        const draft = { atmospheric, moisture, equipment, noteText, savedAt: Date.now() };
+        try {
+            localStorage.setItem(this._draftKey(jobId), JSON.stringify(draft));
+        } catch (e) { console.warn('Failed to save draft:', e); }
+    },
+
+    _loadDraft(jobId) {
+        try {
+            const raw = localStorage.getItem(this._draftKey(jobId));
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) { return null; }
+    },
+
+    _clearDraft(jobId) {
+        try { localStorage.removeItem(this._draftKey(jobId)); } catch (e) {}
+    },
+
+    hasDraft(jobId) {
+        return !!this._loadDraft(jobId);
+    },
+
+    _updateAddVisitButton(jobId) {
+        // Find the Add Visit button for this job and style it if draft exists
+        const buttons = document.querySelectorAll('.dry-action-bar .dry-btn-primary');
+        for (const btn of buttons) {
+            if (btn.textContent.includes('Add Visit') && btn.getAttribute('onclick')?.includes(jobId)) {
+                if (this.hasDraft(jobId)) {
+                    btn.classList.add('dry-btn-draft');
+                    btn.textContent = '⏎ Resume Visit';
+                } else {
+                    btn.classList.remove('dry-btn-draft');
+                    btn.textContent = '+ Add Visit';
+                }
+            }
+        }
     }
 };
 

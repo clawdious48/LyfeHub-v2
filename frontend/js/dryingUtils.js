@@ -208,5 +208,53 @@ window.dryingUtils = {
   buildFilteredMaterialSelect,
   getSurfaceKeyFromLabel,
   buildColorPicker,
-  escapeHtml
+  escapeHtml,
+  confirm: customConfirm
 };
+
+/**
+ * Styled confirm dialog that matches the app theme.
+ * @param {Object} opts
+ * @param {string} opts.title - Dialog title
+ * @param {string} opts.message - Dialog message/body
+ * @param {string} [opts.confirmText='Confirm'] - Confirm button text
+ * @param {string} [opts.cancelText='Cancel'] - Cancel button text
+ * @param {string} [opts.confirmClass='dry-btn-danger'] - Confirm button style class
+ * @param {string} [opts.icon] - Optional emoji/icon to show
+ * @returns {Promise<boolean>}
+ */
+function customConfirm({ title, message, confirmText = 'Confirm', cancelText = 'Cancel', confirmClass = 'dry-btn-danger', icon = '' }) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'dry-confirm-overlay';
+    overlay.innerHTML = `
+      <div class="dry-confirm-backdrop"></div>
+      <div class="dry-confirm-card">
+        ${icon ? `<div class="dry-confirm-icon">${icon}</div>` : ''}
+        <h3 class="dry-confirm-title">${title}</h3>
+        <p class="dry-confirm-message">${message}</p>
+        <div class="dry-confirm-actions">
+          <button class="dry-btn dry-btn-secondary dry-btn-sm dry-confirm-cancel">${cancelText}</button>
+          <button class="dry-btn ${confirmClass} dry-btn-sm dry-confirm-ok">${confirmText}</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // Animate in
+    requestAnimationFrame(() => overlay.classList.add('visible'));
+
+    const cleanup = (result) => {
+      overlay.classList.remove('visible');
+      setTimeout(() => overlay.remove(), 200);
+      resolve(result);
+    };
+
+    overlay.querySelector('.dry-confirm-backdrop').addEventListener('click', () => cleanup(false));
+    overlay.querySelector('.dry-confirm-cancel').addEventListener('click', () => cleanup(false));
+    overlay.querySelector('.dry-confirm-ok').addEventListener('click', () => cleanup(true));
+
+    // Focus confirm button
+    setTimeout(() => overlay.querySelector('.dry-confirm-ok').focus(), 50);
+  });
+}

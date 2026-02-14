@@ -259,8 +259,18 @@ const dryingSetup = {
 
     // ── Navigation ───────────────────────────────────────────────────
 
-    _nextStep() {
+    async _nextStep() {
         this._collectCurrentStepState();
+        // Clean up blank-name rooms when leaving Rooms Review (step 1)
+        if (this._state.currentStep === 1) {
+            const blanks = this._state.rooms.filter(r => !r.name || !r.name.trim());
+            for (const room of blanks) {
+                try { await api.deleteDryingRoom(this._state.jobId, room.id); } catch (e) {}
+            }
+            if (blanks.length) {
+                this._state.rooms = await api.getDryingRooms(this._state.jobId);
+            }
+        }
         if (this._state.currentStep < this.TOTAL_STEPS - 1) {
             this._state.currentStep++;
             this._render();
@@ -312,17 +322,25 @@ const dryingSetup = {
         const esc = dryingUtils.escapeHtml;
         const message = rooms.length
             ? 'Rooms were pre-populated from the job\'s affected areas. Rename, remove, or add rooms below.'
-            : 'No rooms yet. Add your first room below.';
+            : 'Add your first room below.';
         let html = `<p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0 0 1rem">
             ${message}
         </p>`;
         html += `<div class="dry-room-list" id="dry-wiz-rooms">`;
+        if (rooms.length === 0) {
+            // Show a single empty input so users can start typing immediately
+            html += `
+                <div class="dry-room-item dry-room-item-empty">
+                    <input type="text" class="dry-input dry-room-name dry-room-empty-input" placeholder="Room Name"
+                           style="flex:1" />
+                </div>`;
+        }
         for (const room of rooms) {
             const isNewRoom = !room.name || room.name.trim() === '';
             const buttonLabel = isNewRoom ? 'Save' : 'Rename';
             html += `
                 <div class="dry-room-item" data-room-id="${esc(room.id)}">
-                    <input type="text" class="dry-input dry-room-name" value="${esc(room.name)}" placeholder="New room"
+                    <input type="text" class="dry-input dry-room-name" value="${esc(room.name)}" placeholder="Room Name"
                            data-room-id="${esc(room.id)}" style="flex:1" />
                     <button class="dry-btn dry-btn-sm dry-btn-secondary dry-room-rename"
                             data-room-id="${esc(room.id)}" title="Save name">${buttonLabel}</button>
@@ -655,7 +673,22 @@ const dryingSetup = {
         } else if (step === 1) {
             // Step 1: Rooms Review
             const addBtn = body.querySelector('.dry-room-add');
-            if (addBtn) addBtn.addEventListener('click', () => this._addRoom());
+            if (addBtn) addBtn.addEventListener('click', async () => {
+                // If there's an unsaved empty input, save it first
+                const emptyInput = body.querySelector('.dry-room-empty-input');
+                if (emptyInput) {
+                    const name = emptyInput.value.trim();
+                    if (name) {
+                        await this._createRoomFromName(name);
+                        return; // _createRoomFromName re-renders with a new empty input
+                    } else {
+                        emptyInput.focus();
+                        return;
+                    }
+                }
+                // Save any unsaved blank-name rooms, then add a new one
+                await this._addRoom();
+            });
             body.querySelectorAll('.dry-room-rename').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const roomId = btn.dataset.roomId;
@@ -666,20 +699,38 @@ const dryingSetup = {
             body.querySelectorAll('.dry-room-delete').forEach(btn => {
                 btn.addEventListener('click', () => this._deleteRoom(btn.dataset.roomId));
             });
-            // Enter key creates next room
+            // Universal Enter handler for ALL room name inputs (empty placeholder or existing)
             body.querySelectorAll('.dry-room-name').forEach(input => {
                 input.addEventListener('keydown', async (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const roomId = input.dataset.roomId;
-                        const name = input.value.trim();
-                        if (name) {
-                            await this._renameRoom(roomId, name);
-                        }
+                    if (e.key !== 'Enter') return;
+                    e.preventDefault();
+                    const name = input.value.trim();
+                    if (!name) return; // don't create blank rooms
+                    const roomId = input.dataset.roomId;
+                    if (roomId) {
+                        // Existing room — save name via API (skip re-render)
+                        try {
+                            await api.updateDryingRoom(this._state.jobId, roomId, { name });
+                            const room = this._state.rooms.find(r => r.id === roomId);
+                            if (room) room.name = name; // update local state
+                        } catch (err) { console.error('Failed to rename room:', err); }
+                        // Now create a new blank room and re-render
                         await this._addRoom();
+                    } else {
+                        // Empty placeholder — create room with this name
+                        await this._createRoomFromName(name);
                     }
                 });
             });
+            // Auto-focus: empty placeholder or last blank room
+            setTimeout(() => {
+                const emptyInput = body.querySelector('.dry-room-empty-input');
+                if (emptyInput) { emptyInput.focus(); return; }
+                const allInputs = body.querySelectorAll('.dry-room-name');
+                for (let i = allInputs.length - 1; i >= 0; i--) {
+                    if (!allInputs[i].value.trim()) { allInputs[i].focus(); return; }
+                }
+            }, 50);
         } else if (step === 2) {
             // Step 2: Assign Rooms to Chambers
             body.querySelectorAll('.dry-room-chamber-select').forEach(sel => {
@@ -807,6 +858,24 @@ const dryingSetup = {
     },
 
     // ── Actions ──────────────────────────────────────────────────────
+
+    async _createRoomFromName(name) {
+        const jobId = this._state.jobId;
+        const chamberId = this._state.chambers.length ? this._state.chambers[0].id : null;
+        if (!chamberId) {
+            alert('Cannot add room: please create a chamber first (go back to Step 1).');
+            return;
+        }
+        try {
+            await api.createDryingRoom(jobId, { chamber_id: chamberId, name: name });
+            this._state.rooms = await api.getDryingRooms(jobId);
+            // Create a blank room for the next entry
+            await this._addRoom();
+        } catch (err) {
+            console.error('Failed to create room:', err);
+            alert('Failed to add room: ' + (err.message || 'Unknown error'));
+        }
+    },
 
     async _addRoom() {
         const jobId = this._state.jobId;
