@@ -25,17 +25,53 @@ html, body {
     }
 }
 
-/* 0b. Tasks: hide view tabs, my lists, sort on mobile (use context sheet instead) */
+/* 0b. Tasks mobile: single header row with views inline */
 @media (max-width: 1199px) {
-    .tab-content[data-tab="tasks"] .view-controls {
-        display: none !important;
-    }
-    .tab-content[data-tab="tasks"] .sort-control {
-        display: none !important;
-    }
+    /* Hide My Lists, sort, card-size on mobile */
+    .tab-content[data-tab="tasks"] .my-lists-dropdown,
+    .tab-content[data-tab="tasks"] .pinned-lists-container,
+    .tab-content[data-tab="tasks"] .sort-control,
     .tab-content[data-tab="tasks"] .card-size-control {
         display: none !important;
     }
+
+    /* View pills: compact, scrollable row (moved into tasks-view-bar via JS) */
+    .tab-content[data-tab="tasks"] .tasks-view-toggle {
+        display: flex !important;
+        gap: 2px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        flex-shrink: 1;
+        min-width: 0;
+    }
+    .tab-content[data-tab="tasks"] .tasks-view-toggle::-webkit-scrollbar {
+        display: none;
+    }
+    .tab-content[data-tab="tasks"] .tasks-view-toggle .view-btn {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+        white-space: nowrap;
+        border-radius: 6px;
+        flex-shrink: 0;
+    }
+    .tab-content[data-tab="tasks"] .tasks-view-toggle .view-btn svg {
+        display: none;
+    }
+    .tab-content[data-tab="tasks"] .tasks-view-toggle .view-btn .tasks-count {
+        font-size: 0.6rem;
+        margin-left: 2px;
+    }
+
+    /* Single header row: Add Task + List/Cards + Views */
+    .tab-content[data-tab="tasks"] .tasks-view-bar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: nowrap;
+        padding: 8px 12px;
+    }
+
 }
 
 /* 1. Hide desktop header tabs on mobile */

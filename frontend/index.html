@@ -2181,6 +2181,19 @@
         var headerTab = document.querySelector('.tabs .tab[data-tab="' + tab + '"]');
         if (headerTab) headerTab.click();
     });
+
+    // Mobile: move tasks view toggle into the tasks-view-bar
+    (function() {
+        if (window.innerWidth >= 1200) return;
+        var viewToggle = document.querySelector('.tab-content[data-tab="tasks"] .tasks-view-toggle');
+        var viewBar = document.querySelector('.tab-content[data-tab="tasks"] .tasks-view-bar');
+        if (viewToggle && viewBar) {
+            viewBar.appendChild(viewToggle);
+        }
+        // Hide the now-empty view-controls wrapper
+        var vc = document.querySelector('.tab-content[data-tab="tasks"] .view-controls');
+        if (vc) vc.style.display = 'none';
+    })();
     </script>
     <script src="js/core-pages.js"></script>
 </body>
