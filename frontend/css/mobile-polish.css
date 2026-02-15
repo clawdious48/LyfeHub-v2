@@ -25,6 +25,19 @@ html, body {
     }
 }
 
+/* 0b. Tasks: hide view tabs, my lists, sort on mobile (use context sheet instead) */
+@media (max-width: 1199px) {
+    .tab-content[data-tab="tasks"] .view-controls {
+        display: none !important;
+    }
+    .tab-content[data-tab="tasks"] .sort-control {
+        display: none !important;
+    }
+    .tab-content[data-tab="tasks"] .card-size-control {
+        display: none !important;
+    }
+}
+
 /* 1. Hide desktop header tabs on mobile */
 @media (max-width: 1199px) {
     header.header,
