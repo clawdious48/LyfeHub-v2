@@ -1,0 +1,484 @@
+/* ========================================
+   DARK MODE — Comprehensive Overrides
+   Applied when html[data-theme="dark"]
+   ======================================== */
+
+/* ---- Base / Body ---- */
+[data-theme="dark"] body {
+    background: #0f172a;
+    color: #f0f0f5;
+}
+
+/* ---- Header ---- */
+[data-theme="dark"] .header {
+    background: rgba(15, 23, 42, 0.9);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ---- Tabs ---- */
+[data-theme="dark"] .tab:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* ---- View Controls ---- */
+[data-theme="dark"] .view-controls,
+[data-theme="dark"] .tasks-content,
+[data-theme="dark"] .tasks-view-bar {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .view-toggle,
+[data-theme="dark"] .tasks-display-toggle,
+[data-theme="dark"] .sort-buttons {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .view-btn:hover,
+[data-theme="dark"] .tasks-display-btn:hover,
+[data-theme="dark"] .sort-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ---- Filter Selects ---- */
+[data-theme="dark"] .filter-select,
+[data-theme="dark"] .apex-filter-select {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .filter-select option,
+[data-theme="dark"] .apex-filter-select option {
+    background: #1e293b;
+    color: #f0f0f5;
+}
+
+/* ---- Kanban Columns ---- */
+[data-theme="dark"] .column {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .column:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .task-count {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* ---- Task Cards ---- */
+[data-theme="dark"] .task-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .task-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(20, 184, 166, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* ---- Project Cards ---- */
+[data-theme="dark"] .project-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .project-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(20, 184, 166, 0.3);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* ---- Tables ---- */
+[data-theme="dark"] .task-table,
+[data-theme="dark"] .apex-task-table {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .task-table thead,
+[data-theme="dark"] .apex-task-table thead {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .task-table th,
+[data-theme="dark"] .apex-task-table th {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .task-table td,
+[data-theme="dark"] .apex-task-table td {
+    border-bottom-color: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="dark"] .task-table tbody tr:hover,
+[data-theme="dark"] .apex-task-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* ---- Modals ---- */
+[data-theme="dark"] .modal-backdrop {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .modal-content {
+    background: rgba(15, 23, 42, 0.97);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 60px rgba(20, 184, 166, 0.1), 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .modal-header {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .modal-footer {
+    border-top-color: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* ---- Forms ---- */
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group textarea,
+[data-theme="dark"] .form-group select {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f0f0f5;
+}
+
+[data-theme="dark"] .form-group input:focus,
+[data-theme="dark"] .form-group textarea:focus,
+[data-theme="dark"] .form-group select:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: #14b8a6;
+}
+
+[data-theme="dark"] .form-group select option {
+    background: #1e293b;
+    color: #f0f0f5;
+}
+
+/* ---- Buttons ---- */
+[data-theme="dark"] .btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f0f0f5;
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .btn-icon {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.7);
+}
+
+[data-theme="dark"] .btn-icon:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #14b8a6;
+    border-color: #14b8a6;
+}
+
+/* ---- Sidebar (Bases, People) ---- */
+[data-theme="dark"] .bases-sidebar,
+[data-theme="dark"] .people-sidebar,
+[data-theme="dark"] .calendar-sidebar {
+    background: rgba(15, 23, 42, 0.8);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .sidebar-content,
+[data-theme="dark"] .sidebar-core-bases-container {
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ---- Bases Cards ---- */
+[data-theme="dark"] .base-card,
+[data-theme="dark"] .people-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .base-card:hover,
+[data-theme="dark"] .people-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(20, 184, 166, 0.3);
+}
+
+/* ---- Base Table View ---- */
+[data-theme="dark"] .base-table-container table {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] .base-table-container th {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .base-table-container td {
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* ---- Calendar ---- */
+[data-theme="dark"] .calendar-toolbar {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .month-grid,
+[data-theme="dark"] .month-day-label {
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .month-cell {
+    border-color: rgba(255, 255, 255, 0.06);
+    background: transparent;
+}
+
+[data-theme="dark"] .month-cell:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .month-cell.today {
+    background: rgba(20, 184, 166, 0.1);
+}
+
+/* ---- Dropdowns & Menus ---- */
+[data-theme="dark"] .my-lists-menu {
+    background: rgba(15, 23, 42, 0.97);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .my-lists-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ---- Login ---- */
+[data-theme="dark"] .login-container {
+    background: rgba(15, 23, 42, 0.8);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ---- Scrollbar ---- */
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ---- Task Items (List View) ---- */
+[data-theme="dark"] .task-item {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .task-item:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(20, 184, 166, 0.3);
+}
+
+/* ---- List Items / Misc ---- */
+[data-theme="dark"] .list-item {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .log-entry {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* ---- Reader view ---- */
+[data-theme="dark"] .reader-criteria li {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] .reader-notes {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* ---- Markdown ---- */
+[data-theme="dark"] .markdown-body pre {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ---- Card Size Buttons ---- */
+[data-theme="dark"] .card-size-btn,
+[data-theme="dark"] .bases-card-size-btn,
+[data-theme="dark"] .people-card-size-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.7);
+}
+
+/* ---- Apex Job Cards ---- */
+[data-theme="dark"] .apex-job-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .apex-job-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(20, 184, 166, 0.3);
+}
+
+/* ---- Apex Columns ---- */
+[data-theme="dark"] .apex-column {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+/* ---- Apex View Controls ---- */
+[data-theme="dark"] .apex-view-controls {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .apex-view-toggle {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ---- Column View Card (modal) ---- */
+[data-theme="dark"] .column-view-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .column-view-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(20, 184, 166, 0.3);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* ---- Submit review button fade ---- */
+[data-theme="dark"] .submit-review-btn::before {
+    background: linear-gradient(to bottom, transparent, rgba(15, 23, 42, 0.95));
+}
+
+/* ---- Apex Job Detail ---- */
+[data-theme="dark"] .apex-job-detail {
+    background: #0f172a;
+}
+
+/* ---- Quick Add ---- */
+[data-theme="dark"] .quick-add-overlay {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .quick-add-modal {
+    background: rgba(15, 23, 42, 0.97);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ---- Drawer (mobile) ---- */
+[data-theme="dark"] .mobile-drawer {
+    background: rgba(15, 23, 42, 0.97);
+}
+
+/* ---- Bottom Nav ---- */
+[data-theme="dark"] .bottom-nav {
+    background: rgba(15, 23, 42, 0.95);
+    border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ---- FAB ---- */
+[data-theme="dark"] .fab-menu {
+    background: rgba(15, 23, 42, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ---- Sidebar New Base / Person Button ---- */
+[data-theme="dark"] .sidebar-new-base-btn,
+[data-theme="dark"] .sidebar-new-person-btn,
+[data-theme="dark"] .sidebar-new-calendar-btn {
+    background: rgba(20, 184, 166, 0.15);
+    color: #2dd4bf;
+}
+
+/* ---- Hamburger ---- */
+[data-theme="dark"] .hamburger-icon span {
+    background: #f0f0f5;
+}
+
+/* ---- Color Swatch dark active border ---- */
+[data-theme="dark"] .color-swatch.active {
+    border-color: #f0f0f5;
+}
+
+/* ---- General bg white overrides ---- */
+[data-theme="dark"] .my-lists-trigger {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ---- Apex CRM ---- */
+[data-theme="dark"] .crm-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .crm-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ---- Calendar week/day views ---- */
+[data-theme="dark"] .week-container,
+[data-theme="dark"] .day-container {
+    background: rgba(15, 23, 42, 0.6);
+}
+
+[data-theme="dark"] .time-gutter {
+    background: rgba(15, 23, 42, 0.8);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .week-column,
+[data-theme="dark"] .day-column {
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .hour-slot {
+    border-color: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="dark"] .week-header,
+[data-theme="dark"] .day-header,
+[data-theme="dark"] .three-day-header {
+    background: rgba(15, 23, 42, 0.8);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .week-all-day-row {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+/* ---- Tooltip / Popover backgrounds ---- */
+[data-theme="dark"] [class*="tooltip"],
+[data-theme="dark"] [class*="popover"] {
+    background: rgba(15, 23, 42, 0.97);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f0f0f5;
+}
+
+/* ---- Theme toggle button ---- */
+[data-theme-toggle] {
+    transition: transform 0.3s ease;
+}
+
+[data-theme-toggle]:hover {
+    transform: scale(1.15);
+}
+
+[data-theme-toggle] .theme-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+}

@@ -194,3 +194,25 @@
         height: 20px;
     }
 }
+
+/* ========================================
+   DARK MODE OVERRIDES
+   ======================================== */
+@media (min-width: 1201px) {
+    [data-theme="dark"] .fab-btn:hover {
+        box-shadow: 0 6px 16px rgba(20, 184, 166, 0.4),
+                0 3px 6px rgba(0, 0, 0, 0.35);
+    }
+    [data-theme="dark"] .fab-btn .fab-icon::before,
+.fab-btn .fab-icon::after {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    [data-theme="dark"] .fab-menu-item {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    [data-theme="dark"] .fab-menu-item:active {
+        background: rgba(255, 255, 255, 0.05);
+    }
+}

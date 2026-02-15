@@ -551,3 +551,37 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
     }
   }
 }
+
+/* ========================================
+   DARK MODE OVERRIDES
+   ======================================== */
+@media (max-width: 640px) {
+    [data-theme="dark"] .modal-footer,
+  .job-modal-footer {
+        background: rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.05);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+    }
+    [data-theme="dark"] .task-modal-footer {
+        background: rgba(255, 255, 255, 0.05);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+    }
+    [data-theme="dark"] .submit-review-btn {
+        background: rgba(255, 255, 255, 0.05);
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+    }
+    [data-theme="dark"] }
+
+
+
+
+
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+}

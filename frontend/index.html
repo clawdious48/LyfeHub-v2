@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="css/header-mobile.css">
     <link rel="stylesheet" href="css/style.css?v=1770688306">
     <link rel="stylesheet" href="css/apex-theme.css">
+    <link rel="stylesheet" href="css/dark-mode.css">
     <link rel="stylesheet" href="css/apex-jobs.css">
     <link rel="stylesheet" href="css/apex-crm.css">
     <link rel="stylesheet" href="css/drying.css">
@@ -22,6 +23,7 @@
     <link rel="stylesheet" href="css/fab.css">
     <link rel="stylesheet" href="css/quick-add.css">
     <link rel="stylesheet" href="css/bottom-nav.css">
+    <script src="js/theme.js"></script>
     <!-- Marked.js for Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -53,6 +55,9 @@
             <button class="tab" data-tab="calendar">Calendar</button>
         </nav>
         <div class="header-right">
+            <button data-theme-toggle class="btn btn-icon" title="Toggle theme" onclick="window.LyfeHubTheme.toggle()" style="background:none;border:none;cursor:pointer;font-size:1.1rem;padding:0.25rem;">
+                <span class="theme-icon">🌙</span>
+            </button>
             <span id="refresh-indicator" class="refresh-indicator" title="Auto-refreshes every 30s">⟳</span>
             <a href="/settings.html" class="btn btn-icon" title="Settings">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

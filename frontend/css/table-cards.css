@@ -581,3 +581,62 @@
 .apex-card-skeleton-line.medium {
     width: 80%;
 }
+
+/* ========================================
+   DARK MODE OVERRIDES
+   ======================================== */
+@media (max-width: 640px) {
+    [data-theme="dark"] }
+
+
+
+.apex-job-mobile-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    [data-theme="dark"] }
+
+
+
+.apex-card-skeleton {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    [data-theme="dark"] .apex-card-skeleton-line {
+        background: rgba(255, 255, 255, 0.05);
+    }
+}
+@media (hover: hover) {
+    [data-theme="dark"] .apex-job-mobile-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    [data-theme="dark"] .apex-card-loss-badge.loss-unknown {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    [data-theme="dark"] .apex-card-footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    [data-theme="dark"] .apex-card-progress-bar {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    [data-theme="dark"] .apex-card-expanded-content {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+}
+@media (min-width: 641px) and (max-width: 768px) {
+    [data-theme="dark"] .apex-list-view::after {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    [data-theme="dark"] .apex-task-table th:first-child,
+    .apex-task-table td:first-child {
+        background: rgba(255, 255, 255, 0.08);
+    }
+}
+@media (pointer: coarse) {
+    [data-theme="dark"] .apex-job-mobile-card::after {
+        background: rgba(255, 255, 255, 0.05);
+    }
+}

@@ -1602,3 +1602,77 @@
         justify-content: center;
     }
 }
+
+/* ========================================
+   DARK MODE OVERRIDES
+   ======================================== */
+[data-theme="dark"] .calendar-sidebar {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .calendar-list-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .calendar-list-item.selected {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .calendar-edit-btn {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .section-count {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .calendar-task-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .calendar-toolbar {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .calendar-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .calendar-today-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .calendar-view-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .month-cell {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .week-container {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .week-all-day-label {
+    background: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .week-hour-slot {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .day-container {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .all-day-label {
+    background: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .hour-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .time-picker-content {
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}
+[data-theme="dark"] .time-picker-all-day-zone:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .time-picker-hour-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .time-picker-hour:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .time-block-popup-content {
+    background: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .time-block-task-option:hover {
+    background: rgba(255, 255, 255, 0.05);
+}

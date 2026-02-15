@@ -234,3 +234,17 @@
    Landscape Orientation Handling
    ========================================================================== */
 
+
+/* ========================================
+   DARK MODE OVERRIDES
+   ======================================== */
+[data-theme="dark"] .sidebar-expand-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+@media (max-width: 768px) {
+    [data-theme="dark"] .bases-sidebar,
+  .people-sidebar,
+  .calendar-sidebar {
+        box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
+    }
+}

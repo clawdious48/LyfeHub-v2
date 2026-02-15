@@ -292,3 +292,35 @@
         overflow-y: auto;
     }
 }
+
+/* ========================================
+   DARK MODE OVERRIDES
+   ======================================== */
+[data-theme="dark"] .quick-add-modal {
+    background: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .quick-add-close {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .quick-add-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .quick-add-expanded {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .quick-add-field input,
+.quick-add-field select,
+.quick-add-field textarea {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .priority-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .quick-add-toast {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}

@@ -210,3 +210,16 @@ body.keyboard-open .header {
     }
   }
 }
+
+/* ========================================
+   DARK MODE OVERRIDES
+   ======================================== */
+@media (max-width: 768px) {
+    [data-theme="dark"] .header.is-scrolled {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+    [data-theme="dark"] .header.is-scrolled {
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    }
+}

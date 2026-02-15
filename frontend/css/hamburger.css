@@ -118,3 +118,10 @@
     align-items: center;
   }
 }
+
+/* ========================================
+   DARK MODE OVERRIDES
+   ======================================== */
+[data-theme="dark"] .hamburger-icon span {
+    background: #f0f0f5;
+}

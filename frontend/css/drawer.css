@@ -365,3 +365,47 @@ body.drawer-open {
     transition: none;
   }
 }
+
+/* ========================================
+   DARK MODE OVERRIDES
+   ======================================== */
+[data-theme="dark"] .mobile-drawer {
+    background: rgba(255, 255, 255, 0.08);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .drawer-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .drawer-avatar {
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .drawer-user-name {
+    color: #f0f0f5;
+}
+[data-theme="dark"] .drawer-user-email {
+    color: rgba(240, 240, 245, 0.5);
+}
+[data-theme="dark"] .drawer-nav-link {
+    color: rgba(240, 240, 245, 0.7);
+}
+[data-theme="dark"] .drawer-nav-link:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #f0f0f5;
+}
+[data-theme="dark"] .drawer-nav-link:active {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .drawer-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .drawer-footer-link {
+    color: rgba(240, 240, 245, 0.7);
+}
+[data-theme="dark"] .drawer-footer-link:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #f0f0f5;
+}
+[data-theme="dark"] .drawer-logout-btn {
+    color: rgba(240, 240, 245, 0.45);
+}

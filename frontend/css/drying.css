@@ -1453,3 +1453,222 @@
     padding: 0.5rem 1.25rem;
     font-size: 0.85rem;
 }
+
+/* ========================================
+   DARK MODE OVERRIDES
+   ======================================== */
+[data-theme="dark"] .dry-select,
+.dry-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.95);
+}
+[data-theme="dark"] .dry-select option,
+.dry-input option {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(240, 240, 245, 0.95);
+}
+[data-theme="dark"] .dry-textarea {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.95);
+}
+[data-theme="dark"] .dry-status-bar {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.5);
+}
+[data-theme="dark"] .dry-status-bar .dry-status-label {
+    color: rgba(240, 240, 245, 0.95);
+}
+[data-theme="dark"] .dry-action-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.7);
+}
+[data-theme="dark"] .dry-action-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(240, 240, 245, 0.95);
+}
+[data-theme="dark"] .dry-visit-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .dry-visit-date {
+    color: rgba(240, 240, 245, 0.95);
+}
+[data-theme="dark"] .dry-visit-summary {
+    color: rgba(240, 240, 245, 0.5);
+}
+[data-theme="dark"] .dry-wizard-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .dry-wizard-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .dry-wizard-nav h3 {
+    color: rgba(240, 240, 245, 0.95);
+}
+[data-theme="dark"] .dry-wizard-close {
+    color: rgba(240, 240, 245, 0.4);
+}
+[data-theme="dark"] .dry-wizard-progress {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .dry-step-dot {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+}
+[data-theme="dark"] .dry-dot-tooltip {
+    color: rgba(240, 240, 245, 0.85);
+}
+[data-theme="dark"] .dry-room-item {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .dry-room-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .dry-room-item .dry-room-name {
+    color: rgba(240, 240, 245, 0.95);
+}
+[data-theme="dark"] .dry-chamber-divider {
+    color: rgba(240, 240, 245, 0.4);
+}
+[data-theme="dark"] .dry-chamber-card {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .dry-chamber-header {
+    color: rgba(240, 240, 245, 0.95);
+}
+[data-theme="dark"] .dry-rp-code {
+    color: rgba(240, 240, 245, 0.45);
+}
+[data-theme="dark"] .dry-rp-material:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .dry-rp-delete {
+    color: rgba(240, 240, 245, 0.25);
+}
+[data-theme="dark"] .dry-visit-modal {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .dry-visit-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .dry-visit-header h3 {
+    color: rgba(240, 240, 245, 0.95);
+}
+[data-theme="dark"] .dry-visit-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .dry-atmo-section h4 {
+    color: rgba(240, 240, 245, 0.7);
+}
+[data-theme="dark"] .dry-atmo-table {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .dry-atmo-label {
+    color: rgba(240, 240, 245, 0.6);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .dry-atmo-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.95);
+}
+[data-theme="dark"] .dry-room-tabs {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .dry-room-tab {
+    border: 1.5px solid var(--tab-chamber-color, rgba(255, 255, 255, 0.1));
+}
+[data-theme="dark"] .dry-chip {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.6);
+}
+[data-theme="dark"] .dry-chip:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(240, 240, 245, 0.85);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+[data-theme="dark"] .dry-moisture-table {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .dry-moisture-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .dry-moisture-header .dry-moisture-cell {
+    color: rgba(240, 240, 245, 0.5);
+}
+[data-theme="dark"] .dry-moisture-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .dry-moisture-cell {
+    color: rgba(240, 240, 245, 0.85);
+}
+[data-theme="dark"] .dry-moisture-cell input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.95);
+}
+[data-theme="dark"] .dry-moisture-demolished .dry-moisture-cell {
+    color: rgba(240, 240, 245, 0.35);
+}
+[data-theme="dark"] .dry-equipment-section h4 {
+    color: rgba(240, 240, 245, 0.7);
+}
+[data-theme="dark"] .dry-equipment-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .dry-equipment-label {
+    color: rgba(240, 240, 245, 0.6);
+}
+[data-theme="dark"] .dry-equipment-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.95);
+}
+[data-theme="dark"] .dry-equipment-col h4 {
+    color: rgba(240, 240, 245, 0.7);
+}
+[data-theme="dark"] .dry-notes-section h4 {
+    color: rgba(240, 240, 245, 0.7);
+}
+[data-theme="dark"] .dry-note-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.95);
+}
+[data-theme="dark"] .dry-photo-upload label {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    color: rgba(240, 240, 245, 0.5);
+}
+[data-theme="dark"] .dry-photo-thumb {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .dry-save-bar {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .dry-delta-flat {
+    color: rgba(240, 240, 245, 0.35);
+}
+[data-theme="dark"] .dry-wizard-preview .dry-atmo-input,
+.dry-wizard-preview .dry-moisture-cell input,
+.dry-wizard-preview .dry-equipment-input,
+.dry-wizard-preview select {
+    border-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .dry-wizard-preview h4 {
+    color: rgba(240, 240, 245, 0.6);
+}
+[data-theme="dark"] .dry-confirm-card {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .dry-confirm-message {
+    color: rgba(240, 240, 245, 0.6);
+}
