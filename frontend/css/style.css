@@ -10186,3 +10186,9 @@ body.column-dragging .base-table {
         background: rgba(255, 255, 255, 0.05);
     }
 }
+
+/* Hide edit/delete buttons on core base cards */
+.base-card-core .base-card-delete,
+.base-card-core .base-card-edit {
+  display: none;
+}

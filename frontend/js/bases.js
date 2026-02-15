@@ -1687,7 +1687,11 @@ function renderBasesList() {
   
   container.innerHTML = '';
   
-  if (basesState.bases.length === 0) {
+  // Combine core bases + user bases for the main content area
+  const coreBases = (basesState.coreBases || []).map(b => Object.assign({}, b, { _isCore: true }));
+  const allBases = coreBases.concat(basesState.bases);
+  
+  if (allBases.length === 0) {
     container.innerHTML = `
       <div class="bases-empty">
         <div class="bases-empty-icon">📊</div>
@@ -1699,13 +1703,14 @@ function renderBasesList() {
   }
   
   if (basesState.displayMode === 'list') {
-    renderBasesListView(container);
+    renderBasesListView(container, allBases);
   } else {
-    renderBasesCardsView(container);
+    renderBasesCardsView(container, allBases);
   }
 }
 
-function renderBasesListView(container) {
+function renderBasesListView(container, basesList) {
+  const bases = basesList || basesState.bases;
   container.className = 'bases-list bases-list-table';
   
   container.innerHTML = `
@@ -1722,42 +1727,46 @@ function renderBasesListView(container) {
           </tr>
         </thead>
         <tbody>
-          ${basesState.bases.map(base => `
-            <tr class="bases-table-row" data-base-id="${base.id}">
-              <td class="bases-td-icon" onclick="openBase('${base.id}')">
+          ${bases.map(base => {
+            const openFn = (base._isCore || base.is_core) ? 'openCoreBase' : 'openBase';
+            const isCore = base._isCore || base.is_core;
+            return `
+            <tr class="bases-table-row${isCore ? ' bases-table-row-core' : ''}" data-base-id="${base.id}">
+              <td class="bases-td-icon" onclick="${openFn}('${base.id}')">
                 <span class="base-row-icon">${base.icon || ''}</span>
               </td>
-              <td class="bases-td-name" onclick="openBase('${base.id}')">
+              <td class="bases-td-name" onclick="${openFn}('${base.id}')">
                 <span class="base-row-name">${escapeHtml(base.name)}</span>
               </td>
-              <td class="bases-td-desc" onclick="openBase('${base.id}')">
+              <td class="bases-td-desc" onclick="${openFn}('${base.id}')">
                 <span class="base-row-desc">${escapeHtml(base.description || '')}</span>
               </td>
-              <td class="bases-td-records" onclick="openBase('${base.id}')">
+              <td class="bases-td-records" onclick="${openFn}('${base.id}')">
                 <span class="base-row-records">${base.record_count || 0}</span>
               </td>
-              <td class="bases-td-modified" onclick="openBase('${base.id}')">
+              <td class="bases-td-modified" onclick="${openFn}('${base.id}')">
                 <span class="base-row-modified">${formatRelativeDate(base.updated_at)}</span>
               </td>
               <td class="bases-td-actions">
-                <button class="base-row-edit" title="Edit base" onclick="event.stopPropagation(); showEditBaseModal('${base.id}')">✏️</button>
-                <button class="base-row-delete" title="Delete base" onclick="event.stopPropagation(); confirmDeleteBase(${JSON.stringify(base).replace(/'/g, "\\'").replace(/"/g, '&quot;')})">×</button>
+                ${isCore ? '' : `<button class="base-row-edit" title="Edit base" onclick="event.stopPropagation(); showEditBaseModal('${base.id}')">✏️</button>
+                <button class="base-row-delete" title="Delete base" onclick="event.stopPropagation(); confirmDeleteBase(${JSON.stringify(base).replace(/'/g, "\\'").replace(/"/g, '&quot;')})">×</button>`}
               </td>
             </tr>
-          `).join('')}
+          `}).join('')}
         </tbody>
       </table>
     </div>
   `;
 }
 
-function renderBasesCardsView(container) {
+function renderBasesCardsView(container, basesList) {
+  const bases = basesList || basesState.bases;
   const size = basesState.cardSize;
   container.className = `bases-list bases-cards-grid size-${size}`;
   
-  basesState.bases.forEach(base => {
+  bases.forEach(base => {
     const card = document.createElement('div');
-    card.className = `base-card base-card-${size}`;
+    card.className = `base-card base-card-${size}${(base._isCore || base.is_core) ? ' base-card-core' : ''}`;
     card.dataset.baseId = base.id;
     
     const descPreview = base.description 
@@ -1819,7 +1828,11 @@ function renderBasesCardsView(container) {
     // Click handlers
     card.addEventListener('click', (e) => {
       if (!e.target.closest('.base-card-delete') && !e.target.closest('.base-card-edit')) {
-        openBase(base.id);
+        if (base._isCore || base.is_core) {
+          openCoreBase(base.id);
+        } else {
+          openBase(base.id);
+        }
       }
     });
     
