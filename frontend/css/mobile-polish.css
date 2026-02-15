@@ -63,24 +63,31 @@ html, body {
         margin-left: 2px;
     }
 
-    /* Tasks header bar */
+    /* Tasks header bar — full width, edge to edge */
     .tab-content[data-tab="tasks"] .tasks-view-bar {
         display: flex;
         align-items: center;
         gap: 6px;
         flex-wrap: wrap;
-        padding: 8px 12px;
+        padding: 8px 8px;
     }
 
 }
 
-/* Phone-only: views on first row, Add Task + List/Cards on second */
+/* Phone-only: views top row full-width, Add Task left + List/Cards right on second */
 @media (max-width: 768px) {
     .tab-content[data-tab="tasks"] .tasks-view-toggle {
         flex-basis: 100%;
         order: -1;
         margin-left: 0;
         margin-bottom: 4px;
+    }
+    /* Second row: Add Task left, List/Cards right */
+    .tab-content[data-tab="tasks"] .tasks-view-bar .btn-primary {
+        margin-right: auto;
+    }
+    .tab-content[data-tab="tasks"] .tasks-display-toggle {
+        margin-left: auto;
     }
 }
 
