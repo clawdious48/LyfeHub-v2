@@ -76,4 +76,202 @@
         font-size: 0.75rem !important;
         margin: 0.5rem !important;
     }
+
+    /* Ensure no content hidden behind bottom nav */
+    .tab-content.active {
+        padding-bottom: 80px;
+    }
+
+    /* View filters — wrap on narrow screens */
+    .view-filters {
+        flex-wrap: wrap;
+    }
+    .filter-select {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    /* View controls — compact on mobile */
+    .view-controls {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+}
+
+/* ==============================================
+   LANDSCAPE — All devices ≤1199px
+   Compact vertical spacing, maximize content area
+   ============================================== */
+@media (max-width: 1199px) and (orientation: landscape) {
+
+    /* Less bottom padding in landscape (nav is shorter) */
+    .tab-content.active {
+        padding-bottom: 56px;
+    }
+
+    /* ---- Calendar ---- */
+    /* Shorter month cells in landscape */
+    .month-cell {
+        min-height: 56px;
+        padding: 0.25rem;
+    }
+    .month-cell .month-date {
+        font-size: 0.7rem;
+    }
+    /* Compact week/day time slots */
+    .week-time-slot,
+    .day-time-slot {
+        height: 36px;
+        min-height: 36px;
+    }
+    .calendar-header,
+    .month-day-label {
+        padding: 0.25rem;
+        font-size: 0.75rem;
+    }
+
+    /* ---- Dashboard ---- */
+    .dashboard-container {
+        padding: 0.5rem;
+    }
+    .dashboard-header {
+        margin-bottom: 0.5rem;
+    }
+    .dashboard-greeting {
+        font-size: 1.25rem;
+    }
+    .dashboard-widget {
+        padding: 12px;
+    }
+    .widget-header h2 {
+        font-size: 0.85rem;
+    }
+
+    /* ---- Task filter bar ---- */
+    .view-filters {
+        gap: 0.4rem;
+    }
+    .filter-select {
+        padding: 0.35rem 0.6rem;
+        font-size: 0.75rem;
+    }
+    .view-controls {
+        padding: 0.5rem;
+    }
+}
+
+/* ==============================================
+   PHONE PORTRAIT — narrow screens
+   Single column, full-width everything
+   ============================================== */
+@media (max-width: 480px) and (orientation: portrait) {
+    .dashboard-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px;
+    }
+
+    .dashboard-container {
+        padding: 0.75rem;
+    }
+
+    .month-cell {
+        min-height: 60px;
+        padding: 0.2rem;
+        font-size: 0.7rem;
+    }
+
+    .filter-select {
+        width: 100%;
+        font-size: 0.8rem;
+    }
+    .view-filters {
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+}
+
+/* ==============================================
+   PHONE LANDSCAPE — very short viewport
+   ============================================== */
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
+    /* Ultra-compact calendar */
+    .month-cell {
+        min-height: 40px;
+        padding: 2px;
+    }
+    .month-date {
+        font-size: 0.65rem;
+    }
+    .month-cell .cal-event,
+    .month-cell .calendar-event {
+        font-size: 0.6rem;
+        padding: 1px 3px;
+    }
+
+    /* Single-row dashboard if possible */
+    .dashboard-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px;
+    }
+    .dashboard-widget {
+        padding: 8px;
+    }
+    .widget-header h2 {
+        font-size: 0.8rem;
+    }
+
+    /* Compact task filters — single row */
+    .view-controls {
+        flex-direction: row !important;
+        flex-wrap: wrap;
+        padding: 0.25rem 0.5rem;
+        gap: 0.3rem;
+    }
+    .view-filters {
+        flex-direction: row;
+        gap: 0.3rem;
+    }
+    .filter-select {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.7rem;
+    }
+}
+
+/* ==============================================
+   TABLET LANDSCAPE (iPad ~1180px wide)
+   Use extra width, 2-column where useful
+   ============================================== */
+@media (min-width: 901px) and (max-width: 1199px) and (orientation: landscape) {
+    .dashboard-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 16px;
+    }
+
+    /* Calendar can breathe a bit more */
+    .month-cell {
+        min-height: 70px;
+    }
+
+    /* Bases/People cards — 3 columns on wide tablet */
+    .bases-cards-grid,
+    .people-cards-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
+/* ==============================================
+   TABLET PORTRAIT (iPad ~820px wide)
+   2-column dashboard, single sidebar hidden
+   ============================================== */
+@media (min-width: 481px) and (max-width: 1199px) and (orientation: portrait) {
+    .dashboard-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 16px;
+    }
+
+    /* Bases/People cards — 2 columns */
+    .bases-cards-grid,
+    .people-cards-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
 }
