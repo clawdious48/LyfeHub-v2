@@ -63,13 +63,17 @@ html, body {
         margin-left: 2px;
     }
 
+    /* Tasks: remove parent padding on mobile */
+    .tab-content[data-tab="tasks"] .tasks-content {
+        padding: 8px 6px !important;
+    }
     /* Tasks header bar — full width, edge to edge */
     .tab-content[data-tab="tasks"] .tasks-view-bar {
         display: flex;
         align-items: center;
         gap: 6px;
         flex-wrap: wrap;
-        padding: 8px 8px;
+        padding: 0;
     }
 
 }
