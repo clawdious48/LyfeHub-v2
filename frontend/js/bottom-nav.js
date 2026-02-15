@@ -48,6 +48,11 @@
         }
     ];
     
+    // Tap-again tracking
+    var currentActiveTab = null;
+    var tabActivatedAt = 0;
+    var TAP_AGAIN_DELAY = 300; // ms before tap-again triggers sheet
+
     // Capture state
     let longPressTimer = null;
     let bubblesVisible = false;
@@ -484,11 +489,28 @@
             return;
         }
         
+        // Tap-again: if tapping already-active tab, toggle context sheet
+        if (tabId === currentActiveTab) {
+            var elapsed = Date.now() - tabActivatedAt;
+            if (elapsed >= TAP_AGAIN_DELAY && window.contextSheet) {
+                window.contextSheet.toggle(tabId);
+            }
+            return; // Don't re-navigate to already active tab
+        }
+        
+        // Close sheet if open when switching tabs
+        if (window.contextSheet && window.contextSheet.isOpen()) {
+            window.contextSheet.hide();
+        }
+        
+        // Normal navigation
         var headerTab = document.querySelector('.tabs .tab[data-tab="' + tabId + '"]');
         if (headerTab) {
             headerTab.click();
         }
         
+        currentActiveTab = tabId;
+        tabActivatedAt = Date.now();
         updateActiveState(tabId);
     }
     
@@ -503,16 +525,32 @@
             }
         }
         
+        // Remove active and chevron from all
         document.querySelectorAll('.bottom-nav-item').forEach(function(item) {
             if (item.getAttribute('data-nav') !== 'capture') {
                 item.classList.remove('active');
             }
+            // Remove existing chevron
+            var existingChevron = item.querySelector('.nav-chevron');
+            if (existingChevron) existingChevron.remove();
         });
         
         var activeNavItem = document.querySelector('.bottom-nav-item[data-nav="' + activeTabId + '"]');
         if (activeNavItem) {
             activeNavItem.classList.add('active');
+            
+            // Add chevron if this tab has a context sheet (not capture, not settings)
+            if (activeTabId !== 'capture' && activeTabId !== 'settings') {
+                var chevron = document.createElement('span');
+                chevron.className = 'nav-chevron';
+                chevron.textContent = '\u02C4';
+                activeNavItem.appendChild(chevron);
+            }
         }
+        
+        // Update tracking
+        currentActiveTab = activeTabId;
+        tabActivatedAt = Date.now();
     }
     
     /**
@@ -540,6 +578,17 @@
             if (tab) {
                 updateActiveState(tab);
             }
+        });
+
+        // Hide chevron when sheet opens, show when it closes
+        document.addEventListener('context-sheet:opened', function() {
+            var chevrons = document.querySelectorAll('.nav-chevron');
+            chevrons.forEach(function(c) { c.style.display = 'none'; });
+        });
+
+        document.addEventListener('context-sheet:closed', function() {
+            var chevrons = document.querySelectorAll('.nav-chevron');
+            chevrons.forEach(function(c) { c.style.display = ''; });
         });
 
         // Escape key closes modals

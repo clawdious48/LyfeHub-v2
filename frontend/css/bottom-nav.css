@@ -398,6 +398,30 @@
     }
 }
 
+/* ===== Chevron indicator on active tab ===== */
+.nav-chevron {
+    position: absolute;
+    top: 0px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    color: #FF8C00;
+    line-height: 1;
+    animation: chevronBounce 400ms ease-out;
+    pointer-events: none;
+}
+
+@keyframes chevronBounce {
+    0% { opacity: 0; transform: translateX(-50%) translateY(4px); }
+    50% { transform: translateX(-50%) translateY(-2px); }
+    100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Hide chevron when sheet is open */
+.sheet-open .nav-chevron {
+    display: none;
+}
+
 /* ========================================
    DARK MODE
    ======================================== */
