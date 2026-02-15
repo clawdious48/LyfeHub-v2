@@ -282,6 +282,7 @@ const dashboard = {
     renderListView() {
         const tasks = this.getFilteredTasks();
         const tbody = document.getElementById('list-body');
+        if (!tbody) return;
         const empty = document.getElementById('list-empty');
 
         // Sort tasks
@@ -353,6 +354,7 @@ const dashboard = {
     renderCardView() {
         const tasks = this.getFilteredTasks();
         const grid = document.getElementById('card-grid');
+        if (!grid) return;
         const empty = document.getElementById('card-empty');
 
         // Sort by priority
