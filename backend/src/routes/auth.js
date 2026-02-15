@@ -188,6 +188,13 @@ router.get('/check', async (req, res) => {
   
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    // Verify user still exists in DB
+    const db = require('../db/schema');
+    const user = await db.getOne('SELECT id FROM users WHERE id = $1', [decoded.userId]);
+    if (!user) {
+      res.clearCookie(COOKIE_NAME);
+      return res.json({ authenticated: false });
+    }
     res.json({ 
       authenticated: true,
       userId: decoded.userId,

@@ -37,7 +37,7 @@ const api = {
         // Handle auth errors
         if (response.status === 401) {
             // Redirect to login if not authenticated (except on auth pages)
-            const authPages = ['/login.html', '/login', '/profile.html', '/profile'];
+            const authPages = ['/login.html', '/login', '/profile.html', '/profile', '/settings.html', '/settings'];
             if (!authPages.some(p => window.location.pathname.endsWith(p))) {
                 window.location.href = '/login.html';
             }

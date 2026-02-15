@@ -38,6 +38,10 @@ async function authMiddleware(req, res, next) {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await db.getOne('SELECT role, name FROM users WHERE id = $1', [decoded.userId]);
+    if (!user) {
+      res.clearCookie(COOKIE_NAME);
+      return res.status(401).json({ error: 'User no longer exists', code: 'USER_NOT_FOUND' });
+    }
     req.authMethod = 'jwt';
     req.sessionId = decoded.sessionId;
     const roles = parseRoles(user?.role);
