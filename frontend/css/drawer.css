@@ -3,7 +3,7 @@
  * =======================
  * Slide-out navigation drawer for mobile devices.
  * Triggered by hamburger menu via drawer:toggle events.
- * Uses the clean white/teal design system from :root vars.
+ * Uses the clean white/orange design system from :root vars.
  */
 
 /* ==========================================================================
@@ -42,7 +42,7 @@
   transform: translateX(0);
 }
 
-/* Teal accent line on the right edge when open */
+/* orange accent line on the right edge when open */
 .mobile-drawer.is-open::after {
   content: '';
   position: absolute;

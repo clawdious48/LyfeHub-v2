@@ -95,7 +95,7 @@
 }
 
 .quick-add-input:focus {
-    border-color: #14b8a6;
+    border-color: #FF8C00;
 }
 
 /* Actions */
@@ -107,7 +107,7 @@
 }
 
 .quick-add-more {
-    color: #14b8a6;
+    color: #FF8C00;
     background: none;
     border: none;
     font-size: 14px;
@@ -135,7 +135,7 @@
     padding: 10px 24px;
     font-size: 15px;
     font-weight: 600;
-    background: #14b8a6;
+    background: #FF8C00;
     border: none;
     border-radius: 20px;
     color: white;
@@ -192,7 +192,7 @@
 .quick-add-field input:focus,
 .quick-add-field select:focus,
 .quick-add-field textarea:focus {
-    border-color: #14b8a6;
+    border-color: #FF8C00;
 }
 
 .quick-add-field textarea {

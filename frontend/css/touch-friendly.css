@@ -75,7 +75,7 @@
 
 .touch-device .prop-resizer:active,
 .touch-device .prop-resizer.resizing {
-    background: #14b8a6;
+    background: #FF8C00;
 }
 
 /* ==========================================================================
@@ -197,7 +197,7 @@
 .touch-device button:focus-visible,
 .touch-device a:focus-visible,
 .touch-device [role="button"]:focus-visible {
-    outline: 2px solid #14b8a6;
+    outline: 2px solid #FF8C00;
     outline-offset: 2px;
 }
 
@@ -300,11 +300,11 @@
 
 /* Action button colors */
 .touch-swipe-action-btn.touch-action-edit {
-    background: #14b8a6;
+    background: #FF8C00;
 }
 
 .touch-swipe-action-btn.touch-action-edit:active {
-    background: #0d9488;
+    background: #E07B00;
 }
 
 .touch-swipe-action-btn.touch-action-delete {

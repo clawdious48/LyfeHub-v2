@@ -8,7 +8,7 @@
 :root {
     /* ===================
        PRIMARY COLORS
-       Teal spectrum - matches LyfeHub accent
+       Orange spectrum - matches LyfeHub accent
        =================== */
     --apex-primary: #FF8C00;
     --apex-primary-light: #fb923c;
@@ -33,16 +33,16 @@
     
     /* ===================
        TERTIARY COLORS
-       Emerald for contrast
+       Orange for contrast
        =================== */
-    --apex-tertiary: #10b981;
+    --apex-tertiary: #FF8C00;
     --apex-tertiary-muted: rgba(16, 185, 129, 0.1);
     
     /* ===================
        SEMANTIC COLORS
        Status and feedback
        =================== */
-    --apex-success: #10b981;
+    --apex-success: #FF8C00;
     --apex-success-muted: rgba(16, 185, 129, 0.1);
     
     --apex-warning: #f59e0b;
@@ -131,7 +131,7 @@
     /* ===================
        JOB STATUS COLORS
        =================== */
-    --apex-status-active: #10b981;
+    --apex-status-active: #FF8C00;
     --apex-status-active-bg: rgba(16, 185, 129, 0.1);
     
     --apex-status-pending: #f59e0b;
@@ -152,7 +152,7 @@
     --apex-loss-fire: #e11d48;
     --apex-loss-fire-bg: rgba(225, 29, 72, 0.1);
     
-    --apex-loss-mold: #10b981;
+    --apex-loss-mold: #FF8C00;
     --apex-loss-mold-bg: rgba(16, 185, 129, 0.1);
     
     --apex-loss-smoke: #6B7280;
@@ -167,7 +167,7 @@
     --apex-phase-mit: #111111;
     --apex-phase-mit-bg: rgba(17, 17, 17, 0.1);
     
-    --apex-phase-rpr: #10b981;
+    --apex-phase-rpr: #FF8C00;
     --apex-phase-rpr-bg: rgba(16, 185, 129, 0.1);
     
     --apex-phase-rmd: #6366f1;

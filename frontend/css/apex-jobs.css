@@ -229,7 +229,7 @@
     box-shadow: 0 0 10px var(--apex-secondary);
 }
 
-/* Complete column - Teal glow */
+/* Complete column - Orange glow */
 .apex-column-header.complete {
     background: var(--apex-tertiary-muted);
 }
@@ -3500,7 +3500,7 @@
 }
 
 .team-select.open .team-select-trigger {
-    border-color: #14b8a6;
+    border-color: #FF8C00;
     background: rgba(0, 0, 0, 0.06);
 }
 
@@ -3544,7 +3544,7 @@
 }
 
 .team-select-option input[type="checkbox"] {
-    accent-color: var(--apex-primary, #14b8a6);
+    accent-color: var(--apex-primary, #FF8C00);
     cursor: pointer;
     flex-shrink: 0;
 }
@@ -4094,7 +4094,7 @@
     font-size: 0.85rem;
 }
 .inv-back-btn svg { width: 16px; height: 16px; }
-.inv-back-btn:hover { border-color: var(--neon-cyan, #14b8a6); color: var(--neon-cyan, #14b8a6); }
+.inv-back-btn:hover { border-color: var(--neon-cyan, #FF8C00); color: var(--neon-cyan, #FF8C00); }
 
 .inv-tabs {
     display: flex;
@@ -4113,8 +4113,8 @@
     transition: all 0.2s;
 }
 .inv-tab.active {
-    color: var(--neon-cyan, #14b8a6);
-    border-bottom-color: var(--neon-cyan, #14b8a6);
+    color: var(--neon-cyan, #FF8C00);
+    border-bottom-color: var(--neon-cyan, #FF8C00);
 }
 .inv-tab:hover { color: var(--text-primary, #fff); }
 
@@ -4140,8 +4140,8 @@
 }
 .inv-cat-btn.active {
     background: rgba(0,240,255,0.1);
-    border-color: var(--neon-cyan, #14b8a6);
-    color: var(--neon-cyan, #14b8a6);
+    border-color: var(--neon-cyan, #FF8C00);
+    color: var(--neon-cyan, #FF8C00);
 }
 
 .inv-catalog-header, .inv-stock-header, .inv-purchase-header, .inv-alloc-subheader {
@@ -4228,7 +4228,7 @@
 }
 .inv-alloc-total {
     font-size: 0.8rem;
-    color: var(--neon-cyan, #14b8a6);
+    color: var(--neon-cyan, #FF8C00);
 }
 
 /* Contact remove button */

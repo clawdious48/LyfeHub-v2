@@ -25,15 +25,15 @@
     --text-secondary: #666666;
     --text-muted: rgba(40, 45, 48, 0.45);
     
-    /* Orange spectrum — primary accent (was teal) */
-    --teal-50: #fff7ed;
-    --teal-100: #ffedd5;
-    --teal-200: #fed7aa;
-    --teal-300: #fdba74;
-    --teal-400: #fb923c;
-    --teal-500: #FF8C00;
-    --teal-600: #E07800;
-    --teal-700: #c2680a;
+    /* Orange spectrum — primary accent  */
+    --orange-50: #fff7ed;
+    --orange-100: #ffedd5;
+    --orange-200: #fed7aa;
+    --orange-300: #fdba74;
+    --orange-400: #fb923c;
+    --orange-500: #FF8C00;
+    --orange-600: #E07800;
+    --orange-700: #c2680a;
     
     /* Keep neon names for backward compat but map to new palette */
     --neon-purple: #FF8C00;
@@ -42,10 +42,10 @@
     --neon-pink: #e11d48;
     --neon-orange: #f97316;
     --neon-yellow: #eab308;
-    --neon-green: #10b981;
+    --neon-green: #FF8C00;
     
-    --accent: var(--teal-500);
-    --accent-hover: var(--teal-600);
+    --accent: var(--orange-500);
+    --accent-hover: var(--orange-600);
     --danger: #e11d48;
     --danger-hover: #be123c;
     
@@ -72,9 +72,9 @@
     --text-secondary: rgba(240, 240, 245, 0.75);
     --text-muted: rgba(240, 240, 245, 0.45);
     
-    --teal-50: #042f2e;
-    --teal-100: #134e4a;
-    --teal-200: #115e59;
+    --orange-50: #042f2e;
+    --orange-100: #134e4a;
+    --orange-200: #115e59;
     
     --neon-purple: #FF8C00;
     --neon-blue: #22d3ee;
