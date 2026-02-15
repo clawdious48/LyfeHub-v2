@@ -57,6 +57,7 @@ app.use('/api/apex-inventory', require('./routes/apexInventory'));
 app.use('/api/apex-workflows', require('./routes/apexWorkflows'));
 app.use('/api/api-keys', apiKeysRoutes);
 app.use('/api/apex-docs', require('./routes/apexDocuments'));
+app.use('/api/areas', require('./routes/areas'));
 
 
 // Health check endpoint

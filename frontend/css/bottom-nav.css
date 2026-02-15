@@ -1,37 +1,22 @@
 /* ========================================
    BOTTOM NAVIGATION BAR - Mobile Only
-   
-   Clean white glassmorphic style matching LyfeHub theme
-   Shows only on mobile (<768px)
    ======================================== */
 
-/* ===================
-   BOTTOM NAV CONTAINER
-   =================== */
 .bottom-nav {
-    display: none; /* Hidden by default (desktop) */
+    display: none;
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     z-index: 1000;
-    
-    /* Glassmorphic background */
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    
-    /* Top border */
     border-top: 1px solid rgba(0, 0, 0, 0.08);
     box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
-    
-    /* Safe area padding for notched phones */
     padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
-/* ===================
-   NAV ITEMS CONTAINER
-   =================== */
 .bottom-nav-items {
     display: flex;
     justify-content: space-around;
@@ -41,34 +26,24 @@
     margin: 0 auto;
 }
 
-/* ===================
-   INDIVIDUAL NAV ITEM
-   =================== */
 .bottom-nav-item {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 4px;
-    padding: 8px 12px;
-    min-width: 60px;
-    
-    /* Reset button styles */
+    padding: 8px 8px;
+    min-width: 48px;
+    position: relative;
     background: none;
     border: none;
     cursor: pointer;
-    
-    /* Text styling */
     color: rgba(26, 26, 46, 0.45);
     font-size: 10px;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    
-    /* Smooth transitions */
     transition: all 0.2s ease;
-    
-    /* Touch target */
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -76,9 +51,6 @@
     transform: scale(0.95);
 }
 
-/* ===================
-   NAV ITEM ICON
-   =================== */
 .bottom-nav-item svg {
     width: 24px;
     height: 24px;
@@ -88,15 +60,13 @@
     transition: all 0.2s ease;
 }
 
-/* ===================
-   ACTIVE STATE
-   =================== */
+/* Active state */
 .bottom-nav-item.active {
-    color: #14b8a6;
+    color: #FF8C00;
 }
 
 .bottom-nav-item.active svg {
-    filter: drop-shadow(0 0 6px rgba(20, 184, 166, 0.4));
+    filter: drop-shadow(0 0 6px rgba(255, 140, 0, 0.35));
 }
 
 .bottom-nav-item.active::before {
@@ -107,20 +77,134 @@
     transform: translateX(-50%);
     width: 30px;
     height: 3px;
-    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    background: linear-gradient(135deg, #FF8C00, #E07800);
     border-radius: 0 0 3px 3px;
 }
 
-/* Make nav item position relative for the indicator */
-.bottom-nav-item {
-    position: relative;
+/* ========================================
+   CAPTURE (+) BUTTON
+   ======================================== */
+.bottom-nav-capture {
+    color: #FF8C00 !important;
 }
 
-/* ===================
-   MORE MENU OVERLAY
-   =================== */
-.bottom-nav-more-overlay {
+.bottom-nav-capture:active {
+    transform: scale(0.9);
+}
+
+.bottom-nav-capture span {
+    display: none !important;
+}
+
+.capture-btn-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 140, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.capture-btn-circle svg {
+    width: 28px;
+    height: 28px;
+    stroke: #FF8C00;
+    stroke-width: 2.5;
+}
+
+/* ========================================
+   RADIAL BUBBLES
+   ======================================== */
+.capture-bubbles {
     position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1050;
+    pointer-events: none;
+    display: none;
+}
+
+.capture-bubbles.visible {
+    display: block;
+}
+
+.capture-bubble {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    animation: bubbleIn 200ms ease-out both;
+    pointer-events: auto;
+}
+
+.capture-bubble.active {
+    transform: scale(1.2);
+    border-color: #FF8C00;
+    box-shadow: 0 0 16px rgba(255, 140, 0, 0.4);
+}
+
+.capture-bubble-emoji {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.capture-bubble-label {
+    position: absolute;
+    bottom: -18px;
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.6);
+    white-space: nowrap;
+}
+
+@keyframes bubbleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ========================================
+   CAPTURE MODALS
+   ======================================== */
+.capture-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s ease;
+}
+
+.capture-modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.capture-modal-backdrop {
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
@@ -128,154 +212,152 @@
     background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-    z-index: 999;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
 }
 
-.bottom-nav-more-overlay.visible {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* ===================
-   MORE MENU PANEL
-   =================== */
-.bottom-nav-more-menu {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 1001;
-    
-    /* Glassmorphic background */
-    background: rgba(255, 255, 255, 0.92);
+.capture-modal {
+    position: relative;
+    width: 90%;
+    max-width: 400px;
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    
-    /* Border and shadow */
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 24px 24px 0 0;
-    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.1);
-    
-    /* Safe area */
-    padding-bottom: env(safe-area-inset-bottom, 0);
-    
-    /* Slide animation */
-    transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 20px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    transform: translateY(40px);
+    transition: transform 0.25s ease;
+    overflow: hidden;
 }
 
-.bottom-nav-more-menu.visible {
+.capture-modal-overlay.visible .capture-modal {
     transform: translateY(0);
 }
 
-/* ===================
-   MORE MENU HEADER
-   =================== */
-.more-menu-header {
+.capture-modal-header {
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 16px;
-    position: relative;
+    justify-content: space-between;
+    padding: 16px 20px 8px;
 }
 
-.more-menu-handle {
-    width: 40px;
-    height: 4px;
-    background: rgba(0, 0, 0, 0.15);
-    border-radius: 2px;
-}
-
-.more-menu-close {
-    position: absolute;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0, 0, 0, 0.05);
-    border: none;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: rgba(26, 26, 46, 0.45);
-    transition: all 0.2s ease;
-}
-
-.more-menu-close:hover {
-    background: rgba(0, 0, 0, 0.08);
+.capture-modal-header h3 {
+    font-size: 16px;
+    font-weight: 600;
     color: #1a1a2e;
+    margin: 0;
 }
 
-.more-menu-close svg {
+.capture-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+.capture-modal-body {
+    padding: 8px 20px 12px;
+}
+
+.capture-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    font-size: 15px;
+    background: rgba(0, 0, 0, 0.02);
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+    margin-bottom: 8px;
+    font-family: inherit;
+}
+
+.capture-input:focus {
+    border-color: #FF8C00;
+}
+
+.capture-textarea {
+    resize: none;
+}
+
+.capture-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: rgba(26, 26, 46, 0.7);
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.capture-toggle input[type="checkbox"] {
+    accent-color: #FF8C00;
     width: 18px;
     height: 18px;
 }
 
-/* ===================
-   MORE MENU ITEMS
-   =================== */
-.more-menu-items {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    padding: 8px 16px 24px;
+.capture-modal-footer {
+    padding: 8px 20px 20px;
 }
 
-.more-menu-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding: 16px 8px;
-    
-    /* Reset button styles */
-    background: rgba(0, 0, 0, 0.02);
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    border-radius: 16px;
+.capture-submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: #FF8C00;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
-    
-    /* Text styling */
-    color: rgba(26, 26, 46, 0.7);
-    font-size: 12px;
-    font-weight: 500;
-    
-    transition: all 0.2s ease;
+    transition: background 0.2s;
 }
 
-.more-menu-item:active {
-    transform: scale(0.96);
-    background: rgba(20, 184, 166, 0.08);
-    border-color: rgba(20, 184, 166, 0.25);
+.capture-submit-btn:active {
+    background: #e07b00;
 }
 
-.more-menu-item svg {
-    width: 28px;
-    height: 28px;
-    stroke: #14b8a6;
-    stroke-width: 1.5;
-    fill: none;
+.capture-submit-btn:disabled {
+    opacity: 0.6;
 }
 
-/* ===================
-   MOBILE ONLY - Show nav
-   =================== */
-@media (max-width: 768px) {
+/* Photo button */
+.capture-photo-btn {
+    width: 100%;
+    padding: 16px;
+    background: rgba(255, 140, 0, 0.08);
+    border: 2px dashed rgba(255, 140, 0, 0.3);
+    border-radius: 12px;
+    font-size: 16px;
+    color: #FF8C00;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: background 0.2s;
+}
+
+.capture-photo-btn:active {
+    background: rgba(255, 140, 0, 0.15);
+}
+
+.capture-photo-preview {
+    margin-bottom: 8px;
+}
+
+/* ========================================
+   MOBILE ONLY
+   ======================================== */
+@media (max-width: 1199px) {
     .bottom-nav {
         display: block;
     }
     
-    /* Add padding to main content so it's not hidden */
     body {
         padding-bottom: calc(70px + env(safe-area-inset-bottom, 0));
     }
     
-    /* Ensure modals appear above bottom nav */
     .modal,
     .modal-backdrop,
     .jdm-overlay {
@@ -283,16 +365,13 @@
     }
 }
 
-/* ===================
-   LANDSCAPE ADJUSTMENTS
-   =================== */
-@media (max-width: 768px) and (orientation: landscape) {
+@media (max-width: 1199px) and (orientation: landscape) {
     .bottom-nav-items {
         padding: 4px 0;
     }
     
     .bottom-nav-item {
-        padding: 4px 12px;
+        padding: 4px 8px;
     }
     
     .bottom-nav-item svg {
@@ -303,32 +382,64 @@
     .bottom-nav-item span {
         display: none;
     }
+    
+    .capture-btn-circle {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .capture-btn-circle svg {
+        width: 22px;
+        height: 22px;
+    }
 }
 
 /* ========================================
-   DARK MODE OVERRIDES
+   DARK MODE
    ======================================== */
 [data-theme="dark"] .bottom-nav {
     background: rgba(255, 255, 255, 0.05);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.3);
 }
+
 [data-theme="dark"] .bottom-nav-item {
     color: rgba(240, 240, 245, 0.45);
 }
-[data-theme="dark"] .bottom-nav-more-menu {
-    background: rgba(255, 255, 255, 0.08);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+[data-theme="dark"] .capture-btn-circle {
+    background: rgba(255, 140, 0, 0.15);
 }
-[data-theme="dark"] .more-menu-close {
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(240, 240, 245, 0.45);
+
+[data-theme="dark"] .capture-bubble {
+    background: rgba(30, 30, 40, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
 }
-[data-theme="dark"] .more-menu-close:hover {
-    background: rgba(255, 255, 255, 0.05);
+
+[data-theme="dark"] .capture-bubble-label {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="dark"] .capture-modal {
+    background: rgba(30, 30, 40, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .capture-modal-header h3 {
     color: #f0f0f5;
 }
-[data-theme="dark"] .more-menu-item {
-    border: 1px solid rgba(255, 255, 255, 0.1);
+
+[data-theme="dark"] .capture-input {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f0f0f5;
+}
+
+[data-theme="dark"] .capture-toggle {
     color: rgba(240, 240, 245, 0.7);
+}
+
+[data-theme="dark"] .capture-photo-btn {
+    background: rgba(255, 140, 0, 0.12);
+    border-color: rgba(255, 140, 0, 0.25);
 }

@@ -1281,5 +1281,24 @@ CREATE TABLE IF NOT EXISTS drying_visit_notes (
 CREATE INDEX IF NOT EXISTS idx_drying_visit_notes_visit_id ON drying_visit_notes(visit_id);
 
 -- ============================================
+-- AREAS (Life Areas for task tagging)
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS areas (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    color VARCHAR(7) NOT NULL DEFAULT '#FF8C00',
+    icon VARCHAR(10) DEFAULT '📁',
+    sort_order INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_areas_user ON areas(user_id);
+
+-- Add area_id to task_items
+ALTER TABLE task_items ADD COLUMN IF NOT EXISTS area_id TEXT REFERENCES areas(id) ON DELETE SET NULL;
+
+-- ============================================
 -- DONE
 -- ============================================

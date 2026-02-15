@@ -52,9 +52,9 @@
   height: 100%;
   background: linear-gradient(
     180deg,
-    #14b8a6 0%,
-    #0d9488 50%,
-    #14b8a6 100%
+    #FF8C00 0%,
+    #E07800 50%,
+    #FF8C00 100%
   );
   opacity: 0.6;
 }
@@ -106,7 +106,7 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #14b8a6, #0d9488);
+  background: linear-gradient(135deg, #FF8C00, #E07800);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -115,7 +115,7 @@
   color: #ffffff;
   text-transform: uppercase;
   border: 2px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 2px 12px rgba(20, 184, 166, 0.25);
+  box-shadow: 0 2px 12px rgba(255, 140, 0, 0.25);
 }
 
 .drawer-user-info {
@@ -208,9 +208,9 @@
 
 /* Active tab state */
 .drawer-nav-link.is-active {
-  background: rgba(20, 184, 166, 0.08);
-  color: #14b8a6;
-  border-color: rgba(20, 184, 166, 0.2);
+  background: rgba(255, 140, 0, 0.08);
+  color: #FF8C00;
+  border-color: rgba(255, 140, 0, 0.2);
 }
 
 .drawer-nav-link.is-active .drawer-nav-icon {
@@ -292,7 +292,7 @@
 
 .drawer-nav-link:focus-visible,
 .drawer-footer-link:focus-visible {
-  outline: 2px solid #14b8a6;
+  outline: 2px solid #FF8C00;
   outline-offset: 2px;
 }
 

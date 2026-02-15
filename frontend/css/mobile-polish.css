@@ -1,0 +1,79 @@
+/* ==============================================
+   Mobile UI Polish — hide sidebars, fix layout
+   Breakpoint: max-width 1199px
+   ============================================== */
+
+/* 1. Hide desktop header tabs on mobile */
+@media (max-width: 1199px) {
+    header.header,
+    .header,
+    nav.tabs,
+    .tabs {
+        display: none !important;
+    }
+}
+
+/* 2. Ensure view-filters only show in their parent tab */
+.tab-content:not(.active) .view-filters,
+.tab-content:not(.active) .apex-view-filters {
+    display: none !important;
+}
+
+/* 3. Calendar — hide sidebar on mobile */
+@media (max-width: 1199px) {
+    .calendar-sidebar {
+        display: none !important;
+    }
+    .calendar-main,
+    .calendar-layout {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+
+/* 4. Bases — hide sidebar on mobile */
+@media (max-width: 1199px) {
+    .bases-sidebar {
+        display: none !important;
+    }
+    .bases-main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    .bases-layout {
+        display: block !important;
+    }
+}
+
+/* 5. People — hide sidebar on mobile, polish */
+@media (max-width: 1199px) {
+    .people-sidebar {
+        display: none !important;
+    }
+    .people-main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    .people-layout {
+        display: block !important;
+    }
+    
+    /* People search full-width */
+    .people-search,
+    .people-search-input,
+    #people-search {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+    
+    /* + Add Person button — smaller on mobile */
+    .sidebar-new-person-btn {
+        display: inline-block !important;
+        width: auto !important;
+        max-width: none !important;
+        padding: 0.4rem 0.8rem !important;
+        font-size: 0.75rem !important;
+        margin: 0.5rem !important;
+    }
+}

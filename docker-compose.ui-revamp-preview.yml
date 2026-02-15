@@ -22,7 +22,7 @@ services:
       dockerfile: Dockerfile.postgres
     container_name: lyfehub-v2-preview-ui-revamp
     ports:
-      - "4002:3000"
+      - "4001:3000"
     environment:
       NODE_ENV: production
       DB_HOST: db

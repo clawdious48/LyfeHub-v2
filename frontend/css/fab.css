@@ -23,9 +23,9 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: #14b8a6;
+    background: #FF8C00;
     border: none;
-    box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3),
+    box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3),
                 0 2px 4px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     display: flex;
@@ -41,7 +41,7 @@
 }
 
 .fab-btn:hover {
-    box-shadow: 0 6px 16px rgba(20, 184, 166, 0.4),
+    box-shadow: 0 6px 16px rgba(255, 140, 0, 0.4),
                 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
@@ -130,7 +130,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #14b8a6;
+    color: #FF8C00;
 }
 
 .fab-menu-item .menu-icon svg {
@@ -200,7 +200,7 @@
    ======================================== */
 @media (min-width: 1201px) {
     [data-theme="dark"] .fab-btn:hover {
-        box-shadow: 0 6px 16px rgba(20, 184, 166, 0.4),
+        box-shadow: 0 6px 16px rgba(255, 140, 0, 0.4),
                 0 3px 6px rgba(0, 0, 0, 0.35);
     }
     [data-theme="dark"] .fab-btn .fab-icon::before,

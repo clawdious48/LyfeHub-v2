@@ -25,7 +25,7 @@
     text-align: center;
     margin-bottom: 0.5rem;
     font-size: 1.75rem;
-    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    background: linear-gradient(135deg, #FF8C00, #E07800);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -58,8 +58,8 @@
 }
 
 .auth-tab.active {
-    color: #14b8a6;
-    border-bottom-color: #14b8a6;
+    color: #FF8C00;
+    border-bottom-color: #FF8C00;
     text-shadow: none;
 }
 
@@ -101,8 +101,8 @@
 
 .form-group input:focus {
     outline: none;
-    border-color: #14b8a6;
-    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+    border-color: #FF8C00;
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.15);
 }
 
 /* Error Message */
@@ -150,7 +150,7 @@
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    background: linear-gradient(135deg, #FF8C00, #E07800);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -244,7 +244,7 @@
 }
 
 .back-link:hover {
-    color: #14b8a6;
+    color: #FF8C00;
 }
 
 /* About Me Page */
@@ -316,7 +316,7 @@
     width: auto;
     height: 18px;
     width: 18px;
-    accent-color: #14b8a6;
+    accent-color: #FF8C00;
     cursor: pointer;
 }
 

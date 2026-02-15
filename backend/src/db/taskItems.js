@@ -140,8 +140,8 @@ async function createTaskItem(data, userId) {
   const now = new Date().toISOString();
 
   await db.run(`
-    INSERT INTO task_items (id, title, description, status, my_day, due_date, due_time, due_time_end, snooze_date, priority, energy, location, important, recurring, recurring_days, project_id, list_id, people_ids, note_ids, subtasks, user_id, created_at, updated_at)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
+    INSERT INTO task_items (id, title, description, status, my_day, due_date, due_time, due_time_end, snooze_date, priority, energy, location, important, recurring, recurring_days, project_id, list_id, people_ids, note_ids, subtasks, user_id, area_id, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
   `, [
     id,
     data.title,
@@ -164,6 +164,7 @@ async function createTaskItem(data, userId) {
     JSON.stringify(data.note_ids || []),
     JSON.stringify(data.subtasks || []),
     userId,
+    data.area_id || null,
     now,
     now
   ]);
@@ -209,8 +210,9 @@ async function updateTaskItem(id, data, userId) {
       people_ids = $19,
       note_ids = $20,
       subtasks = $21,
-      updated_at = $22
-    WHERE id = $23 AND user_id = $24
+      area_id = $22,
+      updated_at = $23
+    WHERE id = $24 AND user_id = $25
   `, [
     data.title ?? existing.title,
     data.description ?? existing.description,
@@ -233,6 +235,7 @@ async function updateTaskItem(id, data, userId) {
     JSON.stringify(data.people_ids ?? existing.people_ids ?? []),
     JSON.stringify(data.note_ids ?? existing.note_ids ?? []),
     JSON.stringify(data.subtasks ?? existing.subtasks),
+    data.area_id !== undefined ? data.area_id : (existing.area_id || null),
     now,
     id,
     userId

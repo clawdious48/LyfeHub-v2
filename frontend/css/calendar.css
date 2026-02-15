@@ -43,7 +43,7 @@
     margin: 0.5rem 0.75rem;
     padding: 0.6rem 1rem;
     box-sizing: border-box;
-    background: linear-gradient(135deg, #14b8a6, var(--neon-blue));
+    background: linear-gradient(135deg, #FF8C00, #E07800);
     border: none;
     border-radius: 8px;
     color: white;
@@ -198,8 +198,8 @@
 }
 
 .calendar-edit-btn:hover {
-    background: rgba(20, 184, 166, 0.15);
-    color: #14b8a6;
+    background: rgba(255, 140, 0, 0.15);
+    color: #FF8C00;
 }
 
 .calendar-edit-btn svg {
@@ -430,7 +430,7 @@
 .calendar-nav-btn:hover {
     background: rgba(0, 0, 0, 0.06);
     color: var(--text-primary);
-    border-color: #14b8a6;
+    border-color: #FF8C00;
 }
 
 .calendar-today-btn {
@@ -485,9 +485,9 @@
 }
 
 .calendar-view-btn.active {
-    background: linear-gradient(135deg, rgba(20, 184, 166, 0.2), rgba(0, 170, 255, 0.2));
+    background: linear-gradient(135deg, rgba(255, 140, 0, 0.2), rgba(0, 170, 255, 0.2));
     color: var(--text-primary);
-    box-shadow: 0 0 15px rgba(20, 184, 166, 0.15);
+    box-shadow: 0 0 15px rgba(255, 140, 0, 0.15);
 }
 
 /* Calendar Content Area */
@@ -554,11 +554,11 @@
 }
 
 .month-cell.today {
-    background: rgba(20, 184, 166, 0.1);
+    background: rgba(255, 140, 0, 0.1);
 }
 
 .month-cell.today .month-date {
-    background: #14b8a6;
+    background: #FF8C00;
     color: white;
     border-radius: 50%;
     width: 28px;
@@ -566,7 +566,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(20, 184, 166, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
 }
 
 .month-date {
@@ -585,8 +585,8 @@
 
 .month-event {
     padding: 0.2rem 0.4rem;
-    background: rgba(20, 184, 166, 0.15);
-    border-left: 2px solid #14b8a6;
+    background: rgba(255, 140, 0, 0.15);
+    border-left: 2px solid #FF8C00;
     border-radius: 2px;
     font-size: 0.7rem;
     color: var(--text-primary);
@@ -598,7 +598,7 @@
 }
 
 .month-event:hover {
-    background: rgba(20, 184, 166, 0.2);
+    background: rgba(255, 140, 0, 0.2);
 }
 
 .month-event.important {
@@ -668,7 +668,7 @@
 }
 
 .week-header-cell.today .week-header-date {
-    background: #14b8a6;
+    background: #FF8C00;
     color: white;
     border-radius: 50%;
     width: 36px;
@@ -676,7 +676,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(20, 184, 166, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
 }
 
 .week-body {
@@ -766,15 +766,15 @@
 }
 
 .week-all-day-cell.calendar-drop-target {
-    background: rgba(20, 184, 166, 0.1);
-    border: 2px dashed #14b8a6;
+    background: rgba(255, 140, 0, 0.1);
+    border: 2px dashed #FF8C00;
 }
 
 /* All-day events in the frozen row cells */
 .week-all-day-cell .all-day-event {
     padding: 0.2rem 0.4rem;
-    background: rgba(20, 184, 166, 0.15);
-    border-left: 2px solid #14b8a6;
+    background: rgba(255, 140, 0, 0.15);
+    border-left: 2px solid #FF8C00;
     border-radius: 3px;
     font-size: 0.75rem;
     color: var(--text-primary);
@@ -791,7 +791,7 @@
 }
 
 .week-all-day-cell .all-day-event:hover {
-    background: rgba(20, 184, 166, 0.2);
+    background: rgba(255, 140, 0, 0.2);
 }
 
 .week-all-day-cell .all-day-event.important:hover {
@@ -859,7 +859,7 @@
 }
 
 .day-header.today .day-header-date {
-    color: #14b8a6;
+    color: #FF8C00;
     text-shadow: none;
 }
 
@@ -910,8 +910,8 @@
 
 .all-day-event {
     padding: 0.25rem 0.5rem;
-    background: rgba(20, 184, 166, 0.15);
-    border-left: 3px solid #14b8a6;
+    background: rgba(255, 140, 0, 0.15);
+    border-left: 3px solid #FF8C00;
     border-radius: 4px;
     font-size: 0.8rem;
     color: var(--text-primary);
@@ -920,7 +920,7 @@
 }
 
 .all-day-event:hover {
-    background: rgba(20, 184, 166, 0.2);
+    background: rgba(255, 140, 0, 0.2);
 }
 
 /* Hour Grid */
@@ -965,9 +965,9 @@
     left: 4px;
     right: 4px;
     padding: 0.25rem 0.5rem;
-    background: rgba(20, 184, 166, 0.15);
+    background: rgba(255, 140, 0, 0.15);
     backdrop-filter: blur(4px);
-    border-left: 3px solid #14b8a6;
+    border-left: 3px solid #FF8C00;
     border-radius: 4px;
     font-size: 0.8rem;
     color: var(--text-primary);
@@ -978,7 +978,7 @@
 }
 
 .time-block:hover {
-    background: rgba(20, 184, 166, 0.25);
+    background: rgba(255, 140, 0, 0.25);
     z-index: 2;
 }
 
@@ -1007,8 +1007,8 @@
 
 /* Drag & Drop States */
 .calendar-drop-target {
-    background: rgba(20, 184, 166, 0.1) !important;
-    border: 2px dashed #14b8a6 !important;
+    background: rgba(255, 140, 0, 0.1) !important;
+    border: 2px dashed #FF8C00 !important;
 }
 
 .drag-preview {
@@ -1039,7 +1039,7 @@
     left: 0;
     right: 0;
     height: 2px;
-    background: #14b8a6;
+    background: #FF8C00;
     z-index: 15;
     pointer-events: none;
 }
@@ -1052,9 +1052,9 @@
     transform: translateY(-50%);
     width: 8px;
     height: 8px;
-    background: #14b8a6;
+    background: #FF8C00;
     border-radius: 50%;
-    box-shadow: 0 0 4px rgba(20, 184, 166, 0.4);
+    box-shadow: 0 0 4px rgba(255, 140, 0, 0.4);
 }
 
 /* Day view - indicator spans the hour-content area */
@@ -1256,9 +1256,9 @@
 }
 
 .time-picker-all-day-zone.selected {
-    background: rgba(20, 184, 166, 0.15);
+    background: rgba(255, 140, 0, 0.15);
     color: var(--text-primary);
-    box-shadow: inset 0 0 10px rgba(20, 184, 166, 0.15);
+    box-shadow: inset 0 0 10px rgba(255, 140, 0, 0.15);
 }
 
 /* Scrollable hour grid */
@@ -1303,20 +1303,20 @@
 /* Drag selection styles */
 .time-picker-hour-row.selected,
 .time-picker-hour-row.in-range {
-    background: rgba(20, 184, 166, 0.15);
+    background: rgba(255, 140, 0, 0.15);
 }
 
 .time-picker-hour-row.selected .time-picker-hour-slot,
 .time-picker-hour-row.in-range .time-picker-hour-slot {
-    background: rgba(20, 184, 166, 0.1);
+    background: rgba(255, 140, 0, 0.1);
 }
 
 .time-picker-hour-row.drag-start {
-    border-top: 2px solid #14b8a6;
+    border-top: 2px solid #FF8C00;
 }
 
 .time-picker-hour-row.drag-end {
-    border-bottom: 2px solid #14b8a6;
+    border-bottom: 2px solid #FF8C00;
 }
 
 /* Time picker drag selection preview */
@@ -1324,8 +1324,8 @@
     position: absolute;
     left: 60px;
     right: 0;
-    background: rgba(20, 184, 166, 0.15);
-    border: 2px dashed #14b8a6;
+    background: rgba(255, 140, 0, 0.15);
+    border: 2px dashed #FF8C00;
     border-radius: 4px;
     pointer-events: none;
     z-index: 10;
@@ -1369,7 +1369,7 @@
 }
 
 .time-picker-hour.selected {
-    background: rgba(20, 184, 166, 0.15);
+    background: rgba(255, 140, 0, 0.15);
 }
 
 .time-picker-hour-bar {
@@ -1416,7 +1416,7 @@
     border: 1px solid var(--glass-border);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(20, 184, 166, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 140, 0, 0.1);
 }
 
 .time-block-popup-header {
@@ -1424,14 +1424,14 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 1rem;
-    background: rgba(20, 184, 166, 0.1);
+    background: rgba(255, 140, 0, 0.1);
     border-bottom: 1px solid var(--glass-border);
 }
 
 .time-block-popup-header span {
     font-size: 0.9rem;
     font-weight: 600;
-    color: #14b8a6;
+    color: #FF8C00;
 }
 
 .time-block-popup-close {
@@ -1466,8 +1466,8 @@
 
 .time-block-quick-input:focus {
     outline: none;
-    border-color: #14b8a6;
-    box-shadow: 0 0 10px rgba(20, 184, 166, 0.15);
+    border-color: #FF8C00;
+    box-shadow: 0 0 10px rgba(255, 140, 0, 0.15);
 }
 
 .time-block-quick-input::placeholder {
@@ -1499,8 +1499,8 @@
 }
 
 .time-block-task-option.selected {
-    background: rgba(20, 184, 166, 0.15);
-    border-color: #14b8a6;
+    background: rgba(255, 140, 0, 0.15);
+    border-color: #FF8C00;
 }
 
 .time-block-task-option .task-bullet {

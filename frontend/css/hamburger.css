@@ -33,7 +33,7 @@
 }
 
 .hamburger-btn:focus-visible {
-  outline: 2px solid #14b8a6;
+  outline: 2px solid #FF8C00;
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -77,7 +77,7 @@
    Hover State
    -------------------------------------- */
 .hamburger-btn:hover .hamburger-icon span {
-  background: #14b8a6;
+  background: #FF8C00;
 }
 
 /* --------------------------------------
@@ -100,7 +100,7 @@
 
 /* Active state color */
 .hamburger-btn.is-active .hamburger-icon span {
-  background: #0d9488;
+  background: #E07800;
 }
 
 /* --------------------------------------

@@ -9,25 +9,32 @@
     <link rel="stylesheet" href="css/drawer.css">
     <link rel="stylesheet" href="css/header-mobile.css">
     <link rel="stylesheet" href="css/style.css?v=1770688306">
+    <link rel="stylesheet" href="css/sidebar.css">
     <link rel="stylesheet" href="css/apex-theme.css">
+    <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/dark-mode.css">
     <link rel="stylesheet" href="css/apex-jobs.css">
     <link rel="stylesheet" href="css/apex-crm.css">
     <link rel="stylesheet" href="css/drying.css">
     <link rel="stylesheet" href="css/sidebar-responsive.css">
+    <link rel="stylesheet" href="css/mobile-polish.css">
     <link rel="stylesheet" href="css/table-cards.css">
     <link rel="stylesheet" href="css/forms-mobile.css">
     <link rel="stylesheet" href="css/touch-friendly.css">
     <link rel="stylesheet" href="css/task-swipe-complete.css">
     <link rel="stylesheet" href="css/kanban-mobile.css">
-    <link rel="stylesheet" href="css/fab.css">
+    <!-- fab.css removed — quick capture lives in nav bar + sidebar only -->
     <link rel="stylesheet" href="css/quick-add.css">
+    <link rel="stylesheet" href="css/core-pages.css">
     <link rel="stylesheet" href="css/bottom-nav.css">
     <script src="js/theme.js"></script>
     <!-- Marked.js for Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
+    <div class="app-layout">
+    <aside class="sidebar" id="app-sidebar"></aside>
+    <div class="app-content">
     <header class="header">
         <!-- Hamburger Menu Button (mobile only) -->
         <button id="hamburger-btn" 
@@ -47,11 +54,13 @@
             <span id="header-title" class="header-logo-text">LyfeHub</span>
         </div>
         <nav class="tabs">
-            <button class="tab active" data-tab="apex">Apex</button>
+            <button class="tab active" data-tab="dashboard">Home</button>
+            <button class="tab" data-tab="apex">Apex</button>
             <button class="tab" data-tab="projects">Projects</button>
             <button class="tab" data-tab="tasks">Tasks</button>
             <button class="tab" data-tab="bases">Bases</button>
             <button class="tab" data-tab="people">People</button>
+            <button class="tab" data-tab="notes">Notes</button>
             <button class="tab" data-tab="calendar">Calendar</button>
         </nav>
         <div class="header-right">
@@ -68,6 +77,57 @@
             <button id="logout-btn" class="btn btn-secondary">Logout</button>
         </div>
     </header>
+
+    <!-- Dashboard Tab Content -->
+    <main class="tab-content active" data-tab="dashboard">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h1 class="dashboard-greeting" id="dashboard-greeting">Good morning</h1>
+                <p class="dashboard-date" id="dashboard-date"></p>
+            </div>
+            <div class="dashboard-grid">
+                <div class="dashboard-widget widget-my-day" id="widget-my-day">
+                    <div class="widget-header">
+                        <h2>My Day</h2>
+                        <a href="#" class="widget-link" data-navigate="tasks">View All →</a>
+                    </div>
+                    <div class="widget-content" id="my-day-content">
+                        <div class="widget-skeleton"></div>
+                    </div>
+                </div>
+                <div class="dashboard-widget widget-calendar" id="widget-calendar">
+                    <div class="widget-header">
+                        <h2>This Week</h2>
+                        <a href="#" class="widget-link" data-navigate="calendar">View All →</a>
+                    </div>
+                    <div class="widget-content" id="week-calendar-content">
+                        <div class="widget-skeleton"></div>
+                    </div>
+                </div>
+                <div class="dashboard-widget widget-notes" id="widget-notes">
+                    <div class="widget-header">
+                        <h2>Quick Notes</h2>
+                        <a href="#" class="widget-link" data-navigate="notes">View All →</a>
+                    </div>
+                    <div class="widget-content" id="quick-notes-content">
+                        <div class="widget-skeleton"></div>
+                    </div>
+                </div>
+                <div class="dashboard-widget widget-areas" id="widget-areas">
+                    <div class="widget-header">
+                        <h2>Areas at a Glance</h2>
+                    </div>
+                    <div class="widget-content" id="areas-overview-content">
+                        <div class="widget-empty-state" style="text-align: center; padding: 2rem 1rem; color: var(--text-secondary, #888);">
+                            <p style="font-size: 1rem; margin-bottom: 0.5rem;">No areas configured yet</p>
+                            <p style="font-size: 0.85rem; opacity: 0.7;">Areas help you organize everything by life context</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Quick capture moved to mobile nav bar and desktop sidebar -->
+        </div>
+    </main>
 
     <!-- Projects Tab Content -->
     <main class="tab-content" data-tab="projects">
@@ -202,7 +262,7 @@
     </main>
 
     <!-- Apex Tab Content -->
-    <main class="tab-content active" data-tab="apex">
+    <main class="tab-content" data-tab="apex">
         <!-- Inventory Management (hidden by default) -->
         <div id="apex-inventory-content" class="apex-content" style="display:none;"></div>
         <div class="apex-content active" id="apex-jobs-content">
@@ -630,6 +690,11 @@
                 </div>
             </div><!-- /.people-main-content -->
         </div><!-- /.people-layout -->
+    </main>
+
+    <!-- Notes Tab Content -->
+    <main class="tab-content" data-tab="notes">
+        <!-- Populated by core-pages.js -->
     </main>
 
     <!-- Calendar Tab Content -->
@@ -2059,6 +2124,20 @@
         </div>
     </div>
 
+    <!-- Dashboard greeting & date -->
+    <script>
+    (function() {
+        const h = new Date().getHours();
+        const greeting = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+        const el = document.getElementById('dashboard-greeting');
+        if (el) el.textContent = greeting;
+        const dateEl = document.getElementById('dashboard-date');
+        if (dateEl) dateEl.textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    })();
+    </script>
+    </div><!-- /.app-content -->
+    </div><!-- /.app-layout -->
+    <script src="js/sidebar.js"></script>
     <script src="js/mobile-utils.js"></script>
     <script src="js/touch-actions.js"></script>
     <script src="js/task-swipe-complete.js"></script>
@@ -2085,7 +2164,21 @@
     <script src="js/dryingVisit.js"></script>
     <script src="js/jobModal.js"></script>
     <script src="js/quick-add.js"></script>
-    <script src="js/fab.js"></script>
+    <!-- fab.js removed — quick capture lives in nav bar + sidebar only -->
     <script src="js/bottom-nav.js"></script>
+    <script src="js/widgets/my-day.js"></script>
+    <!-- quick-capture.js removed — capture lives in nav bar + sidebar only -->
+    <script src="js/widgets/week-calendar.js"></script>
+    <script src="js/widgets/quick-notes.js"></script>
+    <script>
+    // Global: sidebar:navigate triggers actual tab switch
+    document.addEventListener('sidebar:navigate', function(e) {
+        var tab = e.detail && e.detail.tab;
+        if (!tab) return;
+        var headerTab = document.querySelector('.tabs .tab[data-tab="' + tab + '"]');
+        if (headerTab) headerTab.click();
+    });
+    </script>
+    <script src="js/core-pages.js"></script>
 </body>
 </html>

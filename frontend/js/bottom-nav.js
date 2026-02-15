@@ -2,9 +2,8 @@
  * Bottom Navigation Bar - Mobile Only
  * 
  * Renders a bottom navigation for mobile users with:
- * - 5 main items: Apex, Tasks, Calendar, People, More
- * - "More" opens a slide-up menu with additional options
- * - Integrates with existing tab navigation system
+ * - Quick Capture (+) button with tap and long-press modes
+ * - 5 nav items: Home, Tasks, Calendar, People, Notes
  */
 
 (function() {
@@ -13,8 +12,13 @@
     // Navigation configuration
     const NAV_ITEMS = [
         {
-            id: 'apex',
-            label: 'Apex',
+            id: 'capture',
+            label: '',
+            icon: '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+        },
+        {
+            id: 'dashboard',
+            label: 'Home',
             icon: '<svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>'
         },
         {
@@ -33,160 +37,458 @@
             icon: '<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
         },
         {
-            id: 'more',
-            label: 'More',
-            icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>'
-        }
-    ];
-    
-    // More menu items
-    const MORE_ITEMS = [
-        {
-            id: 'projects',
-            label: 'Projects',
-            icon: '<svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>'
-        },
-        {
             id: 'bases',
-            label: 'Notes',
+            label: 'Tables',
             icon: '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>'
-        },
-        {
-            id: 'organizations',
-            label: 'Orgs',
-            icon: '<svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>'
-        },
-        {
-            id: 'trade-kb',
-            label: 'Trade KB',
-            icon: '<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="12" y1="6" x2="12" y2="12"/><line x1="9" y1="9" x2="15" y2="9"/></svg>'
         },
         {
             id: 'settings',
             label: 'Settings',
-            icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
+            icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
         }
     ];
     
-    let moreMenuOpen = false;
+    // Capture state
+    let longPressTimer = null;
+    let bubblesVisible = false;
+    let activeBubble = null;
+    let defaultListId = null;
+    
+    // Bubble definitions
+    const BUBBLES = [
+        { id: 'task', emoji: '📝', label: 'Task', dx: -60, dy: -80 },
+        { id: 'note', emoji: '📓', label: 'Note', dx: 0, dy: -100 },
+        { id: 'photo', emoji: '📸', label: 'Photo', dx: 60, dy: -80 }
+    ];
+    
+    /**
+     * Get default task list (inbox or first)
+     */
+    async function getDefaultList() {
+        if (defaultListId) return defaultListId;
+        try {
+            const res = await fetch('/api/task-lists', { credentials: 'include' });
+            if (!res.ok) return null;
+            const data = await res.json();
+            const lists = data.lists || data || [];
+            const inbox = lists.find(function(l) { return l.name && l.name.toLowerCase() === 'inbox'; });
+            defaultListId = inbox ? inbox.id : (lists[0] ? lists[0].id : null);
+            return defaultListId;
+        } catch (e) {
+            return null;
+        }
+    }
     
     /**
      * Create the bottom navigation HTML
      */
     function createBottomNav() {
-        // Create main nav container
-        const nav = document.createElement('nav');
+        var nav = document.createElement('nav');
         nav.className = 'bottom-nav';
         nav.setAttribute('role', 'navigation');
         nav.setAttribute('aria-label', 'Main navigation');
         
-        // Create items container
-        const itemsContainer = document.createElement('div');
+        var itemsContainer = document.createElement('div');
         itemsContainer.className = 'bottom-nav-items';
         
-        // Add nav items
-        NAV_ITEMS.forEach(item => {
-            const button = document.createElement('button');
+        NAV_ITEMS.forEach(function(item) {
+            var button = document.createElement('button');
             button.className = 'bottom-nav-item';
+            if (item.id === 'capture') button.className += ' bottom-nav-capture';
             button.setAttribute('data-nav', item.id);
-            button.setAttribute('aria-label', item.label);
-            button.innerHTML = item.icon + '<span>' + item.label + '</span>';
+            button.setAttribute('aria-label', item.label || 'Quick capture');
             
-            button.addEventListener('click', () => handleNavClick(item.id));
+            if (item.id === 'capture') {
+                button.innerHTML = '<div class="capture-btn-circle">' + item.icon + '</div>';
+            } else {
+                button.innerHTML = item.icon + '<span>' + item.label + '</span>';
+            }
+            
+            if (item.id === 'capture') {
+                setupCaptureButton(button);
+            } else {
+                button.addEventListener('click', function() { handleNavClick(item.id); });
+            }
+            
             itemsContainer.appendChild(button);
         });
         
         nav.appendChild(itemsContainer);
         document.body.appendChild(nav);
         
-        // Create more menu overlay
-        const overlay = document.createElement('div');
-        overlay.className = 'bottom-nav-more-overlay';
-        overlay.addEventListener('click', closeMoreMenu);
-        document.body.appendChild(overlay);
+        // Create bubble container
+        var bubbleContainer = document.createElement('div');
+        bubbleContainer.className = 'capture-bubbles';
+        bubbleContainer.id = 'capture-bubbles';
+        document.body.appendChild(bubbleContainer);
         
-        // Create more menu
-        const moreMenu = document.createElement('div');
-        moreMenu.className = 'bottom-nav-more-menu';
-        moreMenu.innerHTML = createMoreMenuHTML();
-        document.body.appendChild(moreMenu);
+        // Create modals
+        createModals();
         
-        // Add more menu item listeners
-        moreMenu.querySelectorAll('.more-menu-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const tabId = item.getAttribute('data-nav');
-                handleNavClick(tabId);
-                closeMoreMenu();
-            });
-        });
-        
-        // Close button listener
-        const closeBtn = moreMenu.querySelector('.more-menu-close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', closeMoreMenu);
-        }
-        
-        // Set initial active state
         updateActiveState();
     }
     
     /**
-     * Create the More menu HTML
+     * Setup capture button with tap and long-press
      */
-    function createMoreMenuHTML() {
-        let itemsHTML = '';
-        MORE_ITEMS.forEach(item => {
-            itemsHTML += '<button class="more-menu-item" data-nav="' + item.id + '" aria-label="' + item.label + '">' +
-                item.icon +
-                '<span>' + item.label + '</span>' +
-                '</button>';
+    function setupCaptureButton(button) {
+        var startTime = 0;
+        var longPressed = false;
+        
+        button.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            startTime = Date.now();
+            longPressed = false;
+            
+            longPressTimer = setTimeout(function() {
+                longPressed = true;
+                if (navigator.vibrate) navigator.vibrate(50);
+                showBubbles(button);
+            }, 135);
+        }, { passive: false });
+        
+        button.addEventListener('touchmove', function(e) {
+            if (!bubblesVisible) return;
+            e.preventDefault();
+            var touch = e.touches[0];
+            checkBubbleHover(touch.clientX, touch.clientY);
+        }, { passive: false });
+        
+        button.addEventListener('touchend', function(e) {
+            clearTimeout(longPressTimer);
+            
+            if (bubblesVisible) {
+                if (activeBubble) {
+                    var bubbleId = activeBubble;
+                    hideBubbles();
+                    openModalForType(bubbleId);
+                } else {
+                    hideBubbles();
+                }
+            } else if (!longPressed) {
+                // Simple tap
+                openModalForType('task');
+            }
         });
         
-        return '<div class="more-menu-header">' +
-            '<div class="more-menu-handle"></div>' +
-            '<button class="more-menu-close" aria-label="Close menu">' +
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
-            '<line x1="18" y1="6" x2="6" y2="18"/>' +
-            '<line x1="6" y1="6" x2="18" y2="18"/>' +
-            '</svg></button>' +
+        button.addEventListener('touchcancel', function() {
+            clearTimeout(longPressTimer);
+            hideBubbles();
+        });
+        
+        // Mouse fallback
+        button.addEventListener('click', function(e) {
+            // Only for non-touch
+            if ('ontouchstart' in window) return;
+            openModalForType('task');
+        });
+    }
+    
+    /**
+     * Show radial bubbles above capture button
+     */
+    function showBubbles(button) {
+        bubblesVisible = true;
+        activeBubble = null;
+        
+        var rect = button.getBoundingClientRect();
+        var centerX = rect.left + rect.width / 2;
+        var centerY = rect.top + rect.height / 2;
+        
+        var container = document.getElementById('capture-bubbles');
+        container.innerHTML = '';
+        container.classList.add('visible');
+        
+        BUBBLES.forEach(function(bubble, i) {
+            var el = document.createElement('div');
+            el.className = 'capture-bubble';
+            el.setAttribute('data-bubble', bubble.id);
+            el.style.left = (centerX + bubble.dx - 24) + 'px';
+            el.style.top = (centerY + bubble.dy - 24) + 'px';
+            el.style.animationDelay = (i * 50) + 'ms';
+            el.innerHTML = '<span class="capture-bubble-emoji">' + bubble.emoji + '</span>' +
+                '<span class="capture-bubble-label">' + bubble.label + '</span>';
+            container.appendChild(el);
+        });
+    }
+    
+    /**
+     * Check if touch is hovering over a bubble
+     */
+    function checkBubbleHover(x, y) {
+        activeBubble = null;
+        var bubbles = document.querySelectorAll('.capture-bubble');
+        bubbles.forEach(function(el) {
+            var rect = el.getBoundingClientRect();
+            var cx = rect.left + rect.width / 2;
+            var cy = rect.top + rect.height / 2;
+            var dist = Math.sqrt(Math.pow(x - cx, 2) + Math.pow(y - cy, 2));
+            
+            if (dist < 36) {
+                el.classList.add('active');
+                activeBubble = el.getAttribute('data-bubble');
+            } else {
+                el.classList.remove('active');
+            }
+        });
+    }
+    
+    /**
+     * Hide bubbles
+     */
+    function hideBubbles() {
+        bubblesVisible = false;
+        activeBubble = null;
+        var container = document.getElementById('capture-bubbles');
+        container.classList.remove('visible');
+        container.innerHTML = '';
+    }
+    
+    /**
+     * Open the appropriate modal
+     */
+    function openModalForType(type) {
+        var modal = document.getElementById('capture-modal-' + type);
+        if (!modal) return;
+        modal.classList.add('visible');
+        document.body.style.overflow = 'hidden';
+        
+        // Auto-focus first input
+        setTimeout(function() {
+            var input = modal.querySelector('input[type="text"], textarea');
+            if (input) input.focus();
+        }, 100);
+    }
+    
+    /**
+     * Close a modal
+     */
+    function closeModal(modal) {
+        modal.classList.remove('visible');
+        document.body.style.overflow = '';
+        // Reset form
+        modal.querySelectorAll('input[type="text"], textarea').forEach(function(input) {
+            input.value = '';
+        });
+        var toggle = modal.querySelector('.capture-toggle input');
+        if (toggle) toggle.checked = true;
+    }
+    
+    /**
+     * Create all capture modals
+     */
+    function createModals() {
+        // Task Modal
+        createModal('task', 'Quick Task', [
+            '<input type="text" class="capture-input" id="capture-task-title" placeholder="What needs to be done?" autocomplete="off">',
+            '<label class="capture-toggle"><input type="checkbox" checked> Add to My Day</label>'
+        ], submitTask);
+        
+        // Note Modal
+        createModal('note', 'Quick Note', [
+            '<input type="text" class="capture-input" id="capture-note-title" placeholder="Note title" autocomplete="off">',
+            '<textarea class="capture-input capture-textarea" id="capture-note-content" placeholder="Content..." rows="3"></textarea>'
+        ], submitNote);
+        
+        // Photo Modal
+        createModal('photo', 'Quick Photo', [
+            '<button type="button" class="capture-photo-btn" id="capture-photo-trigger">📸 Take Photo</button>',
+            '<input type="file" accept="image/*" capture="environment" id="capture-photo-input" style="display:none">',
+            '<div class="capture-photo-preview" id="capture-photo-preview"></div>',
+            '<input type="text" class="capture-input" id="capture-photo-caption" placeholder="Caption (optional)" autocomplete="off">'
+        ], submitPhoto);
+    }
+    
+    /**
+     * Create a single modal
+     */
+    function createModal(type, title, fieldsHtml, onSubmit) {
+        var modal = document.createElement('div');
+        modal.className = 'capture-modal-overlay';
+        modal.id = 'capture-modal-' + type;
+        
+        modal.innerHTML = '<div class="capture-modal-backdrop"></div>' +
+            '<div class="capture-modal">' +
+            '<div class="capture-modal-header">' +
+            '<h3>' + title + '</h3>' +
+            '<button class="capture-modal-close" aria-label="Close">&times;</button>' +
             '</div>' +
-            '<div class="more-menu-items">' + itemsHTML + '</div>';
+            '<div class="capture-modal-body">' +
+            fieldsHtml.join('') +
+            '</div>' +
+            '<div class="capture-modal-footer">' +
+            '<button class="capture-submit-btn">Add</button>' +
+            '</div>' +
+            '</div>';
+        
+        document.body.appendChild(modal);
+        
+        // Close handlers
+        modal.querySelector('.capture-modal-backdrop').addEventListener('click', function() {
+            closeModal(modal);
+        });
+        modal.querySelector('.capture-modal-close').addEventListener('click', function() {
+            closeModal(modal);
+        });
+        
+        // Submit handler
+        modal.querySelector('.capture-submit-btn').addEventListener('click', function() {
+            onSubmit(modal);
+        });
+        
+        // Enter key submit for task/note
+        if (type === 'task') {
+            modal.querySelector('#capture-task-title').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') onSubmit(modal);
+            });
+        }
+        
+        // Photo button wiring
+        if (type === 'photo') {
+            var trigger = modal.querySelector('#capture-photo-trigger');
+            var fileInput = modal.querySelector('#capture-photo-input');
+            trigger.addEventListener('click', function() { fileInput.click(); });
+            fileInput.addEventListener('change', function() {
+                var preview = modal.querySelector('#capture-photo-preview');
+                if (fileInput.files && fileInput.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.innerHTML = '<img src="' + e.target.result + '" style="max-width:100%;border-radius:12px;margin-top:8px;">';
+                    };
+                    reader.readAsDataURL(fileInput.files[0]);
+                }
+            });
+        }
+    }
+    
+    /**
+     * Submit task
+     */
+    async function submitTask(modal) {
+        var title = modal.querySelector('#capture-task-title').value.trim();
+        if (!title) return;
+        
+        var myDay = modal.querySelector('.capture-toggle input').checked;
+        var btn = modal.querySelector('.capture-submit-btn');
+        btn.disabled = true;
+        btn.textContent = '...';
+        
+        try {
+            var listId = await getDefaultList();
+            var today = new Date().toISOString().split('T')[0];
+            
+            var res = await fetch('/api/task-items', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    title: title,
+                    due_date: myDay ? today : undefined,
+                    my_day: myDay,
+                    list_id: listId || undefined
+                })
+            });
+            
+            if (!res.ok) throw new Error('Failed');
+            closeModal(modal);
+        } catch (e) {
+            console.error('Task capture failed:', e);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Add';
+        }
+    }
+    
+    /**
+     * Submit note
+     */
+    async function submitNote(modal) {
+        var title = modal.querySelector('#capture-note-title').value.trim();
+        if (!title) return;
+        
+        var content = modal.querySelector('#capture-note-content').value.trim();
+        var btn = modal.querySelector('.capture-submit-btn');
+        btn.disabled = true;
+        btn.textContent = '...';
+        
+        try {
+            var res = await fetch('/api/bases/core/core-notes/records', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    values: { title: title, content: content, type: 'note' }
+                })
+            });
+            
+            if (!res.ok) throw new Error('Failed');
+            closeModal(modal);
+        } catch (e) {
+            console.error('Note capture failed:', e);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Add';
+        }
+    }
+    
+    /**
+     * Submit photo (as note with caption)
+     */
+    async function submitPhoto(modal) {
+        var caption = modal.querySelector('#capture-photo-caption').value.trim();
+        var fileInput = modal.querySelector('#capture-photo-input');
+        
+        if (!fileInput.files || !fileInput.files[0]) {
+            // No photo taken
+            return;
+        }
+        
+        var btn = modal.querySelector('.capture-submit-btn');
+        btn.disabled = true;
+        btn.textContent = '...';
+        
+        try {
+            var res = await fetch('/api/bases/core/core-notes/records', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    values: {
+                        title: caption || 'Photo capture',
+                        content: caption || 'Photo captured (upload pending)',
+                        type: 'note'
+                    }
+                })
+            });
+            
+            if (!res.ok) throw new Error('Failed');
+            closeModal(modal);
+            // Reset photo preview
+            modal.querySelector('#capture-photo-preview').innerHTML = '';
+        } catch (e) {
+            console.error('Photo capture failed:', e);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Add';
+        }
     }
     
     /**
      * Handle navigation item click
      */
     function handleNavClick(tabId) {
-        if (tabId === 'more') {
-            toggleMoreMenu();
-            return;
-        }
+        if (tabId === 'capture') return;
         
-        // Handle settings separately (goes to settings page)
         if (tabId === 'settings') {
             window.location.href = '/settings.html';
             return;
         }
         
-        // Handle organizations - this maps to "bases" tab with orgs filter
-        if (tabId === 'organizations') {
-            tabId = 'bases';
-            // Could add org filter logic here if needed
-        }
-        
-        // Handle trade-kb - maps to bases
-        if (tabId === 'trade-kb') {
-            tabId = 'bases';
-            // Could add trade kb filter logic here if needed
-        }
-        
-        // Find and click the corresponding header tab
-        const headerTab = document.querySelector('.tabs .tab[data-tab="' + tabId + '"]');
+        var headerTab = document.querySelector('.tabs .tab[data-tab="' + tabId + '"]');
         if (headerTab) {
             headerTab.click();
         }
         
-        // Update active state in bottom nav
         updateActiveState(tabId);
     }
     
@@ -194,77 +496,33 @@
      * Update active state on bottom nav items
      */
     function updateActiveState(activeTabId) {
-        // If no tab specified, try to get it from active header tab
         if (!activeTabId) {
-            const activeHeaderTab = document.querySelector('.tabs .tab.active');
+            var activeHeaderTab = document.querySelector('.tabs .tab.active');
             if (activeHeaderTab) {
                 activeTabId = activeHeaderTab.getAttribute('data-tab');
             }
         }
         
-        // Remove active from all
-        document.querySelectorAll('.bottom-nav-item').forEach(item => {
-            item.classList.remove('active');
+        document.querySelectorAll('.bottom-nav-item').forEach(function(item) {
+            if (item.getAttribute('data-nav') !== 'capture') {
+                item.classList.remove('active');
+            }
         });
         
-        // Add active to matching item
-        const activeNavItem = document.querySelector('.bottom-nav-item[data-nav="' + activeTabId + '"]');
+        var activeNavItem = document.querySelector('.bottom-nav-item[data-nav="' + activeTabId + '"]');
         if (activeNavItem) {
             activeNavItem.classList.add('active');
         }
     }
     
     /**
-     * Toggle the More menu
-     */
-    function toggleMoreMenu() {
-        if (moreMenuOpen) {
-            closeMoreMenu();
-        } else {
-            openMoreMenu();
-        }
-    }
-    
-    /**
-     * Open the More menu
-     */
-    function openMoreMenu() {
-        moreMenuOpen = true;
-        const overlay = document.querySelector('.bottom-nav-more-overlay');
-        const menu = document.querySelector('.bottom-nav-more-menu');
-        
-        if (overlay) overlay.classList.add('visible');
-        if (menu) menu.classList.add('visible');
-        
-        // Prevent body scroll
-        document.body.style.overflow = 'hidden';
-    }
-    
-    /**
-     * Close the More menu
-     */
-    function closeMoreMenu() {
-        moreMenuOpen = false;
-        const overlay = document.querySelector('.bottom-nav-more-overlay');
-        const menu = document.querySelector('.bottom-nav-more-menu');
-        
-        if (overlay) overlay.classList.remove('visible');
-        if (menu) menu.classList.remove('visible');
-        
-        // Restore body scroll
-        document.body.style.overflow = '';
-    }
-    
-    /**
      * Listen for tab changes from header to sync state
      */
     function setupTabSync() {
-        // Watch for clicks on header tabs
-        document.querySelectorAll('.tabs .tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabId = tab.getAttribute('data-tab');
+        document.querySelectorAll('.tabs .tab').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                var tabId = tab.getAttribute('data-tab');
                 updateActiveState(tabId);
-                closeMoreMenu();
             });
         });
     }
@@ -273,34 +531,35 @@
      * Initialize bottom nav when DOM is ready
      */
     function init() {
-        // Only initialize on mobile
-        if (window.innerWidth >= 1201) {
-            // Still create it (hidden by CSS), so resizing works
-        }
-        
         createBottomNav();
         setupTabSync();
         
-        // Handle escape key to close more menu
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && moreMenuOpen) {
-                closeMoreMenu();
+        // Sync bottom nav when sidebar navigates
+        document.addEventListener('sidebar:navigate', function(e) {
+            var tab = e.detail && e.detail.tab;
+            if (tab) {
+                updateActiveState(tab);
+            }
+        });
+
+        // Escape key closes modals
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.capture-modal-overlay.visible').forEach(function(modal) {
+                    closeModal(modal);
+                });
             }
         });
     }
     
-    // Initialize when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
         init();
     }
     
-    // Expose for external use if needed
     window.bottomNav = {
-        updateActiveState,
-        openMoreMenu,
-        closeMoreMenu
+        updateActiveState: updateActiveState
     };
     
 })();
