@@ -122,9 +122,9 @@
         const container = peopleContainer();
         if (!container) return;
         try {
-            const res = await fetch('/api/bases/core/core-people/records', { credentials: 'include' });
+            const res = await fetch('/api/bases/core/core-people', { credentials: 'include' });
             const data = await res.json();
-            allPeople = Array.isArray(data) ? data : (data.records || []);
+            allPeople = Array.isArray(data) ? data : (data.records || data || []);
             renderPeople();
         } catch (e) {
             container.innerHTML = '<div class="core-empty-state">Failed to load people.</div>';
@@ -178,7 +178,7 @@
         const container = notesContainer();
         if (!container) return;
         try {
-            const res = await fetch('/api/bases/core/core-notes/records', { credentials: 'include' });
+            const res = await fetch('/api/bases/core/core-notes', { credentials: 'include' });
             const data = await res.json();
             allNotes = Array.isArray(data) ? data : (data.records || []);
             renderNotes();
