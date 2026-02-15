@@ -60,6 +60,57 @@
     transition: all 0.2s ease;
 }
 
+/* ========================================
+   HOME BUTTON - Center Glow
+   ======================================== */
+.bottom-nav-item[data-nav="dashboard"] {
+    position: relative;
+}
+
+.bottom-nav-item[data-nav="dashboard"]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(59, 130, 246, 0.08) 50%, transparent 70%);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.bottom-nav-item[data-nav="dashboard"] svg {
+    color: rgba(59, 130, 246, 0.8);
+    stroke: rgba(59, 130, 246, 0.8);
+    filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.3));
+}
+
+.bottom-nav-item[data-nav="dashboard"] span {
+    color: rgba(59, 130, 246, 0.7);
+}
+
+.bottom-nav-item[data-nav="dashboard"].active {
+    color: #3B82F6;
+}
+
+.bottom-nav-item[data-nav="dashboard"].active svg {
+    color: #3B82F6;
+    stroke: #3B82F6;
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+}
+
+.bottom-nav-item[data-nav="dashboard"].active::after {
+    width: 58px;
+    height: 58px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, rgba(59, 130, 246, 0.12) 50%, transparent 70%);
+}
+
+.bottom-nav-item[data-nav="dashboard"].active::before {
+    background: linear-gradient(135deg, #3B82F6, #2563EB) !important;
+}
+
 /* Active state */
 .bottom-nav-item.active {
     color: #FF8C00;
@@ -437,6 +488,10 @@
 
 [data-theme="dark"] .capture-btn-circle {
     background: rgba(255, 140, 0, 0.15);
+}
+
+[data-theme="dark"] .bottom-nav-item[data-nav="dashboard"]::after {
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, rgba(59, 130, 246, 0.1) 50%, transparent 70%);
 }
 
 [data-theme="dark"] .capture-bubble {
