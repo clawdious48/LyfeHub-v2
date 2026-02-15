@@ -13,6 +13,13 @@
     }
 }
 
+/* 1b. Hide bases view controls on mobile (bases selected via context sheet) */
+@media (max-width: 1199px) {
+    .bases-view-controls {
+        display: none !important;
+    }
+}
+
 /* 2. Ensure view-filters only show in their parent tab */
 .tab-content:not(.active) .view-filters,
 .tab-content:not(.active) .apex-view-filters {

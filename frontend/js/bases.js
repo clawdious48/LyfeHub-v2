@@ -1687,7 +1687,22 @@ function renderBasesList() {
   
   container.innerHTML = '';
   
-  // Combine core bases + user bases for the main content area
+  // On mobile, show empty state — bases are selected via context sheet (tap-again)
+  // On desktop, show the full card/list grid
+  const isMobile = window.innerWidth < 1200;
+  
+  if (isMobile) {
+    container.innerHTML = `
+      <div class="bases-empty">
+        <div class="bases-empty-icon">📊</div>
+        <p>Select a base</p>
+        <p class="text-muted">Tap <strong>Bases</strong> again to browse</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // Desktop: combine core + user bases
   const coreBases = (basesState.coreBases || []).map(b => Object.assign({}, b, { _isCore: true }));
   const allBases = coreBases.concat(basesState.bases);
   

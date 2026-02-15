@@ -274,7 +274,7 @@
     html += '<div class="sheet-label">My Bases</div>';
     html += '<div id="sheet-bases-user"><div class="sheet-label" style="opacity:0.5">Loading...</div></div>';
     html += '<div class="sheet-divider"></div>';
-    html += '<div class="sheet-action-btn" id="sheet-new-base">+ New Base</div>';
+    html += '<div class="sheet-action-btn" id="sheet-new-base">+ Create Base</div>';
 
     section.innerHTML = html;
 
@@ -327,7 +327,8 @@
     var html = '';
     bases.forEach(function(base) {
       var count = base.record_count != null ? base.record_count : '';
-      html += '<div class="sheet-list-item" data-base-id="' + base.id + '">';
+      var coreAttr = base.is_core ? ' data-core-base="true"' : '';
+      html += '<div class="sheet-list-item" data-base-id="' + base.id + '"' + coreAttr + '>';
       html += '<span class="sheet-list-item-icon">' + (base.icon || '📊') + '</span>';
       html += '<span class="sheet-list-item-text">' + escapeHtml(base.name) + '</span>';
       if (count !== '') html += '<span class="sheet-list-item-badge">' + count + '</span>';
@@ -338,8 +339,14 @@
       var item = e.target.closest('.sheet-list-item');
       if (!item) return;
       var baseId = item.dataset.baseId;
-      if (typeof window.openBase === 'function') window.openBase(baseId);
-      else document.dispatchEvent(new CustomEvent('bases:open', { detail: { baseId: baseId } }));
+      var isCore = item.dataset.coreBase === 'true';
+      if (isCore && typeof window.openCoreBase === 'function') {
+        window.openCoreBase(baseId);
+      } else if (typeof window.openBase === 'function') {
+        window.openBase(baseId);
+      } else {
+        document.dispatchEvent(new CustomEvent('bases:open', { detail: { baseId: baseId } }));
+      }
       dismissSheet();
     });
   }
