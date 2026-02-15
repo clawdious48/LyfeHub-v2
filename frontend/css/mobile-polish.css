@@ -3,6 +3,28 @@
    Breakpoint: max-width 1199px
    ============================================== */
 
+/* 0. Prevent zoom/overscroll bounce on mobile */
+html, body {
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+}
+
+@media (max-width: 1199px) {
+    html, body {
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        touch-action: manipulation;
+    }
+    .app-layout {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        height: 100vh;
+        height: 100dvh;
+    }
+}
+
 /* 1. Hide desktop header tabs on mobile */
 @media (max-width: 1199px) {
     header.header,
