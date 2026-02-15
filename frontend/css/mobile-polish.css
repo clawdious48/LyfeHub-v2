@@ -74,13 +74,13 @@ html, body {
 
 }
 
-/* Phone-only: view pills wrap to second row */
+/* Phone-only: views on first row, Add Task + List/Cards on second */
 @media (max-width: 768px) {
     .tab-content[data-tab="tasks"] .tasks-view-toggle {
         flex-basis: 100%;
-        order: 10;
+        order: -1;
         margin-left: 0;
-        margin-top: 4px;
+        margin-bottom: 4px;
     }
 }
 
