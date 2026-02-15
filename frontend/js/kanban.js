@@ -102,6 +102,9 @@ const dashboard = {
             c.classList.toggle('active', c.dataset.tab === tabName);
         });
         
+        // Toggle apex-tab-active on body for Apex FAB visibility
+        document.body.classList.toggle('apex-tab-active', tabName === 'apex');
+        
         // Hide header add button on Tasks tab (has inline button)
         const addItemBtn = document.getElementById('add-item-btn');
         if (addItemBtn) {

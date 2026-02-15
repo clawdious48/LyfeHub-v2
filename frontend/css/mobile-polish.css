@@ -95,6 +95,19 @@ html, body {
     }
 }
 
+/* 0c. Hide Apex mobile FAB/filter — shown by JS only on Apex tab */
+#mobile-add-btn,
+#mobile-filter-btn {
+    display: none !important;
+}
+body.apex-tab-active #mobile-add-btn,
+body.apex-tab-active #mobile-filter-btn {
+    display: flex !important;
+}
+#filter-sheet-backdrop {
+    display: none;
+}
+
 /* 1. Hide desktop header tabs on mobile */
 @media (max-width: 1199px) {
     header.header,
