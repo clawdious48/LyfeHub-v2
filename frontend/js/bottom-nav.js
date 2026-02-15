@@ -56,9 +56,9 @@
     
     // Bubble definitions
     const BUBBLES = [
-        { id: 'task', emoji: '📝', label: 'Task', dx: -60, dy: -80 },
-        { id: 'note', emoji: '📓', label: 'Note', dx: 0, dy: -100 },
-        { id: 'photo', emoji: '📸', label: 'Photo', dx: 60, dy: -80 }
+        { id: 'task', emoji: '📝', label: 'Task', dx: 0, dy: -120 },
+        { id: 'note', emoji: '📓', label: 'Note', dx: 70, dy: -100 },
+        { id: 'photo', emoji: '📸', label: 'Photo', dx: 120, dy: -50 }
     ];
     
     /**
@@ -203,8 +203,8 @@
             var el = document.createElement('div');
             el.className = 'capture-bubble';
             el.setAttribute('data-bubble', bubble.id);
-            el.style.left = (centerX + bubble.dx - 24) + 'px';
-            el.style.top = (centerY + bubble.dy - 24) + 'px';
+            el.style.left = (centerX + bubble.dx - 28) + 'px';
+            el.style.top = (centerY + bubble.dy - 28) + 'px';
             el.style.animationDelay = (i * 50) + 'ms';
             el.innerHTML = '<span class="capture-bubble-emoji">' + bubble.emoji + '</span>' +
                 '<span class="capture-bubble-label">' + bubble.label + '</span>';
@@ -224,7 +224,7 @@
             var cy = rect.top + rect.height / 2;
             var dist = Math.sqrt(Math.pow(x - cx, 2) + Math.pow(y - cy, 2));
             
-            if (dist < 36) {
+            if (dist < 48) {
                 el.classList.add('active');
                 activeBubble = el.getAttribute('data-bubble');
             } else {
