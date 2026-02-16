@@ -19,12 +19,21 @@ async function authMiddleware(req, res, next) {
       if (!keyData) {
         return res.status(401).json({ error: 'Invalid or expired API key', code: 'INVALID_API_KEY' });
       }
-      const userRow = await db.getOne('SELECT role FROM users WHERE id = $1', [keyData.userId]);
+      const userRow = await db.getOne('SELECT role, status FROM users WHERE id = $1', [keyData.userId]);
+      if (userRow?.status === 'suspended') {
+        return res.status(403).json({ error: 'Account suspended', code: 'ACCOUNT_SUSPENDED' });
+      }
       req.authMethod = 'api_key';
       req.apiKeyId = keyData.keyId;
       req.apiKeyName = keyData.keyName;
       const roles = parseRoles(userRow?.role);
       req.user = { id: keyData.userId, email: keyData.email, name: keyData.userName, role: roles, roles };
+      // Populate scopes for scope validation middleware
+      const scopeRow = await db.getOne('SELECT scopes FROM api_keys WHERE id = $1', [keyData.keyId]);
+      try {
+        const scopes = scopeRow?.scopes ? (typeof scopeRow.scopes === 'string' ? JSON.parse(scopeRow.scopes) : scopeRow.scopes) : [];
+        req.apiKeyScopes = Array.isArray(scopes) ? scopes : [];
+      } catch { req.apiKeyScopes = []; }
       return next();
     }
     return res.status(401).json({ error: 'Invalid authorization token', code: 'INVALID_TOKEN' });
@@ -37,10 +46,14 @@ async function authMiddleware(req, res, next) {
   
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await db.getOne('SELECT role, name FROM users WHERE id = $1', [decoded.userId]);
+    const user = await db.getOne('SELECT role, name, status FROM users WHERE id = $1', [decoded.userId]);
     if (!user) {
       res.clearCookie(COOKIE_NAME);
       return res.status(401).json({ error: 'User no longer exists', code: 'USER_NOT_FOUND' });
+    }
+    if (user.status === 'suspended') {
+      res.clearCookie(COOKIE_NAME);
+      return res.status(403).json({ error: 'Account suspended', code: 'ACCOUNT_SUSPENDED' });
     }
     req.authMethod = 'jwt';
     req.sessionId = decoded.sessionId;

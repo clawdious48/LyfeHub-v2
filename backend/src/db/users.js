@@ -192,6 +192,15 @@ async function deleteUser(id) {
   });
 }
 
+/**
+ * Update a user's status (active, suspended)
+ */
+async function updateUserStatus(id, status) {
+  const now = new Date().toISOString();
+  await db.run('UPDATE users SET status = $1, updated_at = $2 WHERE id = $3', [status, now, id]);
+  return await findUserById(id);
+}
+
 module.exports = {
   findUserByEmail,
   findUserByEmailOrName,
@@ -206,5 +215,6 @@ module.exports = {
   updateUserRole,
   resetUserPassword,
   deleteUser,
+  updateUserStatus,
   VALID_ROLES
 };

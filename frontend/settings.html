@@ -50,12 +50,115 @@
         <main class="settings-content">
             <div class="settings-section active" id="section-profile">
                 <h2 class="settings-section-header">Profile</h2>
-                <p class="text-muted">Profile settings will appear here.</p>
+
+                <!-- Avatar + Identity -->
+                <div class="profile-identity">
+                    <div class="profile-avatar" id="profile-avatar">
+                        <span class="avatar-initials" id="avatar-initials">?</span>
+                        <div class="avatar-overlay">Change</div>
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-name-row">
+                            <span class="profile-name" id="profile-name" tabindex="0" title="Click to edit">—</span>
+                            <svg class="profile-name-edit-icon" viewBox="0 0 24 24" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            <input type="text" class="profile-name-input" id="profile-name-input" style="display:none" />
+                        </div>
+                        <div class="profile-email text-muted" id="profile-email">—</div>
+                        <span class="profile-role-badge" id="profile-role-badge">—</span>
+                    </div>
+                </div>
+
+                <!-- Theme Selector -->
+                <div class="settings-field-group">
+                    <label class="settings-field-label">Theme</label>
+                    <div class="theme-selector" id="theme-selector">
+                        <button class="theme-option" data-theme="light">
+                            <svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                            Light
+                        </button>
+                        <button class="theme-option" data-theme="dark">
+                            <svg viewBox="0 0 24 24" width="16" height="16"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                            Dark
+                        </button>
+                        <button class="theme-option" data-theme="system">
+                            <svg viewBox="0 0 24 24" width="16" height="16"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><path d="M8 21h8M12 17v4"/></svg>
+                            System
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Date Format -->
+                <div class="settings-field-group">
+                    <label class="settings-field-label" for="date-format-select">Date Format</label>
+                    <select class="settings-select" id="date-format-select">
+                        <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                        <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                    </select>
+                </div>
             </div>
 
             <div class="settings-section" id="section-security">
                 <h2 class="settings-section-header">Security</h2>
-                <p class="text-muted">Security settings will appear here.</p>
+
+                <!-- Change Password -->
+                <div class="security-subsection">
+                    <h3 class="security-subsection-title">Change Password</h3>
+                    <form id="change-password-form" autocomplete="off">
+                        <div class="settings-field-group">
+                            <label class="settings-field-label" for="current-password">Current Password</label>
+                            <input type="password" class="settings-input" id="current-password" autocomplete="current-password" required />
+                        </div>
+                        <div class="settings-field-group">
+                            <label class="settings-field-label" for="new-password">New Password</label>
+                            <input type="password" class="settings-input" id="new-password" autocomplete="new-password" required minlength="8" />
+                            <span class="settings-field-hint">Minimum 8 characters</span>
+                        </div>
+                        <div class="settings-field-group">
+                            <label class="settings-field-label" for="confirm-password">Confirm New Password</label>
+                            <input type="password" class="settings-input" id="confirm-password" autocomplete="new-password" required minlength="8" />
+                        </div>
+                        <button type="submit" class="settings-btn-primary" id="change-password-btn">
+                            <span class="btn-text">Update Password</span>
+                            <span class="btn-spinner" style="display:none"></span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Active Sessions -->
+                <div class="security-subsection">
+                    <h3 class="security-subsection-title">
+                        Active Sessions
+                        <span class="coming-soon-badge">Coming Soon</span>
+                    </h3>
+                    <div class="session-info">
+                        <div class="session-current">
+                            <svg viewBox="0 0 24 24" width="18" height="18"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><path d="M8 21h8M12 17v4"/></svg>
+                            <div>
+                                <div class="session-label">Current Session</div>
+                                <div class="session-detail text-muted">This device · Active now</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Two-Factor Auth -->
+                <div class="security-subsection">
+                    <h3 class="security-subsection-title">
+                        Two-Factor Authentication
+                        <span class="coming-soon-badge">Coming Soon</span>
+                    </h3>
+                    <div class="security-toggle-row">
+                        <div>
+                            <div class="security-toggle-label">Enable 2FA</div>
+                            <div class="security-toggle-desc text-muted">Add an extra layer of security to your account</div>
+                        </div>
+                        <label class="toggle-switch disabled">
+                            <input type="checkbox" disabled />
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
             </div>
 
             <div class="settings-section" id="section-developer">
@@ -92,7 +195,10 @@
 
     <!-- Scripts -->
     <script src="js/bottom-nav.js"></script>
+    <script src="js/api.js"></script>
     <script src="js/settings.js"></script>
+    <script src="js/settings-profile.js"></script>
+    <script src="js/settings-security.js"></script>
     <script>
         // Highlight Settings in bottom nav if applicable
         document.addEventListener('DOMContentLoaded', function() {

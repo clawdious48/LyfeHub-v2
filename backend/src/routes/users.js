@@ -14,10 +14,12 @@ const {
   updateUserRole,
   resetUserPassword,
   deleteUser,
+  updateUserStatus,
   VALID_ROLES
 } = require('../db/users');
 
 const { getAssignmentCounts } = require('../db/apexJobs');
+const auditDb = require('../db/audit');
 
 const router = express.Router();
 
@@ -225,6 +227,7 @@ router.post('/employees', requireRole('management'), async (req, res) => {
     }
 
     const user = await createUserSync({ name, email, password, role: role || 'field_tech' });
+    await auditDb.logAction(req.user.id, 'user_create', 'user', user.id, { name, email, role: role || 'field_tech' });
     res.status(201).json(user);
   } catch (err) {
     console.error('Error creating employee:', err);
@@ -249,7 +252,9 @@ router.patch('/employees/:id', requireRole('management'), async (req, res) => {
       if (!VALID_ROLES.includes(role)) {
         return res.status(400).json({ error: `Invalid role. Must be one of: ${VALID_ROLES.join(', ')}`, code: 'INVALID_ROLE' });
       }
+      const oldRole = targetUser.role;
       await updateUserRole(req.params.id, role);
+      await auditDb.logAction(req.user.id, 'role_change', 'user', req.params.id, { old_role: oldRole, new_role: role });
     }
 
     if (password) {
@@ -283,6 +288,7 @@ router.delete('/employees/:id', requireRole('management'), async (req, res) => {
     }
 
     await deleteUser(req.params.id);
+    await auditDb.logAction(req.user.id, 'user_delete', 'user', req.params.id, { name: targetUser.name, email: targetUser.email });
     res.json({ success: true });
   } catch (err) {
     console.error('Error deleting employee:', err);
