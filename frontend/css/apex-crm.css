@@ -510,3 +510,81 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ===== Dark Mode ===== */
+[data-theme="dark"] .crm-title {
+    color: #f0f0f5;
+}
+[data-theme="dark"] .crm-back-btn {
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.75);
+}
+[data-theme="dark"] .crm-back-btn:hover {
+    border-color: #FF8C00;
+    color: #FF8C00;
+}
+[data-theme="dark"] .crm-view-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.75);
+}
+[data-theme="dark"] .crm-view-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .crm-view-btn.active {
+    border-color: #FF8C00;
+    color: #FF8C00;
+}
+[data-theme="dark"] .crm-search {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f0f0f5;
+}
+[data-theme="dark"] .crm-filter-select {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f0f0f5;
+}
+[data-theme="dark"] .crm-filter-select option {
+    background: #1e293b;
+    color: #f0f0f5;
+}
+[data-theme="dark"] .crm-table th {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(240, 240, 245, 0.6);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .crm-table td {
+    color: #f0f0f5;
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .crm-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+[data-theme="dark"] .crm-detail-label {
+    color: rgba(240, 240, 245, 0.45);
+}
+[data-theme="dark"] .crm-detail-value {
+    color: #f0f0f5;
+}
+[data-theme="dark"] .crm-form-group input,
+[data-theme="dark"] .crm-form-group select,
+[data-theme="dark"] .crm-form-group textarea {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f0f0f5;
+}
+[data-theme="dark"] .crm-form-group label {
+    color: rgba(240, 240, 245, 0.6);
+}
+[data-theme="dark"] .crm-expanded-details {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .crm-action-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(240, 240, 245, 0.75);
+}
+[data-theme="dark"] .crm-action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}

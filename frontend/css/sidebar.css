@@ -387,6 +387,90 @@
     border-radius: 8px;
 }
 
+/* ===== Dark Mode ===== */
+[data-theme="dark"] .sidebar {
+    background: #0f172a;
+    border-right-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .sidebar-profile {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .sidebar-user-name {
+    color: #f0f0f5;
+}
+[data-theme="dark"] .sidebar-user-email {
+    color: rgba(240, 240, 245, 0.45);
+}
+[data-theme="dark"] .sidebar-collapse-btn {
+    color: rgba(240, 240, 245, 0.45);
+}
+[data-theme="dark"] .sidebar-collapse-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #f0f0f5;
+}
+[data-theme="dark"] .sidebar-section-header:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+[data-theme="dark"] .sidebar-section-label {
+    color: rgba(240, 240, 245, 0.45);
+}
+[data-theme="dark"] .sidebar-section-chevron {
+    color: rgba(240, 240, 245, 0.45);
+}
+[data-theme="dark"] .sidebar-nav-item {
+    color: rgba(240, 240, 245, 0.75);
+}
+[data-theme="dark"] .sidebar-nav-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+[data-theme="dark"] .sidebar-nav-item.active {
+    background: rgba(255, 140, 0, 0.1);
+    color: #FF8C00;
+}
+[data-theme="dark"] .sidebar-nav-icon {
+    color: rgba(240, 240, 245, 0.45);
+}
+[data-theme="dark"] .sidebar-nav-item.active .sidebar-nav-icon {
+    color: #FF8C00;
+}
+[data-theme="dark"] .sidebar-divider {
+    background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .sidebar-placeholder {
+    color: rgba(240, 240, 245, 0.3);
+}
+[data-theme="dark"] .sidebar-tables {
+    border-top-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .sidebar-footer {
+    border-top-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .sidebar-footer-item {
+    color: rgba(240, 240, 245, 0.75);
+}
+[data-theme="dark"] .sidebar-footer-item:hover {
+    color: #FF8C00;
+}
+[data-theme="dark"] .sidebar-footer-icon {
+    color: rgba(240, 240, 245, 0.45);
+}
+[data-theme="dark"] .sidebar-collapsed .sidebar-nav-item:hover::after,
+[data-theme="dark"] .sidebar-collapsed .sidebar-footer-item:hover::after {
+    background: rgba(15, 23, 42, 0.95);
+    color: #f0f0f5;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+}
+[data-theme="dark"] .sidebar-section[data-section="quick-actions"] .sidebar-nav-item {
+    border-color: rgba(255, 140, 0, 0.15);
+}
+[data-theme="dark"] .sidebar-section[data-section="quick-actions"] .sidebar-nav-item:hover {
+    background: rgba(255, 140, 0, 0.08);
+    border-color: rgba(255, 140, 0, 0.3);
+}
+
 /* ===== Hide sidebar on mobile/tablet ===== */
 @media (max-width: 1199px) {
     .sidebar {

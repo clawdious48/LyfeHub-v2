@@ -279,3 +279,58 @@
     border-color: #FF8C00;
     box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
 }
+
+/* ===== Dark Mode ===== */
+[data-theme="dark"] .context-sheet-body {
+    background: rgba(15, 23, 42, 0.97);
+    border-top-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.4);
+}
+[data-theme="dark"] .context-sheet-handle-bar {
+    background: rgba(255, 255, 255, 0.2);
+}
+[data-theme="dark"] .sheet-pill {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.75);
+}
+[data-theme="dark"] .sheet-pill.active {
+    background: rgba(255, 140, 0, 0.15);
+    border-color: #FF8C00;
+    color: #FF8C00;
+}
+[data-theme="dark"] .sheet-label {
+    color: rgba(240, 240, 245, 0.35);
+}
+[data-theme="dark"] .sheet-list-item:active {
+    background: rgba(255, 140, 0, 0.12);
+}
+[data-theme="dark"] .sheet-list-item-icon {
+    color: rgba(240, 240, 245, 0.45);
+}
+[data-theme="dark"] .sheet-list-item-text {
+    color: #f0f0f5;
+}
+[data-theme="dark"] .sheet-list-item-badge {
+    color: rgba(240, 240, 245, 0.5);
+    background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .sheet-divider {
+    background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .sheet-action-btn {
+    border-color: rgba(255, 140, 0, 0.25);
+}
+[data-theme="dark"] .sheet-select {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f0f0f5;
+}
+[data-theme="dark"] .context-sheet-backdrop.visible {
+    background: rgba(0, 0, 0, 0.5);
+}
+@media (min-width: 768px) and (max-width: 1199px) and (orientation: landscape) {
+    [data-theme="dark"] .context-sheet-body {
+        border-right-color: rgba(255, 255, 255, 0.08);
+    }
+}

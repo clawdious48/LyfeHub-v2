@@ -545,3 +545,94 @@
 }
 
 /* ---- Bottom Nav dark: styles live in bottom-nav.css ---- */
+
+/* ---- Markdown Body ---- */
+[data-theme="dark"] .markdown-body {
+    color: rgba(240, 240, 245, 0.85);
+}
+
+[data-theme="dark"] .markdown-body h1,
+[data-theme="dark"] .markdown-body h2,
+[data-theme="dark"] .markdown-body h3,
+[data-theme="dark"] .markdown-body h4,
+[data-theme="dark"] .markdown-body h5,
+[data-theme="dark"] .markdown-body h6 {
+    color: #f0f0f5;
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .markdown-body code {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .markdown-body blockquote {
+    border-left-color: rgba(255, 140, 0, 0.4);
+    color: rgba(240, 240, 245, 0.6);
+}
+
+[data-theme="dark"] .markdown-body table th {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .markdown-body table td {
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .markdown-body hr {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .markdown-body a {
+    color: #FF8C00;
+}
+
+/* ---- Links ---- */
+[data-theme="dark"] a {
+    color: #FF8C00;
+}
+
+/* ---- Badges / Tags ---- */
+[data-theme="dark"] .badge,
+[data-theme="dark"] .tag {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(240, 240, 245, 0.75);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ---- Empty States ---- */
+[data-theme="dark"] .empty-state,
+[data-theme="dark"] .no-data,
+[data-theme="dark"] .empty-message {
+    color: rgba(240, 240, 245, 0.35);
+}
+
+/* ---- Loading / Skeleton ---- */
+[data-theme="dark"] .skeleton,
+[data-theme="dark"] .loading-skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.05) 75%);
+    background-size: 200% 100%;
+}
+
+[data-theme="dark"] .spinner {
+    border-color: rgba(255, 255, 255, 0.1);
+    border-top-color: #FF8C00;
+}
+
+/* ---- Scrollbar Track ---- */
+[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* ---- Select dropdowns ---- */
+[data-theme="dark"] select option {
+    background: #1e293b;
+    color: #f0f0f5;
+}
+
+/* ---- Inputs (global) ---- */
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+    color: rgba(240, 240, 245, 0.3);
+}
