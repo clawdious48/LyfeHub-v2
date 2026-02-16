@@ -6,7 +6,7 @@ const { getUserOrgRole } = require('../db/apexOrgs');
  */
 async function requireOrgMember(req, res, next) {
   try {
-    const membership = getUserOrgRole(req.user.id);
+    const membership = await getUserOrgRole(req.user.id);
     if (!membership) {
       return res.status(403).json({ error: 'Not a member of any organization' });
     }
