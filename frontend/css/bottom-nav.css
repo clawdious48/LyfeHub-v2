@@ -26,8 +26,10 @@
     justify-content: space-around;
     align-items: center;
     padding: 8px 0;
-    max-width: 500px;
+    max-width: 100%;
     margin: 0 auto;
+    padding-left: 16px;
+    padding-right: 16px;
 }
 
 .bottom-nav-item {
