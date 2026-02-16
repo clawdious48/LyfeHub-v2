@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { authMiddleware } = require('../middleware/auth');
 const apexOrgsDb = require('../db/apexOrgs');
+const { requireScope } = require('../middleware/scopeAuth');
 
 // All routes require authentication
 router.use(authMiddleware);
@@ -30,7 +31,7 @@ function requireManagement(req, res, next) {
 }
 
 // GET /mine - Get user's org(s) + role
-router.get('/mine', async (req, res) => {
+router.get('/mine', requireScope('org', 'read'), async (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
     const orgs = await apexOrgsDb.getUserOrgs(req.user.id);
@@ -42,7 +43,7 @@ router.get('/mine', async (req, res) => {
 });
 
 // GET /:id - Get org details
-router.get('/:id', requireOrgMember, async (req, res) => {
+router.get('/:id', requireScope('org', 'read'), requireOrgMember, async (req, res) => {
   try {
     const org = await apexOrgsDb.getOrgById(req.params.id);
     if (!org) return res.status(404).json({ error: 'Organization not found' });
@@ -54,7 +55,7 @@ router.get('/:id', requireOrgMember, async (req, res) => {
 });
 
 // GET /:id/members - List members with user info
-router.get('/:id/members', requireOrgMember, async (req, res) => {
+router.get('/:id/members', requireScope('org', 'read'), requireOrgMember, async (req, res) => {
   try {
     const members = await apexOrgsDb.getOrgMembers(req.params.id);
     res.json(members);
@@ -65,7 +66,7 @@ router.get('/:id/members', requireOrgMember, async (req, res) => {
 });
 
 // POST /:id/members - Add member (management only)
-router.post('/:id/members', requireOrgMember, requireManagement, async (req, res) => {
+router.post('/:id/members', requireScope('org', 'admin'), requireOrgMember, requireManagement, async (req, res) => {
   try {
     const { email, role } = req.body;
     if (!email || !role) {
@@ -98,7 +99,7 @@ router.post('/:id/members', requireOrgMember, requireManagement, async (req, res
 });
 
 // PATCH /:id/members/:userId - Change member role (management only)
-router.patch('/:id/members/:userId', requireOrgMember, requireManagement, async (req, res) => {
+router.patch('/:id/members/:userId', requireScope('org', 'write'), requireOrgMember, requireManagement, async (req, res) => {
   try {
     const { role } = req.body;
     if (!role) {
@@ -120,7 +121,7 @@ router.patch('/:id/members/:userId', requireOrgMember, requireManagement, async 
 });
 
 // DELETE /:id/members/:userId - Remove member (management only)
-router.delete('/:id/members/:userId', requireOrgMember, requireManagement, async (req, res) => {
+router.delete('/:id/members/:userId', requireScope('org', 'admin'), requireOrgMember, requireManagement, async (req, res) => {
   try {
     const success = await apexOrgsDb.removeMember(req.params.id, req.params.userId);
     if (!success) return res.status(404).json({ error: 'Member not found' });

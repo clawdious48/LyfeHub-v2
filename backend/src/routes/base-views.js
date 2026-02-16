@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const { authMiddleware } = require('../middleware/auth');
 const basesDb = require('../db/bases');
 const db = require('../db/schema');
+const { requireScope } = require('../middleware/scopeAuth');
 
 // All routes require authentication
 router.use(authMiddleware);
@@ -13,7 +14,7 @@ router.use(authMiddleware);
 // ============================================
 
 // GET /api/bases/:baseId/views - List views for a base (scoped to user)
-router.get('/', async (req, res) => {
+router.get('/', requireScope('bases', 'read'), async (req, res) => {
   try {
     const base = await basesDb.getBaseById(req.params.baseId, req.user.id);
     if (!base) {
@@ -34,7 +35,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/bases/:baseId/views - Create view
-router.post('/', async (req, res) => {
+router.post('/', requireScope('bases', 'write'), async (req, res) => {
   try {
     const base = await basesDb.getBaseById(req.params.baseId, req.user.id);
     if (!base) {
@@ -62,7 +63,7 @@ router.post('/', async (req, res) => {
 });
 
 // GET /api/bases/:baseId/views/:viewId - Get single view
-router.get('/:viewId', async (req, res) => {
+router.get('/:viewId', requireScope('bases', 'read'), async (req, res) => {
   try {
     const view = await basesDb.getViewById(req.params.viewId);
     if (!view || view.base_id !== req.params.baseId || view.user_id !== req.user.id) {
@@ -80,7 +81,7 @@ router.get('/:viewId', async (req, res) => {
 });
 
 // PUT /api/bases/:baseId/views/:viewId - Update view
-router.put('/:viewId', async (req, res) => {
+router.put('/:viewId', requireScope('bases', 'write'), async (req, res) => {
   try {
     const existing = await basesDb.getViewById(req.params.viewId);
     if (!existing || existing.base_id !== req.params.baseId || existing.user_id !== req.user.id) {
@@ -113,7 +114,7 @@ router.put('/:viewId', async (req, res) => {
 });
 
 // DELETE /api/bases/:baseId/views/:viewId - Delete view
-router.delete('/:viewId', async (req, res) => {
+router.delete('/:viewId', requireScope('bases', 'delete'), async (req, res) => {
   try {
     const existing = await basesDb.getViewById(req.params.viewId);
     if (!existing || existing.base_id !== req.params.baseId || existing.user_id !== req.user.id) {
@@ -132,7 +133,7 @@ router.delete('/:viewId', async (req, res) => {
 // GET /api/bases/:baseId/views/:viewId/data
 // Fetch records with view filters and sorts applied server-side
 // ============================================
-router.get('/:viewId/data', async (req, res) => {
+router.get('/:viewId/data', requireScope('bases', 'read'), async (req, res) => {
   try {
     const base = await basesDb.getBaseById(req.params.baseId, req.user.id);
     if (!base) {

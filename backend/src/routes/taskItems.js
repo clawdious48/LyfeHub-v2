@@ -17,6 +17,7 @@ const {
   setTaskItemCalendars
 } = require('../db/taskItems');
 const { ensureTasksCalendar } = require('../db/calendars');
+const { requireScope } = require('../middleware/scopeAuth');
 
 const router = express.Router();
 
@@ -28,7 +29,7 @@ router.use(authMiddleware);
  * List all task items for current user
  * Query params: ?view=my-day|important|scheduled|recurring|all
  */
-router.get('/', async (req, res) => {
+router.get('/', requireScope('tasks', 'read'), async (req, res) => {
   try {
     const { view = 'all', today } = req.query;
     const userId = req.user.id;
@@ -47,7 +48,7 @@ router.get('/', async (req, res) => {
  * GET /api/task-items/counts
  * Get counts for sidebar badges
  */
-router.get('/counts', async (req, res) => {
+router.get('/counts', requireScope('tasks', 'read'), async (req, res) => {
   try {
     const { today } = req.query;
     const userId = req.user.id;
@@ -68,7 +69,7 @@ router.get('/counts', async (req, res) => {
  * Get task items scheduled within a date range
  * Query params: ?start=YYYY-MM-DD&end=YYYY-MM-DD
  */
-router.get('/calendar', async (req, res) => {
+router.get('/calendar', requireScope('tasks', 'read'), async (req, res) => {
   try {
     const { start, end } = req.query;
     const userId = req.user.id;
@@ -92,7 +93,7 @@ router.get('/calendar', async (req, res) => {
  * Get all scheduled task items (have due_date)
  * Query params: ?calendars=id1,id2,id3 (optional filter)
  */
-router.get('/calendar/scheduled', async (req, res) => {
+router.get('/calendar/scheduled', requireScope('tasks', 'read'), async (req, res) => {
   try {
     const userId = req.user.id;
     const calendarIds = req.query.calendars ? req.query.calendars.split(',') : null;
@@ -109,7 +110,7 @@ router.get('/calendar/scheduled', async (req, res) => {
  * Get all unscheduled task items (no due_date)
  * Query params: ?calendars=id1,id2,id3 (optional filter)
  */
-router.get('/calendar/unscheduled', async (req, res) => {
+router.get('/calendar/unscheduled', requireScope('tasks', 'read'), async (req, res) => {
   try {
     const userId = req.user.id;
     const calendarIds = req.query.calendars ? req.query.calendars.split(',') : null;
@@ -126,7 +127,7 @@ router.get('/calendar/unscheduled', async (req, res) => {
  * Schedule a task item on the calendar
  * Body: { due_date: "YYYY-MM-DD", due_time?: "HH:MM", due_time_end?: "HH:MM" }
  */
-router.patch('/:id/schedule', async (req, res) => {
+router.patch('/:id/schedule', requireScope('tasks', 'write'), async (req, res) => {
   try {
     const { due_date, due_time, due_time_end } = req.body;
     const userId = req.user.id;
@@ -159,7 +160,7 @@ router.patch('/:id/schedule', async (req, res) => {
  * PATCH /api/task-items/:id/unschedule
  * Remove a task item from the calendar
  */
-router.patch('/:id/unschedule', async (req, res) => {
+router.patch('/:id/unschedule', requireScope('tasks', 'write'), async (req, res) => {
   try {
     const userId = req.user.id;
     const item = await unscheduleTaskItem(req.params.id, userId);
@@ -179,7 +180,7 @@ router.patch('/:id/unschedule', async (req, res) => {
  * GET /api/task-items/:id
  * Get a single task item
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireScope('tasks', 'read'), async (req, res) => {
   try {
     const userId = req.user.id;
     const item = await getTaskItemById(req.params.id, userId);
@@ -199,7 +200,7 @@ router.get('/:id', async (req, res) => {
  * POST /api/task-items
  * Create a new task item
  */
-router.post('/', async (req, res) => {
+router.post('/', requireScope('tasks', 'write'), async (req, res) => {
   try {
     const userId = req.user.id;
     const { title, description, status, my_day, due_date, due_time, due_time_end, snooze_date, priority, energy, location, recurring, recurring_days, important, subtasks, project_id, list_id, calendar_ids } = req.body;
@@ -249,7 +250,7 @@ router.post('/', async (req, res) => {
  * PATCH /api/task-items/:id
  * Update a task item
  */
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', requireScope('tasks', 'write'), async (req, res) => {
   try {
     const userId = req.user.id;
     const { calendar_ids, ...updateData } = req.body;
@@ -276,7 +277,7 @@ router.patch('/:id', async (req, res) => {
  * POST /api/task-items/:id/toggle
  * Toggle task completion
  */
-router.post('/:id/toggle', async (req, res) => {
+router.post('/:id/toggle', requireScope('tasks', 'write'), async (req, res) => {
   try {
     const userId = req.user.id;
     const item = await toggleTaskItemComplete(req.params.id, userId);
@@ -296,7 +297,7 @@ router.post('/:id/toggle', async (req, res) => {
  * DELETE /api/task-items/:id
  * Delete a task item
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireScope('tasks', 'delete'), async (req, res) => {
   try {
     const userId = req.user.id;
     const deleted = await deleteTaskItem(req.params.id, userId);

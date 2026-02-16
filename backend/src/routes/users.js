@@ -20,6 +20,7 @@ const {
 
 const { getAssignmentCounts } = require('../db/apexJobs');
 const auditDb = require('../db/audit');
+const { requireScope } = require('../middleware/scopeAuth');
 
 const router = express.Router();
 
@@ -162,7 +163,7 @@ router.put('/me/password', async (req, res) => {
  * GET /api/users/team-assignments
  * Returns all employees with per-role active job assignment counts
  */
-router.get('/team-assignments', requireRole('management', 'office_coordinator'), async (req, res) => {
+router.get('/team-assignments', requireScope('users', 'read'), requireRole('management', 'office_coordinator'), async (req, res) => {
   try {
     const users = await getAllUsers();
     const counts = await getAssignmentCounts();
@@ -191,7 +192,7 @@ router.get('/team-assignments', requireRole('management', 'office_coordinator'),
  * GET /api/users/employees
  * List all users
  */
-router.get('/employees', requireRole('management'), async (req, res) => {
+router.get('/employees', requireScope('users', 'read'), requireRole('management'), async (req, res) => {
   try {
     const users = await getAllUsers();
     res.json(users);
@@ -205,7 +206,7 @@ router.get('/employees', requireRole('management'), async (req, res) => {
  * POST /api/users/employees
  * Create a new employee account
  */
-router.post('/employees', requireRole('management'), async (req, res) => {
+router.post('/employees', requireScope('users', 'write'), requireRole('management'), async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
@@ -239,7 +240,7 @@ router.post('/employees', requireRole('management'), async (req, res) => {
  * PATCH /api/users/employees/:id
  * Update employee role or reset password
  */
-router.patch('/employees/:id', requireRole('management'), async (req, res) => {
+router.patch('/employees/:id', requireScope('users', 'write'), requireRole('management'), async (req, res) => {
   try {
     const { role, password } = req.body;
     const targetUser = await findUserById(req.params.id);
@@ -276,7 +277,7 @@ router.patch('/employees/:id', requireRole('management'), async (req, res) => {
  * DELETE /api/users/employees/:id
  * Delete an employee account (prevent self-deletion)
  */
-router.delete('/employees/:id', requireRole('management'), async (req, res) => {
+router.delete('/employees/:id', requireScope('users', 'admin'), requireRole('management'), async (req, res) => {
   try {
     if (req.params.id === req.user.id) {
       return res.status(400).json({ error: 'Cannot delete your own account', code: 'SELF_DELETE' });
@@ -300,7 +301,7 @@ router.delete('/employees/:id', requireRole('management'), async (req, res) => {
  * POST /api/users/employees/bulk-delete
  * Delete multiple employee accounts at once
  */
-router.post('/employees/bulk-delete', requireRole('management'), async (req, res) => {
+router.post('/employees/bulk-delete', requireScope('users', 'admin'), requireRole('management'), async (req, res) => {
   try {
     const { ids } = req.body;
     if (!Array.isArray(ids) || ids.length === 0) {
@@ -336,7 +337,7 @@ router.post('/employees/bulk-delete', requireRole('management'), async (req, res
 /**
  * PATCH /api/users/:id/suspend
  */
-router.patch('/:id/suspend', requireRole('management', 'developer'), async (req, res) => {
+router.patch('/:id/suspend', requireScope('users', 'admin'), requireRole('management', 'developer'), async (req, res) => {
   try {
     if (req.params.id === req.user.id) {
       return res.status(400).json({ error: 'Cannot suspend your own account', code: 'SELF_SUSPEND' });
@@ -356,7 +357,7 @@ router.patch('/:id/suspend', requireRole('management', 'developer'), async (req,
 /**
  * PATCH /api/users/:id/unsuspend
  */
-router.patch('/:id/unsuspend', requireRole('management', 'developer'), async (req, res) => {
+router.patch('/:id/unsuspend', requireScope('users', 'admin'), requireRole('management', 'developer'), async (req, res) => {
   try {
     const targetUser = await findUserById(req.params.id);
     if (!targetUser) return res.status(404).json({ error: 'User not found', code: 'USER_NOT_FOUND' });

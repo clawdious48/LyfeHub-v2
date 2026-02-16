@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const { authMiddleware } = require('../middleware/auth');
 const basesDb = require('../db/bases');
 const coreBasesDb = require('../db/coreBases');
+const { requireScope } = require('../middleware/scopeAuth');
 
 // All routes require authentication
 router.use(authMiddleware);
@@ -21,7 +22,7 @@ router.use((req, res, next) => {
 // ============================================
 
 // GET /api/bases - List all bases for user (with counts and column info)
-router.get('/', async (req, res) => {
+router.get('/', requireScope('bases', 'read'), async (req, res) => {
   try {
     const bases = await basesDb.getAllBases(req.user.id);
     
@@ -56,7 +57,7 @@ router.get('/', async (req, res) => {
 // ============================================
 
 // GET /api/bases/core/list - List all core bases
-router.get('/core/list', async (req, res) => {
+router.get('/core/list', requireScope('bases', 'read'), async (req, res) => {
   try {
     const coreBases = await coreBasesDb.getAllCoreBases(req.user.id);
     res.json(coreBases);
@@ -67,7 +68,7 @@ router.get('/core/list', async (req, res) => {
 });
 
 // GET /api/bases/core/:id - Get single core base with records
-router.get('/core/:id', async (req, res) => {
+router.get('/core/:id', requireScope('bases', 'read'), async (req, res) => {
   try {
     const baseId = req.params.id;
     const coreDef = await coreBasesDb.getCoreBase(baseId);
@@ -90,7 +91,7 @@ router.get('/core/:id', async (req, res) => {
 });
 
 // POST /api/bases/core/:id/records - Create record in core base
-router.post('/core/:id/records', async (req, res) => {
+router.post('/core/:id/records', requireScope('records', 'write'), async (req, res) => {
   try {
     const baseId = req.params.id;
     const coreDef = await coreBasesDb.getCoreBase(baseId);
@@ -114,7 +115,7 @@ router.post('/core/:id/records', async (req, res) => {
 });
 
 // PUT /api/bases/core/:id/records/:recordId - Update record in core base
-router.put('/core/:id/records/:recordId', async (req, res) => {
+router.put('/core/:id/records/:recordId', requireScope('records', 'write'), async (req, res) => {
   try {
     const baseId = req.params.id;
     const recordId = req.params.recordId;
@@ -139,7 +140,7 @@ router.put('/core/:id/records/:recordId', async (req, res) => {
 });
 
 // DELETE /api/bases/core/:id/records/:recordId - Delete record from core base
-router.delete('/core/:id/records/:recordId', async (req, res) => {
+router.delete('/core/:id/records/:recordId', requireScope('records', 'delete'), async (req, res) => {
   try {
     const baseId = req.params.id;
     const recordId = req.params.recordId;
@@ -163,7 +164,7 @@ router.delete('/core/:id/records/:recordId', async (req, res) => {
 });
 
 // GET /api/bases/core/:id/readme - Get README/help content for core base
-router.get('/core/:id/readme', async (req, res) => {
+router.get('/core/:id/readme', requireScope('bases', 'read'), async (req, res) => {
   try {
     const baseId = req.params.id;
     const readme = await coreBasesDb.getCoreBaseReadme(baseId);
@@ -184,7 +185,7 @@ router.get('/core/:id/readme', async (req, res) => {
 // ============================================
 
 // GET /api/bases/core/:id/views - List all views for a core base (user-specific)
-router.get('/core/:id/views', async (req, res) => {
+router.get('/core/:id/views', requireScope('bases', 'read'), async (req, res) => {
   try {
     const baseId = req.params.id;
     const coreDef = await coreBasesDb.getCoreBase(baseId);
@@ -208,7 +209,7 @@ router.get('/core/:id/views', async (req, res) => {
 });
 
 // POST /api/bases/core/:id/views - Create new view for a core base
-router.post('/core/:id/views', async (req, res) => {
+router.post('/core/:id/views', requireScope('bases', 'write'), async (req, res) => {
   try {
     const baseId = req.params.id;
     const coreDef = await coreBasesDb.getCoreBase(baseId);
@@ -242,7 +243,7 @@ router.post('/core/:id/views', async (req, res) => {
 });
 
 // PUT /api/bases/core/:id/views/:viewId - Update view for a core base
-router.put('/core/:id/views/:viewId', async (req, res) => {
+router.put('/core/:id/views/:viewId', requireScope('bases', 'write'), async (req, res) => {
   try {
     const baseId = req.params.id;
     const coreDef = await coreBasesDb.getCoreBase(baseId);
@@ -281,7 +282,7 @@ router.put('/core/:id/views/:viewId', async (req, res) => {
 });
 
 // DELETE /api/bases/core/:id/views/:viewId - Delete view for a core base
-router.delete('/core/:id/views/:viewId', async (req, res) => {
+router.delete('/core/:id/views/:viewId', requireScope('bases', 'delete'), async (req, res) => {
   try {
     const baseId = req.params.id;
     const coreDef = await coreBasesDb.getCoreBase(baseId);
@@ -306,7 +307,7 @@ router.delete('/core/:id/views/:viewId', async (req, res) => {
 // ============================================
 // USER BASES ROUTES
 // ============================================
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireScope('bases', 'read'), async (req, res) => {
   try {
     const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
@@ -355,7 +356,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/bases - Create new base
-router.post('/', async (req, res) => {
+router.post('/', requireScope('bases', 'write'), async (req, res) => {
   try {
     const { name, description = '', icon = '📊' } = req.body;
     
@@ -385,7 +386,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/bases/:id - Update base
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireScope('bases', 'write'), async (req, res) => {
   try {
     const { name, description, icon } = req.body;
     const existing = await basesDb.getBaseById(req.params.id, req.user.id);
@@ -412,7 +413,7 @@ router.put('/:id', async (req, res) => {
 
 // DELETE /api/bases/:id - Delete base (cascades to properties and records)
 // Also cleans up orphaned relation properties in other bases
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireScope('bases', 'delete'), async (req, res) => {
   try {
     const existing = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!existing) {
@@ -432,7 +433,7 @@ router.delete('/:id', async (req, res) => {
 // ============================================
 
 // POST /api/bases/:id/properties - Add property
-router.post('/:id/properties', async (req, res) => {
+router.post('/:id/properties', requireScope('bases', 'write'), async (req, res) => {
   try {
     const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
@@ -506,7 +507,7 @@ router.post('/:id/properties', async (req, res) => {
 });
 
 // PUT /api/bases/:id/properties/:propId - Update property
-router.put('/:id/properties/:propId', async (req, res) => {
+router.put('/:id/properties/:propId', requireScope('bases', 'write'), async (req, res) => {
   try {
     const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
@@ -541,7 +542,7 @@ router.put('/:id/properties/:propId', async (req, res) => {
 });
 
 // DELETE /api/bases/:id/properties/:propId - Delete property
-router.delete('/:id/properties/:propId', async (req, res) => {
+router.delete('/:id/properties/:propId', requireScope('bases', 'delete'), async (req, res) => {
   try {
     const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
@@ -567,7 +568,7 @@ router.delete('/:id/properties/:propId', async (req, res) => {
 });
 
 // POST /api/bases/:id/properties/reorder - Reorder properties
-router.post('/:id/properties/reorder', async (req, res) => {
+router.post('/:id/properties/reorder', requireScope('bases', 'write'), async (req, res) => {
   try {
     const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
@@ -592,7 +593,7 @@ router.post('/:id/properties/reorder', async (req, res) => {
 // ============================================
 
 // POST /api/bases/:id/records - Add record
-router.post('/:id/records', async (req, res) => {
+router.post('/:id/records', requireScope('records', 'write'), async (req, res) => {
   try {
     const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
@@ -658,7 +659,7 @@ router.post('/:id/records', async (req, res) => {
 });
 
 // PUT /api/bases/:id/records/:recordId - Update record
-router.put('/:id/records/:recordId', async (req, res) => {
+router.put('/:id/records/:recordId', requireScope('records', 'write'), async (req, res) => {
   try {
     const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
@@ -721,7 +722,7 @@ router.put('/:id/records/:recordId', async (req, res) => {
 });
 
 // DELETE /api/bases/:id/records/:recordId - Delete record
-router.delete('/:id/records/:recordId', async (req, res) => {
+router.delete('/:id/records/:recordId', requireScope('records', 'delete'), async (req, res) => {
   try {
     const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
@@ -767,7 +768,7 @@ router.delete('/:id/records/:recordId', async (req, res) => {
 
 // GET /api/bases/:id/relation-options - Get records from a base for relation picker
 // This is a lightweight endpoint that returns just id, displayValue, and global_id
-router.get('/:id/relation-options', async (req, res) => {
+router.get('/:id/relation-options', requireScope('records', 'read'), async (req, res) => {
   try {
     // Note: We check if the target base exists, but don't require ownership
     // This allows linking to shared bases in the future
@@ -790,7 +791,7 @@ router.get('/:id/relation-options', async (req, res) => {
 // ============================================
 
 // GET /api/bases/:id/views - List all views for a base
-router.get('/:id/views', async (req, res) => {
+router.get('/:id/views', requireScope('bases', 'read'), async (req, res) => {
   try {
     const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
@@ -811,7 +812,7 @@ router.get('/:id/views', async (req, res) => {
 });
 
 // POST /api/bases/:id/views - Create new view
-router.post('/:id/views', async (req, res) => {
+router.post('/:id/views', requireScope('bases', 'write'), async (req, res) => {
   try {
     const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
@@ -843,7 +844,7 @@ router.post('/:id/views', async (req, res) => {
 });
 
 // PUT /api/bases/:id/views/:viewId - Update view
-router.put('/:id/views/:viewId', async (req, res) => {
+router.put('/:id/views/:viewId', requireScope('bases', 'write'), async (req, res) => {
   try {
     const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
@@ -880,7 +881,7 @@ router.put('/:id/views/:viewId', async (req, res) => {
 });
 
 // DELETE /api/bases/:id/views/:viewId - Delete view
-router.delete('/:id/views/:viewId', async (req, res) => {
+router.delete('/:id/views/:viewId', requireScope('bases', 'delete'), async (req, res) => {
   try {
     const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {
@@ -905,7 +906,7 @@ router.delete('/:id/views/:viewId', async (req, res) => {
 // ============================================
 
 // GET /api/bases/groups - List all groups for user
-router.get('/groups/list', async (req, res) => {
+router.get('/groups/list', requireScope('bases', 'read'), async (req, res) => {
   try {
     const groups = await basesDb.getAllGroups(req.user.id);
     res.json(groups);
@@ -916,7 +917,7 @@ router.get('/groups/list', async (req, res) => {
 });
 
 // POST /api/bases/groups - Create new group
-router.post('/groups', async (req, res) => {
+router.post('/groups', requireScope('bases', 'write'), async (req, res) => {
   try {
     const { name, icon = '📁' } = req.body;
     
@@ -940,7 +941,7 @@ router.post('/groups', async (req, res) => {
 });
 
 // PUT /api/bases/groups/:groupId - Update group
-router.put('/groups/:groupId', async (req, res) => {
+router.put('/groups/:groupId', requireScope('bases', 'write'), async (req, res) => {
   try {
     const existing = await basesDb.getGroupById(req.params.groupId, req.user.id);
     if (!existing) {
@@ -967,7 +968,7 @@ router.put('/groups/:groupId', async (req, res) => {
 });
 
 // PUT /api/bases/groups/:groupId/toggle - Toggle group collapsed state
-router.put('/groups/:groupId/toggle', async (req, res) => {
+router.put('/groups/:groupId/toggle', requireScope('bases', 'write'), async (req, res) => {
   try {
     const existing = await basesDb.getGroupById(req.params.groupId, req.user.id);
     if (!existing) {
@@ -986,7 +987,7 @@ router.put('/groups/:groupId/toggle', async (req, res) => {
 });
 
 // POST /api/bases/groups/collapse-all - Collapse all groups
-router.post('/groups/collapse-all', async (req, res) => {
+router.post('/groups/collapse-all', requireScope('bases', 'write'), async (req, res) => {
   try {
     await basesDb.collapseAllGroups(req.user.id);
     const groups = await basesDb.getAllGroups(req.user.id);
@@ -998,7 +999,7 @@ router.post('/groups/collapse-all', async (req, res) => {
 });
 
 // POST /api/bases/groups/expand-all - Expand all groups
-router.post('/groups/expand-all', async (req, res) => {
+router.post('/groups/expand-all', requireScope('bases', 'write'), async (req, res) => {
   try {
     await basesDb.expandAllGroups(req.user.id);
     const groups = await basesDb.getAllGroups(req.user.id);
@@ -1010,7 +1011,7 @@ router.post('/groups/expand-all', async (req, res) => {
 });
 
 // POST /api/bases/groups/reorder - Reorder groups
-router.post('/groups/reorder', async (req, res) => {
+router.post('/groups/reorder', requireScope('bases', 'write'), async (req, res) => {
   try {
     const { order } = req.body; // Array of { id, position }
     if (!Array.isArray(order)) {
@@ -1035,7 +1036,7 @@ router.post('/groups/reorder', async (req, res) => {
 });
 
 // DELETE /api/bases/groups/:groupId - Delete group (bases become ungrouped)
-router.delete('/groups/:groupId', async (req, res) => {
+router.delete('/groups/:groupId', requireScope('bases', 'delete'), async (req, res) => {
   try {
     const existing = await basesDb.getGroupById(req.params.groupId, req.user.id);
     if (!existing) {
@@ -1059,7 +1060,7 @@ router.delete('/groups/:groupId', async (req, res) => {
 });
 
 // PUT /api/bases/:id/group - Assign base to group
-router.put('/:id/group', async (req, res) => {
+router.put('/:id/group', requireScope('bases', 'write'), async (req, res) => {
   try {
     const base = await basesDb.getBaseById(req.params.id, req.user.id);
     if (!base) {

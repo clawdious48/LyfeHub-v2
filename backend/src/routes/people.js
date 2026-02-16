@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const { authMiddleware } = require('../middleware/auth');
 const peopleDb = require('../db/people');
 const peopleGroupsDb = require('../db/peopleGroups');
+const { requireScope } = require('../middleware/scopeAuth');
 
 // All routes require authentication
 router.use(authMiddleware);
@@ -21,7 +22,7 @@ router.use((req, res, next) => {
 // ============================================
 
 // GET /api/people/groups/list - List all groups for user
-router.get('/groups/list', async (req, res) => {
+router.get('/groups/list', requireScope('people', 'read'), async (req, res) => {
   try {
     const groups = await peopleGroupsDb.getAllGroups(req.user.id);
     res.json(groups);
@@ -32,7 +33,7 @@ router.get('/groups/list', async (req, res) => {
 });
 
 // POST /api/people/groups - Create new group
-router.post('/groups', async (req, res) => {
+router.post('/groups', requireScope('people', 'write'), async (req, res) => {
   try {
     const { name, icon = '👥' } = req.body;
 
@@ -56,7 +57,7 @@ router.post('/groups', async (req, res) => {
 });
 
 // PUT /api/people/groups/:groupId - Update group
-router.put('/groups/:groupId', async (req, res) => {
+router.put('/groups/:groupId', requireScope('people', 'write'), async (req, res) => {
   try {
     const existing = await peopleGroupsDb.getGroupById(req.params.groupId, req.user.id);
     if (!existing) {
@@ -83,7 +84,7 @@ router.put('/groups/:groupId', async (req, res) => {
 });
 
 // PUT /api/people/groups/:groupId/toggle - Toggle group collapsed state
-router.put('/groups/:groupId/toggle', async (req, res) => {
+router.put('/groups/:groupId/toggle', requireScope('people', 'write'), async (req, res) => {
   try {
     const existing = await peopleGroupsDb.getGroupById(req.params.groupId, req.user.id);
     if (!existing) {
@@ -102,7 +103,7 @@ router.put('/groups/:groupId/toggle', async (req, res) => {
 });
 
 // POST /api/people/groups/collapse-all - Collapse all groups
-router.post('/groups/collapse-all', async (req, res) => {
+router.post('/groups/collapse-all', requireScope('people', 'write'), async (req, res) => {
   try {
     await peopleGroupsDb.collapseAllGroups(req.user.id);
     const groups = await peopleGroupsDb.getAllGroups(req.user.id);
@@ -114,7 +115,7 @@ router.post('/groups/collapse-all', async (req, res) => {
 });
 
 // POST /api/people/groups/expand-all - Expand all groups
-router.post('/groups/expand-all', async (req, res) => {
+router.post('/groups/expand-all', requireScope('people', 'write'), async (req, res) => {
   try {
     await peopleGroupsDb.expandAllGroups(req.user.id);
     const groups = await peopleGroupsDb.getAllGroups(req.user.id);
@@ -126,7 +127,7 @@ router.post('/groups/expand-all', async (req, res) => {
 });
 
 // POST /api/people/groups/reorder - Reorder groups
-router.post('/groups/reorder', async (req, res) => {
+router.post('/groups/reorder', requireScope('people', 'write'), async (req, res) => {
   try {
     const { order } = req.body; // Array of { id, position }
     if (!Array.isArray(order)) {
@@ -151,7 +152,7 @@ router.post('/groups/reorder', async (req, res) => {
 });
 
 // DELETE /api/people/groups/:groupId - Delete group (people become ungrouped)
-router.delete('/groups/:groupId', async (req, res) => {
+router.delete('/groups/:groupId', requireScope('people', 'delete'), async (req, res) => {
   try {
     const existing = await peopleGroupsDb.getGroupById(req.params.groupId, req.user.id);
     if (!existing) {
@@ -179,7 +180,7 @@ router.delete('/groups/:groupId', async (req, res) => {
 // ============================================
 
 // GET /api/people - List all people for user
-router.get('/', async (req, res) => {
+router.get('/', requireScope('people', 'read'), async (req, res) => {
   try {
     const people = await peopleDb.getAllPeople(req.user.id);
     res.json(people);
@@ -190,7 +191,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/people/by-email/:email - Find person by email
-router.get("/by-email/:email", async (req, res) => {
+router.get("/by-email/:email", requireScope('people', 'read'), async (req, res) => {
   try {
     const email = decodeURIComponent(req.params.email);
     const person = await peopleDb.findByEmail(req.user.id, email);
@@ -205,7 +206,7 @@ router.get("/by-email/:email", async (req, res) => {
 });
 
 // POST /api/people - Create new person
-router.post('/', async (req, res) => {
+router.post('/', requireScope('people', 'write'), async (req, res) => {
   try {
     const person = await peopleDb.createPerson(req.body, req.user.id);
     res.status(201).json(person);
@@ -216,7 +217,7 @@ router.post('/', async (req, res) => {
 });
 
 // GET /api/people/:id - Get single person
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireScope('people', 'read'), async (req, res) => {
   try {
     const person = await peopleDb.getPersonById(req.params.id, req.user.id);
     if (!person) {
@@ -230,7 +231,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // PUT /api/people/:id - Update person
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireScope('people', 'write'), async (req, res) => {
   try {
     const person = await peopleDb.updatePerson(req.params.id, req.body, req.user.id);
     if (!person) {
@@ -244,7 +245,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/people/:id - Delete person
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireScope('people', 'delete'), async (req, res) => {
   try {
     const success = await peopleDb.deletePerson(req.params.id, req.user.id);
     if (!success) {
@@ -258,7 +259,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // PUT /api/people/:id/group - Assign person to group
-router.put('/:id/group', async (req, res) => {
+router.put('/:id/group', requireScope('people', 'write'), async (req, res) => {
   try {
     const person = await peopleDb.getPersonById(req.params.id, req.user.id);
     if (!person) {

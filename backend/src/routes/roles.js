@@ -3,12 +3,13 @@ const { authMiddleware } = require('../middleware/auth');
 const { requireRole } = require('../middleware/permissions');
 const rolesDb = require('../db/roles');
 const auditDb = require('../db/audit');
+const { requireScope } = require('../middleware/scopeAuth');
 
 const router = express.Router();
 router.use(authMiddleware);
 
 // GET /api/roles/defaults — must be before /:name
-router.get('/defaults', requireRole('management', 'developer'), async (req, res) => {
+router.get('/defaults', requireScope('roles', 'read'), requireRole('management', 'developer'), async (req, res) => {
   try {
     const defaults = await rolesDb.getDefaultPermissions();
     res.json({ defaults });
@@ -19,7 +20,7 @@ router.get('/defaults', requireRole('management', 'developer'), async (req, res)
 });
 
 // POST /api/roles/revert-all — must be before /:name
-router.post('/revert-all', requireRole('management', 'developer'), async (req, res) => {
+router.post('/revert-all', requireScope('roles', 'write'), requireRole('management', 'developer'), async (req, res) => {
   try {
     const result = await rolesDb.revertAllRoles();
     await auditDb.logAction(req.user.id, 'role_update', 'role', null, { action: 'revert_all', reverted: result.reverted });
@@ -31,7 +32,7 @@ router.post('/revert-all', requireRole('management', 'developer'), async (req, r
 });
 
 // GET /api/roles
-router.get('/', requireRole('management', 'developer'), async (req, res) => {
+router.get('/', requireScope('roles', 'read'), requireRole('management', 'developer'), async (req, res) => {
   try {
     const roles = await rolesDb.getAllRoles();
     res.json({ roles });
@@ -42,7 +43,7 @@ router.get('/', requireRole('management', 'developer'), async (req, res) => {
 });
 
 // GET /api/roles/:name
-router.get('/:name', requireRole('management', 'developer'), async (req, res) => {
+router.get('/:name', requireScope('roles', 'read'), requireRole('management', 'developer'), async (req, res) => {
   try {
     const role = await rolesDb.getRoleByName(req.params.name);
     if (!role) return res.status(404).json({ error: 'Role not found' });
@@ -55,7 +56,7 @@ router.get('/:name', requireRole('management', 'developer'), async (req, res) =>
 });
 
 // PATCH /api/roles/:name
-router.patch('/:name', requireRole('management', 'developer'), async (req, res) => {
+router.patch('/:name', requireScope('roles', 'write'), requireRole('management', 'developer'), async (req, res) => {
   try {
     const { permissions } = req.body;
     if (!permissions || typeof permissions !== 'object') {
@@ -80,7 +81,7 @@ router.patch('/:name', requireRole('management', 'developer'), async (req, res) 
 });
 
 // POST /api/roles/:name/revert
-router.post('/:name/revert', requireRole('management', 'developer'), async (req, res) => {
+router.post('/:name/revert', requireScope('roles', 'write'), requireRole('management', 'developer'), async (req, res) => {
   try {
     const existing = await rolesDb.getRoleByName(req.params.name);
     if (!existing) return res.status(404).json({ error: 'Role not found' });

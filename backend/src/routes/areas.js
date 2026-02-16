@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { authMiddleware } = require('../middleware/auth');
 const { getAreas, createArea, updateArea, deleteArea, seedDefaultAreas } = require('../db/areas');
+const { requireScope } = require('../middleware/scopeAuth');
 
 router.use(authMiddleware);
 
-router.get('/', async (req, res) => {
+router.get('/', requireScope('areas', 'read'), async (req, res) => {
     try {
         let areas = await getAreas(req.user.userId);
         if (areas.length === 0) {
@@ -18,7 +19,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', requireScope('areas', 'write'), async (req, res) => {
     try {
         const area = await createArea(req.user.userId, req.body);
         res.status(201).json({ area });
@@ -27,7 +28,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', requireScope('areas', 'write'), async (req, res) => {
     try {
         const area = await updateArea(req.params.id, req.user.userId, req.body);
         if (!area) return res.status(404).json({ error: 'Area not found' });
@@ -37,7 +38,7 @@ router.patch('/:id', async (req, res) => {
     }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireScope('areas', 'delete'), async (req, res) => {
     try {
         const deleted = await deleteArea(req.params.id, req.user.userId);
         if (!deleted) return res.status(404).json({ error: 'Area not found' });

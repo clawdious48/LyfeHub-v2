@@ -139,7 +139,7 @@ router.post('/', requireScope('tasks', 'write'), async (req, res) => {
  * Get tasks scheduled within a date range
  * Query params: ?start=YYYY-MM-DD&end=YYYY-MM-DD
  */
-router.get('/calendar', async (req, res) => {
+router.get('/calendar', requireScope('tasks', 'read'), async (req, res) => {
   try {
     const { start, end } = req.query;
     const userId = getUserId(req);
@@ -175,7 +175,7 @@ router.get('/calendar', async (req, res) => {
  * GET /api/tasks/scheduled
  * Get all scheduled tasks (tasks with a scheduled_date)
  */
-router.get('/scheduled', async (req, res) => {
+router.get('/scheduled', requireScope('tasks', 'read'), async (req, res) => {
   try {
     const userId = getUserId(req);
     const tasks = await getScheduledTasks(userId);
@@ -193,7 +193,7 @@ router.get('/scheduled', async (req, res) => {
  * GET /api/tasks/unscheduled
  * Get all unscheduled tasks (tasks without a scheduled_date)
  */
-router.get('/unscheduled', async (req, res) => {
+router.get('/unscheduled', requireScope('tasks', 'read'), async (req, res) => {
   try {
     const userId = getUserId(req);
     const tasks = await getUnscheduledTasks(userId);
@@ -211,7 +211,7 @@ router.get('/unscheduled', async (req, res) => {
  * GET /api/tasks/:id
  * Get a single task by ID (must belong to current user)
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireScope('tasks', 'read'), async (req, res) => {
   try {
     const userId = getUserId(req);
     const task = await getTaskById(req.params.id, userId);
@@ -238,7 +238,7 @@ router.get('/:id', async (req, res) => {
  * Update a task (must belong to current user)
  * Body can include status_reason for logging status changes
  */
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', requireScope('tasks', 'write'), async (req, res) => {
   try {
     const { title, description, acceptance_criteria, status, priority, context_links, notes, session_id, status_reason, log_entry } = req.body;
     const userId = getUserId(req);
@@ -303,7 +303,7 @@ router.patch('/:id', async (req, res) => {
  * Add an entry to the task's activity log
  * Body: { type: "note", message: "Did something", details: {} }
  */
-router.post('/:id/log', async (req, res) => {
+router.post('/:id/log', requireScope('tasks', 'write'), async (req, res) => {
   try {
     const { type, message, details } = req.body;
     const userId = getUserId(req);
@@ -338,7 +338,7 @@ router.post('/:id/log', async (req, res) => {
  * DELETE /api/tasks/:id
  * Delete a task (must belong to current user)
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireScope('tasks', 'delete'), async (req, res) => {
   try {
     const userId = getUserId(req);
     const deleted = await deleteTask(req.params.id, userId);
@@ -368,7 +368,7 @@ router.delete('/:id', async (req, res) => {
  * Claim a task for work (sets status to in_progress)
  * Body: { session_id: "optional session identifier" }
  */
-router.post('/:id/pick', async (req, res) => {
+router.post('/:id/pick', requireScope('tasks', 'write'), async (req, res) => {
   try {
     const sessionId = req.body.session_id || req.sessionId;
     const userId = getUserId(req);
@@ -396,7 +396,7 @@ router.post('/:id/pick', async (req, res) => {
  * Mark a task as complete (sets status to review)
  * Body: { notes: "optional completion notes" }
  */
-router.post('/:id/complete', async (req, res) => {
+router.post('/:id/complete', requireScope('tasks', 'write'), async (req, res) => {
   try {
     const { notes } = req.body;
     const userId = getUserId(req);
@@ -424,7 +424,7 @@ router.post('/:id/complete', async (req, res) => {
  * Submit a review with criteria feedback
  * Body: { criteria: [{ index: 0, status: "approved"|"needs_work", comment: "..." }] }
  */
-router.post('/:id/review', async (req, res) => {
+router.post('/:id/review', requireScope('tasks', 'write'), async (req, res) => {
   try {
     const { criteria, generalComment } = req.body;
     const userId = getUserId(req);
@@ -475,7 +475,7 @@ router.post('/:id/review', async (req, res) => {
  * Schedule a task on the calendar
  * Body: { scheduled_date: "YYYY-MM-DD", scheduled_start?: "HH:MM", scheduled_end?: "HH:MM", is_all_day?: boolean }
  */
-router.patch('/:id/schedule', async (req, res) => {
+router.patch('/:id/schedule', requireScope('tasks', 'write'), async (req, res) => {
   try {
     const { scheduled_date, scheduled_start, scheduled_end, is_all_day } = req.body;
     const userId = getUserId(req);
@@ -539,7 +539,7 @@ router.patch('/:id/schedule', async (req, res) => {
  * PATCH /api/tasks/:id/unschedule
  * Remove a task from the calendar
  */
-router.patch('/:id/unschedule', async (req, res) => {
+router.patch('/:id/unschedule', requireScope('tasks', 'write'), async (req, res) => {
   try {
     const userId = getUserId(req);
     const task = await unscheduleTask(req.params.id, userId);
@@ -566,7 +566,7 @@ router.patch('/:id/unschedule', async (req, res) => {
  * Submit a plan review with criteria feedback (for tasks in 'planned' status)
  * Body: { criteria: [{ index: 0, status: "approved"|"needs_work", comment: "..." }] }
  */
-router.post('/:id/plan-review', async (req, res) => {
+router.post('/:id/plan-review', requireScope('tasks', 'write'), async (req, res) => {
   try {
     const { criteria, generalComment } = req.body;
     const userId = getUserId(req);

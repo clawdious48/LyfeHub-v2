@@ -2,12 +2,13 @@ const express = require('express');
 const { authMiddleware } = require('../middleware/auth');
 const { requireRole } = require('../middleware/permissions');
 const db = require('../db/pool');
+const { requireScope } = require('../middleware/scopeAuth');
 
 const router = express.Router();
 router.use(authMiddleware);
 
 // GET /api/system/stats — developer only
-router.get('/stats', requireRole('developer'), async (req, res) => {
+router.get('/stats', requireScope('system', 'read'), requireRole('developer'), async (req, res) => {
   try {
     const stats = await db.getOne(`
       SELECT 
@@ -34,7 +35,7 @@ router.get('/stats', requireRole('developer'), async (req, res) => {
 });
 
 // GET /api/system/health — developer only
-router.get('/health', requireRole('developer'), async (req, res) => {
+router.get('/health', requireScope('system', 'read'), requireRole('developer'), async (req, res) => {
   const health = {
     api: { status: 'ok', label: 'API Status' },
     database: { status: 'unknown', label: 'Database' },

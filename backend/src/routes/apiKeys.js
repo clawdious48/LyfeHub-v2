@@ -5,18 +5,7 @@ const apiKeysDb = require('../db/apiKeys');
 const auditDb = require('../db/audit');
 const rolesDb = require('../db/roles');
 
-const AVAILABLE_SCOPES = [
-  'tasks:read', 'tasks:write', 'tasks:delete',
-  'notes:read', 'notes:write', 'notes:delete',
-  'people:read', 'people:write', 'people:delete',
-  'bases:read', 'bases:write', 'bases:delete',
-  'records:read', 'records:write', 'records:delete',
-  'calendar:read', 'calendar:write', 'calendar:delete',
-  'jobs:read', 'jobs:write', 'jobs:delete',
-  'users:read', 'users:write', 'users:admin',
-  'api_keys:manage',
-  'org:read', 'org:write', 'org:admin',
-];
+const { SCOPE_GROUPS, ALL_SCOPES } = require('../config/scopes');
 
 const router = express.Router();
 router.use(authMiddleware);
@@ -40,7 +29,7 @@ router.get('/scopes', async (req, res) => {
 
     // Developer/management get all scopes
     if (rolesArr.includes('developer') || rolesArr.includes('management')) {
-      return res.json({ scopes: AVAILABLE_SCOPES });
+      return res.json({ scopes: ALL_SCOPES, groups: SCOPE_GROUPS });
     }
 
     // For other roles, filter based on role permissions
@@ -49,7 +38,7 @@ router.get('/scopes', async (req, res) => {
       const role = await rolesDb.getRoleByName(roleName);
       if (!role) continue;
       const perms = typeof role.permissions === 'string' ? JSON.parse(role.permissions) : (role.permissions || {});
-      for (const scope of AVAILABLE_SCOPES) {
+      for (const scope of ALL_SCOPES) {
         const [resource] = scope.split(':');
         if (perms[resource] && !allowedScopes.includes(scope)) {
           allowedScopes.push(scope);
@@ -106,7 +95,7 @@ router.post('/', async (req, res) => {
     const validatedScopes = [];
     if (scopes && Array.isArray(scopes)) {
       for (const s of scopes) {
-        if (!AVAILABLE_SCOPES.includes(s) && s !== '*:*') {
+        if (!ALL_SCOPES.includes(s) && s !== '*:*') {
           return res.status(400).json({ error: `Invalid scope: ${s}` });
         }
         validatedScopes.push(s);

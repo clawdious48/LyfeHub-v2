@@ -7,6 +7,7 @@ const {
   updateList,
   deleteList
 } = require('../db/taskLists');
+const { requireScope } = require('../middleware/scopeAuth');
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ router.use(authMiddleware);
  * GET /api/task-lists
  * Get all lists for current user
  */
-router.get('/', async (req, res) => {
+router.get('/', requireScope('tasks', 'read'), async (req, res) => {
   try {
     const userId = req.user.id;
     const lists = await getAllLists(userId);
@@ -31,7 +32,7 @@ router.get('/', async (req, res) => {
  * GET /api/task-lists/:id
  * Get a single list
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireScope('tasks', 'read'), async (req, res) => {
   try {
     const userId = req.user.id;
     const list = await getListById(req.params.id, userId);
@@ -51,7 +52,7 @@ router.get('/:id', async (req, res) => {
  * POST /api/task-lists
  * Create a new list
  */
-router.post('/', async (req, res) => {
+router.post('/', requireScope('tasks', 'write'), async (req, res) => {
   try {
     console.log('[task-lists POST] body:', req.body);
     console.log('[task-lists POST] user:', req.user);
@@ -77,7 +78,7 @@ router.post('/', async (req, res) => {
  * PATCH /api/task-lists/:id
  * Update a list
  */
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', requireScope('tasks', 'write'), async (req, res) => {
   try {
     const userId = req.user.id;
     const list = await updateList(req.params.id, req.body, userId);
@@ -97,7 +98,7 @@ router.patch('/:id', async (req, res) => {
  * DELETE /api/task-lists/:id
  * Delete a list
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireScope('tasks', 'delete'), async (req, res) => {
   try {
     const userId = req.user.id;
     const deleted = await deleteList(req.params.id, userId);

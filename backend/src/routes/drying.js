@@ -7,6 +7,7 @@ const { v4: uuidv4 } = require('uuid');
 const sharp = require('sharp');
 const dryingLogs = require('../db/dryingLogs');
 const db = require('../db/schema');
+const { requireScope } = require('../middleware/scopeAuth');
 
 // ============================================
 // HELPERS
@@ -62,7 +63,7 @@ const upload = multer({ storage, fileFilter });
 // ============================================
 
 // GET /log - Get the drying log for this job
-router.get('/log', async (req, res) => {
+router.get('/log', requireScope('drying', 'read'), async (req, res) => {
   try {
     const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
@@ -74,7 +75,7 @@ router.get('/log', async (req, res) => {
 });
 
 // POST /log - Create a drying log for this job (with rooms pre-populated from areas_affected)
-router.post('/log', async (req, res) => {
+router.post('/log', requireScope('drying', 'write'), async (req, res) => {
   try {
     // Check if log already exists
     const existing = await requireLog(req.params.id);
@@ -94,7 +95,7 @@ router.post('/log', async (req, res) => {
 });
 
 // PATCH /log - Update drying log properties (e.g. setup_complete)
-router.patch('/log', async (req, res) => {
+router.patch('/log', requireScope('drying', 'write'), async (req, res) => {
     try {
         const log = await requireLog(req.params.id);
         if (!log) return res.status(404).json({ error: 'No drying log for this job' });
@@ -117,7 +118,7 @@ router.patch('/log', async (req, res) => {
 // ============================================
 
 // GET /chambers - List all chambers for this job's drying log
-router.get('/chambers', async (req, res) => {
+router.get('/chambers', requireScope('drying', 'read'), async (req, res) => {
   try {
     const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
@@ -130,7 +131,7 @@ router.get('/chambers', async (req, res) => {
 });
 
 // POST /chambers - Create a chamber
-router.post('/chambers', async (req, res) => {
+router.post('/chambers', requireScope('drying', 'write'), async (req, res) => {
   try {
     const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
@@ -147,7 +148,7 @@ router.post('/chambers', async (req, res) => {
 });
 
 // PATCH /chambers/:chamberId - Update a chamber
-router.patch('/chambers/:chamberId', async (req, res) => {
+router.patch('/chambers/:chamberId', requireScope('drying', 'write'), async (req, res) => {
   try {
     const existing = await dryingLogs.getChamberById(req.params.chamberId);
     if (!existing) return res.status(404).json({ error: 'Chamber not found' });
@@ -167,7 +168,7 @@ router.patch('/chambers/:chamberId', async (req, res) => {
 });
 
 // DELETE /chambers/:chamberId - Delete a chamber
-router.delete('/chambers/:chamberId', async (req, res) => {
+router.delete('/chambers/:chamberId', requireScope('drying', 'delete'), async (req, res) => {
   try {
     const existing = await dryingLogs.getChamberById(req.params.chamberId);
     if (!existing) return res.status(404).json({ error: 'Chamber not found' });
@@ -185,7 +186,7 @@ router.delete('/chambers/:chamberId', async (req, res) => {
 // ============================================
 
 // GET /rooms - List rooms (all for log, or filtered by chamberId query param)
-router.get('/rooms', async (req, res) => {
+router.get('/rooms', requireScope('drying', 'read'), async (req, res) => {
   try {
     const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
@@ -204,7 +205,7 @@ router.get('/rooms', async (req, res) => {
 });
 
 // POST /rooms - Create a room
-router.post('/rooms', async (req, res) => {
+router.post('/rooms', requireScope('drying', 'write'), async (req, res) => {
   try {
     const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
@@ -227,7 +228,7 @@ router.post('/rooms', async (req, res) => {
 });
 
 // PATCH /rooms/:roomId - Update a room
-router.patch('/rooms/:roomId', async (req, res) => {
+router.patch('/rooms/:roomId', requireScope('drying', 'write'), async (req, res) => {
   try {
     const existing = await dryingLogs.getRoomById(req.params.roomId);
     if (!existing) return res.status(404).json({ error: 'Room not found' });
@@ -247,7 +248,7 @@ router.patch('/rooms/:roomId', async (req, res) => {
 });
 
 // DELETE /rooms/:roomId - Delete a room
-router.delete('/rooms/:roomId', async (req, res) => {
+router.delete('/rooms/:roomId', requireScope('drying', 'delete'), async (req, res) => {
   try {
     const existing = await dryingLogs.getRoomById(req.params.roomId);
     if (!existing) return res.status(404).json({ error: 'Room not found' });
@@ -265,7 +266,7 @@ router.delete('/rooms/:roomId', async (req, res) => {
 // ============================================
 
 // GET /ref-points - List all reference points for this log
-router.get('/ref-points', async (req, res) => {
+router.get('/ref-points', requireScope('drying', 'read'), async (req, res) => {
   try {
     const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
@@ -279,7 +280,7 @@ router.get('/ref-points', async (req, res) => {
 });
 
 // POST /ref-points - Add a reference point (auto-assigns ref_number)
-router.post('/ref-points', async (req, res) => {
+router.post('/ref-points', requireScope('drying', 'write'), async (req, res) => {
   try {
     const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
@@ -297,7 +298,7 @@ router.post('/ref-points', async (req, res) => {
 });
 
 // PATCH /ref-points/:rpId - Update a reference point
-router.patch('/ref-points/:rpId', async (req, res) => {
+router.patch('/ref-points/:rpId', requireScope('drying', 'write'), async (req, res) => {
   try {
     const existing = await dryingLogs.getRefPointById(req.params.rpId);
     if (!existing) return res.status(404).json({ error: 'Reference point not found' });
@@ -316,7 +317,7 @@ router.patch('/ref-points/:rpId', async (req, res) => {
 });
 
 // DELETE /ref-points/:rpId - Delete a reference point (only before any visits reference it)
-router.delete('/ref-points/:rpId', async (req, res) => {
+router.delete('/ref-points/:rpId', requireScope('drying', 'delete'), async (req, res) => {
   try {
     const existing = await dryingLogs.getRefPointById(req.params.rpId);
     if (!existing) return res.status(404).json({ error: 'Reference point not found' });
@@ -330,7 +331,7 @@ router.delete('/ref-points/:rpId', async (req, res) => {
 });
 
 // POST /ref-points/:rpId/demolish - Mark a reference point as demolished
-router.post('/ref-points/:rpId/demolish', async (req, res) => {
+router.post('/ref-points/:rpId/demolish', requireScope('drying', 'write'), async (req, res) => {
   try {
     const existing = await dryingLogs.getRefPointById(req.params.rpId);
     if (!existing) return res.status(404).json({ error: 'Reference point not found' });
@@ -348,7 +349,7 @@ router.post('/ref-points/:rpId/demolish', async (req, res) => {
 });
 
 // POST /ref-points/:rpId/undemolish - Undo demolish on a reference point
-router.post('/ref-points/:rpId/undemolish', async (req, res) => {
+router.post('/ref-points/:rpId/undemolish', requireScope('drying', 'write'), async (req, res) => {
   try {
     const existing = await dryingLogs.getRefPointById(req.params.rpId);
     if (!existing) return res.status(404).json({ error: 'Reference point not found' });
@@ -368,7 +369,7 @@ router.post('/ref-points/:rpId/undemolish', async (req, res) => {
 // ============================================
 
 // GET /baselines - List all baselines for this log
-router.get('/baselines', async (req, res) => {
+router.get('/baselines', requireScope('drying', 'read'), async (req, res) => {
   try {
     const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
@@ -382,7 +383,7 @@ router.get('/baselines', async (req, res) => {
 });
 
 // PUT /baselines - Upsert a baseline for a material code
-router.put('/baselines', async (req, res) => {
+router.put('/baselines', requireScope('drying', 'write'), async (req, res) => {
   try {
     const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
@@ -406,7 +407,7 @@ router.put('/baselines', async (req, res) => {
 // ============================================
 
 // GET /visits - List all visits for this log
-router.get('/visits', async (req, res) => {
+router.get('/visits', requireScope('drying', 'read'), async (req, res) => {
   try {
     const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
@@ -420,7 +421,7 @@ router.get('/visits', async (req, res) => {
 });
 
 // POST /visits - Create a visit (auto-assigns visit_number)
-router.post('/visits', async (req, res) => {
+router.post('/visits', requireScope('drying', 'write'), async (req, res) => {
   try {
     const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
@@ -435,7 +436,7 @@ router.post('/visits', async (req, res) => {
 });
 
 // GET /visits/:visitId - Get composite visit data (visit + atmospheric + moisture + equipment + notes)
-router.get('/visits/:visitId', async (req, res) => {
+router.get('/visits/:visitId', requireScope('drying', 'read'), async (req, res) => {
   try {
     const visit = await dryingLogs.getVisitById(req.params.visitId);
     if (!visit) return res.status(404).json({ error: 'Visit not found' });
@@ -459,7 +460,7 @@ router.get('/visits/:visitId', async (req, res) => {
 });
 
 // POST /visits/:visitId/save - Bulk save visit data (atmospheric + moisture + equipment)
-router.post('/visits/:visitId/save', async (req, res) => {
+router.post('/visits/:visitId/save', requireScope('drying', 'write'), async (req, res) => {
   try {
     const visit = await dryingLogs.getVisitById(req.params.visitId);
     if (!visit) return res.status(404).json({ error: 'Visit not found' });
@@ -506,7 +507,7 @@ router.post('/visits/:visitId/save', async (req, res) => {
 });
 
 // DELETE /visits/:visitId - Delete a visit
-router.delete('/visits/:visitId', async (req, res) => {
+router.delete('/visits/:visitId', requireScope('drying', 'delete'), async (req, res) => {
   try {
     const visit = await dryingLogs.getVisitById(req.params.visitId);
     if (!visit) return res.status(404).json({ error: 'Visit not found' });
@@ -530,7 +531,7 @@ router.delete('/visits/:visitId', async (req, res) => {
 // ============================================
 
 // GET /visits/:visitId/notes - List notes for a visit
-router.get('/visits/:visitId/notes', async (req, res) => {
+router.get('/visits/:visitId/notes', requireScope('drying', 'read'), async (req, res) => {
   try {
     const visit = await dryingLogs.getVisitById(req.params.visitId);
     if (!visit) return res.status(404).json({ error: 'Visit not found' });
@@ -544,7 +545,7 @@ router.get('/visits/:visitId/notes', async (req, res) => {
 });
 
 // POST /visits/:visitId/notes - Create a visit note
-router.post('/visits/:visitId/notes', async (req, res) => {
+router.post('/visits/:visitId/notes', requireScope('drying', 'write'), async (req, res) => {
   try {
     const visit = await dryingLogs.getVisitById(req.params.visitId);
     if (!visit) return res.status(404).json({ error: 'Visit not found' });
@@ -560,7 +561,7 @@ router.post('/visits/:visitId/notes', async (req, res) => {
 });
 
 // DELETE /visits/:visitId/notes/:noteId - Delete a visit note
-router.delete('/visits/:visitId/notes/:noteId', async (req, res) => {
+router.delete('/visits/:visitId/notes/:noteId', requireScope('drying', 'delete'), async (req, res) => {
   try {
     const note = await dryingLogs.getNoteById(req.params.noteId);
     if (!note) return res.status(404).json({ error: 'Note not found' });
@@ -583,7 +584,7 @@ router.delete('/visits/:visitId/notes/:noteId', async (req, res) => {
 // ============================================
 
 // POST /photos - Upload and process photos with sharp
-router.post('/photos', upload.array('photos', 20), async (req, res) => {
+router.post('/photos', requireScope('drying', 'write'), upload.array('photos', 20), async (req, res) => {
   const jobId = req.params.id;
   const outputDir = path.join(DRYING_UPLOAD_DIR, jobId);
   const results = [];
@@ -651,7 +652,7 @@ router.post('/photos', upload.array('photos', 20), async (req, res) => {
 });
 
 // GET /photos/:filename - Serve a photo (auth-gated via parent router)
-router.get('/photos/:filename', async (req, res) => {
+router.get('/photos/:filename', requireScope('drying', 'read'), async (req, res) => {
   try {
     const jobId = req.params.id;
     const filename = req.params.filename;

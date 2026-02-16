@@ -8,6 +8,7 @@ const {
   deleteCalendar,
   ensureSystemCalendars
 } = require('../db/calendars');
+const { requireScope } = require('../middleware/scopeAuth');
 
 const router = express.Router();
 
@@ -18,7 +19,7 @@ router.use(authMiddleware);
  * GET /api/calendars
  * List all calendars for current user
  */
-router.get('/', async (req, res) => {
+router.get('/', requireScope('calendar', 'read'), async (req, res) => {
   try {
     const userId = req.user.id;
 
@@ -37,7 +38,7 @@ router.get('/', async (req, res) => {
  * GET /api/calendars/:id
  * Get a single calendar
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireScope('calendar', 'read'), async (req, res) => {
   try {
     const userId = req.user.id;
     const calendar = await getCalendarById(req.params.id, userId);
@@ -57,7 +58,7 @@ router.get('/:id', async (req, res) => {
  * POST /api/calendars
  * Create a new calendar
  */
-router.post('/', async (req, res) => {
+router.post('/', requireScope('calendar', 'write'), async (req, res) => {
   try {
     const userId = req.user.id;
     const { name, description, color } = req.body;
@@ -83,7 +84,7 @@ router.post('/', async (req, res) => {
  * PATCH /api/calendars/:id
  * Update a calendar
  */
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', requireScope('calendar', 'write'), async (req, res) => {
   try {
     const userId = req.user.id;
     const calendar = await updateCalendar(req.params.id, req.body, userId);
@@ -103,7 +104,7 @@ router.patch('/:id', async (req, res) => {
  * DELETE /api/calendars/:id
  * Delete a calendar
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireScope('calendar', 'delete'), async (req, res) => {
   try {
     const userId = req.user.id;
     const deleted = await deleteCalendar(req.params.id, userId);

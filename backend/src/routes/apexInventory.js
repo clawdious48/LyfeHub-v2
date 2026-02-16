@@ -3,6 +3,7 @@ const router = express.Router();
 const { authMiddleware } = require('../middleware/auth');
 const { requireOrgMember, requireOrgRole } = require('../middleware/orgAuth');
 const inv = require('../db/apexInventory');
+const { requireScope } = require('../middleware/scopeAuth');
 
 // All routes require auth + org membership
 router.use(authMiddleware, requireOrgMember);
@@ -12,7 +13,7 @@ router.use(authMiddleware, requireOrgMember);
 // ============================================
 
 // GET /items
-router.get('/items', async (req, res) => {
+router.get('/items', requireScope('inventory', 'read'), async (req, res) => {
   try {
     const items = await inv.getItems(req.org.id, {
       search: req.query.search,
@@ -29,7 +30,7 @@ router.get('/items', async (req, res) => {
 });
 
 // POST /items
-router.post('/items', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
+router.post('/items', requireScope('inventory', 'write'), requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     if (!req.body.name) return res.status(400).json({ error: 'name is required' });
     const item = await inv.createItem(req.org.id, req.body, req.user.id);
@@ -44,7 +45,7 @@ router.post('/items', requireOrgRole('management', 'office_coordinator'), async 
 });
 
 // GET /items/:id
-router.get('/items/:id', async (req, res) => {
+router.get('/items/:id', requireScope('inventory', 'read'), async (req, res) => {
   try {
     const item = await inv.getItemById(req.params.id, req.org.id);
     if (!item) return res.status(404).json({ error: 'Item not found' });
@@ -56,7 +57,7 @@ router.get('/items/:id', async (req, res) => {
 });
 
 // PATCH /items/:id
-router.patch('/items/:id', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
+router.patch('/items/:id', requireScope('inventory', 'write'), requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     const item = await inv.updateItem(req.params.id, req.body, req.org.id);
     if (!item) return res.status(404).json({ error: 'Item not found' });
@@ -68,7 +69,7 @@ router.patch('/items/:id', requireOrgRole('management', 'office_coordinator'), a
 });
 
 // DELETE /items/:id (soft delete)
-router.delete('/items/:id', requireOrgRole('management'), async (req, res) => {
+router.delete('/items/:id', requireScope('inventory', 'delete'), requireOrgRole('management'), async (req, res) => {
   try {
     const success = await inv.deactivateItem(req.params.id, req.org.id);
     if (!success) return res.status(404).json({ error: 'Item not found' });
@@ -84,7 +85,7 @@ router.delete('/items/:id', requireOrgRole('management'), async (req, res) => {
 // ============================================
 
 // GET /purchases
-router.get('/purchases', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
+router.get('/purchases', requireScope('inventory', 'read'), requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     const purchases = await inv.getPurchases(req.org.id, {
       itemId: req.query.item_id,
@@ -101,7 +102,7 @@ router.get('/purchases', requireOrgRole('management', 'office_coordinator'), asy
 });
 
 // POST /purchases
-router.post('/purchases', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
+router.post('/purchases', requireScope('inventory', 'write'), requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     if (!req.body.item_id || !req.body.purchase_date) {
       return res.status(400).json({ error: 'item_id and purchase_date are required' });
@@ -115,7 +116,7 @@ router.post('/purchases', requireOrgRole('management', 'office_coordinator'), as
 });
 
 // DELETE /purchases/:id
-router.delete('/purchases/:id', requireOrgRole('management'), async (req, res) => {
+router.delete('/purchases/:id', requireScope('inventory', 'delete'), requireOrgRole('management'), async (req, res) => {
   try {
     const success = await inv.deletePurchase(req.params.id, req.org.id);
     if (!success) return res.status(404).json({ error: 'Purchase not found' });
@@ -131,7 +132,7 @@ router.delete('/purchases/:id', requireOrgRole('management'), async (req, res) =
 // ============================================
 
 // GET /levels
-router.get('/levels', async (req, res) => {
+router.get('/levels', requireScope('inventory', 'read'), async (req, res) => {
   try {
     const levels = await inv.getLevels(req.org.id);
     res.json(levels);
@@ -142,7 +143,7 @@ router.get('/levels', async (req, res) => {
 });
 
 // PATCH /levels/:itemId (manual adjustment)
-router.patch('/levels/:itemId', requireOrgRole('management'), async (req, res) => {
+router.patch('/levels/:itemId', requireScope('inventory', 'write'), requireOrgRole('management'), async (req, res) => {
   try {
     if (req.body.adjustment == null) {
       return res.status(400).json({ error: 'adjustment is required' });
@@ -160,7 +161,7 @@ router.patch('/levels/:itemId', requireOrgRole('management'), async (req, res) =
 // ============================================
 
 // GET /jobs/:jobId/materials
-router.get('/jobs/:jobId/materials', async (req, res) => {
+router.get('/jobs/:jobId/materials', requireScope('inventory', 'read'), async (req, res) => {
   try {
     const allocations = await inv.getJobAllocations(req.params.jobId, { phaseId: req.query.phase_id });
     res.json(allocations);
@@ -171,7 +172,7 @@ router.get('/jobs/:jobId/materials', async (req, res) => {
 });
 
 // POST /jobs/:jobId/materials
-router.post('/jobs/:jobId/materials', requireOrgRole('management', 'office_coordinator', 'project_manager', 'field_tech'), async (req, res) => {
+router.post('/jobs/:jobId/materials', requireScope('inventory', 'write'), requireOrgRole('management', 'office_coordinator', 'project_manager', 'field_tech'), async (req, res) => {
   try {
     if (!req.body.item_id) return res.status(400).json({ error: 'item_id is required' });
     const alloc = await inv.allocateMaterial(req.params.jobId, { ...req.body, used_by: req.user.id });
@@ -183,7 +184,7 @@ router.post('/jobs/:jobId/materials', requireOrgRole('management', 'office_coord
 });
 
 // DELETE /jobs/:jobId/materials/:id
-router.delete('/jobs/:jobId/materials/:id', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
+router.delete('/jobs/:jobId/materials/:id', requireScope('inventory', 'delete'), requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     const success = await inv.deallocateMaterial(req.params.id);
     if (!success) return res.status(404).json({ error: 'Allocation not found' });

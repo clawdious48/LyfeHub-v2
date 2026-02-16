@@ -6,6 +6,7 @@ const { authMiddleware } = require('../middleware/auth');
 const { requireOrgMember, requireOrgRole } = require('../middleware/orgAuth');
 const { canEditEntry } = require('../middleware/permissions');
 const apexJobsDb = require('../db/apexJobs');
+const { requireScope } = require('../middleware/scopeAuth');
 
 // Require authentication + org membership for all Apex routes
 router.use(authMiddleware, requireOrgMember);
@@ -77,7 +78,7 @@ function formatDbJob(job) {
 
 // GET / - List all jobs (merge DB + Zoho)
 // ORG-07: getAllJobs receives role info for field_tech filtering (DB layer handles filtering)
-router.get('/', async (req, res) => {
+router.get('/', requireScope('jobs', 'read'), async (req, res) => {
   try {
     const zohoData = readZohoJobs();
     const dbJobs = await apexJobsDb.getAllJobs(req.org.id, { memberRole: req.org.role, userId: req.user.id });
@@ -143,7 +144,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST / - Create job
-router.post('/', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
+router.post('/', requireScope('jobs', 'write'), requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     const job = await apexJobsDb.createJob(req.body, req.user.id, req.org.id);
     res.status(201).json(job);
@@ -154,7 +155,7 @@ router.post('/', requireOrgRole('management', 'office_coordinator'), async (req,
 });
 
 // GET /:id - Get single job
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireScope('jobs', 'read'), async (req, res) => {
   try {
     const job = await apexJobsDb.getJobById(req.params.id, req.org.id);
     if (!job) return res.status(404).json({ error: 'Job not found' });
@@ -166,7 +167,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // PATCH /:id - Update job
-router.patch('/:id', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
+router.patch('/:id', requireScope('jobs', 'write'), requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     const job = await apexJobsDb.updateJob(req.params.id, req.body, req.org.id);
     if (!job) return res.status(404).json({ error: 'Job not found' });
@@ -178,7 +179,7 @@ router.patch('/:id', requireOrgRole('management', 'office_coordinator'), async (
 });
 
 // PATCH /:id/status - Update job status
-router.patch('/:id/status', async (req, res) => {
+router.patch('/:id/status', requireScope('jobs', 'write'), async (req, res) => {
   try {
     const job = await apexJobsDb.updateJob(req.params.id, { status: req.body.status }, req.org.id);
     if (!job) return res.status(404).json({ error: 'Job not found' });
@@ -190,7 +191,7 @@ router.patch('/:id/status', async (req, res) => {
 });
 
 // DELETE /:id - Archive job (soft delete)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireScope('jobs', 'delete'), async (req, res) => {
   try {
     const success = await apexJobsDb.archiveJob(req.params.id, req.org.id);
     if (!success) return res.status(404).json({ error: 'Job not found' });
@@ -202,7 +203,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // PATCH /:id/phases/:phaseId - Update phase
-router.patch('/:id/phases/:phaseId', async (req, res) => {
+router.patch('/:id/phases/:phaseId', requireScope('jobs.phases', 'write'), async (req, res) => {
   try {
     const phase = await apexJobsDb.updatePhase(req.params.phaseId, req.body, req.org.id);
     if (!phase) return res.status(404).json({ error: 'Phase not found' });
@@ -214,7 +215,7 @@ router.patch('/:id/phases/:phaseId', async (req, res) => {
 });
 
 // POST /:id/phases - Add phase to existing job
-router.post('/:id/phases', async (req, res) => {
+router.post('/:id/phases', requireScope('jobs.phases', 'write'), async (req, res) => {
   try {
     // Future: add phase to existing job
     res.status(501).json({ error: 'Not yet implemented' });
@@ -228,7 +229,7 @@ router.post('/:id/phases', async (req, res) => {
 // ============================================
 
 // PATCH /:id/dates - Update milestone dates
-router.patch('/:id/dates', async (req, res) => {
+router.patch('/:id/dates', requireScope('jobs', 'write'), async (req, res) => {
   try {
     const job = await apexJobsDb.updateJobDates(req.params.id, req.body, req.org.id);
     if (!job) return res.status(404).json({ error: 'Job not found' });
@@ -244,7 +245,7 @@ router.patch('/:id/dates', async (req, res) => {
 // ============================================
 
 // GET /:id/notes
-router.get('/:id/notes', async (req, res) => {
+router.get('/:id/notes', requireScope('jobs.notes', 'read'), async (req, res) => {
   try {
     const notes = await apexJobsDb.getNotesByJob(req.params.id, req.org.id);
     if (notes === null) return res.status(404).json({ error: 'Job not found' });
@@ -256,7 +257,7 @@ router.get('/:id/notes', async (req, res) => {
 });
 
 // POST /:id/notes
-router.post('/:id/notes', async (req, res) => {
+router.post('/:id/notes', requireScope('jobs.notes', 'write'), async (req, res) => {
   try {
     const note = await apexJobsDb.createNote(req.params.id, { ...req.body, author_id: req.user.id }, req.org.id);
     if (!note) return res.status(404).json({ error: 'Job not found' });
@@ -268,7 +269,7 @@ router.post('/:id/notes', async (req, res) => {
 });
 
 // PATCH /:id/notes/:noteId
-router.patch('/:id/notes/:noteId', async (req, res) => {
+router.patch('/:id/notes/:noteId', requireScope('jobs.notes', 'write'), async (req, res) => {
   try {
     const existing = await apexJobsDb.getNoteById(req.params.noteId);
     if (!existing) return res.status(404).json({ error: 'Note not found' });
@@ -283,7 +284,7 @@ router.patch('/:id/notes/:noteId', async (req, res) => {
 });
 
 // DELETE /:id/notes/:noteId
-router.delete('/:id/notes/:noteId', requireOrgRole('management'), async (req, res) => {
+router.delete('/:id/notes/:noteId', requireScope('jobs.notes', 'delete'), requireOrgRole('management'), async (req, res) => {
   try {
     const success = await apexJobsDb.deleteNote(req.params.noteId, req.org.id);
     if (!success) return res.status(404).json({ error: 'Note not found' });
@@ -299,7 +300,7 @@ router.delete('/:id/notes/:noteId', requireOrgRole('management'), async (req, re
 // ============================================
 
 // GET /:id/estimates
-router.get('/:id/estimates', requireOrgRole('management', 'office_coordinator', 'estimator'), async (req, res) => {
+router.get('/:id/estimates', requireScope('jobs.estimates', 'read'), requireOrgRole('management', 'office_coordinator', 'estimator'), async (req, res) => {
   try {
     const estimates = await apexJobsDb.getEstimatesByJob(req.params.id, req.org.id);
     if (estimates === null) return res.status(404).json({ error: 'Job not found' });
@@ -311,7 +312,7 @@ router.get('/:id/estimates', requireOrgRole('management', 'office_coordinator', 
 });
 
 // POST /:id/estimates
-router.post('/:id/estimates', requireOrgRole('management', 'office_coordinator', 'estimator'), async (req, res) => {
+router.post('/:id/estimates', requireScope('jobs.estimates', 'write'), requireOrgRole('management', 'office_coordinator', 'estimator'), async (req, res) => {
   try {
     const estimate = await apexJobsDb.createEstimate(req.params.id, req.body, req.org.id);
     if (!estimate) return res.status(404).json({ error: 'Job not found' });
@@ -323,7 +324,7 @@ router.post('/:id/estimates', requireOrgRole('management', 'office_coordinator',
 });
 
 // PATCH /:id/estimates/:estId
-router.patch('/:id/estimates/:estId', requireOrgRole('management', 'office_coordinator', 'estimator'), async (req, res) => {
+router.patch('/:id/estimates/:estId', requireScope('jobs.estimates', 'write'), requireOrgRole('management', 'office_coordinator', 'estimator'), async (req, res) => {
   try {
     const estimate = await apexJobsDb.updateEstimate(req.params.estId, req.body, req.org.id);
     if (!estimate) return res.status(404).json({ error: 'Estimate not found' });
@@ -339,7 +340,7 @@ router.patch('/:id/estimates/:estId', requireOrgRole('management', 'office_coord
 // ============================================
 
 // GET /:id/payments
-router.get('/:id/payments', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
+router.get('/:id/payments', requireScope('jobs.payments', 'read'), requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     const payments = await apexJobsDb.getPaymentsByJob(req.params.id, req.org.id);
     if (payments === null) return res.status(404).json({ error: 'Job not found' });
@@ -351,7 +352,7 @@ router.get('/:id/payments', requireOrgRole('management', 'office_coordinator'), 
 });
 
 // POST /:id/payments
-router.post('/:id/payments', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
+router.post('/:id/payments', requireScope('jobs.payments', 'write'), requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     const payment = await apexJobsDb.createPayment(req.params.id, req.body, req.org.id);
     if (!payment) return res.status(404).json({ error: 'Job not found' });
@@ -367,7 +368,7 @@ router.post('/:id/payments', requireOrgRole('management', 'office_coordinator'),
 // ============================================
 
 // GET /:id/labor
-router.get('/:id/labor', async (req, res) => {
+router.get('/:id/labor', requireScope('jobs.labor', 'read'), async (req, res) => {
   try {
     const labor = await apexJobsDb.getLaborByJob(req.params.id, req.org.id);
     if (labor === null) return res.status(404).json({ error: 'Job not found' });
@@ -379,7 +380,7 @@ router.get('/:id/labor', async (req, res) => {
 });
 
 // POST /:id/labor
-router.post('/:id/labor', requireOrgRole('management', 'office_coordinator', 'project_manager', 'field_tech'), async (req, res) => {
+router.post('/:id/labor', requireScope('jobs.labor', 'write'), requireOrgRole('management', 'office_coordinator', 'project_manager', 'field_tech'), async (req, res) => {
   try {
     const entry = await apexJobsDb.createLaborEntry(req.params.id, { ...req.body, author_id: req.user.id }, req.org.id);
     if (!entry) return res.status(404).json({ error: 'Job not found' });
@@ -391,7 +392,7 @@ router.post('/:id/labor', requireOrgRole('management', 'office_coordinator', 'pr
 });
 
 // PATCH /:id/labor/:entryId
-router.patch('/:id/labor/:entryId', async (req, res) => {
+router.patch('/:id/labor/:entryId', requireScope('jobs.labor', 'write'), async (req, res) => {
   try {
     const existing = await apexJobsDb.getLaborEntryById(req.params.entryId);
     if (!existing) return res.status(404).json({ error: 'Labor entry not found' });
@@ -406,7 +407,7 @@ router.patch('/:id/labor/:entryId', async (req, res) => {
 });
 
 // DELETE /:id/labor/:entryId
-router.delete('/:id/labor/:entryId', async (req, res) => {
+router.delete('/:id/labor/:entryId', requireScope('jobs.labor', 'write'), async (req, res) => {
   try {
     const existing = await apexJobsDb.getLaborEntryById(req.params.entryId);
     if (!existing) return res.status(404).json({ error: 'Labor entry not found' });
@@ -425,7 +426,7 @@ router.delete('/:id/labor/:entryId', async (req, res) => {
 // ============================================
 
 // GET /:id/receipts
-router.get('/:id/receipts', async (req, res) => {
+router.get('/:id/receipts', requireScope('jobs', 'read'), async (req, res) => {
   try {
     const receipts = await apexJobsDb.getReceiptsByJob(req.params.id, req.org.id);
     if (receipts === null) return res.status(404).json({ error: 'Job not found' });
@@ -437,7 +438,7 @@ router.get('/:id/receipts', async (req, res) => {
 });
 
 // POST /:id/receipts
-router.post('/:id/receipts', async (req, res) => {
+router.post('/:id/receipts', requireScope('jobs', 'write'), async (req, res) => {
   try {
     const receipt = await apexJobsDb.createReceipt(req.params.id, { ...req.body, author_id: req.user.id }, req.org.id);
     if (!receipt) return res.status(404).json({ error: 'Job not found' });
@@ -449,7 +450,7 @@ router.post('/:id/receipts', async (req, res) => {
 });
 
 // PATCH /:id/receipts/:receiptId
-router.patch('/:id/receipts/:receiptId', async (req, res) => {
+router.patch('/:id/receipts/:receiptId', requireScope('jobs', 'write'), async (req, res) => {
   try {
     const existing = await apexJobsDb.getReceiptById(req.params.receiptId);
     if (!existing) return res.status(404).json({ error: 'Receipt not found' });
@@ -464,7 +465,7 @@ router.patch('/:id/receipts/:receiptId', async (req, res) => {
 });
 
 // DELETE /:id/receipts/:receiptId
-router.delete('/:id/receipts/:receiptId', async (req, res) => {
+router.delete('/:id/receipts/:receiptId', requireScope('jobs', 'write'), async (req, res) => {
   try {
     const existing = await apexJobsDb.getReceiptById(req.params.receiptId);
     if (!existing) return res.status(404).json({ error: 'Receipt not found' });
@@ -483,7 +484,7 @@ router.delete('/:id/receipts/:receiptId', async (req, res) => {
 // ============================================
 
 // GET /:id/work-orders
-router.get('/:id/work-orders', requireOrgRole('management', 'office_coordinator', 'project_manager'), async (req, res) => {
+router.get('/:id/work-orders', requireScope('jobs', 'read'), requireOrgRole('management', 'office_coordinator', 'project_manager'), async (req, res) => {
   try {
     const workOrders = await apexJobsDb.getWorkOrdersByJob(req.params.id, req.org.id);
     if (workOrders === null) return res.status(404).json({ error: 'Job not found' });
@@ -495,7 +496,7 @@ router.get('/:id/work-orders', requireOrgRole('management', 'office_coordinator'
 });
 
 // POST /:id/work-orders
-router.post('/:id/work-orders', requireOrgRole('management', 'office_coordinator', 'project_manager'), async (req, res) => {
+router.post('/:id/work-orders', requireScope('jobs', 'write'), requireOrgRole('management', 'office_coordinator', 'project_manager'), async (req, res) => {
   try {
     const wo = await apexJobsDb.createWorkOrder(req.params.id, req.body, req.org.id);
     if (!wo) return res.status(404).json({ error: 'Job not found' });
@@ -507,7 +508,7 @@ router.post('/:id/work-orders', requireOrgRole('management', 'office_coordinator
 });
 
 // PATCH /:id/work-orders/:woId
-router.patch('/:id/work-orders/:woId', requireOrgRole('management', 'office_coordinator', 'project_manager'), async (req, res) => {
+router.patch('/:id/work-orders/:woId', requireScope('jobs', 'write'), requireOrgRole('management', 'office_coordinator', 'project_manager'), async (req, res) => {
   try {
     const wo = await apexJobsDb.updateWorkOrder(req.params.woId, req.body, req.org.id);
     if (!wo) return res.status(404).json({ error: 'Work order not found' });
@@ -519,7 +520,7 @@ router.patch('/:id/work-orders/:woId', requireOrgRole('management', 'office_coor
 });
 
 // DELETE /:id/work-orders/:woId
-router.delete('/:id/work-orders/:woId', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
+router.delete('/:id/work-orders/:woId', requireScope('jobs', 'delete'), requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     const success = await apexJobsDb.deleteWorkOrder(req.params.woId, req.org.id);
     if (!success) return res.status(404).json({ error: 'Work order not found' });
@@ -535,7 +536,7 @@ router.delete('/:id/work-orders/:woId', requireOrgRole('management', 'office_coo
 // ============================================
 
 // GET /:id/activity
-router.get('/:id/activity', async (req, res) => {
+router.get('/:id/activity', requireScope('jobs', 'read'), async (req, res) => {
   try {
     const options = {
       type: req.query.type || null,
@@ -556,7 +557,7 @@ router.get('/:id/activity', async (req, res) => {
 // ============================================
 
 // GET /:id/accounting
-router.get('/:id/accounting', requireOrgRole('management', 'office_coordinator', 'estimator'), async (req, res) => {
+router.get('/:id/accounting', requireScope('jobs', 'read'), requireOrgRole('management', 'office_coordinator', 'estimator'), async (req, res) => {
   try {
     const summary = await apexJobsDb.getAccountingSummary(req.params.id, req.org.id);
     if (!summary) return res.status(404).json({ error: 'Job not found' });
@@ -572,7 +573,7 @@ router.get('/:id/accounting', requireOrgRole('management', 'office_coordinator',
 // ============================================
 
 // POST /:id/contacts
-router.post('/:id/contacts', async (req, res) => {
+router.post('/:id/contacts', requireScope('jobs', 'write'), async (req, res) => {
   try {
     const { contact_id, role } = req.body;
     if (!contact_id) return res.status(400).json({ error: 'contact_id is required' });
@@ -586,7 +587,7 @@ router.post('/:id/contacts', async (req, res) => {
 });
 
 // DELETE /:id/contacts/:contactId
-router.delete('/:id/contacts/:contactId', async (req, res) => {
+router.delete('/:id/contacts/:contactId', requireScope('jobs', 'write'), async (req, res) => {
   try {
     const success = await apexJobsDb.removeContact(req.params.id, req.params.contactId, req.org.id);
     if (!success) return res.status(404).json({ error: 'Contact assignment not found' });
@@ -602,7 +603,7 @@ router.delete('/:id/contacts/:contactId', async (req, res) => {
 // ============================================
 
 // PATCH /:id/ready-to-invoice
-router.patch('/:id/ready-to-invoice', async (req, res) => {
+router.patch('/:id/ready-to-invoice', requireScope('jobs', 'write'), async (req, res) => {
   try {
     const job = await apexJobsDb.toggleReadyToInvoice(req.params.id, req.body.ready, req.org.id);
     if (!job) return res.status(404).json({ error: 'Job not found' });
@@ -620,7 +621,7 @@ router.patch('/:id/ready-to-invoice', async (req, res) => {
 const apexInventoryDb = require('../db/apexInventory');
 
 // GET /:id/materials
-router.get('/:id/materials', async (req, res) => {
+router.get('/:id/materials', requireScope('jobs', 'read'), async (req, res) => {
   try {
     const allocations = await apexInventoryDb.getJobAllocations(req.params.id, { phaseId: req.query.phase_id });
     res.json(allocations);
@@ -631,7 +632,7 @@ router.get('/:id/materials', async (req, res) => {
 });
 
 // POST /:id/materials
-router.post('/:id/materials', requireOrgRole('management', 'office_coordinator', 'project_manager', 'field_tech'), async (req, res) => {
+router.post('/:id/materials', requireScope('jobs', 'write'), requireOrgRole('management', 'office_coordinator', 'project_manager', 'field_tech'), async (req, res) => {
   try {
     if (!req.body.item_id) return res.status(400).json({ error: 'item_id is required' });
     const alloc = await apexInventoryDb.allocateMaterial(req.params.id, { ...req.body, used_by: req.user.id });
@@ -647,7 +648,7 @@ router.post('/:id/materials', requireOrgRole('management', 'office_coordinator',
 // ============================================
 
 // GET /:id/supplements
-router.get('/:id/supplements', requireOrgRole('management', 'office_coordinator', 'estimator'), async (req, res) => {
+router.get('/:id/supplements', requireScope('jobs.estimates', 'read'), requireOrgRole('management', 'office_coordinator', 'estimator'), async (req, res) => {
   try {
     const supplements = await apexJobsDb.getSupplementsByJob(req.params.id, req.org.id);
     if (supplements === null) return res.status(404).json({ error: 'Job not found' });
@@ -659,7 +660,7 @@ router.get('/:id/supplements', requireOrgRole('management', 'office_coordinator'
 });
 
 // POST /:id/supplements
-router.post('/:id/supplements', requireOrgRole('management', 'office_coordinator', 'estimator'), async (req, res) => {
+router.post('/:id/supplements', requireScope('jobs.estimates', 'write'), requireOrgRole('management', 'office_coordinator', 'estimator'), async (req, res) => {
   try {
     const supplement = await apexJobsDb.createSupplement(req.params.id, req.body, req.user.id, req.org.id);
     if (!supplement) return res.status(404).json({ error: 'Job not found' });
@@ -671,7 +672,7 @@ router.post('/:id/supplements', requireOrgRole('management', 'office_coordinator
 });
 
 // PATCH /:id/supplements/:supId
-router.patch('/:id/supplements/:supId', requireOrgRole('management', 'office_coordinator', 'estimator'), async (req, res) => {
+router.patch('/:id/supplements/:supId', requireScope('jobs.estimates', 'write'), requireOrgRole('management', 'office_coordinator', 'estimator'), async (req, res) => {
   try {
     const supplement = await apexJobsDb.updateSupplement(req.params.supId, req.body, req.user.id, req.org.id);
     if (!supplement) return res.status(404).json({ error: 'Supplement not found' });
@@ -683,7 +684,7 @@ router.patch('/:id/supplements/:supId', requireOrgRole('management', 'office_coo
 });
 
 // DELETE /:id/supplements/:supId
-router.delete('/:id/supplements/:supId', requireOrgRole('management'), async (req, res) => {
+router.delete('/:id/supplements/:supId', requireScope('jobs.estimates', 'write'), requireOrgRole('management'), async (req, res) => {
   try {
     const success = await apexJobsDb.deleteSupplement(req.params.supId, req.user.id, req.org.id);
     if (!success) return res.status(404).json({ error: 'Supplement not found' });
@@ -699,7 +700,7 @@ router.delete('/:id/supplements/:supId', requireOrgRole('management'), async (re
 // ============================================
 
 // GET /:id/sub-invoices
-router.get('/:id/sub-invoices', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
+router.get('/:id/sub-invoices', requireScope('jobs.payments', 'read'), requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     const invoices = await apexJobsDb.getSubInvoicesByJob(req.params.id, req.org.id);
     if (invoices === null) return res.status(404).json({ error: 'Job not found' });
@@ -711,7 +712,7 @@ router.get('/:id/sub-invoices', requireOrgRole('management', 'office_coordinator
 });
 
 // POST /:id/sub-invoices
-router.post('/:id/sub-invoices', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
+router.post('/:id/sub-invoices', requireScope('jobs.payments', 'write'), requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     const invoice = await apexJobsDb.createSubInvoice(req.params.id, req.body, req.user.id, req.org.id);
     if (!invoice) return res.status(404).json({ error: 'Job not found' });
@@ -723,7 +724,7 @@ router.post('/:id/sub-invoices', requireOrgRole('management', 'office_coordinato
 });
 
 // PATCH /:id/sub-invoices/:invId
-router.patch('/:id/sub-invoices/:invId', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
+router.patch('/:id/sub-invoices/:invId', requireScope('jobs.payments', 'write'), requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     const invoice = await apexJobsDb.updateSubInvoice(req.params.invId, req.body, req.user.id, req.org.id);
     if (!invoice) return res.status(404).json({ error: 'Sub invoice not found' });
@@ -735,7 +736,7 @@ router.patch('/:id/sub-invoices/:invId', requireOrgRole('management', 'office_co
 });
 
 // DELETE /:id/sub-invoices/:invId
-router.delete('/:id/sub-invoices/:invId', requireOrgRole('management'), async (req, res) => {
+router.delete('/:id/sub-invoices/:invId', requireScope('jobs.payments', 'write'), requireOrgRole('management'), async (req, res) => {
   try {
     const success = await apexJobsDb.deleteSubInvoice(req.params.invId, req.user.id, req.org.id);
     if (!success) return res.status(404).json({ error: 'Sub invoice not found' });
@@ -747,7 +748,7 @@ router.delete('/:id/sub-invoices/:invId', requireOrgRole('management'), async (r
 });
 
 // POST /:id/sub-invoices/:invId/payment
-router.post('/:id/sub-invoices/:invId/payment', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
+router.post('/:id/sub-invoices/:invId/payment', requireScope('jobs.payments', 'write'), requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     const { amount } = req.body;
     if (!amount || amount <= 0) return res.status(400).json({ error: 'Valid payment amount required' });
@@ -765,7 +766,7 @@ router.post('/:id/sub-invoices/:invId/payment', requireOrgRole('management', 'of
 // ============================================
 
 // GET /:id/fuel-mileage
-router.get('/:id/fuel-mileage', requireOrgRole('management', 'office_coordinator', 'project_manager'), async (req, res) => {
+router.get('/:id/fuel-mileage', requireScope('jobs', 'read'), requireOrgRole('management', 'office_coordinator', 'project_manager'), async (req, res) => {
   try {
     const entries = await apexJobsDb.getFuelByJob(req.params.id, req.org.id);
     if (entries === null) return res.status(404).json({ error: 'Job not found' });
@@ -777,7 +778,7 @@ router.get('/:id/fuel-mileage', requireOrgRole('management', 'office_coordinator
 });
 
 // POST /:id/fuel-mileage
-router.post('/:id/fuel-mileage', requireOrgRole('management', 'office_coordinator', 'project_manager', 'field_tech'), async (req, res) => {
+router.post('/:id/fuel-mileage', requireScope('jobs', 'write'), requireOrgRole('management', 'office_coordinator', 'project_manager', 'field_tech'), async (req, res) => {
   try {
     const entry = await apexJobsDb.createFuelEntry(req.params.id, req.body, req.user.id, req.org.id);
     if (!entry) return res.status(404).json({ error: 'Job not found' });
@@ -789,7 +790,7 @@ router.post('/:id/fuel-mileage', requireOrgRole('management', 'office_coordinato
 });
 
 // PATCH /:id/fuel-mileage/:fmId
-router.patch('/:id/fuel-mileage/:fmId', async (req, res) => {
+router.patch('/:id/fuel-mileage/:fmId', requireScope('jobs', 'write'), async (req, res) => {
   try {
     const existing = await apexJobsDb.getFuelEntryById(req.params.fmId);
     if (!existing) return res.status(404).json({ error: 'Fuel/mileage entry not found' });
@@ -804,7 +805,7 @@ router.patch('/:id/fuel-mileage/:fmId', async (req, res) => {
 });
 
 // DELETE /:id/fuel-mileage/:fmId
-router.delete('/:id/fuel-mileage/:fmId', async (req, res) => {
+router.delete('/:id/fuel-mileage/:fmId', requireScope('jobs', 'write'), async (req, res) => {
   try {
     const existing = await apexJobsDb.getFuelEntryById(req.params.fmId);
     if (!existing) return res.status(404).json({ error: 'Fuel/mileage entry not found' });
@@ -828,7 +829,7 @@ router.use('/:id/drying', dryingRoutes);
 const wf = require('../db/apexWorkflows');
 
 // POST /:id/workflow — stamp a workflow template onto this job
-router.post('/:id/workflow', requireOrgRole('management', 'office_coordinator', 'project_manager'), async (req, res) => {
+router.post('/:id/workflow', requireScope('jobs', 'write'), requireOrgRole('management', 'office_coordinator', 'project_manager'), async (req, res) => {
   try {
     const { template_id, phase_id } = req.body;
     if (!template_id) return res.status(400).json({ error: 'template_id is required' });
@@ -844,7 +845,7 @@ router.post('/:id/workflow', requireOrgRole('management', 'office_coordinator', 
 });
 
 // GET /:id/workflow — get workflow with all steps/gates/status
-router.get('/:id/workflow', async (req, res) => {
+router.get('/:id/workflow', requireScope('jobs', 'read'), async (req, res) => {
   try {
     const workflow = await wf.getWorkflowByJob(req.params.id);
     if (!workflow) return res.status(404).json({ error: 'No active workflow for this job' });
@@ -857,7 +858,7 @@ router.get('/:id/workflow', async (req, res) => {
 });
 
 // POST /:id/workflow/evaluate — re-evaluate all gates
-router.post('/:id/workflow/evaluate', async (req, res) => {
+router.post('/:id/workflow/evaluate', requireScope('jobs', 'write'), async (req, res) => {
   try {
     const workflow = await wf.getWorkflowByJob(req.params.id);
     if (!workflow) return res.status(404).json({ error: 'No active workflow for this job' });
@@ -872,7 +873,7 @@ router.post('/:id/workflow/evaluate', async (req, res) => {
 });
 
 // PATCH /:id/workflow/steps/:stepId/complete — complete a step
-router.patch('/:id/workflow/steps/:stepId/complete', async (req, res) => {
+router.patch('/:id/workflow/steps/:stepId/complete', requireScope('jobs', 'write'), async (req, res) => {
   try {
     const step = await wf.completeStep(req.params.stepId, req.user.id);
     res.json(step);
@@ -883,7 +884,7 @@ router.patch('/:id/workflow/steps/:stepId/complete', async (req, res) => {
 });
 
 // PATCH /:id/workflow/steps/:stepId/skip — skip a step
-router.patch('/:id/workflow/steps/:stepId/skip', async (req, res) => {
+router.patch('/:id/workflow/steps/:stepId/skip', requireScope('jobs', 'write'), async (req, res) => {
   try {
     const step = await wf.skipStep(req.params.stepId, req.user.id, req.body.reason);
     res.json(step);
@@ -894,7 +895,7 @@ router.patch('/:id/workflow/steps/:stepId/skip', async (req, res) => {
 });
 
 // PATCH /:id/workflow/steps/:stepId/override — management override
-router.patch('/:id/workflow/steps/:stepId/override', requireOrgRole('management'), async (req, res) => {
+router.patch('/:id/workflow/steps/:stepId/override', requireScope('jobs', 'write'), requireOrgRole('management'), async (req, res) => {
   try {
     const step = await wf.overrideStep(req.params.stepId, req.user.id, req.body.reason);
     res.json(step);
@@ -905,7 +906,7 @@ router.patch('/:id/workflow/steps/:stepId/override', requireOrgRole('management'
 });
 
 // PATCH /:id/workflow/steps/:stepId/reassign — reassign step
-router.patch('/:id/workflow/steps/:stepId/reassign', requireOrgRole('management', 'office_coordinator', 'project_manager'), async (req, res) => {
+router.patch('/:id/workflow/steps/:stepId/reassign', requireScope('jobs', 'write'), requireOrgRole('management', 'office_coordinator', 'project_manager'), async (req, res) => {
   try {
     if (!req.body.user_id) return res.status(400).json({ error: 'user_id is required' });
     const step = await wf.reassignStep(req.params.stepId, req.body.user_id);
@@ -917,7 +918,7 @@ router.patch('/:id/workflow/steps/:stepId/reassign', requireOrgRole('management'
 });
 
 // POST /:id/workflow/gates/:gateId/approve — manually approve a gate
-router.post('/:id/workflow/gates/:gateId/approve', async (req, res) => {
+router.post('/:id/workflow/gates/:gateId/approve', requireScope('jobs', 'write'), async (req, res) => {
   try {
     const gate = await wf.approveGate(req.params.gateId, req.user.id);
     if (!gate) return res.status(404).json({ error: 'Gate not found' });

@@ -8,6 +8,7 @@ const sharp = require('sharp');
 const { authMiddleware } = require('../middleware/auth');
 const { requireOrgMember, requireOrgRole } = require('../middleware/orgAuth');
 const docsDb = require('../db/apexDocuments');
+const { requireScope } = require('../middleware/scopeAuth');
 
 // ============================================
 // CONFIG
@@ -64,7 +65,7 @@ router.use(authMiddleware, requireOrgMember);
 // ============================================
 
 // POST /upload — upload file(s)
-router.post('/upload', upload.array('files', 20), async (req, res) => {
+router.post('/upload', requireScope('documents', 'write'), upload.array('files', 20), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'No files uploaded' });
@@ -147,7 +148,7 @@ router.post('/upload', upload.array('files', 20), async (req, res) => {
 });
 
 // GET /job/:jobId — list documents for a job
-router.get('/job/:jobId', async (req, res) => {
+router.get('/job/:jobId', requireScope('documents', 'read'), async (req, res) => {
   try {
     const docs = await docsDb.getDocumentsByJob(req.params.jobId, req.orgId, {
       documentType: req.query.document_type,
@@ -161,7 +162,7 @@ router.get('/job/:jobId', async (req, res) => {
 });
 
 // GET /search — search documents
-router.get('/search', async (req, res) => {
+router.get('/search', requireScope('documents', 'read'), async (req, res) => {
   try {
     const { q, job_id, document_type } = req.query;
     if (!q) return res.status(400).json({ error: 'q query parameter is required' });
@@ -174,7 +175,7 @@ router.get('/search', async (req, res) => {
 });
 
 // GET /:id — get single document metadata
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireScope('documents', 'read'), async (req, res) => {
   try {
     const doc = await docsDb.getDocumentById(req.params.id, req.orgId);
     if (!doc) return res.status(404).json({ error: 'Document not found' });
@@ -186,7 +187,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // GET /:id/file — serve the actual file
-router.get('/:id/file', async (req, res) => {
+router.get('/:id/file', requireScope('documents', 'read'), async (req, res) => {
   try {
     const doc = await docsDb.getDocumentById(req.params.id, req.orgId);
     if (!doc) return res.status(404).json({ error: 'Document not found' });
@@ -214,7 +215,7 @@ router.get('/:id/file', async (req, res) => {
 });
 
 // PATCH /:id — update metadata
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', requireScope('documents', 'write'), async (req, res) => {
   try {
     const doc = await docsDb.getDocumentById(req.params.id, req.orgId);
     if (!doc) return res.status(404).json({ error: 'Document not found' });
@@ -228,7 +229,7 @@ router.patch('/:id', async (req, res) => {
 });
 
 // DELETE /:id — delete document + file (management/office_coordinator only)
-router.delete('/:id', requireOrgRole('management', 'office_coordinator'), async (req, res) => {
+router.delete('/:id', requireScope('documents', 'delete'), requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {
     const doc = await docsDb.deleteDocument(req.params.id, req.orgId);
     if (!doc) return res.status(404).json({ error: 'Document not found' });

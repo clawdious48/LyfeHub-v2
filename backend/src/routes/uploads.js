@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const { authMiddleware } = require('../middleware/auth');
+const { requireScope } = require('../middleware/scopeAuth');
 
 // Base upload directory
 const UPLOAD_BASE = '/data/uploads';
@@ -131,7 +132,7 @@ router.use(authMiddleware);
  * Upload one or more files
  * Returns array of file metadata
  */
-router.post('/', upload.array('files'), async (req, res) => {
+router.post('/', requireScope('uploads', 'write'), upload.array('files'), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'No files uploaded' });
@@ -162,7 +163,7 @@ router.post('/', upload.array('files'), async (req, res) => {
  * GET /api/uploads/:userId/:year/:month/:filename
  * Serve a file with auth check
  */
-router.get('/:userId/:year/:month/:filename', async (req, res) => {
+router.get('/:userId/:year/:month/:filename', requireScope('uploads', 'write'), async (req, res) => {
   const { userId, year, month, filename } = req.params;
   
   // Security: Only allow user to access their own files
@@ -200,7 +201,7 @@ router.get('/:userId/:year/:month/:filename', async (req, res) => {
  * Delete a file
  * Body: { path: "/uploads/userId/year/month/filename" }
  */
-router.delete('/', async (req, res) => {
+router.delete('/', requireScope('uploads', 'delete'), async (req, res) => {
   const { path: filePath } = req.body;
   
   if (!filePath) {
