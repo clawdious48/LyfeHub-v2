@@ -558,8 +558,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
 @media (max-width: 640px) {
     [data-theme="dark"] .modal-footer,
   .job-modal-footer {
-        background: rgba(255, 255, 255, 0.08);
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(15, 23, 42, 0.95);
         border-top: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
     }
