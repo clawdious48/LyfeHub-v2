@@ -1344,6 +1344,10 @@
             
             <!-- Edit View -->
             <div id="task-edit-view" class="modal-body">
+              <div class="task-panels-container">
+                <div class="task-panels-track">
+                  <!-- Panel 1: Quick Create -->
+                  <div class="task-panel task-panel-quick">
                 <!-- Date & Time Row -->
                 <div class="task-item-section">
                     <label class="task-item-section-label">When</label>
@@ -1407,6 +1411,20 @@
                         <button type="button" class="task-day-btn" data-day="6">S</button>
                     </div>
                 </div>
+                  </div><!-- /task-panel-quick -->
+
+                  <!-- Panel 2: Advanced -->
+                  <div class="task-panel task-panel-advanced">
+                <!-- List Assignment -->
+                <div class="task-item-section">
+                    <label class="task-item-section-label">List</label>
+                    <div class="task-list-selector-wrapper">
+                        <select id="task-list-selector" class="task-list-selector">
+                            <option value="">No list</option>
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+                </div>
 
                 <!-- Calendars -->
                 <div class="task-item-section">
@@ -1416,14 +1434,31 @@
                     </div>
                 </div>
 
-                <!-- List Assignment -->
+                <!-- Metadata fields -->
                 <div class="task-item-section">
-                    <label class="task-item-section-label">List</label>
-                    <div class="task-list-selector-wrapper">
-                        <select id="task-list-selector" class="task-list-selector">
-                            <option value="">No list</option>
-                            <!-- Populated by JS -->
-                        </select>
+                    <label class="task-item-section-label">Priority</label>
+                    <div class="task-metadata-presets">
+                        <button type="button" class="task-metadata-preset" data-field="priority" data-value="">None</button>
+                        <button type="button" class="task-metadata-preset" data-field="priority" data-value="low">Low</button>
+                        <button type="button" class="task-metadata-preset" data-field="priority" data-value="medium">Medium</button>
+                        <button type="button" class="task-metadata-preset" data-field="priority" data-value="high">High</button>
+                    </div>
+                </div>
+                <div class="task-item-section">
+                    <label class="task-item-section-label">Energy</label>
+                    <div class="task-metadata-presets">
+                        <button type="button" class="task-metadata-preset" data-field="energy" data-value="">None</button>
+                        <button type="button" class="task-metadata-preset" data-field="energy" data-value="low">Low</button>
+                        <button type="button" class="task-metadata-preset" data-field="energy" data-value="high">High</button>
+                    </div>
+                </div>
+                <div class="task-item-section">
+                    <label class="task-item-section-label">Location</label>
+                    <div class="task-metadata-presets">
+                        <button type="button" class="task-metadata-preset" data-field="location" data-value="">None</button>
+                        <button type="button" class="task-metadata-preset" data-field="location" data-value="home">Home</button>
+                        <button type="button" class="task-metadata-preset" data-field="location" data-value="office">Office</button>
+                        <button type="button" class="task-metadata-preset" data-field="location" data-value="errand">Errand</button>
                     </div>
                 </div>
 
@@ -1497,35 +1532,17 @@
                         <input type="text" id="subtask-input" placeholder="+ Add subtask" />
                     </div>
                 </div>
+                  </div><!-- /task-panel-advanced -->
+                </div><!-- /task-panels-track -->
 
-                <!-- Metadata fields -->
-                <div class="task-item-section">
-                    <label class="task-item-section-label">Priority</label>
-                    <div class="task-metadata-presets">
-                        <button type="button" class="task-metadata-preset" data-field="priority" data-value="">None</button>
-                        <button type="button" class="task-metadata-preset" data-field="priority" data-value="low">Low</button>
-                        <button type="button" class="task-metadata-preset" data-field="priority" data-value="medium">Medium</button>
-                        <button type="button" class="task-metadata-preset" data-field="priority" data-value="high">High</button>
-                    </div>
+                <div class="task-panel-dots">
+                    <span class="task-panel-dot active"></span>
+                    <span class="task-panel-dot"></span>
                 </div>
-                <div class="task-item-section">
-                    <label class="task-item-section-label">Energy</label>
-                    <div class="task-metadata-presets">
-                        <button type="button" class="task-metadata-preset" data-field="energy" data-value="">None</button>
-                        <button type="button" class="task-metadata-preset" data-field="energy" data-value="low">Low</button>
-                        <button type="button" class="task-metadata-preset" data-field="energy" data-value="high">High</button>
-                    </div>
+                <div class="task-panel-more">
+                    <button type="button" class="task-panel-more-btn">More options ›</button>
                 </div>
-                <div class="task-item-section">
-                    <label class="task-item-section-label">Location</label>
-                    <div class="task-metadata-presets">
-                        <button type="button" class="task-metadata-preset" data-field="location" data-value="">None</button>
-                        <button type="button" class="task-metadata-preset" data-field="location" data-value="home">Home</button>
-                        <button type="button" class="task-metadata-preset" data-field="location" data-value="office">Office</button>
-                        <button type="button" class="task-metadata-preset" data-field="location" data-value="errand">Errand</button>
-                    </div>
-                </div>
-
+              </div><!-- /task-panels-container -->
                 </div>
             
             <div class="modal-footer">

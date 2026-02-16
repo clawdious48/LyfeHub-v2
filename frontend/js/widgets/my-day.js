@@ -75,20 +75,21 @@
                 return;
             }
 
-            const todo = allTasks.filter(t => !t.completed && t.status !== 'in_progress');
-            const inProgress = allTasks.filter(t => !t.completed && t.status === 'in_progress');
-            const done = allTasks.filter(t => t.completed);
+            // Sort: incomplete first, then completed
+            const sorted = [
+                ...allTasks.filter(t => !t.completed),
+                ...allTasks.filter(t => t.completed)
+            ];
 
             container.innerHTML = `
-                <div class="my-day-kanban">
-                    ${renderColumn('To Do', todo)}
-                    ${renderColumn('In Progress', inProgress)}
-                    ${renderColumn('Done', done)}
+                <div class="my-day-list">
+                    ${sorted.map(renderTask).join('')}
                 </div>`;
 
             // Bind checkboxes
             container.querySelectorAll('.my-day-checkbox').forEach(cb => {
                 cb.addEventListener('change', async (e) => {
+                    e.stopPropagation();
                     const taskId = e.target.dataset.taskId;
                     try {
                         await fetch(`/api/task-items/${taskId}/toggle`, {
@@ -100,6 +101,25 @@
                         console.error('Failed to toggle task:', err);
                     }
                 });
+            });
+
+            // Bind task click → open reader modal
+            container.querySelectorAll('.my-day-task').forEach(item => {
+                item.addEventListener('click', async (e) => {
+                    // Don't open modal if clicking checkbox
+                    if (e.target.closest('.my-day-check-label')) return;
+                    const taskId = item.dataset.id;
+                    if (!taskId || typeof taskModal === 'undefined') return;
+                    try {
+                        const res = await fetch(`/api/task-items/${taskId}`, { credentials: 'include' });
+                        if (!res.ok) return;
+                        const data = await res.json();
+                        taskModal.openEdit(data.item || data);
+                    } catch (err) {
+                        console.error('Failed to open task:', err);
+                    }
+                });
+                item.style.cursor = 'pointer';
             });
         } catch (err) {
             container.innerHTML = '<div class="widget-empty"><p>Could not load tasks</p></div>';

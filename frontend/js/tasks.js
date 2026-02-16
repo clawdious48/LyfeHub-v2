@@ -45,6 +45,7 @@ const taskModal = {
         this.bindViewSwitching();
         this.bindListEvents();
         this.bindDisplayToggle();
+        this.initPanelSwipe();
         
         // More details toggle
         const moreDetailsToggle = document.getElementById('task-more-details-toggle');
@@ -1086,7 +1087,73 @@ const taskModal = {
         }
     },
 
+    // ========== Two-Panel Swipe (mobile only) ==========
+    initPanelSwipe() {
+        const track = this.el.querySelector('.task-panels-track');
+        const moreBtn = this.el.querySelector('.task-panel-more-btn');
+        if (!track) return;
+
+        this._panelIndex = 0;
+
+        // "More options" button
+        if (moreBtn) {
+            moreBtn.addEventListener('click', () => this.goToPanel(1));
+        }
+
+        // Touch swipe
+        let startX = 0, startY = 0, tracking = false;
+        track.addEventListener('touchstart', (e) => {
+            if (window.innerWidth > 640) return;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            tracking = true;
+        }, { passive: true });
+
+        track.addEventListener('touchmove', (e) => {
+            if (!tracking || window.innerWidth > 640) return;
+            const dx = e.touches[0].clientX - startX;
+            const dy = e.touches[0].clientY - startY;
+            // If mostly vertical, let it scroll
+            if (Math.abs(dy) > Math.abs(dx)) { tracking = false; return; }
+            // Prevent vertical scroll while swiping horizontally
+            if (Math.abs(dx) > 10) e.preventDefault();
+        }, { passive: false });
+
+        track.addEventListener('touchend', (e) => {
+            if (!tracking || window.innerWidth > 640) return;
+            tracking = false;
+            const dx = e.changedTouches[0].clientX - startX;
+            if (dx < -50 && this._panelIndex === 0) this.goToPanel(1);
+            else if (dx > 50 && this._panelIndex === 1) this.goToPanel(0);
+        }, { passive: true });
+    },
+
+    goToPanel(index) {
+        this._panelIndex = index;
+        const track = this.el.querySelector('.task-panels-track');
+        if (track && window.innerWidth <= 640) {
+            track.style.transform = `translateX(${index * -50}%)`;
+        }
+        // Update dots
+        const dots = this.el.querySelectorAll('.task-panel-dot');
+        dots.forEach((d, i) => d.classList.toggle('active', i === index));
+        // Toggle "More" button
+        const more = this.el.querySelector('.task-panel-more');
+        if (more) more.classList.toggle('hidden', index === 1);
+    },
+
+    resetPanels() {
+        this._panelIndex = 0;
+        const track = this.el.querySelector('.task-panels-track');
+        if (track) track.style.transform = '';
+        const dots = this.el.querySelectorAll('.task-panel-dot');
+        dots.forEach((d, i) => d.classList.toggle('active', i === 0));
+        const more = this.el.querySelector('.task-panel-more');
+        if (more) more.classList.remove('hidden');
+    },
+
     openNew(title = '') {
+        this.resetPanels();
         this.currentTask = null;
         this.subtasks = [];
         this.isImportant = false;
@@ -1166,6 +1233,7 @@ const taskModal = {
     },
 
     openEdit(task) {
+        this.resetPanels();
         this.currentTask = task;
         this.subtasks = task.subtasks || [];
         this.isImportant = task.important || false;
@@ -1237,6 +1305,11 @@ const taskModal = {
         // Show modal
         this.el.classList.add('open');
         document.body.style.overflow = 'hidden';
+    },
+
+    // Alias for calendar.js compatibility — opens task in edit/reader modal
+    openTask(task) {
+        this.openEdit(task);
     },
 
     close() {
