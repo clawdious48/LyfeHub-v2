@@ -268,13 +268,13 @@
 
   // ── Bases ──
   function populateBases(section) {
-    var html = '<div class="sheet-label">Core Bases</div>';
+    var html = '<div class="sheet-action-btn" id="sheet-new-base">+ Create Base</div>';
+    html += '<div class="sheet-divider"></div>';
+    html += '<div class="sheet-label">Core Bases</div>';
     html += '<div id="sheet-bases-core"><div class="sheet-label" style="opacity:0.5">Loading...</div></div>';
     html += '<div class="sheet-divider"></div>';
     html += '<div class="sheet-label">My Bases</div>';
     html += '<div id="sheet-bases-user"><div class="sheet-label" style="opacity:0.5">Loading...</div></div>';
-    html += '<div class="sheet-divider"></div>';
-    html += '<div class="sheet-action-btn" id="sheet-new-base">+ New Base</div>';
 
     section.innerHTML = html;
 

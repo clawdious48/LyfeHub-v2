@@ -102,7 +102,7 @@
             if (item.id === 'capture') {
                 setupCaptureButton(button);
             } else {
-                button.addEventListener('click', function() { handleNavClick(item.id); });
+                setupNavButton(button, item.id);
             }
             
             itemsContainer.appendChild(button);
@@ -123,6 +123,105 @@
         updateActiveState();
     }
     
+    /**
+     * Nested section registry
+     * Maps parent nav items to sections that live in their sheet and have their own side panels.
+     * When a nested section is the active view, the parent's drag-up gesture opens the nested section's context sheet.
+     */
+    var NESTED_SECTIONS = {
+        // parent nav id → array of nested section ids that have side panels
+        'dashboard': ['bases']
+    };
+
+    /**
+     * Get the currently active nested section for a parent, if any.
+     * Returns the nested section id or null.
+     */
+    function getActiveNestedSection(parentId) {
+        var nested = NESTED_SECTIONS[parentId];
+        if (!nested) return null;
+        // Check if the current active header tab matches a nested section
+        var activeTab = document.querySelector('.tabs .tab.active');
+        var activeTabId = activeTab ? activeTab.getAttribute('data-tab') : null;
+        for (var i = 0; i < nested.length; i++) {
+            if (activeTabId === nested[i]) return nested[i];
+        }
+        return null;
+    }
+
+    /**
+     * Setup nav button with tap + drag-up gesture for nested section panels
+     */
+    function setupNavButton(button, navId) {
+        var touchStartY = 0;
+        var touchStartX = 0;
+        var dragTimer = null;
+        var dragActive = false;
+        var hasMoved = false;
+
+        button.addEventListener('touchstart', function(e) {
+            touchStartY = e.touches[0].clientY;
+            touchStartX = e.touches[0].clientX;
+            dragActive = false;
+            hasMoved = false;
+
+            // Start 135ms timer for drag-up activation
+            dragTimer = setTimeout(function() {
+                dragActive = true;
+            }, 135);
+        }, { passive: true });
+
+        button.addEventListener('touchmove', function(e) {
+            if (!dragActive) {
+                // Check if finger moved significantly before timer — cancel drag, allow scroll
+                var dx = Math.abs(e.touches[0].clientX - touchStartX);
+                var dy = Math.abs(e.touches[0].clientY - touchStartY);
+                if (dx > 10 || dy > 10) {
+                    clearTimeout(dragTimer);
+                    hasMoved = true;
+                }
+                return;
+            }
+
+            var dy = touchStartY - e.touches[0].clientY; // positive = dragging up
+            if (dy > 20) {
+                hasMoved = true;
+                // Check if there's a nested section with a panel to show
+                var nestedSection = getActiveNestedSection(navId);
+                if (nestedSection && window.contextSheet && !window.contextSheet.isOpen()) {
+                    if (navigator.vibrate) navigator.vibrate(30);
+                    window.contextSheet.show(nestedSection);
+                    dragActive = false; // prevent repeated triggers
+                }
+            }
+        }, { passive: true });
+
+        button.addEventListener('touchend', function(e) {
+            clearTimeout(dragTimer);
+            if (!hasMoved && !dragActive) {
+                // Simple tap — normal navigation
+                handleNavClick(navId);
+            } else if (!hasMoved && dragActive) {
+                // Long press without move — treat as tap
+                handleNavClick(navId);
+            }
+            dragActive = false;
+            hasMoved = false;
+        }, { passive: true });
+
+        button.addEventListener('touchcancel', function() {
+            clearTimeout(dragTimer);
+            dragActive = false;
+            hasMoved = false;
+        }, { passive: true });
+
+        // Mouse fallback (desktop)
+        button.addEventListener('click', function(e) {
+            if ('ontouchstart' in window) return; // skip on touch devices, handled above
+            handleNavClick(navId);
+        });
+    }
+
     /**
      * Setup capture button with tap and long-press
      */

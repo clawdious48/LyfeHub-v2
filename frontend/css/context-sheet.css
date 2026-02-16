@@ -26,13 +26,14 @@
     border-top-right-radius: 20px;
     border-top: 1px solid rgba(0, 0, 0, 0.08);
     box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.12);
-    max-height: 45vh;
+    max-height: 70vh;
     min-height: 120px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    /* Push above the bottom nav bar */
-    margin-bottom: calc(58px + env(safe-area-inset-bottom, 0px));
+    /* Extend to bottom of screen, covering bottom nav */
+    margin-bottom: 0;
+    padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px));
 }
 
 .context-sheet.expanded .context-sheet-body {
