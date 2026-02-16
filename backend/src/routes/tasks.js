@@ -1,5 +1,6 @@
 const express = require('express');
 const { authMiddleware } = require('../middleware/auth');
+const { requireScope } = require('../middleware/scopeAuth');
 const {
   getAllTasks,
   getTaskById,
@@ -36,7 +37,7 @@ function getUserId(req) {
  * List all tasks for current user, optionally filtered by status
  * Query params: ?status=ready
  */
-router.get('/', async (req, res) => {
+router.get('/', requireScope('tasks', 'read'), async (req, res) => {
   try {
     const { status } = req.query;
     const userId = getUserId(req);
@@ -65,7 +66,7 @@ router.get('/', async (req, res) => {
  * POST /api/tasks
  * Create a new task for current user
  */
-router.post('/', async (req, res) => {
+router.post('/', requireScope('tasks', 'write'), async (req, res) => {
   try {
     const { title, description, acceptance_criteria, status, priority, context_links, notes } = req.body;
     const userId = getUserId(req);

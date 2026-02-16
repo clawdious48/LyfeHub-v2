@@ -1,6 +1,9 @@
 /**
  * Settings Developer Section
- * API Keys management with scope picker
+ * API Keys management with redesigned scope picker
+ * - Collapsible group cards with toggle switches
+ * - Nested groups (parent→child cascade)
+ * - Presets, search/filter, scope counter
  */
 (function() {
     'use strict';
@@ -8,58 +11,448 @@
     let initialized = false;
     let availableScopes = [];
     let userRole = null;
-    let allScopes = []; // full list for graying out unavailable ones
+    let scopeGroups = [];
+    let allScopes = [];
+    let enabledScopes = new Set();
 
-    const SCOPE_GROUPS = {
-        'Tasks':        { resource: 'tasks',    actions: ['read', 'write', 'delete'] },
-        'Notes':        { resource: 'notes',    actions: ['read', 'write', 'delete'] },
-        'People':       { resource: 'people',   actions: ['read', 'write', 'delete'] },
-        'Bases':        { resource: 'bases',    actions: ['read', 'write', 'delete'] },
-        'Records':      { resource: 'records',  actions: ['read', 'write', 'delete'] },
-        'Calendar':     { resource: 'calendar', actions: ['read', 'write', 'delete'] },
-        'Jobs':         { resource: 'jobs',     actions: ['read', 'write', 'delete'] },
-        'Users':        { resource: 'users',    actions: ['read', 'write', 'admin'] },
-        'API Keys':     { resource: 'api_keys', actions: ['manage'] },
-        'Organization': { resource: 'org',      actions: ['read', 'write', 'admin'] },
-    };
-
-    // All possible scopes (for total count and graying out)
-    const ALL_POSSIBLE_SCOPES = [];
-    Object.values(SCOPE_GROUPS).forEach(function(g) {
-        g.actions.forEach(function(a) {
-            ALL_POSSIBLE_SCOPES.push(g.resource + ':' + a);
-        });
-    });
+    // Fallback scope groups if backend hasn't landed yet
+    const FALLBACK_GROUPS = [
+        { id: 'tasks', label: 'Tasks', icon: '☑', description: 'Task management, lists, and items', scopes: ['tasks:read', 'tasks:write', 'tasks:delete'], children: null },
+        { id: 'notes', label: 'Notes', icon: '📝', description: 'Notes and documentation', scopes: ['notes:read', 'notes:write', 'notes:delete'], children: null },
+        { id: 'people', label: 'People & Contacts', icon: '👤', description: 'Contact and people management', scopes: ['people:read', 'people:write', 'people:delete'], children: null },
+        { id: 'bases', label: 'Bases & Records', icon: '🗄', description: 'Database bases and record access', scopes: ['bases:read', 'bases:write', 'bases:delete'], children: [
+            { id: 'bases.records', label: 'Records', scopes: ['records:read', 'records:write', 'records:delete'] }
+        ]},
+        { id: 'calendar', label: 'Calendar', icon: '📅', description: 'Calendar events and scheduling', scopes: ['calendar:read', 'calendar:write', 'calendar:delete'], children: null },
+        { id: 'jobs', label: 'Jobs', icon: '🔨', description: 'Apex job management', scopes: ['jobs:read', 'jobs:write', 'jobs:delete'], children: [
+            { id: 'jobs.estimates', label: 'Estimates', scopes: ['jobs.estimates:read', 'jobs.estimates:write'] },
+            { id: 'jobs.payments', label: 'Payments', scopes: ['jobs.payments:read', 'jobs.payments:write'] },
+            { id: 'jobs.labor', label: 'Labor', scopes: ['jobs.labor:read', 'jobs.labor:write'] },
+            { id: 'jobs.notes', label: 'Job Notes', scopes: ['jobs.notes:read', 'jobs.notes:write'] },
+            { id: 'jobs.phases', label: 'Phases', scopes: ['jobs.phases:read', 'jobs.phases:write'] }
+        ]},
+        { id: 'users', label: 'Users', icon: '👥', description: 'User management', scopes: ['users:read', 'users:write', 'users:admin'], children: null },
+        { id: 'api_keys', label: 'API Keys', icon: '🔑', description: 'API key management', scopes: ['api_keys:manage'], children: null },
+        { id: 'org', label: 'Organization', icon: '🏢', description: 'Organization settings', scopes: ['org:read', 'org:write', 'org:admin'], children: null },
+    ];
 
     async function initDeveloper() {
         if (initialized) return;
         initialized = true;
 
         try {
-            const [keysRes, scopesRes] = await Promise.all([
+            var [keysRes, scopesRes] = await Promise.all([
                 fetch('/api/api-keys', { credentials: 'include' }),
                 fetch('/api/api-keys/scopes', { credentials: 'include' })
             ]);
 
             if (keysRes.ok) {
-                const data = await keysRes.json();
+                var data = await keysRes.json();
                 userRole = data.role;
                 renderKeysList(data.keys || []);
             }
 
             if (scopesRes.ok) {
-                const data = await scopesRes.json();
-                availableScopes = data.scopes || [];
+                var data = await scopesRes.json();
+                if (data.groups && Array.isArray(data.groups)) {
+                    scopeGroups = data.groups;
+                    allScopes = data.allScopes || buildAllScopes(scopeGroups);
+                    availableScopes = data.scopes || allScopes;
+                } else {
+                    availableScopes = data.scopes || [];
+                    scopeGroups = FALLBACK_GROUPS;
+                    allScopes = buildAllScopes(scopeGroups);
+                }
+            } else {
+                scopeGroups = FALLBACK_GROUPS;
+                allScopes = buildAllScopes(scopeGroups);
+                availableScopes = allScopes;
             }
 
-            renderScopePicker(availableScopes, userRole);
+            renderScopePicker(scopeGroups, availableScopes, userRole);
             setupEventListeners();
         } catch (err) {
             console.error('Failed to init developer section:', err);
-            document.getElementById('api-keys-list').innerHTML =
-                '<p class="text-muted" style="color: var(--apex-danger);">Failed to load API keys.</p>';
+            scopeGroups = FALLBACK_GROUPS;
+            allScopes = buildAllScopes(scopeGroups);
+            availableScopes = allScopes;
+            renderScopePicker(scopeGroups, availableScopes, userRole);
+            setupEventListeners();
         }
     }
+
+    function buildAllScopes(groups) {
+        var result = [];
+        groups.forEach(function(g) {
+            result = result.concat(g.scopes || []);
+            if (g.children) {
+                g.children.forEach(function(c) {
+                    result = result.concat(c.scopes || []);
+                });
+            }
+        });
+        return result;
+    }
+
+    function getActionLabel(scope) {
+        var parts = scope.split(':');
+        var action = parts[parts.length - 1];
+        var labels = { read: 'Read', write: 'Write', delete: 'Delete', admin: 'Admin', manage: 'Manage' };
+        return labels[action] || action.charAt(0).toUpperCase() + action.slice(1);
+    }
+
+    function getScopeSummary(groupScopes, allowed) {
+        var enabled = 0;
+        var total = groupScopes.length;
+        var readOnly = true;
+        groupScopes.forEach(function(s) {
+            if (enabledScopes.has(s)) {
+                enabled++;
+                if (!s.endsWith(':read')) readOnly = false;
+            }
+        });
+        if (enabled === 0) return '<span class="scope-summary-text">None enabled</span>';
+        if (enabled === total) return '<span class="scope-summary-text scope-summary-all">All enabled</span>';
+        if (readOnly && enabled > 0) return '<span class="scope-summary-text">Read only</span>';
+        return '<span class="scope-summary-text">' + enabled + ' of ' + total + '</span>';
+    }
+
+    function getAllGroupScopes(group) {
+        var scopes = (group.scopes || []).slice();
+        if (group.children) {
+            group.children.forEach(function(c) {
+                scopes = scopes.concat(c.scopes || []);
+            });
+        }
+        return scopes;
+    }
+
+    // ─── Render ───
+
+    function renderScopePicker(groups, allowed, role) {
+        var container = document.getElementById('scope-groups');
+        var html = '';
+
+        // Search filter
+        html += '<div class="scope-filter-wrap">' +
+            '<svg class="scope-filter-icon" viewBox="0 0 24 24" width="14" height="14"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>' +
+            '<input type="text" class="scope-filter-input" id="scope-filter" placeholder="Filter scopes..." />' +
+            '</div>';
+
+        groups.forEach(function(group) {
+            html += renderGroup(group, allowed, false);
+        });
+
+        container.innerHTML = html;
+
+        // Bind all interactions
+        bindGroupInteractions(container);
+        updateScopeCounter();
+        updatePresetState();
+    }
+
+    function renderGroup(group, allowed, isNested) {
+        var groupScopes = getAllGroupScopes(group);
+        var cls = isNested ? 'scope-group scope-nested' : 'scope-group';
+        var icon = group.icon || '';
+
+        var html = '<div class="' + cls + '" data-group-id="' + group.id + '">';
+
+        // Header
+        html += '<div class="scope-group-header" data-group-id="' + group.id + '">' +
+            '<div class="scope-group-header-left">' +
+                '<svg class="scope-chevron" viewBox="0 0 24 24" width="16" height="16"><path d="M9 18l6-6-6-6"/></svg>' +
+                (icon ? '<span class="scope-group-icon">' + icon + '</span>' : '') +
+                '<span class="scope-group-label">' + escapeHtml(group.label) + '</span>' +
+                '<span class="scope-group-summary" data-group-id="' + group.id + '">' + getScopeSummary(groupScopes, allowed) + '</span>' +
+            '</div>' +
+            '<label class="scope-group-all-toggle toggle-switch-sm" onclick="event.stopPropagation()">' +
+                '<input type="checkbox" class="scope-group-all-cb" data-group-id="' + group.id + '" />' +
+                '<span class="slider-sm"></span>' +
+                '<span class="scope-all-label">All</span>' +
+            '</label>' +
+        '</div>';
+
+        // Body (collapsible)
+        html += '<div class="scope-group-body" data-group-id="' + group.id + '">';
+
+        // Own scopes
+        (group.scopes || []).forEach(function(scope) {
+            var isAllowed = allowed.includes(scope);
+            html += renderScopeRow(scope, isAllowed);
+        });
+
+        // Nested children
+        if (group.children && group.children.length) {
+            html += '<div class="scope-nested-children">';
+            group.children.forEach(function(child) {
+                html += renderGroup(child, allowed, true);
+            });
+            html += '</div>';
+        }
+
+        html += '</div></div>';
+        return html;
+    }
+
+    function renderScopeRow(scope, isAllowed) {
+        var label = getActionLabel(scope);
+        var disabledClass = isAllowed ? '' : ' scope-row-disabled';
+
+        return '<div class="scope-row' + disabledClass + '" data-scope="' + scope + '">' +
+            '<span class="scope-row-label">' + escapeHtml(label) + '</span>' +
+            (isAllowed ?
+                '<label class="toggle-switch-sm scope-row-toggle" onclick="event.stopPropagation()">' +
+                    '<input type="checkbox" class="scope-toggle-cb" data-scope="' + scope + '" />' +
+                    '<span class="slider-sm"></span>' +
+                '</label>'
+                :
+                '<span class="scope-row-lock" title="Requires a higher role">' +
+                    '<svg viewBox="0 0 24 24" width="14" height="14"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' +
+                '</span>'
+            ) +
+        '</div>';
+    }
+
+    function bindGroupInteractions(container) {
+        // Header click → expand/collapse
+        container.querySelectorAll('.scope-group-header').forEach(function(header) {
+            header.addEventListener('click', function(e) {
+                if (e.target.closest('.scope-group-all-toggle')) return;
+                var group = header.closest('.scope-group');
+                group.classList.toggle('expanded');
+            });
+        });
+
+        // Group "All" toggle
+        container.querySelectorAll('.scope-group-all-cb').forEach(function(cb) {
+            cb.addEventListener('change', function() {
+                var groupId = cb.dataset.groupId;
+                var group = findGroup(groupId);
+                if (!group) return;
+                var scopes = getAllGroupScopes(group);
+                scopes.forEach(function(s) {
+                    if (availableScopes.includes(s)) {
+                        if (cb.checked) enabledScopes.add(s);
+                        else enabledScopes.delete(s);
+                    }
+                });
+                syncTogglesFromState(container);
+                updateAllGroupStates(container);
+                updateScopeCounter();
+                updatePresetState();
+            });
+        });
+
+        // Individual scope toggles
+        container.querySelectorAll('.scope-toggle-cb').forEach(function(cb) {
+            cb.addEventListener('change', function() {
+                var scope = cb.dataset.scope;
+                if (cb.checked) {
+                    enabledScopes.add(scope);
+                    // Cascade parent→child: if parent read is enabled, enable child reads
+                    cascadeParentToChildren(scope);
+                } else {
+                    enabledScopes.delete(scope);
+                }
+                syncTogglesFromState(container);
+                updateAllGroupStates(container);
+                updateScopeCounter();
+                updatePresetState();
+            });
+        });
+
+        // Row click toggles the scope
+        container.querySelectorAll('.scope-row:not(.scope-row-disabled)').forEach(function(row) {
+            row.addEventListener('click', function(e) {
+                if (e.target.closest('.scope-row-toggle')) return;
+                var cb = row.querySelector('.scope-toggle-cb');
+                if (cb) {
+                    cb.checked = !cb.checked;
+                    cb.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+
+        // Filter
+        var filterInput = container.querySelector('#scope-filter');
+        if (filterInput) {
+            filterInput.addEventListener('input', function() {
+                filterScopes(filterInput.value.trim().toLowerCase());
+            });
+        }
+    }
+
+    function cascadeParentToChildren(scope) {
+        // e.g. enabling jobs:read → enable jobs.estimates:read, jobs.payments:read, etc.
+        var parts = scope.split(':');
+        if (parts.length !== 2) return;
+        var resource = parts[0];
+        var action = parts[1];
+
+        scopeGroups.forEach(function(group) {
+            if (group.id === resource && group.children) {
+                group.children.forEach(function(child) {
+                    var childScope = child.id + ':' + action;
+                    if ((child.scopes || []).includes(childScope) && availableScopes.includes(childScope)) {
+                        enabledScopes.add(childScope);
+                    }
+                });
+            }
+        });
+    }
+
+    function findGroup(id) {
+        for (var i = 0; i < scopeGroups.length; i++) {
+            if (scopeGroups[i].id === id) return scopeGroups[i];
+            if (scopeGroups[i].children) {
+                for (var j = 0; j < scopeGroups[i].children.length; j++) {
+                    if (scopeGroups[i].children[j].id === id) return scopeGroups[i].children[j];
+                }
+            }
+        }
+        return null;
+    }
+
+    function syncTogglesFromState(container) {
+        container.querySelectorAll('.scope-toggle-cb').forEach(function(cb) {
+            cb.checked = enabledScopes.has(cb.dataset.scope);
+        });
+    }
+
+    function updateAllGroupStates(container) {
+        container.querySelectorAll('.scope-group-all-cb').forEach(function(cb) {
+            var groupId = cb.dataset.groupId;
+            var group = findGroup(groupId);
+            if (!group) return;
+            var scopes = getAllGroupScopes(group);
+            var allEnabled = scopes.length > 0;
+            var anyEnabled = false;
+            scopes.forEach(function(s) {
+                if (availableScopes.includes(s)) {
+                    if (enabledScopes.has(s)) anyEnabled = true;
+                    else allEnabled = false;
+                }
+            });
+            cb.checked = allEnabled;
+            cb.indeterminate = anyEnabled && !allEnabled;
+        });
+
+        // Update summaries
+        container.querySelectorAll('.scope-group-summary').forEach(function(el) {
+            var groupId = el.dataset.groupId;
+            var group = findGroup(groupId);
+            if (!group) return;
+            el.innerHTML = getScopeSummary(getAllGroupScopes(group), availableScopes);
+        });
+    }
+
+    function updateScopeCounter() {
+        var total = allScopes.length;
+        var selected = enabledScopes.size;
+        var counter = document.getElementById('scope-counter');
+        if (!counter) return;
+        counter.textContent = selected + ' of ' + total + ' scopes enabled';
+
+        counter.className = 'scope-counter';
+        var ratio = total > 0 ? selected / total : 0;
+        if (ratio >= 1) counter.classList.add('scope-counter-red');
+        else if (ratio > 0.6) counter.classList.add('scope-counter-orange');
+        else if (selected > 0) counter.classList.add('scope-counter-green');
+    }
+
+    function updatePresetState() {
+        var allEnabled = allScopes.every(function(s) {
+            return !availableScopes.includes(s) || enabledScopes.has(s);
+        });
+        var readOnlyEnabled = true;
+        var onlyReads = true;
+        allScopes.forEach(function(s) {
+            if (!availableScopes.includes(s)) return;
+            if (s.endsWith(':read')) {
+                if (!enabledScopes.has(s)) readOnlyEnabled = false;
+            } else {
+                if (enabledScopes.has(s)) onlyReads = false;
+            }
+        });
+
+        document.querySelectorAll('.scope-preset-btn').forEach(function(b) { b.classList.remove('active'); });
+        if (allEnabled && enabledScopes.size > 0) {
+            document.querySelector('[data-preset="full"]').classList.add('active');
+        } else if (readOnlyEnabled && onlyReads && enabledScopes.size > 0) {
+            document.querySelector('[data-preset="readonly"]').classList.add('active');
+        } else {
+            document.querySelector('[data-preset="custom"]').classList.add('active');
+        }
+    }
+
+    function applyPreset(preset) {
+        enabledScopes.clear();
+        if (preset === 'full') {
+            allScopes.forEach(function(s) {
+                if (availableScopes.includes(s)) enabledScopes.add(s);
+            });
+        } else if (preset === 'readonly') {
+            allScopes.forEach(function(s) {
+                if (availableScopes.includes(s) && s.endsWith(':read')) enabledScopes.add(s);
+            });
+        }
+
+        var container = document.getElementById('scope-groups');
+        syncTogglesFromState(container);
+        updateAllGroupStates(container);
+        updateScopeCounter();
+
+        document.querySelectorAll('.scope-preset-btn').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelector('[data-preset="' + preset + '"]').classList.add('active');
+    }
+
+    function getSelectedScopes() {
+        return Array.from(enabledScopes);
+    }
+
+    function filterScopes(query) {
+        var groups = document.querySelectorAll('#scope-groups > .scope-group');
+        groups.forEach(function(groupEl) {
+            if (!query) {
+                groupEl.style.display = '';
+                groupEl.querySelectorAll('.scope-row, .scope-nested').forEach(function(el) { el.style.display = ''; });
+                return;
+            }
+            var groupLabel = groupEl.querySelector('.scope-group-label');
+            var groupMatch = groupLabel && groupLabel.textContent.toLowerCase().includes(query);
+            var anyVisible = groupMatch;
+
+            groupEl.querySelectorAll('.scope-row').forEach(function(row) {
+                var label = row.querySelector('.scope-row-label');
+                var matches = groupMatch || (label && label.textContent.toLowerCase().includes(query));
+                row.style.display = matches ? '' : 'none';
+                if (matches) anyVisible = true;
+            });
+
+            // Nested groups
+            groupEl.querySelectorAll('.scope-nested').forEach(function(nested) {
+                var nestedLabel = nested.querySelector('.scope-group-label');
+                var nestedMatch = nestedLabel && nestedLabel.textContent.toLowerCase().includes(query);
+                var nestedAny = nestedMatch || groupMatch;
+                nested.querySelectorAll('.scope-row').forEach(function(row) {
+                    var label = row.querySelector('.scope-row-label');
+                    var matches = nestedMatch || groupMatch || (label && label.textContent.toLowerCase().includes(query));
+                    row.style.display = matches ? '' : 'none';
+                    if (matches) nestedAny = true;
+                });
+                nested.style.display = nestedAny ? '' : 'none';
+                if (nestedAny) anyVisible = true;
+            });
+
+            groupEl.style.display = anyVisible ? '' : 'none';
+
+            // Auto-expand groups that match filter
+            if (anyVisible && query) groupEl.classList.add('expanded');
+        });
+    }
+
+    // ─── Keys List ───
 
     function renderKeysList(keys) {
         var container = document.getElementById('api-keys-list');
@@ -108,142 +501,12 @@
         html += '</tbody></table></div>';
         container.innerHTML = html;
 
-        // Bind revoke buttons
         container.querySelectorAll('.key-revoke-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                revokeKey(btn.dataset.id, btn.dataset.name);
-            });
+            btn.addEventListener('click', function() { revokeKey(btn.dataset.id, btn.dataset.name); });
         });
-
-        // Bind copy buttons
         container.querySelectorAll('.key-copy-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                copyKey(btn.dataset.id);
-            });
+            btn.addEventListener('click', function() { copyKey(btn.dataset.id); });
         });
-    }
-
-    function renderScopePicker(allowedScopes, role) {
-        var container = document.getElementById('scope-groups');
-        var html = '';
-
-        Object.keys(SCOPE_GROUPS).forEach(function(groupName) {
-            var group = SCOPE_GROUPS[groupName];
-            var groupId = 'scope-group-' + group.resource;
-
-            html += '<div class="scope-group" id="' + groupId + '">' +
-                '<div class="scope-group-header">' +
-                    '<label class="scope-group-toggle">' +
-                        '<input type="checkbox" class="scope-group-all" data-resource="' + group.resource + '" />' +
-                        '<span>' + escapeHtml(groupName) + '</span>' +
-                    '</label>' +
-                '</div>' +
-                '<div class="scope-group-actions">';
-
-            group.actions.forEach(function(action) {
-                var scope = group.resource + ':' + action;
-                var isAllowed = allowedScopes.includes(scope);
-                var disabledAttr = isAllowed ? '' : ' disabled';
-                var lockedClass = isAllowed ? '' : ' scope-locked';
-                var tooltip = isAllowed ? '' : ' title="Requires management or developer role"';
-
-                html += '<label class="scope-action-label' + lockedClass + '"' + tooltip + '>' +
-                    '<input type="checkbox" class="scope-checkbox" data-scope="' + scope + '" data-resource="' + group.resource + '"' + disabledAttr + ' />' +
-                    '<span class="scope-action-name">' + formatAction(action) + '</span>' +
-                    (isAllowed ? '' : '<svg class="scope-lock-icon" viewBox="0 0 24 24" width="12" height="12"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>') +
-                '</label>';
-            });
-
-            html += '</div></div>';
-        });
-
-        container.innerHTML = html;
-        updateScopeCounter();
-
-        // Group "select all" toggles
-        container.querySelectorAll('.scope-group-all').forEach(function(checkbox) {
-            checkbox.addEventListener('change', function() {
-                var resource = checkbox.dataset.resource;
-                var groupEl = document.getElementById('scope-group-' + resource);
-                groupEl.querySelectorAll('.scope-checkbox:not(:disabled)').forEach(function(cb) {
-                    cb.checked = checkbox.checked;
-                });
-                updateScopeCounter();
-                updatePresetState();
-            });
-        });
-
-        // Individual scope toggles
-        container.querySelectorAll('.scope-checkbox').forEach(function(cb) {
-            cb.addEventListener('change', function() {
-                updateGroupAllState(cb.dataset.resource);
-                updateScopeCounter();
-                updatePresetState();
-            });
-        });
-    }
-
-    function updateGroupAllState(resource) {
-        var groupEl = document.getElementById('scope-group-' + resource);
-        if (!groupEl) return;
-        var checkboxes = groupEl.querySelectorAll('.scope-checkbox:not(:disabled)');
-        var allChecked = checkboxes.length > 0;
-        checkboxes.forEach(function(cb) { if (!cb.checked) allChecked = false; });
-        var groupAll = groupEl.querySelector('.scope-group-all');
-        if (groupAll) groupAll.checked = allChecked;
-    }
-
-    function updateScopeCounter() {
-        var total = document.querySelectorAll('#scope-groups .scope-checkbox').length;
-        var selected = document.querySelectorAll('#scope-groups .scope-checkbox:checked').length;
-        var counter = document.getElementById('scope-counter');
-        if (counter) counter.textContent = selected + ' of ' + total + ' scopes selected';
-    }
-
-    function updatePresetState() {
-        var all = document.querySelectorAll('#scope-groups .scope-checkbox:not(:disabled)');
-        var checked = document.querySelectorAll('#scope-groups .scope-checkbox:checked');
-        var readOnly = document.querySelectorAll('#scope-groups .scope-checkbox[data-scope$=":read"]:checked');
-        var totalRead = document.querySelectorAll('#scope-groups .scope-checkbox[data-scope$=":read"]:not(:disabled)');
-
-        document.querySelectorAll('.scope-preset-btn').forEach(function(b) { b.classList.remove('active'); });
-
-        if (checked.length === all.length && all.length > 0) {
-            document.querySelector('[data-preset="full"]').classList.add('active');
-        } else if (readOnly.length === totalRead.length && checked.length === readOnly.length && readOnly.length > 0) {
-            document.querySelector('[data-preset="readonly"]').classList.add('active');
-        } else {
-            document.querySelector('[data-preset="custom"]').classList.add('active');
-        }
-    }
-
-    function applyPreset(preset) {
-        var checkboxes = document.querySelectorAll('#scope-groups .scope-checkbox:not(:disabled)');
-
-        if (preset === 'full') {
-            checkboxes.forEach(function(cb) { cb.checked = true; });
-        } else if (preset === 'readonly') {
-            checkboxes.forEach(function(cb) {
-                cb.checked = cb.dataset.scope.endsWith(':read');
-            });
-        } else {
-            checkboxes.forEach(function(cb) { cb.checked = false; });
-        }
-
-        // Update group-all checkboxes
-        Object.values(SCOPE_GROUPS).forEach(function(g) { updateGroupAllState(g.resource); });
-        updateScopeCounter();
-
-        document.querySelectorAll('.scope-preset-btn').forEach(function(b) { b.classList.remove('active'); });
-        document.querySelector('[data-preset="' + preset + '"]').classList.add('active');
-    }
-
-    function getSelectedScopes() {
-        var scopes = [];
-        document.querySelectorAll('#scope-groups .scope-checkbox:checked').forEach(function(cb) {
-            scopes.push(cb.dataset.scope);
-        });
-        return scopes;
     }
 
     async function createKey() {
@@ -285,26 +548,22 @@
                 return;
             }
 
-            // Show the new key
             var display = document.getElementById('new-key-display');
             var keyText = document.getElementById('new-key-value-text');
             keyText.textContent = data.key.full_key || data.key.key || '—';
             display.style.display = 'block';
             display.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-            // Copy button
             document.getElementById('new-key-copy-btn').onclick = function() {
                 navigator.clipboard.writeText(keyText.textContent).then(function() {
                     Settings.showToast('Key copied to clipboard', 'success');
                 });
             };
 
-            // Reset form
             nameInput.value = '';
             expiryInput.value = '';
             applyPreset('custom');
 
-            // Reload list
             var keysRes = await fetch('/api/api-keys', { credentials: 'include' });
             if (keysRes.ok) {
                 var keysData = await keysRes.json();
@@ -328,17 +587,13 @@
             'Are you sure you want to revoke "' + (name || 'this key') + '"? This action cannot be undone.',
             async function() {
                 try {
-                    var res = await fetch('/api/api-keys/' + id, {
-                        method: 'DELETE',
-                        credentials: 'include'
-                    });
+                    var res = await fetch('/api/api-keys/' + id, { method: 'DELETE', credentials: 'include' });
                     if (!res.ok) {
                         var data = await res.json();
                         Settings.showToast(data.error || 'Failed to revoke key', 'error');
                         return;
                     }
                     Settings.showToast('API key revoked', 'success');
-                    // Reload list
                     var keysRes = await fetch('/api/api-keys', { credentials: 'include' });
                     if (keysRes.ok) {
                         var keysData = await keysRes.json();
@@ -368,20 +623,13 @@
     }
 
     function setupEventListeners() {
-        // Create key form
         var form = document.getElementById('create-key-form');
         if (form) {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                createKey();
-            });
+            form.addEventListener('submit', function(e) { e.preventDefault(); createKey(); });
         }
 
-        // Preset buttons
         document.querySelectorAll('.scope-preset-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                applyPreset(btn.dataset.preset);
-            });
+            btn.addEventListener('click', function() { applyPreset(btn.dataset.preset); });
         });
     }
 
@@ -399,11 +647,5 @@
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
 
-    function formatAction(action) {
-        return action.charAt(0).toUpperCase() + action.slice(1);
-    }
-
-    window.SettingsDeveloper = {
-        init: initDeveloper
-    };
+    window.SettingsDeveloper = { init: initDeveloper };
 })();

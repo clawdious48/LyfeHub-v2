@@ -942,7 +942,10 @@
     color: white;
 }
 
-/* Scope Picker */
+/* ========================================
+   SCOPE PICKER — Redesigned
+   ======================================== */
+
 .scope-picker-container {
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
@@ -959,9 +962,9 @@
 }
 
 .scope-preset-btn {
-    padding: 6px 14px;
+    padding: 6px 16px;
     border: 1px solid var(--glass-border);
-    border-radius: 8px;
+    border-radius: 20px;
     background: var(--glass-bg);
     color: var(--apex-text-secondary);
     font-size: 12px;
@@ -976,88 +979,328 @@
 }
 
 .scope-preset-btn.active {
-    background: rgba(255, 140, 0, 0.12);
+    background: #FF8C00;
     border-color: #FF8C00;
-    color: #FF8C00;
+    color: white;
 }
 
 .scope-counter {
     font-size: 12px;
     color: var(--apex-text-muted);
     margin-left: auto;
+    font-weight: 500;
+    transition: color 0.2s ease;
 }
 
-.scope-groups {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+.scope-counter-green { color: #22c55e; }
+.scope-counter-orange { color: #eab308; }
+.scope-counter-red { color: #ef4444; }
+
+/* Filter */
+.scope-filter-wrap {
+    position: relative;
+    margin-bottom: 12px;
 }
 
-.scope-group {
-    border: 1px solid var(--glass-border);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.scope-group-header {
-    padding: 8px 12px;
-    background: var(--apex-bg-hover);
-}
-
-.scope-group-toggle {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--apex-text-primary);
-    cursor: pointer;
-}
-
-.scope-group-toggle input[type="checkbox"] {
-    accent-color: #FF8C00;
-    width: 15px;
-    height: 15px;
-}
-
-.scope-group-actions {
-    display: flex;
-    gap: 4px;
-    padding: 8px 12px;
-    flex-wrap: wrap;
-}
-
-.scope-action-label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    color: var(--apex-text-primary);
-    cursor: pointer;
-    transition: var(--apex-transition-fast);
-}
-
-.scope-action-label:hover {
-    background: var(--apex-bg-hover);
-}
-
-.scope-action-label input[type="checkbox"] {
-    accent-color: #FF8C00;
-    width: 14px;
-    height: 14px;
-}
-
-.scope-action-label.scope-locked {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-.scope-lock-icon {
+.scope-filter-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
     stroke: var(--apex-text-muted);
     stroke-width: 2;
     fill: none;
+    pointer-events: none;
+}
+
+.scope-filter-input {
+    width: 100%;
+    padding: 8px 12px 8px 32px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--apex-text-primary);
+    outline: none;
+    transition: var(--apex-transition-fast);
+    box-sizing: border-box;
+}
+
+.scope-filter-input:focus {
+    border-color: var(--apex-border-focus);
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+}
+
+.scope-filter-input::placeholder {
+    color: var(--apex-text-muted);
+}
+
+/* Groups container */
+.scope-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Group card */
+.scope-group {
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+}
+
+.scope-group:hover {
+    border-color: var(--apex-border-hover);
+}
+
+/* Group header */
+.scope-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease;
+}
+
+.scope-group-header:hover {
+    background: var(--apex-bg-hover);
+}
+
+.scope-group-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+}
+
+.scope-chevron {
+    stroke: var(--apex-text-muted);
+    stroke-width: 2;
+    fill: none;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.scope-group.expanded > .scope-group-header .scope-chevron {
+    transform: rotate(90deg);
+}
+
+.scope-group-icon {
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.scope-group-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--apex-text-primary);
+    white-space: nowrap;
+}
+
+.scope-group-summary {
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+
+.scope-summary-text {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--apex-text-muted);
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--apex-bg-hover);
+}
+
+.scope-summary-all {
+    background: rgba(255, 140, 0, 0.12);
+    color: #FF8C00;
+}
+
+/* "All" toggle in header */
+.scope-group-all-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.scope-all-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--apex-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Mini toggle switch */
+.toggle-switch-sm {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.toggle-switch-sm input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.slider-sm {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 18px;
+    background: var(--apex-bg-hover);
+    border-radius: 18px;
+    border: 1px solid var(--glass-border);
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.slider-sm::before {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    left: 1px;
+    top: 1px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle-switch-sm input:checked + .slider-sm {
+    background: #FF8C00;
+    border-color: #FF8C00;
+}
+
+.toggle-switch-sm input:checked + .slider-sm::before {
+    transform: translateX(16px);
+}
+
+/* Group body (collapsible) */
+.scope-group-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.scope-group.expanded > .scope-group-body {
+    max-height: 2000px;
+}
+
+/* Scope row */
+.scope-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px 8px 42px;
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+
+.scope-row:hover {
+    background: var(--apex-bg-hover);
+}
+
+.scope-row-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--apex-text-primary);
+}
+
+.scope-row-toggle {
+    flex-shrink: 0;
+}
+
+/* Disabled scope row */
+.scope-row-disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.scope-row-disabled:hover {
+    background: none;
+}
+
+.scope-row-lock {
+    flex-shrink: 0;
+}
+
+.scope-row-lock svg {
+    stroke: var(--apex-text-muted);
+    stroke-width: 2;
+    fill: none;
+}
+
+/* Nested groups */
+.scope-nested {
+    margin: 4px 0 4px 28px;
+    border-left: 2px solid var(--glass-border);
+    border-radius: 0 10px 10px 0;
+}
+
+.scope-nested > .scope-group-header {
+    padding: 8px 12px;
+}
+
+.scope-nested .scope-group-label {
+    font-size: 12px;
+}
+
+.scope-nested .scope-row {
+    padding-left: 36px;
+}
+
+.scope-nested-children {
+    padding: 4px 0;
+}
+
+/* ========================================
+   SCOPE PICKER — Dark Mode
+   ======================================== */
+
+[data-theme="dark"] .scope-group {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] .scope-group:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .slider-sm {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .slider-sm::before {
+    background: #cbd5e1;
+}
+
+[data-theme="dark"] .toggle-switch-sm input:checked + .slider-sm {
+    background: #FF8C00;
+    border-color: #FF8C00;
+}
+
+[data-theme="dark"] .scope-nested {
+    border-left-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .scope-filter-input {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .scope-summary-text {
+    background: rgba(255, 255, 255, 0.06);
 }
 
 /* New Key Display */
