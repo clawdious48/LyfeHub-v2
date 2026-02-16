@@ -597,6 +597,10 @@
         var headerTab = document.querySelector('.tabs .tab[data-tab="' + tabId + '"]');
         if (headerTab) {
             headerTab.click();
+        } else {
+            // We're on a different page (e.g. settings.html) — redirect to main app with tab
+            window.location.href = '/?tab=' + tabId;
+            return;
         }
         
         currentActiveTab = tabId;
@@ -661,6 +665,16 @@
     function init() {
         createBottomNav();
         setupTabSync();
+        
+        // Handle ?tab= URL parameter (from cross-page navigation)
+        var urlParams = new URLSearchParams(window.location.search);
+        var tabParam = urlParams.get('tab');
+        if (tabParam) {
+            // Clean up URL
+            window.history.replaceState({}, '', window.location.pathname);
+            // Navigate to requested tab
+            setTimeout(function() { handleNavClick(tabParam); }, 200);
+        }
         
         // Sync bottom nav when sidebar navigates
         document.addEventListener('sidebar:navigate', function(e) {
