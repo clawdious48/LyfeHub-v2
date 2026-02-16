@@ -386,8 +386,10 @@
 /* Job info cards (Client, Insurance, Property) */
 [data-theme="dark"] .job-info-card {
     background: rgba(255, 255, 255, 0.06) !important;
-    border-color: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
     color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }
 
 [data-theme="dark"] .job-info-card-title {
