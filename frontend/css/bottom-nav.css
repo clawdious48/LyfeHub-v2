@@ -2,6 +2,10 @@
    BOTTOM NAVIGATION BAR - Mobile Only
    ======================================== */
 
+:root {
+    --bottom-nav-height: 70px;
+}
+
 .bottom-nav {
     display: none;
     position: fixed;
@@ -419,9 +423,20 @@
     }
     
     body {
-        padding-bottom: calc(70px + env(safe-area-inset-bottom, 0));
+        padding-bottom: calc(var(--bottom-nav-height, 70px) + env(safe-area-inset-bottom, 0px));
     }
     
+    /* Modals must clear the bottom nav — shrink the fixed overlay so all
+       content (including footers/action buttons) sits above the nav bar. */
+    .modal {
+        bottom: calc(var(--bottom-nav-height, 70px) + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* Keep the blur backdrop covering the full screen (including behind nav) */
+    .modal::before {
+        bottom: calc(-1 * (var(--bottom-nav-height, 70px) + env(safe-area-inset-bottom, 0px))) !important;
+    }
+
     .modal,
     .jdm-overlay {
         z-index: 1100;

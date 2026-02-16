@@ -211,7 +211,7 @@
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
-    bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
+    bottom: 0 !important;
     transform: none !important;
     margin: 0 !important;
     z-index: 2 !important;
@@ -221,6 +221,13 @@
   
   .modal.open .modal-content {
     transform: none !important;
+  }
+
+  /* Task modals: override style.css height:100vh that ignores bottom nav */
+  .modal-content.modal-task,
+  .modal-content.modal-project {
+    height: auto !important;
+    max-height: calc(100% - 90px - env(safe-area-inset-bottom, 0px)) !important;
   }
 
   /* Modal body scrolls */
@@ -713,4 +720,113 @@ input[type="datetime-local"] {
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
+}
+
+
+/* ==========================================================================
+   13. APEX / CRM / DRYING MODAL — BOTTOM NAV CLEARANCE (MOBILE)
+   ==========================================================================
+   These modals use custom class names that don't inherit the global
+   .modal-content bottom-clearance rule. Force them above the bottom nav.
+   ========================================================================== */
+
+@media (max-width: 640px) {
+
+  /* ── Apex Job Modal ──────────────────────────────────────────────── */
+  #apex-job-modal .modal-content {
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: calc(100% - 90px - env(safe-area-inset-bottom, 0px)) !important;
+    border-radius: 0 !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
+    margin: 0 !important;
+    z-index: 2 !important;
+  }
+
+  /* ── Job Detail Modal Overlay (jobDetailModals.js) ───────────────── */
+  .job-detail-modal-overlay .modal-content,
+  #job-detail-modal-overlay .modal-content {
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: calc(100% - 90px - env(safe-area-inset-bottom, 0px)) !important;
+    border-radius: 0 !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
+    margin: 0 !important;
+    z-index: 2 !important;
+  }
+
+  .job-detail-modal-overlay .modal-form-footer {
+    position: sticky;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
+    padding: 1rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    z-index: 100;
+  }
+
+  /* ── JDT Modal (inline task/delete confirmations) ────────────────── */
+  .jdt-modal-overlay {
+    padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .jdt-modal {
+    max-height: calc(100vh - 100px - env(safe-area-inset-bottom, 0px));
+  }
+
+  /* ── CRM Modal ───────────────────────────────────────────────────── */
+  .crm-modal-overlay {
+    padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .crm-modal-card {
+    max-height: calc(100vh - 100px - env(safe-area-inset-bottom, 0px));
+    border-radius: 12px;
+  }
+
+  /* ── Drying Visit Modal ──────────────────────────────────────────── */
+  .dry-visit-overlay {
+    padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .dry-visit-modal {
+    max-height: calc(100vh - 100px - env(safe-area-inset-bottom, 0px));
+  }
+
+  .dry-visit-footer {
+    position: sticky;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
+    padding: 1rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    z-index: 100;
+  }
+
+  /* ── Dark mode overrides for Apex/CRM/Drying modal footers ──────── */
+  [data-theme="dark"] .job-detail-modal-overlay .modal-form-footer {
+    background: rgba(15, 23, 42, 0.95);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  [data-theme="dark"] .dry-visit-footer {
+    background: rgba(15, 23, 42, 0.95);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+  }
 }
