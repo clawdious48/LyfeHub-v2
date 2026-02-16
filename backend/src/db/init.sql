@@ -1319,5 +1319,74 @@ CREATE INDEX IF NOT EXISTS idx_areas_user ON areas(user_id);
 ALTER TABLE task_items ADD COLUMN IF NOT EXISTS area_id TEXT REFERENCES areas(id) ON DELETE SET NULL;
 
 -- ============================================
+-- ROLES (RBAC)
+-- ============================================
+CREATE TABLE IF NOT EXISTS roles (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  name TEXT NOT NULL UNIQUE,
+  display_name TEXT NOT NULL,
+  description TEXT,
+  permissions JSONB NOT NULL DEFAULT '{}',
+  is_default BOOLEAN DEFAULT false,
+  is_system BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Seed default roles
+INSERT INTO roles (name, display_name, description, permissions, is_default, is_system) VALUES
+  ('developer', 'Developer', 'Full system access', '{"*": ["*"]}', false, true),
+  ('management', 'Management', 'Full business access', '{"tasks": ["create","read","update","delete"], "notes": ["create","read","update","delete"], "people": ["create","read","update","delete"], "bases": ["create","read","update","delete"], "records": ["create","read","update","delete"], "calendar": ["create","read","update","delete"], "jobs": ["create","read","update","delete"], "users": ["create","read","update","delete"], "api_keys": ["create","read","update","delete"], "org": ["create","read","update","delete"]}', false, true),
+  ('office_coordinator', 'Office Coordinator', 'Office operations access', '{"tasks": ["create","read","update","delete"], "notes": ["create","read","update","delete"], "people": ["create","read","update","delete"], "bases": ["create","read","update","delete"], "records": ["create","read","update","delete"], "calendar": ["create","read","update","delete"], "jobs": ["create","read","update","delete"], "users": ["read","update"], "api_keys": ["read"], "org": ["read"]}', false, true),
+  ('project_manager', 'Project Manager', 'Project and job management', '{"tasks": ["create","read","update","delete"], "notes": ["create","read","update"], "people": ["create","read","update"], "bases": ["read"], "records": ["create","read","update"], "calendar": ["create","read","update"], "jobs": ["create","read","update"], "users": ["read"], "api_keys": ["read"], "org": ["read"]}', false, true),
+  ('estimator', 'Estimator', 'Estimating and job access', '{"tasks": ["create","read","update"], "notes": ["create","read","update"], "people": ["read"], "bases": ["read"], "records": ["create","read","update"], "calendar": ["create","read","update"], "jobs": ["create","read","update"], "users": ["read"], "api_keys": ["read"], "org": ["read"]}', false, true),
+  ('field_tech', 'Field Tech', 'Field operations access', '{"tasks": ["create","read","update"], "notes": ["create","read","update"], "people": ["read"], "bases": ["read"], "records": ["read"], "calendar": ["read"], "jobs": ["read"], "users": ["read"], "api_keys": ["read"], "org": ["read"]}', true, true)
+ON CONFLICT (name) DO NOTHING;
+
+-- ============================================
+-- ROLE DEFAULTS (for revert)
+-- ============================================
+CREATE TABLE IF NOT EXISTS role_defaults (
+  role_name TEXT PRIMARY KEY,
+  permissions JSONB NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Seed role defaults (same as initial role permissions)
+INSERT INTO role_defaults (role_name, permissions) VALUES
+  ('developer', '{"*": ["*"]}'),
+  ('management', '{"tasks": ["create","read","update","delete"], "notes": ["create","read","update","delete"], "people": ["create","read","update","delete"], "bases": ["create","read","update","delete"], "records": ["create","read","update","delete"], "calendar": ["create","read","update","delete"], "jobs": ["create","read","update","delete"], "users": ["create","read","update","delete"], "api_keys": ["create","read","update","delete"], "org": ["create","read","update","delete"]}'),
+  ('office_coordinator', '{"tasks": ["create","read","update","delete"], "notes": ["create","read","update","delete"], "people": ["create","read","update","delete"], "bases": ["create","read","update","delete"], "records": ["create","read","update","delete"], "calendar": ["create","read","update","delete"], "jobs": ["create","read","update","delete"], "users": ["read","update"], "api_keys": ["read"], "org": ["read"]}'),
+  ('project_manager', '{"tasks": ["create","read","update","delete"], "notes": ["create","read","update"], "people": ["create","read","update"], "bases": ["read"], "records": ["create","read","update"], "calendar": ["create","read","update"], "jobs": ["create","read","update"], "users": ["read"], "api_keys": ["read"], "org": ["read"]}'),
+  ('estimator', '{"tasks": ["create","read","update"], "notes": ["create","read","update"], "people": ["read"], "bases": ["read"], "records": ["create","read","update"], "calendar": ["create","read","update"], "jobs": ["create","read","update"], "users": ["read"], "api_keys": ["read"], "org": ["read"]}'),
+  ('field_tech', '{"tasks": ["create","read","update"], "notes": ["create","read","update"], "people": ["read"], "bases": ["read"], "records": ["read"], "calendar": ["read"], "jobs": ["read"], "users": ["read"], "api_keys": ["read"], "org": ["read"]}')
+ON CONFLICT (role_name) DO NOTHING;
+
+-- ============================================
+-- API KEYS: scopes column
+-- ============================================
+ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS scopes JSONB DEFAULT '["*:*"]';
+
+-- ============================================
+-- USERS: status column
+-- ============================================
+ALTER TABLE users ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
+
+-- ============================================
+-- AUDIT LOG
+-- ============================================
+CREATE TABLE IF NOT EXISTS audit_log (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  actor_id TEXT REFERENCES users(id),
+  action TEXT NOT NULL,
+  target_type TEXT,
+  target_id TEXT,
+  details JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_audit_log_created ON audit_log(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_log_actor ON audit_log(actor_id);
+
+-- ============================================
 -- DONE
 -- ============================================
