@@ -1366,6 +1366,318 @@
 }
 
 /* ========================================
+   ADMIN SECTION
+   ======================================== */
+
+/* Sub-tabs */
+.admin-subtabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 12px;
+}
+
+.admin-subtab {
+    padding: 8px 18px;
+    border: none;
+    background: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--apex-text-secondary);
+    cursor: pointer;
+    transition: var(--apex-transition-fast);
+}
+
+.admin-subtab:hover { background: var(--apex-bg-hover); color: var(--apex-text-primary); }
+.admin-subtab.active { background: rgba(255,140,0,0.12); color: #FF8C00; }
+
+.admin-subsection { display: none; }
+.admin-subsection.active { display: block; }
+
+/* Toolbar */
+.admin-toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.admin-search-wrap {
+    flex: 1;
+    min-width: 180px;
+    position: relative;
+}
+
+.admin-search-wrap svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    stroke: var(--apex-text-muted);
+    stroke-width: 2;
+    fill: none;
+}
+
+.admin-search-wrap .settings-input {
+    padding-left: 36px;
+}
+
+.admin-toolbar .settings-select { max-width: 180px; }
+
+/* Add user form */
+.admin-add-user-form {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.admin-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 16px;
+}
+
+.admin-form-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+/* User list header */
+.admin-user-list-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: var(--apex-text-muted);
+}
+
+.admin-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--apex-text-secondary);
+}
+
+.admin-checkbox-wrap {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* User list */
+.admin-user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-user-list .user-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: nowrap;
+}
+
+.admin-user-list .user-card.selected {
+    border-color: #FF8C00;
+    background: rgba(255,140,0,0.04);
+}
+
+.admin-role-chip {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.admin-status-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+.admin-status-badge.active { background: rgba(16,185,129,0.12); color: #10b981; }
+.admin-status-badge.suspended { background: rgba(239,68,68,0.12); color: #ef4444; }
+
+.admin-date { font-size: 12px; white-space: nowrap; }
+
+.admin-you-badge {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: rgba(255,140,0,0.12);
+    color: #FF8C00;
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+.admin-user-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.admin-action-btn {
+    background: none;
+    border: none;
+    padding: 4px 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: var(--apex-transition-fast);
+}
+
+.admin-action-btn:hover { background: var(--apex-bg-hover); }
+.admin-action-btn.danger:hover { background: rgba(239,68,68,0.12); }
+
+/* Role cards */
+.role-card { margin-bottom: 12px; }
+
+.role-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.role-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.admin-user-count {
+    font-size: 12px;
+    color: var(--apex-text-muted);
+    white-space: nowrap;
+}
+
+.admin-modified-badge {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: rgba(245,158,11,0.15);
+    color: #f59e0b;
+    font-weight: 600;
+}
+
+.admin-fullaccess-badge {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: rgba(168,85,247,0.12);
+    color: #a855f7;
+    font-weight: 600;
+}
+
+/* Permission matrix cells */
+.perm-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.perm-cell input { display: none; }
+
+.perm-indicator {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 2px solid var(--glass-border);
+    transition: var(--apex-transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.perm-cell.checked .perm-indicator {
+    background: #FF8C00;
+    border-color: #FF8C00;
+}
+
+.perm-cell.checked .perm-indicator::after {
+    content: '✓';
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.perm-cell.changed .perm-indicator {
+    box-shadow: 0 0 0 2px rgba(245,158,11,0.4);
+}
+
+.perm-cell input:disabled ~ .perm-indicator {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.perm-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--glass-border);
+}
+
+.role-perms-panel {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--glass-border);
+}
+
+.perm-col-toggle, .perm-row-toggle {
+    margin-left: 4px;
+    accent-color: #FF8C00;
+}
+
+/* Cancel button (reusable) */
+.btn-cancel {
+    padding: 8px 18px;
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    background: var(--glass-bg);
+    color: var(--apex-text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--apex-transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-cancel:hover { background: var(--apex-bg-hover); }
+
+.btn-cancel svg {
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+}
+
+@media (max-width: 767px) {
+    .admin-form-grid { grid-template-columns: 1fr; }
+    .admin-user-list .user-card { flex-wrap: wrap; }
+    .admin-date { display: none; }
+    .role-card-header { flex-direction: column; }
+}
+
+/* ========================================
    DARK MODE OVERRIDES
    ======================================== */
 [data-theme="dark"] .settings-header {
