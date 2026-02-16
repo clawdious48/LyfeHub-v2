@@ -173,41 +173,7 @@
    MY DAY WIDGET
    ======================================== */
 
-.my-day-kanban {
-    display: flex;
-    gap: 0.75rem;
-    min-height: 80px;
-}
-
-.my-day-column {
-    flex: 1;
-    min-width: 0;
-}
-
-.my-day-column-header {
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: #FF8C00;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.35rem;
-    border-bottom: 2px solid #FF8C00;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-
-.my-day-count {
-    background: rgba(255, 140, 0, 0.15);
-    color: #FF8C00;
-    font-size: 0.65rem;
-    padding: 0.1rem 0.4rem;
-    border-radius: 10px;
-    font-weight: 700;
-}
-
-.my-day-column-tasks {
+.my-day-list {
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
@@ -217,9 +183,10 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.4rem 0.5rem;
-    border-radius: 6px;
-    background: var(--card-bg, #f9f9f9);
+    padding: 0.5rem 0.6rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     transition: opacity 0.2s;
 }
 
@@ -248,9 +215,9 @@
 }
 
 .my-day-checkmark {
-    width: 16px;
-    height: 16px;
-    border: 2px solid #ccc;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 4px;
     transition: all 0.15s;
 }
@@ -278,7 +245,8 @@
 }
 
 .my-day-task-title {
-    font-size: 0.82rem;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.9);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -298,7 +266,7 @@
 
 .my-day-empty-col {
     font-size: 0.75rem;
-    color: #bbb;
+    color: rgba(255, 255, 255, 0.3);
     text-align: center;
     padding: 0.5rem 0;
 }
@@ -319,12 +287,7 @@
     color: #aaa;
 }
 
-/* Responsive: stack columns on small screens */
-@media (max-width: 600px) {
-    .my-day-kanban {
-        flex-direction: column;
-    }
-}
+/* My Day list is already vertical, no responsive override needed */
 
 /* Quick Capture Bar */
 .dashboard-capture { display: flex; gap: 8px; margin-top: 24px; padding: 0 4px; }

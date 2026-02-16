@@ -624,6 +624,18 @@ body {
     transition: var(--transition);
 }
 
+/* Blurred backdrop via pseudo-element — avoids WebKit stacking context bug
+   where backdrop-filter on a sibling div traps modal-content behind it */
+.modal::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: -1;
+}
+
 .modal.open {
     opacity: 1;
     visibility: visible;
@@ -632,10 +644,8 @@ body {
 .modal-backdrop {
     position: absolute;
     inset: 0;
+    background: transparent;
     z-index: 1;
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
 }
 
 .modal-content {
@@ -644,7 +654,9 @@ body {
     width: 100%;
     max-width: 560px;
     max-height: 90vh;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--bg, #ffffff);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 20px;
     overflow: hidden;
@@ -9668,11 +9680,10 @@ body.column-dragging .base-table {
    DARK MODE OVERRIDES
    ======================================== */
 [data-theme="dark"] body {
-    background: #0f172a;
-    color: #f0f0f5;
+    background: rgba(255, 255, 255, 0.05);
 }
 [data-theme="dark"] .header {
-    background: rgba(15, 23, 42, 0.9);
+    background: rgba(255, 255, 255, 0.05);
 }
 [data-theme="dark"] .view-controls {
     background: rgba(255, 255, 255, 0.05);
@@ -9721,15 +9732,15 @@ body.column-dragging .base-table {
     background: rgba(255, 255, 255, 0.05);
 }
 [data-theme="dark"] .task-card {
-    background: rgba(30, 41, 59, 0.75);
+    background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 [data-theme="dark"] .task-card:hover {
     border-color: rgba(255, 255, 255, 0.1);
 }
 [data-theme="dark"] .modal-content {
-    background: rgba(15, 23, 42, 0.97);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.12);
 }
 [data-theme="dark"] .column-view-card {
     background: rgba(255, 255, 255, 0.05);
@@ -9791,7 +9802,7 @@ body.column-dragging .base-table {
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 [data-theme="dark"] .project-card {
-    background: rgba(30, 41, 59, 0.75);
+    background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 [data-theme="dark"] .project-card:hover {
@@ -9801,7 +9812,7 @@ body.column-dragging .base-table {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 [data-theme="dark"] .login-container {
-    background: rgba(15, 23, 42, 0.95);
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 [data-theme="dark"] ::-webkit-scrollbar-thumb {
@@ -9814,7 +9825,7 @@ body.column-dragging .base-table {
     background: rgba(255, 255, 255, 0.05);
 }
 [data-theme="dark"] .my-lists-menu {
-    background: rgba(15, 23, 42, 0.95);
+    background: rgba(255, 255, 255, 0.08);
 }
 [data-theme="dark"] .my-lists-item:hover {
     background: rgba(255, 255, 255, 0.05);
@@ -9856,7 +9867,7 @@ body.column-dragging .base-table {
     background: rgba(255, 255, 255, 0.05);
 }
 [data-theme="dark"] .md-dropdown-menu {
-    background: rgba(15, 23, 42, 0.95);
+    background: rgba(255, 255, 255, 0.08);
 }
 [data-theme="dark"] .task-reader-subtask:hover {
     background: rgba(255, 255, 255, 0.05);
@@ -9878,7 +9889,7 @@ body.column-dragging .base-table {
     border: 1px dashed rgba(255, 255, 255, 0.15);
 }
 [data-theme="dark"] .task-relation-dropdown {
-    background: rgba(15, 23, 42, 0.95);
+    background: rgba(255, 255, 255, 0.08);
 }
 [data-theme="dark"] .task-relation-dropdown-search {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -9925,7 +9936,7 @@ body.column-dragging .base-table {
     background: rgba(255, 255, 255, 0.05);
 }
 [data-theme="dark"] .base-card {
-    background: rgba(30, 41, 59, 0.75);
+    background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 [data-theme="dark"] .base-header {
@@ -9947,10 +9958,10 @@ body.column-dragging .base-table {
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 [data-theme="dark"] .cell-editor {
-    background: rgba(15, 23, 42, 0.95);
+    background: rgba(255, 255, 255, 0.08);
 }
 [data-theme="dark"] .cell-select-editor {
-    background: rgba(15, 23, 42, 0.95);
+    background: rgba(255, 255, 255, 0.08);
 }
 [data-theme="dark"] .select-option.clear-option {
     background: rgba(255, 255, 255, 0.05);
@@ -9959,7 +9970,7 @@ body.column-dragging .base-table {
     background: rgba(255, 255, 255, 0.05);
 }
 [data-theme="dark"] .property-menu {
-    background: rgba(15, 23, 42, 0.95);
+    background: rgba(255, 255, 255, 0.08);
 }
 [data-theme="dark"] .property-menu-item:hover {
     background: rgba(255, 255, 255, 0.05);
@@ -10027,7 +10038,7 @@ body.column-dragging .base-table {
     background: rgba(255, 255, 255, 0.05);
 }
 [data-theme="dark"] .toolbar-dropdown {
-    background: rgba(15, 23, 42, 0.95);
+    background: rgba(255, 255, 255, 0.08);
 }
 [data-theme="dark"] .preset-filter-btn:hover {
     background: rgba(255, 255, 255, 0.05);
@@ -10090,7 +10101,7 @@ body.column-dragging .base-table {
     background: rgba(255, 255, 255, 0.05);
 }
 [data-theme="dark"] .person-card {
-    background: rgba(30, 41, 59, 0.75);
+    background: rgba(255, 255, 255, 0.05);
 }
 [data-theme="dark"] .person-card-avatar {
     color: #f0f0f5;
@@ -10099,13 +10110,13 @@ body.column-dragging .base-table {
     color: #f0f0f5;
 }
 [data-theme="dark"] .person-detail-card {
-    background: rgba(30, 41, 59, 0.75);
+    background: rgba(255, 255, 255, 0.05);
 }
 [data-theme="dark"] .person-detail-avatar {
     color: #f0f0f5;
 }
 [data-theme="dark"] .job-section {
-    background: rgba(30, 41, 59, 0.75);
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 [data-theme="dark"] .job-section-header {
