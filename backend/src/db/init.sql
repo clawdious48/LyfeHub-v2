@@ -407,14 +407,33 @@ CREATE INDEX IF NOT EXISTS idx_base_records_base_id ON base_records(base_id);
 CREATE TABLE IF NOT EXISTS base_views (
   id TEXT PRIMARY KEY,
   base_id TEXT REFERENCES bases(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  type TEXT DEFAULT 'table' CHECK(type IN ('table', 'kanban', 'gallery', 'calendar', 'list')),
+  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL DEFAULT 'Untitled View',
+  view_type TEXT NOT NULL DEFAULT 'table',
   config TEXT DEFAULT '{}',
+  is_default INTEGER DEFAULT 0,
+  sort_order INTEGER DEFAULT 0,
   position INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration: Add new columns to base_views if upgrading from old schema
+DO $$ BEGIN
+  ALTER TABLE base_views ADD COLUMN user_id TEXT REFERENCES users(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE base_views ADD COLUMN view_type TEXT NOT NULL DEFAULT 'table';
+EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE base_views ADD COLUMN is_default INTEGER DEFAULT 0;
+EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE base_views ADD COLUMN sort_order INTEGER DEFAULT 0;
+EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+
 CREATE INDEX IF NOT EXISTS idx_base_views_base_id ON base_views(base_id);
+CREATE INDEX IF NOT EXISTS idx_base_views_user_id ON base_views(user_id);
 
 -- ============================================
 -- BASE RELATIONS

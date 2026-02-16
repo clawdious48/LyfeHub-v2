@@ -1,0 +1,559 @@
+/* ============================================
+   Base Views - Tabs, Config Panel, Styling
+   ============================================ */
+
+/* View Tabs Bar */
+.views-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.views-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.view-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 6px;
+  background: var(--bg-secondary, #f5f5f5);
+  color: var(--text-secondary, #666);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.view-tab:hover {
+  background: var(--bg-hover, #eee);
+  color: var(--text-primary, #333);
+}
+
+.view-tab.active {
+  background: #FF8C00;
+  color: #fff;
+  border-color: #FF8C00;
+  font-weight: 600;
+}
+
+.view-tab-actions {
+  display: none;
+  align-items: center;
+  gap: 2px;
+  margin-left: 2px;
+}
+
+.view-tab:hover .view-tab-actions,
+.view-tab.active .view-tab-actions {
+  display: inline-flex;
+}
+
+.view-tab-edit,
+.view-tab-delete {
+  background: none;
+  border: none;
+  padding: 0 2px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  opacity: 0.6;
+  line-height: 1;
+}
+
+.view-tab-edit:hover,
+.view-tab-delete:hover {
+  opacity: 1;
+}
+
+.view-tab.active .view-tab-edit,
+.view-tab.active .view-tab-delete {
+  color: #fff;
+}
+
+/* "+" Add View Button */
+.view-tab-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 1px dashed var(--border-color, #ccc);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary, #999);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.view-tab-add:hover {
+  border-color: #FF8C00;
+  color: #FF8C00;
+  background: rgba(255, 140, 0, 0.06);
+}
+
+/* Views Toolbar */
+.views-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.views-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.views-tabs-container {
+  min-width: 0;
+  flex: 1;
+}
+
+.views-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Toolbar Buttons */
+.toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 0.78rem;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 6px;
+  background: var(--bg-secondary, #f5f5f5);
+  color: var(--text-secondary, #666);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.toolbar-btn:hover {
+  background: var(--bg-hover, #eee);
+  color: var(--text-primary, #333);
+}
+
+.toolbar-btn.active {
+  background: rgba(255, 140, 0, 0.1);
+  border-color: #FF8C00;
+  color: #FF8C00;
+}
+
+.toolbar-btn .btn-icon {
+  font-size: 0.85rem;
+}
+
+/* Filter Pills Bar */
+.filter-pills-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+  flex-wrap: wrap;
+  background: var(--bg-secondary, #fafafa);
+}
+
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  background: rgba(255, 140, 0, 0.08);
+  border: 1px solid rgba(255, 140, 0, 0.3);
+  border-radius: 12px;
+  color: var(--text-primary, #333);
+}
+
+.filter-pill-remove {
+  background: none;
+  border: none;
+  padding: 0 2px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: var(--text-secondary, #999);
+  line-height: 1;
+}
+
+.filter-pill-remove:hover {
+  color: #e74c3c;
+}
+
+.clear-all-filters-btn {
+  background: none;
+  border: none;
+  padding: 2px 6px;
+  font-size: 0.72rem;
+  color: var(--text-secondary, #999);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.clear-all-filters-btn:hover {
+  color: #e74c3c;
+}
+
+/* View Config Panel (modal) */
+.view-config-panel {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.view-config-section {
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color, #e8e8e8);
+}
+
+.view-config-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.view-config-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.view-config-section-header h3 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary, #333);
+}
+
+.view-config-add-btn {
+  background: none;
+  border: none;
+  color: #FF8C00;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.view-config-add-btn:hover {
+  background: rgba(255, 140, 0, 0.1);
+}
+
+/* Filter/Sort Rule Row */
+.view-config-rule {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.view-config-rule select,
+.view-config-rule input {
+  padding: 4px 6px;
+  font-size: 0.78rem;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 4px;
+  background: var(--bg-primary, #fff);
+  color: var(--text-primary, #333);
+  min-width: 0;
+}
+
+.view-config-rule select {
+  flex: 1;
+  max-width: 140px;
+}
+
+.view-config-rule input {
+  flex: 1;
+  max-width: 120px;
+}
+
+.view-config-rule-remove {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #999);
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.view-config-rule-remove:hover {
+  color: #e74c3c;
+}
+
+/* Column Visibility Toggles */
+.view-config-columns {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.view-config-column-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 6px;
+  border-radius: 4px;
+}
+
+.view-config-column-row:hover {
+  background: var(--bg-hover, #f5f5f5);
+}
+
+.view-config-column-row input[type="checkbox"] {
+  accent-color: #FF8C00;
+}
+
+.view-config-column-row .column-label {
+  flex: 1;
+  font-size: 0.8rem;
+  color: var(--text-primary, #333);
+}
+
+.view-config-column-row .column-move-btns {
+  display: flex;
+  gap: 2px;
+}
+
+.view-config-column-row .column-move-btn {
+  background: none;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-size: 0.65rem;
+  cursor: pointer;
+  color: var(--text-secondary, #999);
+}
+
+.view-config-column-row .column-move-btn:hover {
+  background: var(--bg-hover, #eee);
+  color: var(--text-primary, #333);
+}
+
+/* View Config Summary */
+.view-config-summary {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #666);
+  margin-top: 0.5rem;
+}
+
+.view-config-summary ul {
+  margin: 0.25rem 0 0 1.2rem;
+  padding: 0;
+}
+
+.view-config-summary li {
+  margin-bottom: 0.15rem;
+}
+
+/* Default View Toggle */
+.view-default-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 0.8rem;
+}
+
+.view-default-toggle input[type="checkbox"] {
+  accent-color: #FF8C00;
+}
+
+/* Column Toggle in Columns Modal */
+.columns-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.column-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+
+.column-toggle:hover {
+  background: var(--bg-hover, #f5f5f5);
+}
+
+.column-toggle input[type="checkbox"] {
+  accent-color: #FF8C00;
+}
+
+.column-toggle .column-name {
+  flex: 1;
+}
+
+.column-toggle .system-badge {
+  font-size: 0.65rem;
+  background: var(--bg-secondary, #e8e8e8);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--text-secondary, #999);
+}
+
+/* ============================================
+   Dark Mode
+   ============================================ */
+
+[data-theme="dark"] .view-tab {
+  background: var(--bg-secondary, #2a2a2a);
+  border-color: var(--border-color, #444);
+  color: var(--text-secondary, #aaa);
+}
+
+[data-theme="dark"] .view-tab:hover {
+  background: var(--bg-hover, #333);
+  color: var(--text-primary, #eee);
+}
+
+[data-theme="dark"] .view-tab.active {
+  background: #FF8C00;
+  color: #fff;
+  border-color: #FF8C00;
+}
+
+[data-theme="dark"] .view-tab-add {
+  border-color: var(--border-color, #555);
+  color: var(--text-secondary, #888);
+}
+
+[data-theme="dark"] .view-tab-add:hover {
+  border-color: #FF8C00;
+  color: #FF8C00;
+}
+
+[data-theme="dark"] .toolbar-btn {
+  background: var(--bg-secondary, #2a2a2a);
+  border-color: var(--border-color, #444);
+  color: var(--text-secondary, #aaa);
+}
+
+[data-theme="dark"] .toolbar-btn:hover {
+  background: var(--bg-hover, #333);
+  color: var(--text-primary, #eee);
+}
+
+[data-theme="dark"] .toolbar-btn.active {
+  background: rgba(255, 140, 0, 0.15);
+  border-color: #FF8C00;
+  color: #FF8C00;
+}
+
+[data-theme="dark"] .filter-pills-bar {
+  background: var(--bg-secondary, #1e1e1e);
+  border-color: var(--border-color, #444);
+}
+
+[data-theme="dark"] .filter-pill {
+  background: rgba(255, 140, 0, 0.12);
+  border-color: rgba(255, 140, 0, 0.3);
+  color: var(--text-primary, #ddd);
+}
+
+[data-theme="dark"] .views-toolbar {
+  border-color: var(--border-color, #444);
+}
+
+[data-theme="dark"] .view-config-section {
+  border-color: var(--border-color, #444);
+}
+
+[data-theme="dark"] .view-config-rule select,
+[data-theme="dark"] .view-config-rule input {
+  background: var(--bg-secondary, #2a2a2a);
+  border-color: var(--border-color, #444);
+  color: var(--text-primary, #ddd);
+}
+
+[data-theme="dark"] .view-config-column-row:hover {
+  background: var(--bg-hover, #2a2a2a);
+}
+
+[data-theme="dark"] .column-toggle:hover {
+  background: var(--bg-hover, #2a2a2a);
+}
+
+[data-theme="dark"] .column-toggle .system-badge {
+  background: var(--bg-hover, #333);
+  color: var(--text-secondary, #888);
+}
+
+/* ============================================
+   Mobile Responsive
+   ============================================ */
+
+@media (max-width: 768px) {
+  .views-toolbar {
+    padding: 4px 6px;
+    gap: 4px;
+  }
+
+  .views-toolbar-left {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .view-tab {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+
+  .toolbar-btn {
+    padding: 4px 6px;
+    font-size: 0.72rem;
+  }
+
+  .toolbar-btn span:not(.btn-icon) {
+    display: none;
+  }
+
+  .filter-pills-bar {
+    padding: 3px 6px;
+    gap: 4px;
+  }
+
+  .filter-pill {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+  }
+
+  .view-config-rule {
+    flex-wrap: wrap;
+  }
+
+  .view-config-rule select,
+  .view-config-rule input {
+    max-width: none;
+    flex: 1 1 100px;
+  }
+}

@@ -45,6 +45,7 @@ app.use('/api/task-items', taskItemsRoutes);
 app.use('/api/task-lists', taskListsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/bases', basesRoutes);
+app.use('/api/bases/:baseId/views', require('./routes/base-views'));
 app.use('/api/calendars', calendarsRoutes);
 
 app.use('/api/people', peopleRoutes);

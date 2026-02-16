@@ -51,6 +51,15 @@
     transform: scale(0.95);
 }
 
+.bottom-nav-item:focus,
+.bottom-nav-item:focus-visible,
+.bottom-nav-item:focus-within {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
 .bottom-nav-item svg {
     width: 24px;
     height: 24px;
@@ -123,13 +132,13 @@
 .bottom-nav-item.active::before {
     content: '';
     position: absolute;
-    top: 0;
+    bottom: 0;
     left: 50%;
     transform: translateX(-50%);
     width: 30px;
     height: 3px;
     background: linear-gradient(135deg, #FF8C00, #E07800);
-    border-radius: 0 0 3px 3px;
+    border-radius: 3px 3px 0 0;
 }
 
 /* ========================================
@@ -451,15 +460,7 @@
 
 /* ===== Chevron indicator on active tab ===== */
 .nav-chevron {
-    position: absolute;
-    top: 0px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 9px;
-    color: #FF8C00;
-    line-height: 1;
-    animation: chevronBounce 400ms ease-out;
-    pointer-events: none;
+    display: none !important;
 }
 
 @keyframes chevronBounce {

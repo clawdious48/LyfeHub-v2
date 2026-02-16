@@ -363,3 +363,66 @@
 .widget-empty { text-align: center; padding: 24px 16px; }
 .widget-empty p { color: #888; font-size: 14px; margin: 0; }
 .widget-empty-sub { font-size: 12px !important; color: #bbb !important; margin-top: 4px !important; }
+
+/* ========================================
+   BASE VIEW WIDGET
+   ======================================== */
+.base-view-widget-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.base-view-widget-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.base-view-widget-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #888;
+    padding: 6px 10px;
+    border-bottom: 2px solid rgba(255, 140, 0, 0.15);
+    white-space: nowrap;
+}
+
+.base-view-widget-table td {
+    padding: 6px 10px;
+    color: #333;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.base-view-widget-table tbody tr:hover {
+    background: rgba(255, 140, 0, 0.04);
+}
+
+.base-view-widget-more {
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+    padding: 6px 0 2px;
+}
+
+[data-theme="dark"] .base-view-widget-table th {
+    color: #aaa;
+    border-bottom-color: rgba(255, 140, 0, 0.2);
+}
+
+[data-theme="dark"] .base-view-widget-table td {
+    color: #ddd;
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .base-view-widget-table tbody tr:hover {
+    background: rgba(255, 140, 0, 0.08);
+}
