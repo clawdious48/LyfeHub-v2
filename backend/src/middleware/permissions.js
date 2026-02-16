@@ -7,6 +7,8 @@ function requireRole(...allowedRoles) {
   return (req, res, next) => {
     const userRoles = req.user?.roles || req.user?.role || [];
     const rolesArr = Array.isArray(userRoles) ? userRoles : [userRoles];
+    // developer role bypasses all role checks
+    if (rolesArr.includes('developer')) return next();
     if (!rolesArr.some(r => allowedRoles.includes(r))) {
       return res.status(403).json({ error: 'Insufficient permissions' });
     }
@@ -22,7 +24,7 @@ function requireRole(...allowedRoles) {
 function canEditEntry(req, entry) {
   const roles = req.user?.roles || req.user?.role || [];
   const rolesArr = Array.isArray(roles) ? roles : [roles];
-  if (rolesArr.includes('management') || rolesArr.includes('office_coordinator')) return true;
+  if (rolesArr.includes('developer') || rolesArr.includes('management') || rolesArr.includes('office_coordinator')) return true;
   if (entry.author_id === req.user?.id) {
     const created = new Date(entry.created_at + 'Z');
     const now = new Date();
@@ -40,7 +42,7 @@ function canEditEntry(req, entry) {
 async function requirePhaseAccess(req, phaseId) {
   const roles2 = req.user?.roles || req.user?.role || [];
   const rolesArr2 = Array.isArray(roles2) ? roles2 : [roles2];
-  if (rolesArr2.includes('management') || rolesArr2.includes('office_coordinator')) return true;
+  if (rolesArr2.includes('developer') || rolesArr2.includes('management') || rolesArr2.includes('office_coordinator')) return true;
   const row = await db.getOne(
     'SELECT 1 FROM phase_assignments WHERE phase_id = $1 AND user_id = $2',
     [phaseId, req.user?.id]

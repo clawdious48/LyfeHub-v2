@@ -632,18 +632,19 @@ body {
 .modal-backdrop {
     position: absolute;
     inset: 0;
+    z-index: 1;
     background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .modal-content {
     position: relative;
+    z-index: 2;
     width: 100%;
     max-width: 560px;
     max-height: 90vh;
     background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: var(--blur);
-    -webkit-backdrop-filter: var(--blur);
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 20px;
     overflow: hidden;

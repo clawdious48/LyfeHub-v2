@@ -35,9 +35,9 @@ async function createUser({ email, password, name }) {
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
   await db.run(`
-    INSERT INTO users (id, email, password_hash, name, settings, created_at, updated_at)
-    VALUES ($1, $2, $3, $4, '{}', $5, $6)
-  `, [id, email.toLowerCase(), passwordHash, name, now, now]);
+    INSERT INTO users (id, email, password_hash, name, role, settings, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, $5, '{}', $6, $7)
+  `, [id, email.toLowerCase(), passwordHash, name, 'field_tech', now, now]);
 
   return {
     id,
@@ -117,14 +117,14 @@ function getSafeUser(user) {
   if (typeof safeUser.settings === 'string') {
     safeUser.settings = JSON.parse(safeUser.settings);
   }
-  if (typeof safeUser.role === 'string') {
-    try { safeUser.role = JSON.parse(safeUser.role); } catch { safeUser.role = [safeUser.role]; }
+  // Normalize role to a simple string; default to field_tech
+  if (!safeUser.role || !VALID_ROLES.includes(safeUser.role)) {
+    safeUser.role = 'field_tech';
   }
-  if (!Array.isArray(safeUser.role)) safeUser.role = ['field_tech'];
   return safeUser;
 }
 
-const VALID_ROLES = ['management', 'office_coordinator', 'project_manager', 'estimator', 'field_tech'];
+const VALID_ROLES = ['developer', 'management', 'office_coordinator', 'project_manager', 'estimator', 'field_tech'];
 
 /**
  * Get all users (without password_hash)
