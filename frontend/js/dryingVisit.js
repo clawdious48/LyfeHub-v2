@@ -30,11 +30,76 @@ const dryingVisit = {
     // Public API
     // ========================================
 
-    /** Add new visit */
+    /** Show date picker before opening visit */
     async open(jobId) {
+        this._showDatePicker(jobId);
+    },
+
+    /** Date picker popup */
+    _showDatePicker(jobId) {
+        // Remove any existing date picker
+        const existing = document.getElementById('dv-date-picker-overlay');
+        if (existing) existing.remove();
+
+        const now = new Date();
+        const localDate = now.toISOString().slice(0, 10);
+        const localTime = now.toTimeString().slice(0, 5);
+
+        const overlay = document.createElement('div');
+        overlay.id = 'dv-date-picker-overlay';
+        overlay.className = 'dry-wizard-overlay';
+        overlay.innerHTML = `
+            <div class="dry-wizard-backdrop" id="dv-date-picker-backdrop"></div>
+            <div class="dry-wizard-card" style="max-width: 380px;">
+                <div class="dry-wizard-header">
+                    <div class="dry-wizard-nav">
+                        <h3>Visit Date & Time</h3>
+                        <button class="dry-wizard-close" id="dv-date-picker-close">&times;</button>
+                    </div>
+                </div>
+                <div style="padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
+                    <button class="dry-btn dry-btn-primary" id="dv-date-today" style="width: 100%; padding: 0.75rem; font-size: 1rem;">
+                        📅 Today — ${now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                    </button>
+                    <div style="text-align: center; color: rgba(26,26,46,0.4); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">or pick a date</div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="date" id="dv-date-input" class="dry-atmo-input" value="${localDate}" style="flex: 2; padding: 0.6rem; font-size: 0.95rem; border-radius: 8px; border: 1px solid rgba(0,0,0,0.12); background: rgba(255,255,255,0.8);">
+                        <input type="time" id="dv-time-input" class="dry-atmo-input" value="${localTime}" style="flex: 1; padding: 0.6rem; font-size: 0.95rem; border-radius: 8px; border: 1px solid rgba(0,0,0,0.12); background: rgba(255,255,255,0.8);">
+                    </div>
+                    <button class="dry-btn dry-btn-secondary" id="dv-date-confirm" style="width: 100%; padding: 0.65rem; font-size: 0.95rem;">
+                        Use Selected Date
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        // Bind events
+        document.getElementById('dv-date-today').addEventListener('click', () => {
+            overlay.remove();
+            this._openWithDate(jobId, new Date().toISOString());
+        });
+
+        document.getElementById('dv-date-confirm').addEventListener('click', () => {
+            const date = document.getElementById('dv-date-input').value;
+            const time = document.getElementById('dv-time-input').value;
+            if (!date) return;
+            const visited_at = new Date(`${date}T${time || '12:00'}`).toISOString();
+            overlay.remove();
+            this._openWithDate(jobId, visited_at);
+        });
+
+        document.getElementById('dv-date-picker-close').addEventListener('click', () => overlay.remove());
+        document.getElementById('dv-date-picker-backdrop').addEventListener('click', () => overlay.remove());
+    },
+
+    /** Actually open the visit modal with a chosen date */
+    async _openWithDate(jobId, visitedAt) {
         this._resetState();
         this._state.jobId = jobId;
         this._state.mode = 'add';
+        this._state.visitedAt = visitedAt;
         this._ensureOverlay();
         this._overlay.style.display = 'flex';
         this._showLoading();
@@ -60,6 +125,7 @@ const dryingVisit = {
 
             // Load prior visit data for comparison
             const sorted = allVisits.sort((a, b) => a.visit_number - b.visit_number);
+            this._state.allVisits = sorted;
             const priorVisitRow = sorted.length > 0 ? sorted[sorted.length - 1] : null;
             if (priorVisitRow) {
                 const priorData = await api.getDryingVisit(jobId, priorVisitRow.id);
@@ -121,6 +187,7 @@ const dryingVisit = {
 
             // Load prior visit data for comparison columns
             const sorted = allVisits.sort((a, b) => a.visit_number - b.visit_number);
+            this._state.allVisits = sorted;
             const thisIdx = sorted.findIndex(v => v.id === visitId);
             if (thisIdx > 0) {
                 const priorData = await api.getDryingVisit(jobId, sorted[thisIdx - 1].id);
@@ -169,6 +236,7 @@ const dryingVisit = {
 
             // Load prior visit for comparison
             const sorted = allVisits.sort((a, b) => a.visit_number - b.visit_number);
+            this._state.allVisits = sorted;
             const thisIdx = sorted.findIndex(v => v.id === visitId);
             if (thisIdx > 0) {
                 const priorData = await api.getDryingVisit(jobId, sorted[thisIdx - 1].id);
@@ -260,7 +328,9 @@ const dryingVisit = {
             equipment: {},
             noteText: '',
             photoFiles: [],
-            photoPreviewUrls: []
+            photoPreviewUrls: [],
+            visitedAt: null,
+            allVisits: []
         };
     },
 
@@ -329,11 +399,31 @@ const dryingVisit = {
         const { visit, mode } = this._state;
         const esc = dryingUtils.escapeHtml;
         let title = 'Add Visit';
-        if (mode === 'readonly' && visit) {
+        if (mode === 'add' && this._state.visitedAt) {
+            const d = new Date(this._state.visitedAt).toLocaleDateString();
+            title = `Add Visit &mdash; ${esc(d)}`;
+        } else if (mode === 'readonly' && visit) {
             const d = visit.visited_at ? new Date(visit.visited_at).toLocaleDateString() : '';
             title = `Visit #${visit.visit_number}` + (d ? ` &mdash; ${esc(d)}` : '');
         } else if (mode === 'edit' && visit) {
             title = `Edit Visit #${visit.visit_number}`;
+        }
+
+        if (mode === 'edit' && visit) {
+            const currentDate = this._state.visitedAt || visit.visited_at || '';
+            const dateVal = currentDate ? new Date(currentDate).toISOString().slice(0, 10) : '';
+            const timeVal = currentDate ? new Date(currentDate).toTimeString().slice(0, 5) : '';
+            return `<div class="dry-visit-header">
+                <button class="dry-btn dry-btn-sm" onclick="dryingVisit.close()">&times;</button>
+                <div class="dry-edit-date-center">
+                    <span style="font-size:0.75rem;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em;">Visit #${visit.visit_number}</span>
+                    <div class="dry-edit-date-row">
+                        <input type="date" class="dry-edit-date-input" id="dv-edit-date" value="${dateVal}">
+                        <input type="time" class="dry-edit-date-input" id="dv-edit-time" value="${timeVal}">
+                    </div>
+                </div>
+                <div style="width:28px;"></div>
+            </div>`;
         }
 
         return `<div class="dry-visit-header">
@@ -478,7 +568,7 @@ const dryingVisit = {
         </div>`;
 
         for (const rp of roomRPs) {
-            const isDemolished = !!rp.demolished_at;
+            const isDemolished = this._isDemolishedForView(rp);
             const rowClass = isDemolished ? ' dry-moisture-demolished' : this._moistureRowClass(rp);
             const priorVal = this._getPriorMoisture(rp.id);
             const todayVal = this._state.moisture[rp.id];
@@ -592,6 +682,8 @@ const dryingVisit = {
         return `<div class="dry-notes-section">
             <h4>Notes</h4>
             <textarea class="dry-note-input" id="dv-note-text" placeholder="Add notes about this visit...">${esc(this._state.noteText)}</textarea>
+        </div>
+        <div class="dry-photo-section" style="margin-top:0.75rem;">
             <div class="dry-photo-upload">
                 <label><input type="file" accept="image/*" multiple id="dv-photo-input"> + Add Photos</label>
             </div>
@@ -608,25 +700,29 @@ const dryingVisit = {
         const esc = dryingUtils.escapeHtml;
 
         if (notes.length === 0) {
-            return `<div class="dry-notes-section"><h4>Notes</h4><p style="color:rgba(255,255,255,0.4);font-size:0.82rem;">No notes for this visit.</p></div>`;
+            return '';
         }
 
         let html = '<div class="dry-notes-section"><h4>Notes</h4>';
+        const allPhotos = [];
         for (const note of notes) {
             const photos = typeof note.photos === 'string' ? JSON.parse(note.photos || '[]') : (note.photos || []);
             html += `<div style="padding:0.6rem 0.75rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;margin-bottom:0.5rem;">
-                <p style="margin:0;font-size:0.82rem;color:rgba(255,255,255,0.85);">${esc(note.content)}</p>`;
-            if (photos.length > 0) {
-                html += '<div class="dry-photo-thumbs" style="margin-top:0.5rem;">';
-                for (const p of photos) {
-                    const src = `/api/apex-jobs/${this._state.jobId}/drying/photos/${esc(p.thumbPath || p.path || p.id + '_thumb.jpg')}`;
-                    html += `<div class="dry-photo-thumb"><img src="${src}" alt="photo"></div>`;
-                }
-                html += '</div>';
+                <p style="margin:0;font-size:0.82rem;color:rgba(255,255,255,0.85);">${esc(note.content)}</p>
+            </div>`;
+            for (const p of photos) { allPhotos.push(p); }
+        }
+        html += '</div>';
+        if (allPhotos.length > 0) {
+            html += '<div class="dry-photo-thumbs" style="margin-top:0.5rem;">';
+            for (let pi = 0; pi < allPhotos.length; pi++) {
+                const p = allPhotos[pi];
+                const thumbSrc = `/api/apex-jobs/${this._state.jobId}/drying/photos/${esc(p.thumbPath || p.path || p.id + '_thumb.jpg')}`;
+                const fullSrc = `/api/apex-jobs/${this._state.jobId}/drying/photos/${esc(p.path || p.id + '.jpg')}`;
+                html += `<div class="dry-photo-thumb dry-photo-thumb-clickable" data-full-src="${esc(fullSrc)}" data-photo-idx="${pi}"><img src="${thumbSrc}" alt="photo"></div>`;
             }
             html += '</div>';
         }
-        html += '</div>';
         return html;
     },
 
@@ -652,7 +748,35 @@ const dryingVisit = {
             });
         });
 
+        // Photo lightbox (read-only and edit)
+        modal.querySelectorAll('.dry-photo-thumb-clickable').forEach(thumb => {
+            thumb.addEventListener('click', () => {
+                const container = thumb.closest('.dry-photo-thumbs');
+                const allThumbs = Array.from(container.querySelectorAll('.dry-photo-thumb-clickable'));
+                const urls = allThumbs.map(t => t.dataset.fullSrc);
+                const idx = parseInt(thumb.dataset.photoIdx) || 0;
+                if (typeof photoLightbox !== 'undefined') {
+                    photoLightbox.open(urls, idx);
+                }
+            });
+        });
+
         if (this._state.mode === 'readonly') return;
+
+        // Edit date inputs
+        const editDate = modal.querySelector('#dv-edit-date');
+        const editTime = modal.querySelector('#dv-edit-time');
+        if (editDate) {
+            const updateVisitedAt = () => {
+                const d = editDate.value;
+                const t = editTime ? editTime.value : '12:00';
+                if (d) {
+                    this._state.visitedAt = new Date(`${d}T${t || '12:00'}`).toISOString();
+                }
+            };
+            editDate.addEventListener('change', updateVisitedAt);
+            if (editTime) editTime.addEventListener('change', updateVisitedAt);
+        }
 
         // Atmospheric inputs
         modal.querySelectorAll('.dry-atmo-input').forEach(input => {
@@ -903,7 +1027,9 @@ const dryingVisit = {
 
     async _ensureVisitCreated() {
         if (!this._state.visitId) {
-            const newVisit = await api.createDryingVisit(this._state.jobId);
+            const newVisit = await api.createDryingVisit(this._state.jobId, {
+                visited_at: this._state.visitedAt || new Date().toISOString()
+            });
             this._state.visitId = newVisit.id;
             this._state.visit = newVisit;
         }
@@ -1105,14 +1231,20 @@ const dryingVisit = {
             // Create the visit now (deferred from open)
             let actualVisitId = visitId;
             if (!actualVisitId) {
-                const newVisit = await api.createDryingVisit(jobId);
+                const newVisit = await api.createDryingVisit(jobId, {
+                    visited_at: this._state.visitedAt || new Date().toISOString()
+                });
                 actualVisitId = newVisit.id;
                 this._state.visitId = actualVisitId;
                 this._state.visit = newVisit;
             }
 
-            // Save visit data
-            await api.saveDryingVisit(jobId, actualVisitId, { atmospheric, moisture, equipment });
+            // Save visit data (include visited_at if changed)
+            const savePayload = { atmospheric, moisture, equipment };
+            if (this._state.visitedAt) {
+                savePayload.visited_at = this._state.visitedAt;
+            }
+            await api.saveDryingVisit(jobId, actualVisitId, savePayload);
 
             // Save note if any
             if (this._state.noteText.trim() || this._state.photoFiles.length > 0) {
@@ -1208,6 +1340,30 @@ const dryingVisit = {
         if (!this._state.priorVisit || !this._state.priorVisit.equipment) return 0;
         const match = this._state.priorVisit.equipment.find(e => e.room_id === roomId && e.equipment_type === equipmentType);
         return match ? match.quantity : 0;
+    },
+
+    /**
+     * Check if a ref point should appear demolished for the currently viewed visit.
+     * A ref point is demolished for this visit only if it was demolished on this visit
+     * or on an earlier visit (by visit_number).
+     */
+    _isDemolishedForView(rp) {
+        if (!rp.demolished_at) return false;
+        
+        // In add mode, no visit yet — only show demolished if it was demolished before
+        if (this._state.mode === 'add') {
+            return !!rp.demolished_at;
+        }
+        
+        const currentVisit = this._state.visit;
+        if (!currentVisit) return !!rp.demolished_at;
+        
+        // Find the visit_number when this ref point was demolished
+        const demoVisit = this._state.allVisits.find(v => v.id === rp.demolished_visit_id);
+        if (!demoVisit) return !!rp.demolished_at; // fallback
+        
+        // Only show as demolished if demolition visit <= current visit
+        return demoVisit.visit_number <= currentVisit.visit_number;
     },
 
     _getDehuCount(chamberId) {

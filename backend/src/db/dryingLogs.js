@@ -154,10 +154,10 @@ module.exports = {
 
   // Chambers
   getChambersByLogId: async (logId) => await db.getAll('SELECT * FROM drying_chambers WHERE log_id = $1 ORDER BY position', [logId]),
-  insertChamber: async (logId, name, color, position) => {
+  insertChamber: async (logId, name, color, position, floorLevel) => {
     const id = uuidv4();
-    await db.run('INSERT INTO drying_chambers (id, log_id, name, color, position) VALUES ($1, $2, $3, $4, $5)', [id, logId, name, color || '', position || 0]);
-    return { id, log_id: logId, name, color: color || '', position: position || 0 };
+    await db.run('INSERT INTO drying_chambers (id, log_id, name, color, position, floor_level) VALUES ($1, $2, $3, $4, $5, $6)', [id, logId, name, color || '', position || 0, floorLevel || 'main_level']);
+    return { id, log_id: logId, name, color: color || '', position: position || 0, floor_level: floorLevel || 'main_level' };
   },
 
   // Rooms
@@ -220,7 +220,15 @@ module.exports = {
   // Chamber update/delete
   getChamberById: async (id) => await db.getOne('SELECT * FROM drying_chambers WHERE id = $1', [id]),
   updateChamber: async (id, data) => {
-    await db.run("UPDATE drying_chambers SET name = $1, color = $2, position = $3, updated_at = NOW() WHERE id = $4", [data.name, data.color, data.position, id]);
+    const fields = ['name = $1', 'color = $2', 'position = $3'];
+    const params = [data.name, data.color, data.position];
+    if (data.floor_level !== undefined) {
+      fields.push(`floor_level = $${fields.length + 1}`);
+      params.push(data.floor_level);
+    }
+    fields.push('updated_at = NOW()');
+    params.push(id);
+    await db.run(`UPDATE drying_chambers SET ${fields.join(', ')} WHERE id = $${params.length}`, params);
     return await db.getOne('SELECT * FROM drying_chambers WHERE id = $1', [id]);
   },
   deleteChamber: async (id) => await db.run('DELETE FROM drying_chambers WHERE id = $1', [id]),

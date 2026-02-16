@@ -468,15 +468,23 @@ const dryingSetup = {
         let html = `<p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0 0 1rem">
             Chambers group rooms that share the same dehumidification zone. Rename the default or add more.
         </p>`;
-        for (const ch of chambers) {
+        for (let i = 0; i < chambers.length; i++) {
+            const ch = chambers[i];
+            const isDefault = /^(Chamber \d+|Default)$/.test(ch.name);
             html += `
                 <div class="dry-chamber-card" data-chamber-id="${esc(ch.id)}">
                     <div class="dry-chamber-header">
-                        <input type="text" class="dry-input dry-chamber-name" value="${esc(ch.name)}"
+                        <input type="text" class="dry-input dry-chamber-name" value="${isDefault ? '' : esc(ch.name)}"
+                               placeholder="Chamber ${i + 1}"
                                data-chamber-id="${esc(ch.id)}" style="width:200px" />
                         ${chambers.length > 1 ? `<button class="dry-btn dry-btn-sm dry-btn-danger dry-chamber-delete"
                             data-chamber-id="${esc(ch.id)}">&times;</button>` : ''}
                     </div>
+                    <select class="dry-input dry-chamber-floor" data-chamber-id="${esc(ch.id)}" style="width:200px;margin-top:0.5rem;">
+                        ${dryingUtils.FLOOR_LEVELS.map(fl =>
+                            `<option value="${fl.key}" ${(ch.floor_level || 'main_level') === fl.key ? 'selected' : ''}>${fl.label}</option>`
+                        ).join('')}
+                    </select>
                     <div class="dry-chamber-color" data-chamber-id="${esc(ch.id)}">
                         ${dryingUtils.buildColorPicker(ch.color)}
                     </div>
@@ -656,7 +664,14 @@ const dryingSetup = {
             body.querySelectorAll('.dry-chamber-name').forEach(input => {
                 input.addEventListener('change', () => {
                     const chamberId = input.dataset.chamberId;
-                    this._updateChamber(chamberId, { name: input.value.trim() });
+                    const name = input.value.trim() || input.placeholder;
+                    this._updateChamber(chamberId, { name });
+                });
+            });
+            body.querySelectorAll('.dry-chamber-floor').forEach(sel => {
+                sel.addEventListener('change', async () => {
+                    const chamberId = sel.dataset.chamberId;
+                    await this._updateChamber(chamberId, { floor_level: sel.value });
                 });
             });
             body.querySelectorAll('.dry-chamber-color').forEach(container => {

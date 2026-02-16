@@ -1178,6 +1178,7 @@ CREATE TABLE IF NOT EXISTS drying_chambers (
   name TEXT NOT NULL,
   color TEXT DEFAULT '',
   position INTEGER DEFAULT 0,
+  floor_level TEXT DEFAULT 'main_level',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

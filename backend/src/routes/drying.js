@@ -136,10 +136,10 @@ router.post('/chambers', requireScope('drying', 'write'), async (req, res) => {
     const log = await requireLog(req.params.id);
     if (!log) return res.status(404).json({ error: 'No drying log for this job' });
 
-    const { name, color, position } = req.body;
-    if (!name) return res.status(400).json({ error: 'name is required' });
+    let { name, color, position, floor_level } = req.body;
+    if (!name) name = 'Chamber';
 
-    const chamber = await dryingLogs.insertChamber(log.id, name, color, position);
+    const chamber = await dryingLogs.insertChamber(log.id, name, color, position, floor_level);
     res.status(201).json(chamber);
   } catch (err) {
     console.error('Error creating chamber:', err);
@@ -158,6 +158,7 @@ router.patch('/chambers/:chamberId', requireScope('drying', 'write'), async (req
       color: req.body.color !== undefined ? req.body.color : existing.color,
       position: req.body.position !== undefined ? req.body.position : existing.position
     };
+    if (req.body.floor_level !== undefined) data.floor_level = req.body.floor_level;
 
     const chamber = await dryingLogs.updateChamber(req.params.chamberId, data);
     res.json(chamber);
@@ -471,7 +472,12 @@ router.post('/visits/:visitId/save', requireScope('drying', 'write'), async (req
       return res.status(404).json({ error: 'Visit not found for this job' });
     }
 
-    const { atmospheric, moisture, equipment } = req.body;
+    const { atmospheric, moisture, equipment, visited_at } = req.body;
+
+    // Update visit date if provided
+    if (visited_at) {
+      await db.run('UPDATE drying_visits SET visited_at = $1 WHERE id = $2', [visited_at, req.params.visitId]);
+    }
 
     // Wrap all saves in an outer transaction for atomicity
     await db.transaction(async (client) => {
@@ -553,6 +559,32 @@ router.post('/visits/:visitId/notes', requireScope('drying', 'write'), async (re
     const { content, photos } = req.body;
     const photosJson = photos ? JSON.stringify(photos) : '[]';
     const note = await dryingLogs.insertNote(req.params.visitId, content, photosJson);
+
+    // Feature 5: Duplicate note to job dashboard (apex_job_notes)
+    if (content && content.trim()) {
+      try {
+        const log = await requireLog(req.params.id);
+        if (log) {
+          const visitDate = visit.visited_at ? new Date(visit.visited_at).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
+          const jobNoteId = uuidv4();
+          await db.run(`
+            INSERT INTO apex_job_notes (id, job_id, subject, note_type, content, author_id)
+            VALUES ($1, $2, $3, $4, $5, $6)
+          `, [
+            jobNoteId,
+            req.params.id,
+            `Drying Visit #${visit.visit_number}`,
+            'site_visit',
+            `[Visit #${visit.visit_number} — ${visitDate}] ${content.trim()}`,
+            req.user?.id || null
+          ]);
+        }
+      } catch (jobNoteErr) {
+        console.error('Failed to duplicate drying note to job dashboard:', jobNoteErr);
+        // Non-blocking: don't fail the drying note creation
+      }
+    }
+
     res.status(201).json(note);
   } catch (err) {
     console.error('Error creating visit note:', err);

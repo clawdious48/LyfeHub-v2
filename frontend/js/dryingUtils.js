@@ -58,6 +58,13 @@ const MATERIAL_CODES = [
   { code: 'TK', label: 'Tack Strip', category: 'Other' },
 ];
 
+// ── Floor Levels ────────────────────────────────────────────────────
+const FLOOR_LEVELS = [
+    { key: 'basement', label: 'Basement/Crawlspace' },
+    { key: 'main_level', label: 'Main Level' },
+    ...Array.from({length: 24}, (_, i) => ({ key: `floor_${i+2}`, label: `Floor ${i+2}` }))
+];
+
 // ── Chamber Colors (neon palette) ───────────────────────────────────
 const CHAMBER_COLORS = [
   { name: 'Purple', hex: '#bf5af2' },
@@ -197,6 +204,7 @@ window.dryingUtils = {
   calculateGPP,
   meetsDryStandard,
   MATERIAL_CODES,
+  FLOOR_LEVELS,
   CHAMBER_COLORS,
   EQUIPMENT_TYPES,
   SURFACE_TYPES,

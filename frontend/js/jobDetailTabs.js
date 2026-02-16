@@ -701,13 +701,25 @@ const jobDetailTabs = {
 
         const canComplete = log.status === 'active' && visits.length > 0;
 
-        // Visit history (newest first)
-        const visitCards = visits.slice().reverse().map(v => {
+        // Visit history
+        const viewMode = jobDetailTabs._visitViewMode || 'card';
+        const visitCards = visits.slice().map(v => {
             const date = v.visited_at ? new Date(v.visited_at).toLocaleDateString() : '';
+            if (viewMode === 'list') {
+                return `
+                    <div class="dry-visit-list-item" onclick="jobDetailTabs._openVisitReadOnly('${jobId}', '${v.id}')" title="View Visit #${v.visit_number}">
+                        <span class="dry-visit-list-num">Visit #${v.visit_number}</span>
+                        <span class="dry-visit-list-date">${date}</span>
+                        <button class="dry-btn dry-btn-sm dry-visit-edit-btn" onclick="event.stopPropagation(); jobDetailTabs._openVisitEdit('${jobId}', '${v.id}')" title="Edit Visit">✏️</button>
+                    </div>
+                `;
+            }
+            const shortDate = v.visited_at ? new Date(v.visited_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
             return `
                 <div class="dry-visit-card" onclick="jobDetailTabs._openVisitReadOnly('${jobId}', '${v.id}')" title="View Visit #${v.visit_number}">
-                    <div class="dry-visit-number">Visit #${v.visit_number}</div>
-                    <div class="dry-visit-date">${date}</div>
+                    <div class="dry-visit-card-num">#${v.visit_number}</div>
+                    <div class="dry-visit-card-date">${shortDate}</div>
+                    <button class="dry-visit-card-edit" onclick="event.stopPropagation(); jobDetailTabs._openVisitEdit('${jobId}', '${v.id}')" title="Edit">✏️</button>
                 </div>
             `;
         }).join('');
@@ -745,16 +757,33 @@ const jobDetailTabs = {
                 </button>
             </div>
 
-            <div class="dry-visit-list">
-                <h4 class="apex-section-title" style="margin-bottom:8px;">Visit History</h4>
+            <div class="dry-visit-list dry-visit-${viewMode}-mode">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                    <h4 class="apex-section-title" style="margin:0;">Visit History</h4>
+                    <div class="dry-view-toggle">
+                        <button class="dry-btn dry-btn-sm${viewMode === 'list' ? ' dry-btn-active' : ''}" onclick="jobDetailTabs._setVisitView('${jobId}', 'list')" title="List view">☰</button>
+                        <button class="dry-btn dry-btn-sm${viewMode === 'card' ? ' dry-btn-active' : ''}" onclick="jobDetailTabs._setVisitView('${jobId}', 'card')" title="Card view">▦</button>
+                    </div>
+                </div>
                 ${visits.length > 0 ? visitCards : '<div class="apex-empty-state">No visits yet. Click "+ Add Visit" to record your first drying visit.</div>'}
             </div>
         `;
     },
 
+    _setVisitView(jobId, mode) {
+        jobDetailTabs._visitViewMode = mode;
+        jobDetailTabs._loadDryingState(jobId, true);
+    },
+
     async _openVisitReadOnly(jobId, visitId) {
         if (typeof dryingVisit !== 'undefined' && dryingVisit.openReadOnly) {
             dryingVisit.openReadOnly(jobId, visitId);
+        }
+    },
+
+    async _openVisitEdit(jobId, visitId) {
+        if (typeof dryingVisit !== 'undefined' && dryingVisit.openEdit) {
+            dryingVisit.openEdit(jobId, visitId);
         }
     },
 
