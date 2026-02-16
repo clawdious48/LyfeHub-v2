@@ -7462,8 +7462,8 @@ body.column-dragging .base-table {
 }
 
 .sidebar-person-item.active {
-    background: rgba(0, 245, 212, 0.15);
-    border-right: 2px solid var(--neon-cyan);
+    background: rgba(255, 140, 0, 0.1);
+    border-right: 2px solid #c27400;
 }
 
 .sidebar-person-avatar {
@@ -7515,7 +7515,7 @@ body.column-dragging .base-table {
 
 .sidebar-person-item.dragging {
     opacity: 0.4;
-    background: rgba(0, 245, 212, 0.1);
+    background: rgba(255, 140, 0, 0.08);
 }
 
 /* People Main Content Area */
@@ -7568,8 +7568,8 @@ body.column-dragging .base-table {
 }
 
 .people-display-btn.active {
-    color: var(--text-primary);
-    background: rgba(0, 245, 212, 0.15);
+    color: #c27400;
+    background: rgba(255, 140, 0, 0.1);
 }
 
 .people-display-btn svg {
@@ -7614,9 +7614,9 @@ body.column-dragging .base-table {
 }
 
 .people-card-size-btn.active {
-    color: var(--neon-cyan);
-    background: rgba(0, 245, 212, 0.1);
-    border-color: rgba(0, 245, 212, 0.3);
+    color: #c27400;
+    background: rgba(255, 140, 0, 0.1);
+    border-color: rgba(255, 140, 0, 0.3);
 }
 
 /* People Cards Grid */
@@ -7658,8 +7658,8 @@ body.column-dragging .base-table {
 
 .person-card:hover {
     transform: translateY(-2px);
-    border-color: rgba(0, 245, 212, 0.3);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 30px rgba(0, 245, 212, 0.1);
+    border-color: rgba(255, 140, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .person-card-avatar {
@@ -7685,7 +7685,7 @@ body.column-dragging .base-table {
 
 .person-card-relationship {
     font-size: 0.8rem;
-    color: var(--neon-cyan);
+    color: #c27400;
     text-transform: capitalize;
     margin-bottom: 0.25rem;
 }
@@ -7807,7 +7807,7 @@ body.column-dragging .base-table {
     align-items: center;
     gap: 0.375rem;
     font-size: 0.75rem;
-    color: var(--neon-cyan);
+    color: #c27400;
     text-decoration: none;
     cursor: pointer;
     padding: 0.25rem 0.5rem;
@@ -7824,7 +7824,7 @@ body.column-dragging .base-table {
 .person-card-address:hover {
     text-decoration: underline;
     text-underline-offset: 2px;
-    background: rgba(0, 245, 212, 0.1);
+    background: rgba(255, 140, 0, 0.08);
     text-shadow: none;
 }
 
@@ -8148,6 +8148,30 @@ body.column-dragging .base-table {
     padding-top: 0.5rem;
     border-top: 1px solid var(--glass-border);
 }
+
+/* ========================================
+   PEOPLE SECTION - DARK MODE OVERRIDES
+   ======================================== */
+[data-theme="dark"] .people-sidebar { background: rgba(255,255,255,0.03); }
+[data-theme="dark"] .people-view-controls { background: rgba(255,255,255,0.05); }
+[data-theme="dark"] .person-card { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.08); }
+[data-theme="dark"] .person-card:hover {
+    border-color: rgba(255,140,0,0.4);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 30px rgba(255,140,0,0.1);
+}
+[data-theme="dark"] .sidebar-person-item:hover { background: rgba(255,255,255,0.05); }
+[data-theme="dark"] .sidebar-person-item.active { background: rgba(255,140,0,0.15); border-right-color: var(--neon-cyan); }
+[data-theme="dark"] .sidebar-person-item.dragging { background: rgba(255,140,0,0.1); }
+[data-theme="dark"] .person-card-relationship { color: var(--neon-cyan); }
+[data-theme="dark"] .person-card-phone,
+[data-theme="dark"] .person-card-email,
+[data-theme="dark"] .person-card-address { color: var(--neon-cyan); }
+[data-theme="dark"] .person-card-phone:hover,
+[data-theme="dark"] .person-card-email:hover,
+[data-theme="dark"] .person-card-address:hover { background: rgba(255,140,0,0.1); }
+[data-theme="dark"] .people-display-btn.active { color: var(--neon-cyan); background: rgba(255,140,0,0.15); }
+[data-theme="dark"] .people-card-size-btn.active { color: var(--neon-cyan); background: rgba(255,140,0,0.1); border-color: rgba(255,140,0,0.3); }
+[data-theme="dark"] .people-display-toggle { background: rgba(255,255,255,0.05); }
 
 /* ===========================================
    NEW JOB MODAL - Wide Grid Layout

@@ -282,10 +282,10 @@
 }
 
 .apex-job-card:hover {
-    background: rgba(30, 30, 50, 0.7);
+    background: rgba(0, 0, 0, 0.02);
     border-color: rgba(0, 0, 0, 0.08);
     transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
 .apex-job-header {
@@ -361,7 +361,7 @@
 
 .apex-loss-badge.loss-smoke {
     background: rgba(128, 128, 128, 0.2);
-    color: #aaa;
+    color: #666;
     border: 1px solid rgba(128, 128, 128, 0.3);
 }
 
@@ -491,7 +491,7 @@
 }
 
 .apex-task-table thead {
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.04);
 }
 
 .apex-task-table th {
@@ -603,10 +603,10 @@
 }
 
 .apex-project-card:hover {
-    background: rgba(30, 30, 50, 0.7);
+    background: rgba(0, 0, 0, 0.02);
     border-color: rgba(0, 0, 0, 0.08);
     transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
 }
 
 .apex-project-header {
@@ -791,7 +791,7 @@
 .apex-tasks-container {
     max-height: 300px;
     overflow-y: auto;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.02);
     border-radius: 10px;
     padding: 0.5rem;
 }
@@ -1045,7 +1045,7 @@
 .apex-phase-tabs {
     display: flex;
     gap: 0.25rem;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.02);
     border-bottom: 1px solid var(--glass-border);
     overflow-x: auto;
     margin: 0 -1.5rem;
@@ -1157,7 +1157,7 @@
     padding: 1.5rem;
     font-size: 0.85rem;
     font-style: italic;
-    background: rgba(0, 0, 0, 0.15);
+    background: rgba(0, 0, 0, 0.02);
     border-radius: 8px;
     border: 1px dashed rgba(0, 0, 0, 0.04);
 }
@@ -1468,7 +1468,7 @@ a.apex-address.info-link {
 .job-detail-phase-bar {
     display: flex;
     gap: 0.5rem;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.02);
     padding: 0.5rem;
     border-radius: 12px;
 }
@@ -1609,7 +1609,7 @@ a.apex-address.info-link {
 }
 
 .note-form {
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.02);
     border-radius: 10px;
     padding: 1rem;
     margin-bottom: 1rem;
@@ -1618,7 +1618,7 @@ a.apex-address.info-link {
 .note-form textarea {
     width: 100%;
     min-height: 80px;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.03);
     border: 1px solid var(--glass-border);
     border-radius: 8px;
     color: var(--text-primary);
@@ -1642,7 +1642,7 @@ a.apex-address.info-link {
 
 .note-form-actions select {
     padding: 0.35rem 0.75rem;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.03);
     border: 1px solid var(--glass-border);
     border-radius: 6px;
     color: var(--text-primary);
@@ -1653,7 +1653,7 @@ a.apex-address.info-link {
     border-left: 3px solid var(--apex-primary);
     padding: 0.75rem 1rem;
     margin-bottom: 0;
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.02);
     border-radius: 0 8px 8px 0;
 }
 
@@ -1693,7 +1693,7 @@ a.apex-address.info-link {
 
 .note-type-badge.type-general {
     background: rgba(128, 128, 128, 0.2);
-    color: #aaa;
+    color: #666;
 }
 
 .note-type-badge.type-call {
@@ -1725,7 +1725,7 @@ a.apex-address.info-link {
     display: flex;
     gap: 1.5rem;
     padding: 1rem;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.02);
     border-radius: 10px;
     margin-bottom: 1rem;
 }
@@ -1841,7 +1841,7 @@ a.apex-address.info-link {
 
 .category-badge.cat-other {
     background: rgba(128, 128, 128, 0.2);
-    color: #aaa;
+    color: #666;
 }
 
 /* 11. Accounting Sidebar */
@@ -2365,7 +2365,7 @@ a.apex-address.info-link {
 .job-detail-modal-overlay .form-group textarea {
     width: 100%;
     padding: 0.6rem 0.75rem;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.03);
     border: 1px solid var(--glass-border);
     border-radius: 8px;
     color: var(--text-primary);
@@ -2402,7 +2402,7 @@ a.apex-address.info-link {
     background: rgba(255, 255, 255, 0.9);
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     z-index: 100;
     min-width: 160px;
     overflow: hidden;
@@ -2541,7 +2541,7 @@ a.apex-address.info-link {
 
 .jdt-date-input {
     padding: 0.35rem 0.5rem;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.03);
     border: 1px solid var(--glass-border);
     border-radius: 6px;
     color: var(--text-primary);
@@ -2655,7 +2655,7 @@ a.apex-address.info-link {
 }
 
 .jdt-note-form {
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.02);
     border-radius: 10px;
     padding: 1rem;
     margin-bottom: 1rem;
@@ -2669,7 +2669,7 @@ a.apex-address.info-link {
 .jdt-textarea {
     width: 100%;
     padding: 0.5rem 0.75rem;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.03);
     border: 1px solid var(--glass-border);
     border-radius: 8px;
     color: var(--text-primary);
@@ -2697,7 +2697,7 @@ a.apex-address.info-link {
 
 .jdt-note-item {
     padding: 0.75rem 1rem;
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.02);
     border-radius: 0 8px 8px 0;
 }
 
@@ -2762,7 +2762,7 @@ a.apex-address.info-link {
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.02);
     border-radius: 10px;
     margin-bottom: 1rem;
 }
@@ -3008,7 +3008,7 @@ a.apex-address.info-link {
 .jdm-textarea {
     width: 100%;
     padding: 0.5rem 0.75rem;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.03);
     border: 1px solid var(--glass-border);
     border-radius: 8px;
     color: var(--text-primary);
@@ -3213,7 +3213,7 @@ a.apex-address.info-link {
 
 .estimates-breakdown-header .breakdown-total {
     font-size: 13px;
-    color: #05ffa1;
+    color: #059669;
 }
 
 .estimates-breakdown-header .collapse-icon {
@@ -3291,7 +3291,7 @@ a.apex-address.info-link {
 }
 
 .reduction-green {
-    color: #05ffa1;
+    color: #059669;
 }
 
 .reduction-yellow {
@@ -3325,7 +3325,7 @@ a.apex-address.info-link {
 .est-type-total {
     font-size: 12px;
     font-weight: 600;
-    color: #05ffa1;
+    color: #059669;
 }
 
 /* Estimate Summary Rows (current/original/reduction) */
@@ -3376,7 +3376,7 @@ a.apex-address.info-link {
 }
 
 .est-ver-delta.delta-neg {
-    color: #05ffa1;
+    color: #059669;
 }
 
 .est-ver-delta.delta-pos {
@@ -4043,8 +4043,8 @@ a.apex-address.info-link {
     backdrop-filter: blur(4px);
 }
 .jdt-modal {
-    background: var(--card-bg, #1a1a2e);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 12px;
     padding: 1.5rem;
     min-width: 360px;
@@ -4077,7 +4077,7 @@ a.apex-address.info-link {
 }
 .jdt-cancel-btn {
     background: transparent;
-    border: 1px solid rgba(255,255,255,0.15);
+    border: 1px solid rgba(0, 0, 0, 0.15);
     color: var(--text-muted, #888);
     padding: 0.5rem 1rem;
     border-radius: 6px;
@@ -4085,7 +4085,7 @@ a.apex-address.info-link {
     font-size: 0.85rem;
 }
 .jdt-cancel-btn:hover {
-    border-color: rgba(255,255,255,0.3);
+    border-color: rgba(0, 0, 0, 0.3);
     color: var(--text-primary, #fff);
 }
 
@@ -4115,14 +4115,14 @@ a.apex-address.info-link {
 }
 .inv-header h2 {
     margin: 0;
-    color: var(--text-primary, #fff);
+    color: var(--text-primary, #282D30);
 }
 .inv-back-btn {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     background: transparent;
-    border: 1px solid rgba(255,255,255,0.15);
+    border: 1px solid rgba(0,0,0,0.12);
     color: var(--text-muted, #888);
     padding: 0.4rem 0.8rem;
     border-radius: 6px;
@@ -4136,7 +4136,7 @@ a.apex-address.info-link {
     display: flex;
     gap: 0;
     margin-bottom: 1rem;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(0,0,0,0.08);
 }
 .inv-tab {
     background: transparent;
@@ -4152,7 +4152,7 @@ a.apex-address.info-link {
     color: var(--neon-cyan, #FF8C00);
     border-bottom-color: var(--neon-cyan, #FF8C00);
 }
-.inv-tab:hover { color: var(--text-primary, #fff); }
+.inv-tab:hover { color: var(--text-primary, #282D30); }
 
 .inv-tab-panel { min-height: 200px; }
 
@@ -4166,8 +4166,8 @@ a.apex-address.info-link {
 }
 .inv-cat-filter { display: flex; gap: 0.25rem; flex-wrap: wrap; }
 .inv-cat-btn {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.02);
+    border: 1px solid rgba(0,0,0,0.08);
     color: var(--text-muted, #888);
     padding: 0.3rem 0.6rem;
     border-radius: 4px;
@@ -4187,7 +4187,7 @@ a.apex-address.info-link {
     text-transform: uppercase;
     color: var(--text-muted, #888);
     letter-spacing: 0.5px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
 }
 .inv-catalog-header { grid-template-columns: 2fr 0.7fr 0.8fr 1fr 0.8fr 0.6fr; }
 .inv-stock-header { grid-template-columns: 2fr 1fr 0.7fr 1fr; }
@@ -4197,15 +4197,15 @@ a.apex-address.info-link {
     display: grid;
     padding: 0.5rem 0.75rem;
     align-items: center;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(0,0,0,0.04);
     font-size: 0.85rem;
-    color: var(--text-primary, #fff);
+    color: var(--text-primary, #282D30);
 }
 .inv-item-row { grid-template-columns: 2fr 0.7fr 0.8fr 1fr 0.8fr 0.6fr; }
 .inv-stock-row { grid-template-columns: 2fr 1fr 0.7fr 1fr; }
 .inv-purchase-row, .inv-alloc-row { grid-template-columns: 2fr 1fr 1fr 1fr; }
 
-.inv-item-row:hover, .inv-stock-row:hover { background: rgba(255,255,255,0.03); }
+.inv-item-row:hover, .inv-stock-row:hover { background: rgba(0,0,0,0.02); }
 .inv-item-row.archived { opacity: 0.4; }
 
 .inv-item-actions { display: flex; gap: 0.25rem; }
@@ -4245,13 +4245,13 @@ a.apex-address.info-link {
 }
 .inv-section-header h4 {
     margin: 0;
-    color: var(--text-primary, #fff);
+    color: var(--text-primary, #282D30);
     font-size: 0.95rem;
 }
 
 .inv-alloc-group {
     margin-bottom: 1rem;
-    border: 1px solid rgba(255,255,255,0.06);
+    border: 1px solid rgba(0,0,0,0.06);
     border-radius: 8px;
     overflow: hidden;
 }
@@ -4259,13 +4259,35 @@ a.apex-address.info-link {
     display: flex;
     justify-content: space-between;
     padding: 0.5rem 0.75rem;
-    background: rgba(255,255,255,0.03);
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    background: rgba(0,0,0,0.02);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
 }
 .inv-alloc-total {
     font-size: 0.8rem;
     color: var(--neon-cyan, #FF8C00);
 }
+
+/* ========================================
+   INVENTORY - DARK MODE OVERRIDES
+   ======================================== */
+[data-theme="dark"] .inv-header h2 { color: var(--text-primary, #fff); }
+[data-theme="dark"] .inv-back-btn { border-color: rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); }
+[data-theme="dark"] .inv-tabs { border-bottom-color: rgba(255,255,255,0.1); }
+[data-theme="dark"] .inv-tab:hover { color: var(--text-primary, #fff); }
+[data-theme="dark"] .inv-cat-btn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+[data-theme="dark"] .inv-catalog-header,
+[data-theme="dark"] .inv-stock-header,
+[data-theme="dark"] .inv-purchase-header,
+[data-theme="dark"] .inv-alloc-subheader { border-bottom-color: rgba(255,255,255,0.08); }
+[data-theme="dark"] .inv-item-row,
+[data-theme="dark"] .inv-stock-row,
+[data-theme="dark"] .inv-purchase-row,
+[data-theme="dark"] .inv-alloc-row { border-bottom-color: rgba(255,255,255,0.04); color: var(--text-primary, #fff); }
+[data-theme="dark"] .inv-item-row:hover,
+[data-theme="dark"] .inv-stock-row:hover { background: rgba(255,255,255,0.03); }
+[data-theme="dark"] .inv-section-header h4 { color: var(--text-primary, #fff); }
+[data-theme="dark"] .inv-alloc-group { border-color: rgba(255,255,255,0.06); }
+[data-theme="dark"] .inv-alloc-group-header { background: rgba(255,255,255,0.03); border-bottom-color: rgba(255,255,255,0.06); }
 
 /* Contact remove button */
 .contact-remove-btn {
@@ -4354,239 +4376,7 @@ a.apex-address.info-link {
     }
 }
 @media (max-width: 640px) {
-    [data-theme="dark"] .apex-phase-header {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .apex-empty-state {
-        border: 1px dashed rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .job-detail-header {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .job-detail-damage-icon {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .job-detail-header-text .client-name {
-        color: rgba(240, 240, 245, 0.9);
-    }
-    [data-theme="dark"] .job-detail-status-btn {
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .job-detail-status-btn:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .job-detail-edit-btn {
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .job-detail-edit-btn:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .job-info-card {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .job-info-card-title {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .job-detail-phase-bar .phase-btn:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .job-detail-phase-bar .phase-btn.active {
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
-    [data-theme="dark"] .date-field .date-value:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .expense-group-header:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .expense-item {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    }
-    [data-theme="dark"] .job-accounting {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .accounting-action-btn:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .accounting-breakdown-header {
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .job-activity {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .activity-filter-btn:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .job-contacts {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .job-contacts-header-left .contact-count {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .job-contacts-add-btn:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .contact-card {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .contact-card:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .contact-card-actions a:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .job-detail-modal-overlay .modal-content {
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .job-detail-modal-overlay .modal-form-header {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .job-detail-modal-overlay .modal-form-footer {
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .status-dropdown {
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .status-dropdown button:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .jdt-date-display:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .jdt-file-row {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    }
-    [data-theme="dark"] .jdt-upload-btn:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .jdt-add-note-btn:hover,
 .jdt-submit-btn:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .jdt-section-header:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .jdt-expense-row {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    }
-    [data-theme="dark"] .jdt-add-btn:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .jdm-card {
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .jdm-header {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .jdm-footer {
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .jdm-btn-cancel:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .jdm-section {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .jdm-field-divider {
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .jdm-est-helper {
-        color: rgba(240, 240, 245, 0.5);
-    }
-    [data-theme="dark"] .acct-phase-tab {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: rgba(240, 240, 245, 0.6);
-    }
-    [data-theme="dark"] .acct-phase-tab:hover {
-        background: rgba(255, 255, 255, 0.05);
-        color: rgba(240, 240, 245, 0.8);
-    }
-    [data-theme="dark"] .acct-phase-tab.active {
-        color: #f0f0f5;
-    }
-    [data-theme="dark"] .estimates-breakdown {
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .estimates-breakdown-header h4 {
-        color: rgba(240, 240, 245, 0.8);
-    }
-    [data-theme="dark"] .estimates-breakdown-header .collapse-icon {
-        color: rgba(240, 240, 245, 0.4);
-    }
-    [data-theme="dark"] .estimates-type-tabs {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .est-tab {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: rgba(240, 240, 245, 0.6);
-    }
-    [data-theme="dark"] .est-tab:hover {
-        background: rgba(255, 255, 255, 0.05);
-        color: rgba(240, 240, 245, 0.8);
-    }
-    [data-theme="dark"] .est-tab.active {
-        color: #f0f0f5;
-    }
-    [data-theme="dark"] .estimate-current .current-label {
-        color: rgba(240, 240, 245, 0.5);
-    }
-    [data-theme="dark"] .estimate-current .current-value {
-        color: #f0f0f5;
-    }
-    [data-theme="dark"] .est-type-header {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .est-type-label {
-        color: rgba(240, 240, 245, 0.8);
-    }
-    [data-theme="dark"] .est-summary-row {
-        color: rgba(240, 240, 245, 0.6);
-    }
-    [data-theme="dark"] .est-version-row {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    }
-    [data-theme="dark"] .est-ver-num {
-        color: rgba(240, 240, 245, 0.7);
-    }
-    [data-theme="dark"] .est-original-tag {
-        color: rgba(240, 240, 245, 0.4);
-    }
-    [data-theme="dark"] .est-ver-amount {
-        color: rgba(240, 240, 245, 0.8);
-    }
-    [data-theme="dark"] .original-amount-display {
-        color: rgba(240, 240, 245, 0.5);
-    }
-    [data-theme="dark"] .est-status-badge.est-draft {
-        background: rgba(255, 255, 255, 0.1);
-        color: rgba(240, 240, 245, 0.6);
-    }
-    [data-theme="dark"] .apex-job-card:hover {
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-    }
-    [data-theme="dark"] .apex-column:hover {
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
-    [data-theme="dark"] .team-select-trigger {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-theme="dark"] .team-select-trigger:hover {
-        border-color: rgba(255, 255, 255, 0.15);
-    }
-    [data-theme="dark"] .team-select.open .team-select-trigger {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .team-select-dropdown {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    [data-theme="dark"] .team-select-option:hover {
         background: rgba(255, 255, 255, 0.05);
     }
 }
@@ -4667,4 +4457,355 @@ a.apex-address.info-link {
     .header {
         justify-content: unset !important;
     }
+}
+
+/* ========================================
+   DARK MODE OVERRIDES — Light mode fixes
+   (Added to preserve dark mode after light-mode base changes)
+   ======================================== */
+
+/* Fix 1: Dark backgrounds restored for dark mode */
+[data-theme="dark"] .apex-task-table thead {
+    background: rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .apex-tasks-container {
+    background: rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .apex-phase-tabs {
+    background: rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .job-detail-phase-bar {
+    background: rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .note-form {
+    background: rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .note-form textarea {
+    background: rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .note-form-actions select {
+    background: rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .note-item {
+    background: rgba(0, 0, 0, 0.1);
+}
+[data-theme="dark"] .expenses-summary-bar {
+    background: rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .apex-empty-state {
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .jdt-note-form {
+    background: rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .jdt-input,
+[data-theme="dark"] .jdt-select,
+[data-theme="dark"] .jdt-textarea {
+    background: rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .jdt-date-input {
+    background: rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .jdt-expenses-summary {
+    background: rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .jdt-note-item {
+    background: rgba(0, 0, 0, 0.1);
+}
+[data-theme="dark"] .jdm-input,
+[data-theme="dark"] .jdm-select,
+[data-theme="dark"] .jdm-textarea {
+    background: rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .job-detail-modal-overlay .form-group input,
+[data-theme="dark"] .job-detail-modal-overlay .form-group select,
+[data-theme="dark"] .job-detail-modal-overlay .form-group textarea {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* Fix 2: Hover dark overrides */
+[data-theme="dark"] .apex-job-card:hover {
+    background: rgba(30, 30, 50, 0.7);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .apex-project-card:hover {
+    background: rgba(30, 30, 50, 0.7);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Fix 3: .jdt-modal dark override */
+[data-theme="dark"] .jdt-modal {
+    background: #1a1a2e;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .jdt-cancel-btn {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+[data-theme="dark"] .jdt-cancel-btn:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Fix 4: Neon green dark overrides */
+[data-theme="dark"] .estimates-breakdown-header .breakdown-total {
+    color: #05ffa1;
+}
+[data-theme="dark"] .reduction-green {
+    color: #05ffa1;
+}
+[data-theme="dark"] .est-type-total {
+    color: #05ffa1;
+}
+[data-theme="dark"] .est-ver-delta.delta-neg {
+    color: #05ffa1;
+}
+
+/* Fix 5: Badge contrast dark overrides */
+[data-theme="dark"] .apex-loss-badge.loss-smoke {
+    color: #aaa;
+}
+[data-theme="dark"] .note-type-badge.type-general {
+    color: #aaa;
+}
+[data-theme="dark"] .category-badge.cat-other {
+    color: #aaa;
+}
+
+/* Fix 6: Status dropdown dark override */
+[data-theme="dark"] .status-dropdown {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* Fix 7: Dark overrides moved from @media (max-width: 640px) to apply at all sizes */
+[data-theme="dark"] .apex-phase-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .apex-empty-state {
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .job-detail-header {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .job-detail-damage-icon {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .job-detail-header-text .client-name {
+    color: rgba(240, 240, 245, 0.9);
+}
+[data-theme="dark"] .job-detail-status-btn {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .job-detail-status-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .job-detail-edit-btn {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .job-detail-edit-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .job-info-card {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .job-info-card-title {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .job-detail-phase-bar .phase-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .job-detail-phase-bar .phase-btn.active {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .date-field .date-value:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .expense-group-header:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .expense-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .job-accounting {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .accounting-action-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .accounting-breakdown-header {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .job-activity {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .activity-filter-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .job-contacts {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .job-contacts-header-left .contact-count {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .job-contacts-add-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .contact-card {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .contact-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .contact-card-actions a:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .job-detail-modal-overlay .modal-content {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .job-detail-modal-overlay .modal-form-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .job-detail-modal-overlay .modal-form-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .status-dropdown {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .status-dropdown button:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .jdt-date-display:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .jdt-file-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .jdt-upload-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .jdt-add-note-btn:hover,
+[data-theme="dark"] .jdt-section-header:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .jdt-expense-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .jdt-add-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .jdm-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .jdm-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .jdm-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .jdm-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .jdm-section {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .jdm-field-divider {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .jdm-est-helper {
+    color: rgba(240, 240, 245, 0.5);
+}
+[data-theme="dark"] .acct-phase-tab {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.6);
+}
+[data-theme="dark"] .acct-phase-tab:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(240, 240, 245, 0.8);
+}
+[data-theme="dark"] .acct-phase-tab.active {
+    color: #f0f0f5;
+}
+[data-theme="dark"] .estimates-breakdown {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .estimates-breakdown-header h4 {
+    color: rgba(240, 240, 245, 0.8);
+}
+[data-theme="dark"] .estimates-breakdown-header .collapse-icon {
+    color: rgba(240, 240, 245, 0.4);
+}
+[data-theme="dark"] .estimates-type-tabs {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .est-tab {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.6);
+}
+[data-theme="dark"] .est-tab:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(240, 240, 245, 0.8);
+}
+[data-theme="dark"] .est-tab.active {
+    color: #f0f0f5;
+}
+[data-theme="dark"] .estimate-current .current-label {
+    color: rgba(240, 240, 245, 0.5);
+}
+[data-theme="dark"] .estimate-current .current-value {
+    color: #f0f0f5;
+}
+[data-theme="dark"] .est-type-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .est-type-label {
+    color: rgba(240, 240, 245, 0.8);
+}
+[data-theme="dark"] .est-summary-row {
+    color: rgba(240, 240, 245, 0.6);
+}
+[data-theme="dark"] .est-version-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .est-ver-num {
+    color: rgba(240, 240, 245, 0.7);
+}
+[data-theme="dark"] .est-original-tag {
+    color: rgba(240, 240, 245, 0.4);
+}
+[data-theme="dark"] .est-ver-amount {
+    color: rgba(240, 240, 245, 0.8);
+}
+[data-theme="dark"] .original-amount-display {
+    color: rgba(240, 240, 245, 0.5);
+}
+[data-theme="dark"] .est-status-badge.est-draft {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.6);
+}
+[data-theme="dark"] .apex-job-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .apex-column:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .team-select-trigger {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .team-select-trigger:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+[data-theme="dark"] .team-select.open .team-select-trigger {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .team-select-dropdown {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .team-select-option:hover {
+    background: rgba(255, 255, 255, 0.05);
 }
