@@ -366,6 +366,131 @@
 /* ---- Apex Job Detail ---- */
 [data-theme="dark"] .apex-job-detail {
     background: #0f172a;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Job detail header card */
+[data-theme="dark"] .job-detail-header {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .job-detail-header-inner {
+    background: transparent !important;
+}
+
+[data-theme="dark"] .client-name {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Job info cards (Client, Insurance, Property) */
+[data-theme="dark"] .job-info-card {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+[data-theme="dark"] .job-info-card-title {
+    color: #F97316 !important;
+}
+
+[data-theme="dark"] .job-info-card p,
+[data-theme="dark"] .job-info-card .font-medium {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+[data-theme="dark"] .job-info-card .text-muted {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+[data-theme="dark"] .job-info-card a {
+    color: #F97316 !important;
+}
+
+/* Job detail tabs bar */
+[data-theme="dark"] .job-detail-tabs {
+    background: transparent !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .job-detail-tab-btn {
+    color: rgba(255, 255, 255, 0.6) !important;
+    background: transparent !important;
+}
+
+[data-theme="dark"] .job-detail-tab-btn.active {
+    color: #F97316 !important;
+    border-color: #F97316 !important;
+}
+
+[data-theme="dark"] .job-detail-tab-btn:hover {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Job detail tab content */
+[data-theme="dark"] .job-detail-tab-content {
+    background: transparent !important;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* Key dates section */
+[data-theme="dark"] .job-detail-tab-content h3,
+[data-theme="dark"] .job-detail-tab-content h4 {
+    color: #F97316 !important;
+}
+
+[data-theme="dark"] .job-detail-tab-content label,
+[data-theme="dark"] .job-detail-tab-content .text-muted {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Date cards/cells */
+[data-theme="dark"] .job-detail-tab-content input,
+[data-theme="dark"] .job-detail-tab-content select,
+[data-theme="dark"] .job-detail-tab-content textarea {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Back to Jobs link */
+[data-theme="dark"] .apex-job-detail a.back-link,
+[data-theme="dark"] .apex-job-detail [onclick*="showList"] {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Status badge */
+[data-theme="dark"] .status-dropdown {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Generic card/section containers in job detail */
+[data-theme="dark"] .job-detail-section,
+[data-theme="dark"] .job-detail-card {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Contact cards in job detail */
+[data-theme="dark"] .contact-card {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Table elements in tab content */
+[data-theme="dark"] .job-detail-tab-content table {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+[data-theme="dark"] .job-detail-tab-content th {
+    color: rgba(255, 255, 255, 0.5) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .job-detail-tab-content td {
+    border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 /* ---- Quick Add ---- */
