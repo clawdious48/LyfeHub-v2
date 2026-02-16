@@ -95,6 +95,11 @@
         }
 
         currentTab = tabId;
+
+        // Trigger tab-specific initialization
+        if (tabId === 'developer' && window.SettingsDeveloper) {
+            window.SettingsDeveloper.init();
+        }
     }
 
     /**

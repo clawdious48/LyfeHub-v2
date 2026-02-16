@@ -163,17 +163,219 @@
 
             <div class="settings-section" id="section-developer">
                 <h2 class="settings-section-header">Developer</h2>
-                <p class="text-muted">Developer settings will appear here.</p>
+
+                <!-- API Keys List -->
+                <div class="developer-subsection">
+                    <h3 class="security-subsection-title">API Keys</h3>
+                    <div id="api-keys-list">
+                        <div class="developer-empty-state">
+                            <svg viewBox="0 0 24 24" width="40" height="40" style="stroke: var(--apex-text-muted); stroke-width: 1.5; fill: none; margin-bottom: 8px;"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+                            <p>Loading API keys...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Create New Key -->
+                <div class="developer-subsection">
+                    <h3 class="security-subsection-title">Create New Key</h3>
+                    <form id="create-key-form" autocomplete="off">
+                        <div class="settings-field-group">
+                            <label class="settings-field-label" for="key-name-input">Key Name</label>
+                            <input type="text" class="settings-input" id="key-name-input" placeholder="e.g. My Integration" required maxlength="100" style="max-width: 400px;" />
+                        </div>
+                        <div class="settings-field-group">
+                            <label class="settings-field-label" for="key-expiry-input">Expiration (optional)</label>
+                            <input type="date" class="settings-input" id="key-expiry-input" style="max-width: 260px;" />
+                        </div>
+
+                        <!-- Scope Picker -->
+                        <div class="settings-field-group">
+                            <label class="settings-field-label">Scopes</label>
+                            <div class="scope-picker-container">
+                                <div class="scope-presets">
+                                    <button type="button" class="scope-preset-btn active" data-preset="custom">Custom</button>
+                                    <button type="button" class="scope-preset-btn" data-preset="readonly">Read Only</button>
+                                    <button type="button" class="scope-preset-btn" data-preset="full">Full Access</button>
+                                    <span class="scope-counter" id="scope-counter">0 of 0 scopes selected</span>
+                                </div>
+                                <div class="scope-groups" id="scope-groups">
+                                    <p class="text-muted">Loading scopes...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="settings-btn-primary" id="generate-key-btn">
+                            <span class="btn-text">Generate Key</span>
+                            <span class="btn-spinner" style="display:none"></span>
+                        </button>
+                    </form>
+
+                    <!-- New key display (hidden by default) -->
+                    <div class="new-key-display" id="new-key-display" style="display:none;">
+                        <div class="new-key-warning">⚠️ Copy this key now — it won't be shown again!</div>
+                        <div class="new-key-value">
+                            <code id="new-key-value-text"></code>
+                            <button type="button" class="new-key-copy-btn" id="new-key-copy-btn" title="Copy to clipboard">
+                                <svg viewBox="0 0 24 24" width="16" height="16"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Webhooks -->
+                <div class="developer-subsection">
+                    <h3 class="security-subsection-title">
+                        Webhooks
+                        <span class="coming-soon-badge">Coming Soon</span>
+                    </h3>
+                    <div class="security-toggle-row">
+                        <div>
+                            <div class="security-toggle-label">Webhook Endpoints</div>
+                            <div class="security-toggle-desc text-muted">Receive real-time notifications when events occur in your workspace</div>
+                        </div>
+                        <label class="toggle-switch disabled">
+                            <input type="checkbox" disabled />
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
             </div>
 
             <div class="settings-section" id="section-admin">
                 <h2 class="settings-section-header">Admin</h2>
-                <p class="text-muted">Admin settings will appear here.</p>
+
+                <!-- Sub-tabs -->
+                <div class="admin-subtabs">
+                    <button class="admin-subtab active" data-subtab="users">User Management</button>
+                    <button class="admin-subtab" data-subtab="roles">Role Management</button>
+                </div>
+
+                <!-- ===== User Management ===== -->
+                <div class="admin-subsection active" id="admin-users">
+                    <!-- Search/Filter Bar -->
+                    <div class="admin-toolbar">
+                        <div class="admin-search-wrap">
+                            <svg viewBox="0 0 24 24" width="16" height="16"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                            <input type="text" class="settings-input" id="admin-user-search" placeholder="Search by name or email…" />
+                        </div>
+                        <select class="settings-select" id="admin-role-filter">
+                            <option value="">All Roles</option>
+                        </select>
+                        <button class="settings-btn-primary" id="admin-add-user-btn">
+                            <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 5v14M5 12h14"/></svg>
+                            Add User
+                        </button>
+                    </div>
+
+                    <!-- Add User Form (hidden by default) -->
+                    <div class="admin-add-user-form" id="admin-add-user-form" style="display:none">
+                        <h3 class="security-subsection-title">New User</h3>
+                        <div class="admin-form-grid">
+                            <div class="settings-field-group">
+                                <label class="settings-field-label" for="new-user-name">Name</label>
+                                <input type="text" class="settings-input" id="new-user-name" required />
+                            </div>
+                            <div class="settings-field-group">
+                                <label class="settings-field-label" for="new-user-email">Email</label>
+                                <input type="email" class="settings-input" id="new-user-email" required />
+                            </div>
+                            <div class="settings-field-group">
+                                <label class="settings-field-label" for="new-user-password">Temp Password</label>
+                                <input type="text" class="settings-input" id="new-user-password" minlength="8" required />
+                            </div>
+                            <div class="settings-field-group">
+                                <label class="settings-field-label" for="new-user-role">Role</label>
+                                <select class="settings-select" id="new-user-role"></select>
+                            </div>
+                        </div>
+                        <div class="admin-form-actions">
+                            <button class="settings-btn-primary" id="admin-create-user-btn">Create User</button>
+                            <button class="btn-cancel" id="admin-cancel-add-btn">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Select All header -->
+                    <div class="admin-user-list-header" id="admin-user-list-header" style="display:none">
+                        <label class="admin-checkbox-label">
+                            <input type="checkbox" id="admin-select-all" />
+                            <span>Select All</span>
+                        </label>
+                    </div>
+
+                    <!-- User List -->
+                    <div class="admin-user-list" id="admin-user-list">
+                        <div class="text-muted" style="padding:24px;text-align:center">Loading users…</div>
+                    </div>
+                </div>
+
+                <!-- ===== Role Management ===== -->
+                <div class="admin-subsection" id="admin-roles">
+                    <div class="admin-toolbar">
+                        <div style="flex:1"></div>
+                        <button class="btn-cancel" id="admin-revert-all-btn">
+                            <svg viewBox="0 0 24 24" width="14" height="14"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                            Revert All to Defaults
+                        </button>
+                    </div>
+                    <div class="admin-role-list" id="admin-role-list">
+                        <div class="text-muted" style="padding:24px;text-align:center">Loading roles…</div>
+                    </div>
+                </div>
+
+                <!-- Bulk Actions Bar -->
+                <div class="bulk-actions-bar" id="admin-bulk-bar">
+                    <span class="bulk-count" id="admin-bulk-count">0 selected</span>
+                    <button class="bulk-action-primary" id="admin-bulk-role-btn">Change Role</button>
+                    <button class="bulk-action-primary" id="admin-bulk-suspend-btn">Suspend</button>
+                    <button class="bulk-action-danger" id="admin-bulk-delete-btn">Delete</button>
+                </div>
+
+                <!-- Edit User Modal -->
+                <div class="confirmation-modal" id="admin-edit-modal">
+                    <div class="modal-content" style="max-width:440px">
+                        <div class="modal-title">Edit User</div>
+                        <div id="admin-edit-modal-body"></div>
+                        <div class="modal-actions">
+                            <button class="btn-cancel" id="admin-edit-cancel">Cancel</button>
+                            <button class="settings-btn-primary" id="admin-edit-save">Save</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reset Password Modal -->
+                <div class="confirmation-modal" id="admin-reset-pw-modal">
+                    <div class="modal-content" style="max-width:400px">
+                        <div class="modal-title">Reset Password</div>
+                        <div class="settings-field-group" style="margin-top:12px">
+                            <label class="settings-field-label" for="admin-reset-pw-input">New Password</label>
+                            <input type="text" class="settings-input" id="admin-reset-pw-input" minlength="8" placeholder="Min 8 characters" />
+                        </div>
+                        <div class="modal-actions">
+                            <button class="btn-cancel" id="admin-reset-pw-cancel">Cancel</button>
+                            <button class="settings-btn-primary" id="admin-reset-pw-confirm">Reset</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bulk Role Change Modal -->
+                <div class="confirmation-modal" id="admin-bulk-role-modal">
+                    <div class="modal-content" style="max-width:360px">
+                        <div class="modal-title">Change Role</div>
+                        <div class="settings-field-group" style="margin-top:12px">
+                            <label class="settings-field-label" for="admin-bulk-role-select">New Role</label>
+                            <select class="settings-select" id="admin-bulk-role-select"></select>
+                        </div>
+                        <div class="modal-actions">
+                            <button class="btn-cancel" id="admin-bulk-role-cancel">Cancel</button>
+                            <button class="settings-btn-primary" id="admin-bulk-role-confirm">Apply</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="settings-section" id="section-system">
                 <h2 class="settings-section-header">System</h2>
-                <p class="text-muted">System settings will appear here.</p>
+                <p class="text-muted">Loading system info...</p>
             </div>
         </main>
     </div>
@@ -199,6 +401,9 @@
     <script src="js/settings.js"></script>
     <script src="js/settings-profile.js"></script>
     <script src="js/settings-security.js"></script>
+    <script src="js/settings-system.js"></script>
+    <script src="js/settings-admin.js"></script>
+    <script src="js/settings-developer.js"></script>
     <script>
         // Highlight Settings in bottom nav if applicable
         document.addEventListener('DOMContentLoaded', function() {

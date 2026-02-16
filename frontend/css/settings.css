@@ -807,6 +807,316 @@
     pointer-events: none;
 }
 
+/* --- Developer Section --- */
+.developer-subsection {
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.developer-subsection:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.developer-empty-state {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--apex-text-muted);
+    font-size: 14px;
+}
+
+/* API Keys Table */
+.api-keys-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.api-keys-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.api-keys-table th,
+.api-keys-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--glass-border);
+    white-space: nowrap;
+}
+
+.api-keys-table th {
+    font-weight: 600;
+    color: var(--apex-text-secondary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.api-keys-table td {
+    color: var(--apex-text-primary);
+}
+
+.key-name-cell {
+    font-weight: 500;
+}
+
+.key-prefix-cell code {
+    font-size: 12px;
+    padding: 2px 6px;
+    background: var(--apex-bg-hover);
+    border-radius: 4px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+}
+
+.scope-count-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--apex-primary-muted);
+    color: #FF8C00;
+}
+
+.key-status {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.key-status.status-active {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+}
+
+.key-status.status-expired {
+    background: var(--apex-danger-muted, rgba(239, 68, 68, 0.15));
+    color: var(--apex-danger, #ef4444);
+}
+
+.key-actions-cell {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.key-action-btn {
+    padding: 4px 10px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--apex-transition-fast);
+    background: var(--apex-bg-hover);
+    color: var(--apex-text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.key-action-btn svg {
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+}
+
+.key-action-btn:hover {
+    background: var(--apex-bg-hover);
+    color: var(--apex-text-primary);
+}
+
+.key-revoke-btn {
+    background: var(--apex-danger-muted, rgba(239, 68, 68, 0.15));
+    color: var(--apex-danger, #ef4444);
+}
+
+.key-revoke-btn:hover {
+    background: var(--apex-danger, #ef4444);
+    color: white;
+}
+
+/* Scope Picker */
+.scope-picker-container {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.scope-presets {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.scope-preset-btn {
+    padding: 6px 14px;
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    background: var(--glass-bg);
+    color: var(--apex-text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--apex-transition-fast);
+}
+
+.scope-preset-btn:hover {
+    border-color: var(--apex-border-hover);
+    color: var(--apex-text-primary);
+}
+
+.scope-preset-btn.active {
+    background: rgba(255, 140, 0, 0.12);
+    border-color: #FF8C00;
+    color: #FF8C00;
+}
+
+.scope-counter {
+    font-size: 12px;
+    color: var(--apex-text-muted);
+    margin-left: auto;
+}
+
+.scope-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.scope-group {
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.scope-group-header {
+    padding: 8px 12px;
+    background: var(--apex-bg-hover);
+}
+
+.scope-group-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--apex-text-primary);
+    cursor: pointer;
+}
+
+.scope-group-toggle input[type="checkbox"] {
+    accent-color: #FF8C00;
+    width: 15px;
+    height: 15px;
+}
+
+.scope-group-actions {
+    display: flex;
+    gap: 4px;
+    padding: 8px 12px;
+    flex-wrap: wrap;
+}
+
+.scope-action-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--apex-text-primary);
+    cursor: pointer;
+    transition: var(--apex-transition-fast);
+}
+
+.scope-action-label:hover {
+    background: var(--apex-bg-hover);
+}
+
+.scope-action-label input[type="checkbox"] {
+    accent-color: #FF8C00;
+    width: 14px;
+    height: 14px;
+}
+
+.scope-action-label.scope-locked {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.scope-lock-icon {
+    stroke: var(--apex-text-muted);
+    stroke-width: 2;
+    fill: none;
+}
+
+/* New Key Display */
+.new-key-display {
+    margin-top: 16px;
+    padding: 16px;
+    background: rgba(255, 140, 0, 0.08);
+    border: 1px solid rgba(255, 140, 0, 0.3);
+    border-radius: 12px;
+}
+
+.new-key-warning {
+    font-size: 13px;
+    font-weight: 600;
+    color: #FF8C00;
+    margin-bottom: 10px;
+}
+
+.new-key-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.new-key-value code {
+    flex: 1;
+    font-size: 13px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    word-break: break-all;
+    color: var(--apex-text-primary);
+}
+
+.new-key-copy-btn {
+    padding: 6px;
+    border: none;
+    background: var(--apex-bg-hover);
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--apex-text-secondary);
+    flex-shrink: 0;
+    transition: var(--apex-transition-fast);
+}
+
+.new-key-copy-btn:hover {
+    color: #FF8C00;
+}
+
+.new-key-copy-btn svg {
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    display: block;
+}
+
 /* ========================================
    DARK MODE OVERRIDES
    ======================================== */

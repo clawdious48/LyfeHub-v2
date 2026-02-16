@@ -61,6 +61,7 @@ app.use('/api/roles', require('./routes/roles'));
 app.use('/api/audit', require('./routes/audit'));
 app.use('/api/apex-docs', require('./routes/apexDocuments'));
 app.use('/api/areas', require('./routes/areas'));
+app.use('/api/system', require('./routes/system'));
 
 
 // Health check endpoint
