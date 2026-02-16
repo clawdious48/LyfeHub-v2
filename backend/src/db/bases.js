@@ -445,18 +445,31 @@ module.exports = {
   },
 
   // Views
-  getViewsByBase: async (baseId, userId) => await db.getAll('SELECT * FROM base_views WHERE base_id = $1 AND user_id = $2 ORDER BY position ASC', [baseId, userId]),
+  getViewsByBase: async (baseId, userId) => await db.getAll('SELECT * FROM base_views WHERE base_id = $1 AND user_id = $2 ORDER BY sort_order ASC, position ASC', [baseId, userId]),
   getViewById: async (id) => await db.getOne('SELECT * FROM base_views WHERE id = $1', [id]),
-  insertView: async (id, baseId, userId, name, config, position) => {
+  insertView: async (id, baseId, userId, name, config, position, viewType = 'table') => {
     await db.run(
-      'INSERT INTO base_views (id, base_id, user_id, name, config, position) VALUES ($1, $2, $3, $4, $5, $6)',
-      [id, baseId, userId, name, JSON.stringify(config), position]
+      'INSERT INTO base_views (id, base_id, user_id, name, view_type, config, position) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+      [id, baseId, userId, name, viewType, JSON.stringify(config), position]
     );
   },
-  updateView: async (id, name, config, position) => await db.run(
-    "UPDATE base_views SET name = $1, config = $2, position = $3, updated_at = NOW() WHERE id = $4",
-    [name, JSON.stringify(config), position, id]
-  ),
+  updateView: async (id, updates) => {
+    const fields = [];
+    const params = [];
+    let paramIdx = 1;
+    for (const [key, value] of Object.entries(updates)) {
+      if (key === 'config') {
+        fields.push(`config = $${paramIdx++}`);
+        params.push(JSON.stringify(value));
+      } else {
+        fields.push(`${key} = $${paramIdx++}`);
+        params.push(value);
+      }
+    }
+    fields.push('updated_at = NOW()');
+    params.push(id);
+    await db.run(`UPDATE base_views SET ${fields.join(', ')} WHERE id = $${paramIdx}`, params);
+  },
   deleteView: async (id) => await db.run('DELETE FROM base_views WHERE id = $1', [id]),
 
   // Groups

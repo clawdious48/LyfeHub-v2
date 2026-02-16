@@ -257,14 +257,17 @@ router.put('/core/:id/views/:viewId', async (req, res) => {
     }
     
     const { name, config, position } = req.body;
-    const existingConfig = JSON.parse(existing.config || '{}');
     
-    await basesDb.updateView(
-      req.params.viewId,
-      name ?? existing.name,
-      config ?? existingConfig,
-      position ?? existing.position
-    );
+    const updates = {};
+    if (name !== undefined) updates.name = name;
+    if (config !== undefined) updates.config = config;
+    if (position !== undefined) updates.position = position;
+    
+    if (Object.keys(updates).length === 0) {
+      updates.name = existing.name; // touch updated_at
+    }
+    
+    await basesDb.updateView(req.params.viewId, updates);
     
     const view = await basesDb.getViewById(req.params.viewId);
     res.json({
@@ -853,14 +856,17 @@ router.put('/:id/views/:viewId', async (req, res) => {
     }
     
     const { name, config, position } = req.body;
-    const existingConfig = JSON.parse(existing.config || '{}');
     
-    await basesDb.updateView(
-      req.params.viewId,
-      name ?? existing.name,
-      config ?? existingConfig,
-      position ?? existing.position
-    );
+    const updates = {};
+    if (name !== undefined) updates.name = name;
+    if (config !== undefined) updates.config = config;
+    if (position !== undefined) updates.position = position;
+    
+    if (Object.keys(updates).length === 0) {
+      updates.name = existing.name; // touch updated_at
+    }
+    
+    await basesDb.updateView(req.params.viewId, updates);
     
     const view = await basesDb.getViewById(req.params.viewId);
     res.json({

@@ -2027,6 +2027,10 @@ function renderTableView() {
 // ============================================
 
 function renderViewsTabs() {
+  // Use enhanced views module if available
+  if (typeof baseViews !== 'undefined') {
+    return baseViews.renderViewsTabs();
+  }
   const views = basesState.views || [];
   const currentViewId = basesState.currentViewId;
   
@@ -2166,6 +2170,11 @@ function attachViewsToolbarListeners() {
     showSaveViewModal();
   });
   
+  // "+" add view button (from base-views.js)
+  if (typeof baseViews !== 'undefined') {
+    baseViews.attachAddViewListener(container);
+  }
+
   // Filter pill remove buttons
   container.querySelectorAll('.filter-pill-remove').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -3630,7 +3639,12 @@ async function openBase(id) {
     renderSidebar();
     attachSidebarListeners();
 
-    renderTableView();
+    // Auto-apply default view if one exists
+    if (typeof baseViews !== 'undefined' && baseViews.applyDefaultView()) {
+      // Default view applied (which calls renderTableView internally)
+    } else {
+      renderTableView();
+    }
   } catch (error) {
     console.error('Failed to open base:', error);
   }
@@ -4255,6 +4269,12 @@ async function saveCurrentView(name) {
 }
 
 function showEditViewModal(viewId) {
+  // Use enhanced config panel if available
+  if (typeof baseViews !== 'undefined') {
+    baseViews.showFullViewConfigModal(viewId);
+    return;
+  }
+
   const view = basesState.views.find(v => v.id === viewId);
   if (!view) return;
   
