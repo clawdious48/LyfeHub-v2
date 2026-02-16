@@ -654,3 +654,193 @@
 [data-theme="dark"] textarea::placeholder {
     color: rgba(240, 240, 245, 0.3);
 }
+
+/* ======================================
+   Apex Job Detail — Dark Mode Overrides
+   ====================================== */
+
+/* Header card */
+[data-theme="dark"] .job-detail-header {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .job-detail-damage-icon {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .job-detail-header-text .client-name {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="dark"] .job-detail-status-btn {
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="dark"] .job-detail-status-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .job-detail-status-btn svg {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="dark"] .job-detail-edit-btn {
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="dark"] .job-detail-edit-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Info cards (Client, Insurance, Property) */
+[data-theme="dark"] .job-info-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .job-info-card-title {
+    color: rgba(255, 255, 255, 0.5);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .job-info-card p {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="dark"] .job-info-card .info-row .info-label {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="dark"] .job-info-card .text-muted {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Phase bar */
+[data-theme="dark"] .job-detail-phase-bar {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .job-detail-phase-bar .phase-btn {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="dark"] .job-detail-phase-bar .phase-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Content tabs */
+[data-theme="dark"] .job-detail-tabs {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .job-detail-tab-btn {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="dark"] .job-detail-tab-btn:hover {
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .job-detail-tab-btn.active {
+    color: var(--apex-primary);
+}
+
+/* Accounting sidebar */
+[data-theme="dark"] .job-accounting {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Activity sidebar */
+[data-theme="dark"] .job-activity {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .activity-filter-btn {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="dark"] .activity-filter-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="dark"] .activity-filter-btn.active {
+    color: var(--apex-primary);
+}
+
+[data-theme="dark"] .activity-event .event-date {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+[data-theme="dark"] .activity-event .event-desc {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Contacts section */
+[data-theme="dark"] .job-contacts {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .job-contacts-header-left .contact-count {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="dark"] .job-contacts-add-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Key Dates tab */
+[data-theme="dark"] .jdt-date-highlight {
+    background: rgba(20, 184, 166, 0.08);
+    border-color: rgba(20, 184, 166, 0.2);
+}
+
+[data-theme="dark"] .jdt-date-display:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .jdt-date-input {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Accounting phase tabs */
+[data-theme="dark"] .acct-phase-tab {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="dark"] .acct-phase-tab:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Estimates type tabs */
+[data-theme="dark"] .est-tab {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="dark"] .est-tab:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Back button */
+[data-theme="dark"] .job-detail-back {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="dark"] .job-detail-back:hover {
+    color: rgba(255, 255, 255, 0.9);
+}
