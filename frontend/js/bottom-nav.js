@@ -597,10 +597,6 @@
         var headerTab = document.querySelector('.tabs .tab[data-tab="' + tabId + '"]');
         if (headerTab) {
             headerTab.click();
-        } else {
-            // We're on a different page (e.g. settings.html) — redirect to main app with tab
-            window.location.href = '/?tab=' + tabId;
-            return;
         }
         
         currentActiveTab = tabId;

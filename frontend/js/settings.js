@@ -15,17 +15,19 @@
     let currentTab = null;
     let userRole = null;
     let currentUser = null;
+    let initialized = false;
 
     /**
-     * Initialize settings page
+     * Initialize settings page (idempotent)
      */
     function initSettings() {
+        if (initialized) return;
+        if (!document.getElementById('section-profile')) return; // DOM not ready
+        initialized = true;
+
         setupTabListeners();
         loadUserAndRoute();
-        window.addEventListener('hashchange', function() {
-            const tab = getTabFromHash();
-            if (tab) switchTab(tab);
-        });
+        setupBackButton();
     }
 
     /**
@@ -35,7 +37,6 @@
         try {
             const res = await fetch('/api/users/me', { credentials: 'include' });
             if (!res.ok) {
-                window.location.href = '/login.html';
                 return;
             }
             const data = await res.json();
@@ -45,11 +46,10 @@
             checkRoleVisibility(userRole);
         } catch (e) {
             console.error('Failed to load user:', e);
-            window.location.href = '/login.html';
             return;
         }
 
-        const tab = getTabFromHash() || 'profile';
+        const tab = 'profile';
         switchTab(tab);
     }
 
@@ -93,11 +93,6 @@
         document.querySelectorAll('.settings-section').forEach(function(s) {
             s.classList.toggle('active', s.id === 'section-' + tabId);
         });
-
-        // Update hash without scrolling
-        if (window.location.hash !== '#' + tabId) {
-            history.replaceState(null, '', '#' + tabId);
-        }
 
         currentTab = tabId;
 
@@ -167,6 +162,50 @@
         confirmBtn.addEventListener('click', onYes);
         cancelBtn.addEventListener('click', onNo);
     }
+
+    /**
+     * Setup settings back button to return to dashboard
+     */
+    function setupBackButton() {
+        var btn = document.getElementById('settings-back-btn');
+        if (btn) {
+            btn.addEventListener('click', function() {
+                var dashTab = document.querySelector('.tab[data-tab="dashboard"]');
+                if (dashTab) dashTab.click();
+            });
+        }
+    }
+
+    // Listen for settings tab activation in SPA
+    document.addEventListener('tab:activated', function(e) {
+        if (e.detail && e.detail.tab === 'settings') {
+            initSettings();
+        }
+    });
+
+    // Also observe via MutationObserver as fallback
+    (function() {
+        var settingsContent = document.getElementById('settings-content') || document.querySelector('[data-tab-content="settings"]');
+        if (!settingsContent) {
+            // Try again after DOM is ready
+            var tryObserve = function() {
+                settingsContent = document.getElementById('settings-content') || document.querySelector('.tab-content[data-tab="settings"]');
+                if (settingsContent) {
+                    var obs = new MutationObserver(function() {
+                        if (!settingsContent.classList.contains('hidden') && !settingsContent.hidden) {
+                            initSettings();
+                        }
+                    });
+                    obs.observe(settingsContent, { attributes: true, attributeFilter: ['class', 'hidden'] });
+                }
+            };
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', tryObserve);
+            } else {
+                tryObserve();
+            }
+        }
+    })();
 
     // Expose API
     window.Settings = {

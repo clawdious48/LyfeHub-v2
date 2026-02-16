@@ -473,7 +473,11 @@
     });
 
     section.querySelector('#sheet-dash-settings').addEventListener('click', function() {
-      window.location.href = '/settings.html';
+      var settingsTab = document.querySelector('.tab[data-tab="settings"]');
+      if (settingsTab) {
+        settingsTab.click();
+      }
+      dismissSheet();
     });
   }
 

@@ -6,10 +6,12 @@
     'use strict';
 
     let userData = null;
-
-    document.addEventListener('DOMContentLoaded', initProfile);
+    let profileInitialized = false;
 
     async function initProfile() {
+        if (profileInitialized) return;
+        if (!document.getElementById('section-profile')) return;
+        profileInitialized = true;
         await loadProfile();
         setupNameEditing();
         setupThemeSelector();
@@ -129,16 +131,23 @@
     }
 
     function applyTheme(theme) {
-        if (theme === 'system') {
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+        if (window.LyfeHubTheme && window.LyfeHubTheme.apply) {
+            window.LyfeHubTheme.apply(theme);
         } else {
-            document.documentElement.setAttribute('data-theme', theme);
+            // Fallback
+            if (theme === 'system') {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+            localStorage.setItem('theme', theme);
         }
     }
 
     function setupDateFormat() {
         const select = document.getElementById('date-format-select');
+        if (!select) return;
         const saved = localStorage.getItem('dateFormat') || 'MM/DD/YYYY';
         select.value = saved;
 
@@ -147,5 +156,15 @@
             Settings.showToast('Date format updated', 'success');
         });
     }
+
+    // Expose for deferred init
+    window.SettingsProfile = { init: initProfile };
+
+    // Auto-init when settings tab is shown
+    document.addEventListener('tab:activated', function(e) {
+        if (e.detail && e.detail.tab === 'settings') {
+            initProfile();
+        }
+    });
 
 })();

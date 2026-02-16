@@ -5,11 +5,19 @@
 (function() {
     'use strict';
 
-    document.addEventListener('DOMContentLoaded', initSecurity);
+    let securityInitialized = false;
 
     function initSecurity() {
+        if (securityInitialized) return;
+        if (!document.getElementById('change-password-form')) return;
+        securityInitialized = true;
         setupPasswordForm();
     }
+
+    // Auto-init when settings tab shown
+    document.addEventListener('tab:activated', function(e) {
+        if (e.detail && e.detail.tab === 'settings') initSecurity();
+    });
 
     function setupPasswordForm() {
         const form = document.getElementById('change-password-form');

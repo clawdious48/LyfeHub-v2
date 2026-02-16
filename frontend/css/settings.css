@@ -651,14 +651,19 @@
     align-items: center;
     gap: 6px;
     padding: 8px 16px;
-    border: 1px solid var(--glass-border);
+    border: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: 8px;
-    background: var(--glass-bg);
-    color: var(--apex-text-secondary);
+    background: transparent;
+    color: var(--apex-text-primary, #282D30);
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     transition: var(--apex-transition-fast);
+}
+
+[data-theme="dark"] .theme-option {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--apex-text-secondary);
 }
 
 .theme-option svg {

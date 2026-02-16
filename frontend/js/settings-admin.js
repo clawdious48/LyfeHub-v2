@@ -26,7 +26,13 @@
   const ACTIONS   = ['read','write','delete','admin'];
 
   // ── Init ──
-  document.addEventListener('DOMContentLoaded', function() {
+  let adminInitialized = false;
+
+  function initAdmin() {
+    if (adminInitialized) return;
+    if (!document.getElementById('section-admin')) return;
+    adminInitialized = true;
+
     // Sub-tab switching
     document.querySelectorAll('.admin-subtab').forEach(function(btn) {
       btn.addEventListener('click', function() {
@@ -54,6 +60,11 @@
 
     setupUserManagement();
     setupRoleManagement();
+  }
+
+  // Auto-init when settings tab shown
+  document.addEventListener('tab:activated', function(e) {
+    if (e.detail && e.detail.tab === 'settings') initAdmin();
   });
 
   // ═══════════════════════════════════════

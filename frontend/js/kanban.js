@@ -102,6 +102,9 @@ const dashboard = {
             c.classList.toggle('active', c.dataset.tab === tabName);
         });
         
+        // Dispatch tab:activated event for lazy-init modules
+        document.dispatchEvent(new CustomEvent('tab:activated', { detail: { tab: tabName } }));
+        
         // Toggle apex-tab-active on body for Apex FAB visibility
         document.body.classList.toggle('apex-tab-active', tabName === 'apex');
         

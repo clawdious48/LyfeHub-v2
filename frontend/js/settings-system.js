@@ -344,10 +344,8 @@
     return d.innerHTML;
   }
 
-  // Auto-init when DOM ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  // Auto-init when settings tab shown
+  document.addEventListener('tab:activated', function(e) {
+    if (e.detail && e.detail.tab === 'settings') init();
+  });
 })();

@@ -1,18 +1,30 @@
 // Theme Manager — handles light/dark mode
 (function() {
-  const STORAGE_KEY = 'lyfehub-theme';
+  const STORAGE_KEY = 'theme';
   
   // Get saved theme or detect system preference
   function getPreferredTheme() {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    // Check both keys for backward compat
+    const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('lyfehub-theme');
     if (saved) return saved;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return 'system';
+  }
+  
+  // Resolve theme value (handle 'system')
+  function resolveTheme(theme) {
+    if (theme === 'system') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return theme;
   }
   
   // Apply theme to document
   function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
+    const resolved = resolveTheme(theme);
+    document.documentElement.setAttribute('data-theme', resolved);
     localStorage.setItem(STORAGE_KEY, theme);
+    // Clean up old key
+    localStorage.removeItem('lyfehub-theme');
     
     // Update any toggle buttons
     document.querySelectorAll('[data-theme-toggle]').forEach(btn => {
@@ -31,9 +43,10 @@
   }
   
   // Listen for system preference changes
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-    if (!localStorage.getItem(STORAGE_KEY)) {
-      applyTheme(e.matches ? 'dark' : 'light');
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved || saved === 'system') {
+      applyTheme('system');
     }
   });
   
