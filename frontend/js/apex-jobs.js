@@ -455,7 +455,7 @@ const apexJobs = {
                 ${phaseBadges ? `<div class="apex-phase-badges">${phaseBadges}</div>` : ''}
                 <div class="apex-project-client">
                     <strong>${this.escapeHtml(job.client?.name || job.clientName || '')}</strong>
-                    ${address ? `<div class="apex-address">${this.escapeHtml(address)}</div>` : ''}
+                    ${address ? `<a href="${this.formatMapsLink(address)}" target="_blank" rel="noopener" class="apex-address info-link" onclick="event.stopPropagation()">${this.escapeHtml(address)}</a>` : ''}
                 </div>
                 <div class="apex-project-progress">
                     <div class="progress-bar large">
@@ -638,10 +638,10 @@ const apexJobs = {
                             <div class="job-detail-number" id="job-detail-number">${jobNumber}</div>
                             <h1>${this.escapeHtml(job.name || job.job_number || 'Job Details')}</h1>
                             <div class="client-name">${this.escapeHtml(clientName)}</div>
-                            ${address ? `<div class="address">
+                            ${address ? `<a href="${this.formatMapsLink(address)}" target="_blank" rel="noopener" class="address info-link">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
                                 ${this.escapeHtml(address)}
-                            </div>` : ''}
+                            </a>` : ''}
                         </div>
                     </div>
                     <div class="job-detail-header-right">
@@ -690,7 +690,7 @@ const apexJobs = {
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                         ${this.escapeHtml(job.client_email)}
                     </a>` : ''}
-                    ${clientAddr ? `<p class="text-muted" style="margin-top:0.25rem">${this.escapeHtml(clientAddr)}</p>` : ''}
+                    ${clientAddr ? `<a href="${this.formatMapsLink(clientAddr)}" target="_blank" rel="noopener" class="info-link text-muted" style="margin-top:0.25rem">${this.escapeHtml(clientAddr)}</a>` : ''}
                 </div>
 
                 <div class="job-info-card">
@@ -711,7 +711,7 @@ const apexJobs = {
 
                 <div class="job-info-card">
                     <div class="job-info-card-title">Property</div>
-                    ${this.formatAddress(job) ? `<p class="text-muted">${this.escapeHtml(this.formatAddress(job))}</p>` : ''}
+                    ${this.formatAddress(job) ? `<a href="${this.formatMapsLink(this.formatAddress(job))}" target="_blank" rel="noopener" class="info-link">${this.escapeHtml(this.formatAddress(job))}</a>` : ''}
                     ${job.prop_type ? `<p class="font-medium">${this.escapeHtml(job.prop_type)}</p>` : ''}
                     <div style="display:flex;gap:0.75rem;font-size:0.8rem;color:var(--text-muted);margin-top:0.25rem">
                         ${catDisplay ? `<span>Cat ${this.escapeHtml(catDisplay)}</span>` : ''}
@@ -1333,6 +1333,12 @@ const apexJobs = {
                 }
             });
         });
+    },
+
+    formatMapsLink(address) {
+        if (!address) return '';
+        const encoded = encodeURIComponent(address);
+        return `https://maps.google.com/?q=${encoded}`;
     },
 
     formatAddress(job) {
