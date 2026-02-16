@@ -57,6 +57,8 @@ app.use('/api/apex-crm', require('./routes/apexCrm'));
 app.use('/api/apex-inventory', require('./routes/apexInventory'));
 app.use('/api/apex-workflows', require('./routes/apexWorkflows'));
 app.use('/api/api-keys', apiKeysRoutes);
+app.use('/api/roles', require('./routes/roles'));
+app.use('/api/audit', require('./routes/audit'));
 app.use('/api/apex-docs', require('./routes/apexDocuments'));
 app.use('/api/areas', require('./routes/areas'));
 

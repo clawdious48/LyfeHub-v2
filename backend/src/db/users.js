@@ -130,7 +130,7 @@ const VALID_ROLES = ['developer', 'management', 'office_coordinator', 'project_m
  * Get all users (without password_hash)
  */
 async function getAllUsers() {
-  return await db.getAll('SELECT id, name, email, role, created_at FROM users ORDER BY created_at ASC');
+  return await db.getAll('SELECT id, name, email, role, status, created_at FROM users ORDER BY created_at ASC');
 }
 
 /**

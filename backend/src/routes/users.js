@@ -329,4 +329,45 @@ router.post('/employees/bulk-delete', requireRole('management'), async (req, res
   }
 });
 
+// ============================================
+// USER STATUS (management/developer only)
+// ============================================
+
+/**
+ * PATCH /api/users/:id/suspend
+ */
+router.patch('/:id/suspend', requireRole('management', 'developer'), async (req, res) => {
+  try {
+    if (req.params.id === req.user.id) {
+      return res.status(400).json({ error: 'Cannot suspend your own account', code: 'SELF_SUSPEND' });
+    }
+    const targetUser = await findUserById(req.params.id);
+    if (!targetUser) return res.status(404).json({ error: 'User not found', code: 'USER_NOT_FOUND' });
+
+    await updateUserStatus(req.params.id, 'suspended');
+    await auditDb.logAction(req.user.id, 'user_suspend', 'user', req.params.id, { name: targetUser.name });
+    res.json({ success: true, status: 'suspended' });
+  } catch (err) {
+    console.error('Error suspending user:', err);
+    res.status(500).json({ error: 'Failed to suspend user', code: 'INTERNAL_ERROR' });
+  }
+});
+
+/**
+ * PATCH /api/users/:id/unsuspend
+ */
+router.patch('/:id/unsuspend', requireRole('management', 'developer'), async (req, res) => {
+  try {
+    const targetUser = await findUserById(req.params.id);
+    if (!targetUser) return res.status(404).json({ error: 'User not found', code: 'USER_NOT_FOUND' });
+
+    await updateUserStatus(req.params.id, 'active');
+    await auditDb.logAction(req.user.id, 'user_unsuspend', 'user', req.params.id, { name: targetUser.name });
+    res.json({ success: true, status: 'active' });
+  } catch (err) {
+    console.error('Error unsuspending user:', err);
+    res.status(500).json({ error: 'Failed to unsuspend user', code: 'INTERNAL_ERROR' });
+  }
+});
+
 module.exports = router;

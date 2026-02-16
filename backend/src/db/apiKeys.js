@@ -31,7 +31,7 @@ function hashKey(key) {
   return crypto.createHash('sha256').update(key).digest('hex');
 }
 
-async function createApiKey(userId, name, expiresAt = null) {
+async function createApiKey(userId, name, expiresAt = null, scopes = []) {
   const id = uuidv4();
   const key = generateApiKey();
   const keyHash = hashKey(key);
@@ -39,25 +39,29 @@ async function createApiKey(userId, name, expiresAt = null) {
   const keyEncrypted = encrypt(key);
 
   await db.run(
-    "INSERT INTO api_keys (id, user_id, name, key_hash, key_prefix, key_encrypted, expires_at, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())",
-    [id, userId, name, keyHash, keyPrefix, keyEncrypted, expiresAt]
+    "INSERT INTO api_keys (id, user_id, name, key_hash, key_prefix, key_encrypted, expires_at, scopes, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())",
+    [id, userId, name, keyHash, keyPrefix, keyEncrypted, expiresAt, JSON.stringify(scopes)]
   );
 
-  return { id, name, key, keyPrefix, expiresAt, createdAt: new Date().toISOString() };
+  return { id, name, key, keyPrefix, expiresAt, scopes, createdAt: new Date().toISOString() };
 }
 
 async function listApiKeys(userId) {
   const rows = await db.getAll(
-    "SELECT id, name, key_prefix, expires_at, last_used_at, created_at FROM api_keys WHERE user_id = $1 ORDER BY created_at DESC",
+    "SELECT id, name, key_prefix, expires_at, last_used_at, scopes, created_at FROM api_keys WHERE user_id = $1 ORDER BY created_at DESC",
     [userId]
   );
 
-  return rows.map(row => ({
-    id: row.id, name: row.name, keyPrefix: row.key_prefix,
-    expiresAt: row.expires_at, lastUsedAt: row.last_used_at,
-    createdAt: row.created_at,
-    isExpired: row.expires_at ? new Date(row.expires_at) < new Date() : false
-  }));
+  return rows.map(row => {
+    let scopes = [];
+    try { scopes = row.scopes ? (typeof row.scopes === 'string' ? JSON.parse(row.scopes) : row.scopes) : []; } catch { scopes = []; }
+    return {
+      id: row.id, name: row.name, keyPrefix: row.key_prefix,
+      expiresAt: row.expires_at, lastUsedAt: row.last_used_at,
+      createdAt: row.created_at, scopes,
+      isExpired: row.expires_at ? new Date(row.expires_at) < new Date() : false
+    };
+  });
 }
 
 async function getFullKey(keyId, userId) {
