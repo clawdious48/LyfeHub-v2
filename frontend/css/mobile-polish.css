@@ -387,3 +387,82 @@ body.apex-tab-active #mobile-filter-btn {
         grid-template-columns: repeat(2, 1fr) !important;
     }
 }
+
+/* ==============================================
+   TABLET LANDSCAPE DESKTOP OVERRIDE
+   iPad landscape (1024-1194px) should match desktop exactly.
+   Undo all mobile overrides when landscape + wide enough.
+   ============================================== */
+@media (min-width: 769px) and (max-width: 1199px) and (orientation: landscape) {
+    /* Undo fixed body (restore normal scrolling like desktop) */
+    html, body {
+        overflow: auto !important;
+        position: static !important;
+        width: auto !important;
+        height: auto !important;
+    }
+    .app-layout {
+        overflow-y: auto;
+        height: auto;
+    }
+
+    /* Restore desktop header/tabs */
+    header.header,
+    .header,
+    nav.tabs,
+    .tabs {
+        display: flex !important;
+    }
+
+    /* Restore header-right (settings, logout) */
+    .header-right {
+        display: flex !important;
+    }
+
+    /* Restore bases view controls */
+    .bases-view-controls {
+        display: flex !important;
+    }
+
+    /* Restore sidebars */
+    .calendar-sidebar {
+        display: block !important;
+    }
+    .bases-sidebar {
+        display: block !important;
+    }
+    .people-sidebar {
+        display: block !important;
+    }
+
+    /* Undo forced margin/width on main content areas */
+    .calendar-main,
+    .calendar-layout,
+    .bases-main-content,
+    .people-main-content {
+        margin-left: unset !important;
+        width: unset !important;
+    }
+    .bases-layout,
+    .people-layout {
+        display: flex !important;
+    }
+
+    /* Hide mobile-only elements (bottom nav, FAB) */
+    .bottom-nav {
+        display: none !important;
+    }
+    .fab-container,
+    .fab-btn,
+    #fab-btn {
+        display: none !important;
+    }
+    body {
+        padding-bottom: 0 !important;
+    }
+
+    /* Remove extra bottom padding on tab content */
+    .tab-content.active {
+        padding-bottom: 0;
+    }
+}
