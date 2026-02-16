@@ -538,7 +538,7 @@
 }
 
 .month-cell {
-    background: #ffffff;
+    background: var(--glass-bg);
     padding: 0.5rem;
     min-height: 100px;
     cursor: pointer;
@@ -1675,4 +1675,80 @@
 }
 [data-theme="dark"] .time-block-task-option:hover {
     background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .calendar-sidebar-toggle:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .calendar-list-item:not(.selected):hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .calendar-section-header:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .month-cell:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .month-cell.today {
+    background: rgba(255, 140, 0, 0.15);
+}
+[data-theme="dark"] .week-all-day-row {
+    background: rgba(255, 255, 255, 0.03);
+}
+[data-theme="dark"] .all-day-section {
+    background: rgba(255, 255, 255, 0.03);
+}
+[data-theme="dark"] .week-hour-slot:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+[data-theme="dark"] .hour-content:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+[data-theme="dark"] .hour-row {
+    border-bottom-color: rgba(255, 255, 255, 0.04);
+}
+[data-theme="dark"] .time-picker-content {
+    background: rgba(30, 41, 59, 0.97);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+[data-theme="dark"] .time-picker-all-day {
+    background: rgba(255, 255, 255, 0.03);
+}
+[data-theme="dark"] .time-picker-all-day-zone:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .time-picker-hour-row:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+[data-theme="dark"] .time-block-popup-content {
+    background: rgba(30, 41, 59, 0.97);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+[data-theme="dark"] .time-block-quick-input {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f0f0f5;
+}
+[data-theme="dark"] .time-block-quick-input::placeholder {
+    color: rgba(240, 240, 245, 0.35);
+}
+[data-theme="dark"] .time-block-task-option.selected {
+    background: rgba(255, 140, 0, 0.2);
+    border-color: #FF8C00;
+}
+[data-theme="dark"] .calendar-view-toggle {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .calendar-nav-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.7);
+}
+[data-theme="dark"] .calendar-today-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.7);
+}
+[data-theme="dark"] .calendar-view-btn.active {
+    background: rgba(255, 140, 0, 0.2);
 }

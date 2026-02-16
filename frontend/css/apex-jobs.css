@@ -4527,6 +4527,10 @@
     [data-theme="dark"] .original-amount-display {
         color: rgba(240, 240, 245, 0.5);
     }
+    [data-theme="dark"] .est-status-badge.est-draft {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(240, 240, 245, 0.6);
+    }
     [data-theme="dark"] .apex-job-card:hover {
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     }

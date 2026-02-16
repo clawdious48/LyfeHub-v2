@@ -543,6 +543,24 @@
     background: #FF8C00;
     color: #111;
 }
+[data-theme="dark"] .context-sheet .sheet-list-item-icon {
+    color: rgba(240, 240, 245, 0.5);
+}
+[data-theme="dark"] .context-sheet .sheet-list-item-text {
+    color: var(--text-primary);
+}
+[data-theme="dark"] .context-sheet .sheet-list-item-badge {
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .context-sheet .sheet-select {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+[data-theme="dark"] .context-sheet .sheet-select option {
+    background: #1e293b;
+}
 
 /* ---- Bottom Nav dark: styles live in bottom-nav.css ---- */
 

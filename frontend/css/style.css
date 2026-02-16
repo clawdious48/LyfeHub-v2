@@ -9783,6 +9783,18 @@ body.column-dragging .base-table {
 [data-theme="dark"] .form-group select option {
     background: rgba(255, 255, 255, 0.05);
 }
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="time"],
+[data-theme="dark"] input[type="datetime-local"] {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f0f0f5;
+}
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] input[type="time"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.8);
+}
 [data-theme="dark"] .task-meta {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -9840,7 +9852,8 @@ body.column-dragging .base-table {
     background: rgba(255, 255, 255, 0.05);
 }
 [data-theme="dark"] .my-lists-menu {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(30, 41, 59, 0.97);
+    border-color: rgba(255, 255, 255, 0.12);
 }
 [data-theme="dark"] .my-lists-item:hover {
     background: rgba(255, 255, 255, 0.05);
@@ -9926,8 +9939,13 @@ body.column-dragging .base-table {
 [data-theme="dark"] .task-list-selector:hover {
     border-color: rgba(255, 255, 255, 0.15);
 }
+[data-theme="dark"] .task-metadata-preset {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+}
 [data-theme="dark"] .task-metadata-preset:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 [data-theme="dark"] .bases-sidebar {
     background: rgba(255, 255, 255, 0.05);

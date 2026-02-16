@@ -389,3 +389,143 @@
 [data-theme="dark"] .base-view-widget-table tbody tr:hover {
     background: rgba(255, 140, 0, 0.08);
 }
+
+/* ========================================
+   DASHBOARD DARK MODE OVERRIDES
+   ======================================== */
+
+/* Container background */
+[data-theme="dark"] .dashboard-container {
+    background: linear-gradient(135deg, #0f172a 0%, #1a1f35 40%, #0f172a 100%);
+}
+
+/* Header text */
+[data-theme="dark"] .dashboard-greeting {
+    color: #f0f0f5;
+}
+
+[data-theme="dark"] .dashboard-date {
+    color: rgba(240, 240, 245, 0.6);
+}
+
+/* Widget cards */
+[data-theme="dark"] .dashboard-widget {
+    background: rgba(30, 41, 59, 0.75);
+    border-color: rgba(255, 140, 0, 0.12);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .dashboard-widget:hover {
+    background: rgba(30, 41, 59, 0.85);
+    border-color: rgba(255, 140, 0, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Widget header */
+[data-theme="dark"] .widget-header h2 {
+    color: #f0f0f5;
+}
+
+/* Quick capture */
+[data-theme="dark"] .quick-capture-input {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f0f0f5;
+}
+
+[data-theme="dark"] .quick-capture-input::placeholder {
+    color: rgba(240, 240, 245, 0.35);
+}
+
+[data-theme="dark"] .quick-capture-input:focus {
+    border-color: #FF8C00;
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.15);
+}
+
+/* Skeleton loading */
+[data-theme="dark"] .widget-skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.05) 75%);
+    background-size: 200% 100%;
+}
+
+/* My Day widget */
+[data-theme="dark"] .my-day-task {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .my-day-task-title {
+    color: rgba(240, 240, 245, 0.9);
+}
+
+[data-theme="dark"] .my-day-due-time {
+    color: rgba(240, 240, 245, 0.45);
+}
+
+[data-theme="dark"] .my-day-checkmark {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .my-day-empty-col {
+    color: rgba(240, 240, 245, 0.3);
+}
+
+/* Widget empty states */
+[data-theme="dark"] .widget-empty p {
+    color: rgba(240, 240, 245, 0.45);
+}
+
+[data-theme="dark"] .widget-empty-sub {
+    color: rgba(240, 240, 245, 0.3) !important;
+}
+
+/* Week calendar widget */
+[data-theme="dark"] .week-day:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .week-day.today {
+    background: rgba(255, 140, 0, 0.12);
+}
+
+[data-theme="dark"] .week-day-name {
+    color: rgba(240, 240, 245, 0.45);
+}
+
+[data-theme="dark"] .week-day-number {
+    color: #f0f0f5;
+}
+
+[data-theme="dark"] .week-today-events {
+    border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .week-today-events h4 {
+    color: rgba(240, 240, 245, 0.45);
+}
+
+[data-theme="dark"] .week-event-title {
+    color: #f0f0f5;
+}
+
+/* Quick notes widget */
+[data-theme="dark"] .quick-note-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .quick-note-title {
+    color: #f0f0f5;
+}
+
+[data-theme="dark"] .quick-note-preview {
+    color: rgba(240, 240, 245, 0.55);
+}
+
+[data-theme="dark"] .quick-note-meta {
+    color: rgba(240, 240, 245, 0.35);
+}
+
+/* Base view widget */
+[data-theme="dark"] .base-view-widget-more {
+    color: rgba(240, 240, 245, 0.45);
+}
