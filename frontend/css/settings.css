@@ -1,0 +1,604 @@
+/* ========================================
+   SETTINGS PAGE STYLES
+   ======================================== */
+
+/* --- Layout --- */
+.settings-layout {
+    display: flex;
+    min-height: calc(100vh - 60px);
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border-bottom: 1px solid var(--glass-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.settings-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--apex-text-primary);
+    border-radius: 8px;
+    transition: var(--apex-transition-fast);
+}
+
+.settings-back-btn:hover {
+    background: var(--apex-bg-hover);
+}
+
+.settings-back-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+}
+
+.settings-header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--apex-text-primary);
+}
+
+/* --- Sidebar --- */
+.settings-sidebar {
+    width: 220px;
+    min-width: 220px;
+    padding: 16px 12px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border-right: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.settings-tab {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: none;
+    background: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--apex-text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    transition: var(--apex-transition-fast);
+    text-align: left;
+    width: 100%;
+}
+
+.settings-tab:hover {
+    background: var(--apex-bg-hover);
+    color: var(--apex-text-primary);
+}
+
+.settings-tab.active {
+    background: var(--apex-primary-muted);
+    color: #FF8C00;
+}
+
+.settings-tab svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    flex-shrink: 0;
+}
+
+.settings-tab.active svg {
+    color: #FF8C00;
+}
+
+/* --- Content Area --- */
+.settings-content {
+    flex: 1;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px 32px;
+    width: 100%;
+}
+
+/* --- Section (glass card) --- */
+.settings-section {
+    display: none;
+    background: var(--glass-bg);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--glass-shadow);
+}
+
+.settings-section.active {
+    display: block;
+}
+
+.settings-section-header {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--apex-text-primary);
+    margin: 0 0 16px 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.text-muted {
+    color: var(--apex-text-muted);
+    font-size: 14px;
+}
+
+/* --- Toggle Switch --- */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-switch .slider {
+    position: absolute;
+    inset: 0;
+    background: var(--apex-bg-hover);
+    border-radius: 24px;
+    border: 1px solid var(--glass-border);
+    cursor: pointer;
+    transition: var(--apex-transition-fast);
+}
+
+.toggle-switch .slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 2px;
+    bottom: 2px;
+    background: white;
+    border-radius: 50%;
+    transition: var(--apex-transition-fast);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle-switch input:checked + .slider {
+    background: #FF8C00;
+    border-color: #FF8C00;
+}
+
+.toggle-switch input:checked + .slider::before {
+    transform: translateX(20px);
+}
+
+/* --- Permission Matrix --- */
+.permission-matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.permission-matrix th,
+.permission-matrix td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.permission-matrix th {
+    font-weight: 600;
+    color: var(--apex-text-secondary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.permission-matrix td {
+    color: var(--apex-text-primary);
+}
+
+/* --- Scope Picker --- */
+.scope-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+}
+
+.scope-picker label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--apex-text-primary);
+    cursor: pointer;
+    transition: var(--apex-transition-fast);
+}
+
+.scope-picker label:hover {
+    background: var(--apex-bg-hover);
+}
+
+/* --- User Card --- */
+.user-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    transition: var(--apex-transition-fast);
+}
+
+.user-card:hover {
+    border-color: var(--apex-border-hover);
+}
+
+.user-card .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--apex-primary-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FF8C00;
+    font-weight: 600;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.user-card .user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-card .user-name {
+    font-weight: 500;
+    color: var(--apex-text-primary);
+    font-size: 14px;
+}
+
+.user-card .user-email {
+    font-size: 12px;
+    color: var(--apex-text-muted);
+}
+
+/* --- Role Card --- */
+.role-card {
+    padding: 16px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+}
+
+.role-card .role-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--apex-text-primary);
+    margin-bottom: 4px;
+}
+
+.role-card .role-desc {
+    font-size: 13px;
+    color: var(--apex-text-muted);
+}
+
+/* --- Bulk Actions Bar --- */
+.bulk-actions-bar {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: var(--apex-glass-bg-solid);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: var(--apex-shadow-lg);
+    z-index: 200;
+}
+
+.bulk-actions-bar.visible {
+    display: flex;
+}
+
+.bulk-actions-bar .bulk-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--apex-text-primary);
+}
+
+.bulk-actions-bar button {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--apex-transition-fast);
+}
+
+.bulk-actions-bar .bulk-action-primary {
+    background: #FF8C00;
+    color: white;
+}
+
+.bulk-actions-bar .bulk-action-danger {
+    background: var(--apex-danger-muted);
+    color: var(--apex-danger);
+}
+
+/* --- Confirmation Modal --- */
+.confirmation-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.confirmation-modal.visible {
+    display: flex;
+}
+
+.confirmation-modal .modal-content {
+    background: var(--apex-glass-bg-solid);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: var(--apex-shadow-lg);
+}
+
+.confirmation-modal .modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--apex-text-primary);
+    margin-bottom: 8px;
+}
+
+.confirmation-modal .modal-message {
+    font-size: 14px;
+    color: var(--apex-text-secondary);
+    margin-bottom: 20px;
+}
+
+.confirmation-modal .modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.confirmation-modal .modal-actions button {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--apex-transition-fast);
+}
+
+.confirmation-modal .btn-cancel {
+    background: var(--apex-bg-hover);
+    color: var(--apex-text-primary);
+}
+
+.confirmation-modal .btn-confirm-danger {
+    background: var(--apex-danger);
+    color: white;
+}
+
+/* --- Toast Notification --- */
+.settings-toast {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 2000;
+    transform: translateX(120%);
+    transition: transform 0.3s ease;
+    box-shadow: var(--apex-shadow-md);
+}
+
+.settings-toast.visible {
+    transform: translateX(0);
+}
+
+.settings-toast.success {
+    background: #FF8C00;
+    color: white;
+}
+
+.settings-toast.error {
+    background: var(--apex-danger);
+    color: white;
+}
+
+.settings-toast.info {
+    background: var(--apex-glass-bg-solid);
+    border: 1px solid var(--glass-border);
+    color: var(--apex-text-primary);
+}
+
+/* ========================================
+   DARK MODE OVERRIDES
+   ======================================== */
+[data-theme="dark"] .settings-header {
+    background: rgba(15, 23, 42, 0.8);
+}
+
+[data-theme="dark"] .settings-sidebar {
+    background: rgba(255, 255, 255, 0.03);
+    border-right-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .settings-tab:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .settings-tab.active {
+    background: rgba(255, 140, 0, 0.12);
+}
+
+[data-theme="dark"] .settings-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .user-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .role-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .bulk-actions-bar {
+    background: rgba(15, 23, 42, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .confirmation-modal .modal-content {
+    background: rgba(15, 23, 42, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .toggle-switch .slider {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .toggle-switch .slider::before {
+    background: #cbd5e1;
+}
+
+[data-theme="dark"] .permission-matrix th,
+[data-theme="dark"] .permission-matrix td {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+/* Mobile: sidebar becomes horizontal tab bar */
+@media (max-width: 767px) {
+    .settings-layout {
+        flex-direction: column;
+    }
+
+    .settings-sidebar {
+        width: 100%;
+        min-width: unset;
+        flex-direction: row;
+        overflow-x: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--glass-border);
+        padding: 8px 12px;
+        gap: 4px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .settings-sidebar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .settings-tab {
+        white-space: nowrap;
+        padding: 8px 12px;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+
+    .settings-content {
+        padding: 16px;
+    }
+
+    .settings-header h1 {
+        font-size: 18px;
+    }
+
+    .scope-picker {
+        grid-template-columns: 1fr;
+    }
+
+    .bulk-actions-bar {
+        bottom: 100px;
+        width: calc(100% - 32px);
+        left: 16px;
+        transform: none;
+    }
+
+    .bulk-actions-bar.visible {
+        transform: none;
+    }
+
+    .settings-toast {
+        right: 16px;
+        left: 16px;
+        top: auto;
+        bottom: 100px;
+    }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+    .settings-content {
+        padding: 20px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .settings-content {
+        padding: 32px 48px;
+    }
+}
+
+@media (min-width: 1280px) {
+    .settings-sidebar {
+        width: 240px;
+    }
+}
