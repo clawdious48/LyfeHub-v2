@@ -18,7 +18,7 @@
 
     async function loadProfile() {
         try {
-            const res = await fetch('/api/auth/me', { credentials: 'include' });
+            const res = await fetch('/api/users/me', { credentials: 'include' });
             if (!res.ok) return;
             const data = await res.json();
             userData = data.user || data;

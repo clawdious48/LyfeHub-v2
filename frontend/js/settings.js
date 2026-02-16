@@ -8,12 +8,13 @@
 
     const TABS = ['profile', 'security', 'developer', 'admin', 'system'];
     const ROLE_RESTRICTED = {
-        admin: ['admin', 'management'],
+        admin: ['developer', 'management', 'office_coordinator'],
         system: ['developer']
     };
 
     let currentTab = null;
     let userRole = null;
+    let currentUser = null;
 
     /**
      * Initialize settings page
@@ -32,16 +33,20 @@
      */
     async function loadUserAndRoute() {
         try {
-            const res = await fetch('/api/auth/me', { credentials: 'include' });
+            const res = await fetch('/api/users/me', { credentials: 'include' });
             if (!res.ok) {
                 window.location.href = '/login.html';
                 return;
             }
             const data = await res.json();
-            userRole = (data.user && data.user.role) || data.role || 'viewer';
+            const u = data.user || data;
+            currentUser = u;
+            userRole = Array.isArray(u.role) ? u.role[0] : (u.role || 'field_tech');
             checkRoleVisibility(userRole);
         } catch (e) {
             console.error('Failed to load user:', e);
+            window.location.href = '/login.html';
+            return;
         }
 
         const tab = getTabFromHash() || 'profile';

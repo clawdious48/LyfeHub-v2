@@ -40,7 +40,7 @@
     });
 
     // Get current user id
-    fetch('/api/auth/me', { credentials: 'include' }).then(function(r) { return r.json(); }).then(function(d) {
+    fetch('/api/users/me', { credentials: 'include' }).then(function(r) { return r.json(); }).then(function(d) {
       currentUserId = d.user ? d.user.id : d.id;
     });
 

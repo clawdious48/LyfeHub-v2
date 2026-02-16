@@ -1,23 +1,40 @@
 services:
-  lyfehub-v2-preview:
+  db:
+    image: postgres:16-alpine
+    container_name: settings-preview-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: lyfehub
+      POSTGRES_USER: lyfehub
+      POSTGRES_PASSWORD: preview_2026
+    volumes:
+      - settings-preview-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lyfehub"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: lyfehub-v2-preview-mobile-tabs
+      dockerfile: Dockerfile.postgres
+    container_name: settings-preview-app
     restart: unless-stopped
     ports:
-      - "4001:3000"
+      - "4002:3000"
     environment:
-      - KANBAN_PASSWORD=${KANBAN_PASSWORD}
-      - KANBAN_API_KEY=${KANBAN_API_KEY}
-      - JWT_SECRET=${JWT_SECRET}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=lyfehub
+      - DB_USER=lyfehub
+      - DB_PASSWORD=preview_2026
+      - JWT_SECRET=preview-secret-key-2026
       - NODE_ENV=production
       - PORT=3000
-    volumes:
-      - /root/lyfehub-v2-preview-data:/data
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  settings-preview-pgdata:
