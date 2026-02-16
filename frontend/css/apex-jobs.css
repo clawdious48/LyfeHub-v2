@@ -3932,7 +3932,7 @@
 @media (min-width: 768px) and (max-width: 1200px) {
     /* Show bottom nav on tablets */
     .bottom-nav {
-        display: flex !important;
+        display: block !important;
     }
     
     /* Show FAB on tablets */
