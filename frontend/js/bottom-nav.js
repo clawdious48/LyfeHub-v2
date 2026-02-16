@@ -39,7 +39,8 @@
         {
             id: 'apex',
             label: 'Apex',
-            icon: '<svg viewBox="0 0 24 24"><path d="M2 20h20L12 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>'
+            icon: '<svg viewBox="0 0 24 24"><path d="M2 20h20"/><path d="M5 20V8l7-5 7 5v12"/><path d="M9 20v-6h6v6"/><path d="M9 12h6"/></svg>',
+            roleRequired: ['developer', 'management', 'office_coordinator', 'project_manager', 'estimator', 'field_tech']
         },
     ];
     
