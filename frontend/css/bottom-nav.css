@@ -424,8 +424,11 @@
         display: block;
     }
     
-    body {
-        padding-bottom: calc(var(--bottom-nav-height, 70px) + env(safe-area-inset-bottom, 0px));
+    /* Content containers get padding to clear the fixed bottom nav.
+       Body/html stay full-viewport so backgrounds show behind translucent nav. */
+    .tab-content,
+    #apex-job-detail {
+        padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
     }
     
     /* Modals must clear the bottom nav — shrink the fixed overlay so all
