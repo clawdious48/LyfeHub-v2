@@ -42,6 +42,7 @@
         document.querySelectorAll('.admin-subsection').forEach(function(s) { s.classList.remove('active'); });
         document.getElementById('admin-' + target).classList.add('active');
         if (target === 'roles' && allRoles.length === 0) loadRoles();
+        if (target === 'company') loadCompanySettings();
       });
     });
 
@@ -60,6 +61,7 @@
 
     setupUserManagement();
     setupRoleManagement();
+    setupCompanySettings();
   }
 
   // Auto-init when settings tab shown
@@ -662,5 +664,101 @@
     var d = document.createElement('div');
     d.textContent = s || '';
     return d.innerHTML;
+  }
+
+  // ═══════════════════════════════════════
+  // 3.6 — COMPANY SETTINGS
+  // ═══════════════════════════════════════
+
+  function setupCompanySettings() {
+    document.getElementById('company-logo-upload-btn').addEventListener('click', function() {
+      document.getElementById('company-logo-input').click();
+    });
+    document.getElementById('company-logo-input').addEventListener('change', uploadCompanyLogo);
+  }
+
+  async function loadCompanySettings() {
+    try {
+      var res = await fetch('/api/settings/company', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to load company settings');
+      var settings = await res.json();
+      
+      // Display current logo if it exists
+      if (settings.company_logo && settings.company_logo.value) {
+        displayCompanyLogo(settings.company_logo.value);
+      }
+    } catch (e) {
+      console.error('Failed to load company settings:', e);
+    }
+  }
+
+  function displayCompanyLogo(logoPath) {
+    var placeholder = document.getElementById('company-logo-placeholder');
+    var img = document.getElementById('company-logo-img');
+    
+    placeholder.style.display = 'none';
+    img.style.display = 'block';
+    img.src = '/api/settings/company/logo/file?' + Date.now(); // Cache bust
+  }
+
+  async function uploadCompanyLogo() {
+    var input = document.getElementById('company-logo-input');
+    var btn = document.getElementById('company-logo-upload-btn');
+    var btnText = btn.querySelector('.btn-text');
+    var spinner = btn.querySelector('.btn-spinner');
+    
+    if (!input.files || input.files.length === 0) return;
+    
+    var file = input.files[0];
+    
+    // Client-side validation
+    var maxSize = 2 * 1024 * 1024; // 2MB
+    if (file.size > maxSize) {
+      Settings.showToast('File too large. Max 2MB allowed.', 'error');
+      return;
+    }
+    
+    var allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+      Settings.showToast('Invalid file type. Only PNG, JPG, WebP, and SVG allowed.', 'error');
+      return;
+    }
+    
+    // Show loading state
+    btn.disabled = true;
+    btnText.style.display = 'none';
+    spinner.style.display = 'inline-block';
+    
+    try {
+      var formData = new FormData();
+      formData.append('logo', file);
+      
+      var res = await fetch('/api/settings/company/logo', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      });
+      
+      if (!res.ok) {
+        var err = await res.json();
+        throw new Error(err.error || 'Upload failed');
+      }
+      
+      var result = await res.json();
+      Settings.showToast('Logo uploaded successfully', 'success');
+      
+      // Show uploaded logo immediately
+      displayCompanyLogo(result.setting_value);
+      
+      // Clear input
+      input.value = '';
+    } catch (e) {
+      Settings.showToast(e.message, 'error');
+    } finally {
+      // Reset button state
+      btn.disabled = false;
+      btnText.style.display = 'inline';
+      spinner.style.display = 'none';
+    }
   }
 })();

@@ -116,14 +116,22 @@ const jobDetailTabs = {
             return '<span class="jdt-file-icon">&#128206;</span>';
         };
 
-        const renderFileRow = (file) => `
-            <div class="jdt-file-row">
-                ${fileIcon(file.name || '')}
-                <span class="jdt-file-name">${esc(file.name || 'Untitled')}</span>
-                <span class="jdt-file-size">${esc(file.size || '')}</span>
-                <span class="jdt-file-date">${file.uploaded_at ? new Date(file.uploaded_at).toLocaleDateString() : ''}</span>
-            </div>
-        `;
+        const renderFileRow = (file) => {
+            const isPDF = /\.pdf$/i.test(file.name || '');
+            const onClick = isPDF 
+                ? `onclick="jobDetailTabs._previewDocument('${esc(file.id)}', '${esc(file.name || 'Document')}')"` 
+                : `onclick="jobDetailTabs._downloadDocument('${esc(file.id)}', '${esc(file.name || 'Document')}')"`;
+            
+            return `
+                <div class="jdt-file-row jdt-file-clickable" ${onClick}>
+                    ${fileIcon(file.name || '')}
+                    <span class="jdt-file-name">${esc(file.name || 'Untitled')}</span>
+                    <span class="jdt-file-size">${esc(file.size || '')}</span>
+                    <span class="jdt-file-date">${file.uploaded_at ? new Date(file.uploaded_at).toLocaleDateString() : ''}</span>
+                    <button class="jdt-file-download" onclick="event.stopPropagation(); jobDetailTabs._downloadDocument('${esc(file.id)}', '${esc(file.name || 'Document')}')" title="Download">⬇</button>
+                </div>
+            `;
+        };
 
         const photoSection = photos.length > 0
             ? photos.map(renderFileRow).join('')
@@ -628,12 +636,13 @@ const jobDetailTabs = {
             }
 
             // State 3: Log exists and setup complete — show full view
-            const [chambers, rooms, visits, refPoints, baselines] = await Promise.all([
+            const [chambers, rooms, visits, refPoints, baselines, reports] = await Promise.all([
                 api.getDryingChambers(jobId),
                 api.getDryingRooms(jobId),
                 api.getDryingVisits(jobId),
                 api.getDryingRefPoints(jobId),
-                api.getDryingBaselines(jobId)
+                api.getDryingBaselines(jobId),
+                log.locked === 1 ? api.request(`/apex-jobs/${jobId}/drying/reports`).catch(() => []) : Promise.resolve([])
             ]);
 
             jobDetailTabs._dryingChambers = chambers;
@@ -641,6 +650,7 @@ const jobDetailTabs = {
             jobDetailTabs._dryingVisits = visits;
             jobDetailTabs._dryingRefPoints = refPoints;
             jobDetailTabs._dryingBaselines = baselines;
+            jobDetailTabs._dryingReports = reports || [];
 
             container.innerHTML = jobDetailTabs._renderDryingLogView(log, jobId, visits, refPoints, baselines, chambers);
         } catch (err) {
@@ -686,8 +696,9 @@ const jobDetailTabs = {
 
     _renderDryingLogView(log, jobId, visits, refPoints, baselines, chambers) {
         const esc = dryingUtils.escapeHtml;
-        const statusClass = log.status === 'active' ? 'in_progress' : 'complete';
-        const statusLabel = log.status === 'active' ? 'Active' : 'Complete';
+        const isLocked = log.locked === 1;
+        const statusClass = isLocked ? 'complete' : (log.status === 'active' ? 'in_progress' : 'complete');
+        const statusLabel = isLocked ? 'Completed' : (log.status === 'active' ? 'Active' : 'Complete');
 
         // Check if drying can be completed: all non-demolished ref points dry + no equipment
         const activeRefPoints = refPoints.filter(rp => !rp.demolished_at);
@@ -699,18 +710,22 @@ const jobDetailTabs = {
             return true; // Detailed check happens with visit data
         });
 
-        const canComplete = log.status === 'active' && visits.length > 0;
+        const canComplete = !isLocked && log.status === 'active' && visits.length > 0;
 
         // Visit history
         const viewMode = jobDetailTabs._visitViewMode || 'card';
         const visitCards = visits.slice().map(v => {
             const date = v.visited_at ? new Date(v.visited_at).toLocaleDateString() : '';
+            const equipmentCount = jobDetailTabs._getEquipmentCountForVisit(v);
+            const equipmentBadge = equipmentCount > 0 ? `<span class="dry-equipment-badge" title="${equipmentCount} pieces of equipment active">${equipmentCount}</span>` : '';
+            
             if (viewMode === 'list') {
                 return `
                     <div class="dry-visit-list-item" onclick="jobDetailTabs._openVisitReadOnly('${jobId}', '${v.id}')" title="View Visit #${v.visit_number}">
                         <span class="dry-visit-list-num">Visit #${v.visit_number}</span>
                         <span class="dry-visit-list-date">${date}</span>
-                        <button class="dry-btn dry-btn-sm dry-visit-edit-btn" onclick="event.stopPropagation(); jobDetailTabs._openVisitEdit('${jobId}', '${v.id}')" title="Edit Visit">✏️</button>
+                        ${equipmentBadge}
+                        ${!isLocked ? `<button class="dry-btn dry-btn-sm dry-visit-edit-btn" onclick="event.stopPropagation(); jobDetailTabs._openVisitEdit('${jobId}', '${v.id}')" title="Edit Visit">✏️</button>` : ''}
                     </div>
                 `;
             }
@@ -719,7 +734,8 @@ const jobDetailTabs = {
                 <div class="dry-visit-card" onclick="jobDetailTabs._openVisitReadOnly('${jobId}', '${v.id}')" title="View Visit #${v.visit_number}">
                     <div class="dry-visit-card-num">#${v.visit_number}</div>
                     <div class="dry-visit-card-date">${shortDate}</div>
-                    <button class="dry-visit-card-edit" onclick="event.stopPropagation(); jobDetailTabs._openVisitEdit('${jobId}', '${v.id}')" title="Edit">✏️</button>
+                    ${equipmentBadge}
+                    ${!isLocked ? `<button class="dry-visit-card-edit" onclick="event.stopPropagation(); jobDetailTabs._openVisitEdit('${jobId}', '${v.id}')" title="Edit">✏️</button>` : ''}
                 </div>
             `;
         }).join('');
@@ -743,18 +759,22 @@ const jobDetailTabs = {
             </div>
 
             <div class="dry-action-bar">
-                <button class="dry-btn dry-btn-primary dry-btn-sm${typeof dryingVisit !== 'undefined' && dryingVisit.hasDraft && dryingVisit.hasDraft(jobId) ? ' dry-btn-draft' : ''}" onclick="dryingVisit.open('${jobId}')">
+                ${!isLocked ? `<button class="dry-btn dry-btn-primary dry-btn-sm${typeof dryingVisit !== 'undefined' && dryingVisit.hasDraft && dryingVisit.hasDraft(jobId) ? ' dry-btn-draft' : ''}" onclick="dryingVisit.open('${jobId}')">
                     ${typeof dryingVisit !== 'undefined' && dryingVisit.hasDraft && dryingVisit.hasDraft(jobId) ? '⏎ Resume Visit' : '+ Add Visit'}
-                </button>
-                ${typeof userHasRole === 'function' && userHasRole('management', 'project_manager', 'office_coordinator') ? `<button class="dry-btn dry-btn-secondary dry-btn-sm" onclick="jobDetailTabs._editDryingSetup('${jobId}')">
+                </button>` : ''}
+                ${!isLocked && typeof userHasRole === 'function' && userHasRole('management', 'project_manager', 'office_coordinator') ? `<button class="dry-btn dry-btn-secondary dry-btn-sm" onclick="jobDetailTabs._editDryingSetup('${jobId}')">
                     Edit Job
                 </button>` : ''}
-                <button class="dry-btn dry-btn-sm ${canComplete ? 'dry-btn-success' : ''}"
+                ${!isLocked ? `<button class="dry-btn dry-btn-sm ${canComplete ? 'dry-btn-success' : ''}" id="complete-drying-btn"
                     ${!canComplete ? 'disabled' : ''}
-                    onclick="jobDetailTabs._completeDrying('${jobId}')"
-                    title="${!canComplete ? 'All ref points must meet dry standard and all equipment removed' : 'Mark drying as complete'}">
-                    Drying Complete
-                </button>
+                    onclick="jobDetailTabs._showCompletionWorkflow('${jobId}')"
+                    title="${!canComplete ? 'Complete all readings and remove equipment first' : 'Complete drying and lock all data'}">
+                    Complete Dry Out
+                </button>` : `<div class="dry-completed-badge">
+                    🔒 Completed ${log.completed_at ? 'on ' + new Date(log.completed_at).toLocaleDateString() : ''}
+                </div>`}
+                ${isLocked ? jobDetailTabs._renderReportButtons(jobId) : ''}
+                ${isLocked && typeof userHasRole === 'function' && userHasRole('admin', 'developer') ? `<button class="dry-btn dry-btn-secondary dry-btn-sm" onclick="jobDetailTabs._reopenDrying('${jobId}')" title="Reopen for editing">Reopen</button>` : ''}
             </div>
 
             <div class="dry-visit-list dry-visit-${viewMode}-mode">
@@ -787,14 +807,132 @@ const jobDetailTabs = {
         }
     },
 
-    async _completeDrying(jobId) {
-        if (!confirm('Mark drying as complete? This cannot be undone.')) return;
+    async _showCompletionWorkflow(jobId) {
         try {
-            // The backend would handle this via a status update
-            // For now, we just refresh
-            jobDetailTabs._loadDryingState(jobId);
+            // First, check completion status
+            const status = await api.request(`/apex-jobs/${jobId}/drying/completion-status`);
+            this._showValidationModal(jobId, status);
+        } catch (err) {
+            console.error('Failed to check completion status:', err);
+            alert('Unable to check completion status. Please try again.');
+        }
+    },
+
+    _showValidationModal(jobId, status) {
+        const esc = (str) => String(str).replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        
+        // Count passing vs failing categories
+        const categories = status.validation || {};
+        const passing = Object.values(categories).filter(cat => cat.passed).length;
+        const total = Object.keys(categories).length;
+        const allPass = passing === total;
+
+        let validationRows = '';
+        for (const [category, result] of Object.entries(categories)) {
+            const icon = result.passed ? '✅' : '❌';
+            const statusClass = result.passed ? 'dry-validation-pass' : 'dry-validation-fail';
+            const details = result.details || (result.passed ? 'All requirements met' : 'Requirements not met');
+            
+            validationRows += `
+                <div class="dry-validation-row ${statusClass}">
+                    <span class="dry-validation-icon">${icon}</span>
+                    <div class="dry-validation-content">
+                        <div class="dry-validation-category">${esc(category.replace(/_/g, ' ').toUpperCase())}</div>
+                        <div class="dry-validation-details">${esc(details)}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        const modal = document.createElement('div');
+        modal.className = 'dry-confirm-overlay';
+        modal.innerHTML = `
+            <div class="dry-confirm-backdrop"></div>
+            <div class="dry-confirm-card" style="max-width: 500px; text-align: left;">
+                <div class="dry-confirm-icon" style="text-align: center;">${allPass ? '🎉' : '⚠️'}</div>
+                <h3 class="dry-confirm-title" style="text-align: center;">${allPass ? 'Ready to Complete!' : 'Completion Check'}</h3>
+                <div class="dry-validation-summary" style="text-align: center; margin-bottom: 1rem; font-size: 0.9rem; color: rgba(26,26,46,0.6);">
+                    ${passing} of ${total} requirements met
+                </div>
+                <div class="dry-validation-list" style="margin-bottom: 1.5rem; max-height: 300px; overflow-y: auto;">
+                    ${validationRows}
+                </div>
+                <div class="dry-confirm-actions" style="justify-content: ${allPass ? 'space-between' : 'center'};">
+                    <button class="dry-btn dry-btn-secondary dry-confirm-cancel">Cancel</button>
+                    ${allPass ? '<button class="dry-btn dry-btn-success" onclick="jobDetailTabs._showCompletionConfirm(\'' + jobId + '\')">Complete & Lock</button>' : ''}
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        requestAnimationFrame(() => modal.classList.add('visible'));
+
+        const cleanup = () => {
+            modal.classList.remove('visible');
+            setTimeout(() => modal.remove(), 200);
+        };
+
+        modal.querySelector('.dry-confirm-backdrop').addEventListener('click', cleanup);
+        modal.querySelector('.dry-confirm-cancel').addEventListener('click', cleanup);
+    },
+
+    _showCompletionConfirm(jobId) {
+        // Close validation modal first
+        document.querySelector('.dry-confirm-overlay')?.remove();
+
+        const modal = document.createElement('div');
+        modal.className = 'dry-confirm-overlay';
+        modal.innerHTML = `
+            <div class="dry-confirm-backdrop"></div>
+            <div class="dry-confirm-card">
+                <div class="dry-confirm-icon">🔒</div>
+                <h3 class="dry-confirm-title">Complete Drying</h3>
+                <p class="dry-confirm-message">This will lock all drying log data. Only an admin can reopen it.</p>
+                <div class="dry-confirm-actions">
+                    <button class="dry-btn dry-btn-secondary dry-confirm-cancel">Cancel</button>
+                    <button class="dry-btn dry-btn-success" onclick="jobDetailTabs._confirmComplete('${jobId}')">Complete & Lock</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        requestAnimationFrame(() => modal.classList.add('visible'));
+
+        const cleanup = () => {
+            modal.classList.remove('visible');
+            setTimeout(() => modal.remove(), 200);
+        };
+
+        modal.querySelector('.dry-confirm-backdrop').addEventListener('click', cleanup);
+        modal.querySelector('.dry-confirm-cancel').addEventListener('click', cleanup);
+    },
+
+    async _confirmComplete(jobId) {
+        // Close confirmation modal
+        document.querySelector('.dry-confirm-overlay')?.remove();
+
+        try {
+            await api.request(`/apex-jobs/${jobId}/drying/complete`, { method: 'POST' });
+            
+            // Show success and refresh
+            alert('Drying completed and locked successfully!');
+            jobDetailTabs._loadDryingState(jobId, true);
         } catch (err) {
             console.error('Failed to complete drying:', err);
+            alert('Failed to complete drying. Please try again.');
+        }
+    },
+
+    async _reopenDrying(jobId) {
+        if (!confirm('Reopen this drying log for editing? This will unlock all data.')) return;
+        
+        try {
+            await api.request(`/api/apex/jobs/${jobId}/drying/reopen`, { method: 'POST' });
+            alert('Drying log reopened for editing.');
+            jobDetailTabs._loadDryingState(jobId, true);
+        } catch (err) {
+            console.error('Failed to reopen drying:', err);
+            alert('Failed to reopen drying log. Please try again.');
         }
     },
 
@@ -1023,6 +1161,150 @@ const jobDetailTabs = {
         } catch (err) {
             console.error('Failed to reopen setup:', err);
         }
+    },
+
+    // ========================================
+    // Report Generation
+    // ========================================
+    
+    async _generateReport(jobId) {
+        const btn = document.getElementById(`generate-report-btn-${jobId}`);
+        const btnText = btn?.querySelector('.btn-text');
+        const spinner = btn?.querySelector('.btn-spinner');
+        
+        if (!btn) return;
+        
+        // Show loading state
+        btn.disabled = true;
+        if (btnText) btnText.style.display = 'none';
+        if (spinner) spinner.style.display = 'inline-block';
+        
+        try {
+            const response = await api.request(`/apex-jobs/${jobId}/drying/generate-report`, { method: 'POST' });
+            
+            // Show success message
+            if (window.showToast) {
+                window.showToast('Report generated successfully! Check the Documents tab.', 'success');
+            } else {
+                alert('Report generated successfully! Check the Documents tab.');
+            }
+            
+            // Update button to show regenerate option
+            jobDetailTabs._updateReportButton(jobId, response);
+            
+        } catch (err) {
+            console.error('Failed to generate report:', err);
+            if (window.showToast) {
+                window.showToast(err.message || 'Failed to generate report', 'error');
+            } else {
+                alert('Failed to generate report: ' + (err.message || 'Unknown error'));
+            }
+        } finally {
+            // Reset button state
+            btn.disabled = false;
+            if (btnText) btnText.style.display = 'inline';
+            if (spinner) spinner.style.display = 'none';
+        }
+    },
+
+    _updateReportButton(jobId, reportData) {
+        const btn = document.getElementById(`generate-report-btn-${jobId}`);
+        if (!btn) return;
+        
+        // Replace button with view/regenerate options
+        const actionBar = btn.parentElement;
+        const reportButtons = document.createElement('div');
+        reportButtons.className = 'dry-report-actions';
+        reportButtons.innerHTML = `
+            <button class="dry-btn dry-btn-secondary dry-btn-sm" onclick="jobDetailTabs._viewReport('${reportData.id || reportData.document_id}')" title="View generated report">
+                📄 View Report
+            </button>
+            <button class="dry-btn dry-btn-primary dry-btn-sm" onclick="jobDetailTabs._generateReport('${jobId}')" title="Generate new report">
+                🔄 Regenerate
+            </button>
+        `;
+        
+        actionBar.replaceChild(reportButtons, btn);
+    },
+
+    _renderReportButtons(jobId) {
+        const reports = jobDetailTabs._dryingReports || [];
+        const hasReports = reports.length > 0;
+        
+        if (hasReports) {
+            const latestReport = reports[0]; // Reports are sorted by generated_at DESC
+            return `
+                <div class="dry-report-actions">
+                    <button class="dry-btn dry-btn-secondary dry-btn-sm" onclick="jobDetailTabs._viewReport('${jobId}', '${latestReport.id}')" title="View generated report">
+                        📄 View Report
+                    </button>
+                    <button class="dry-btn dry-btn-primary dry-btn-sm" onclick="jobDetailTabs._generateReport('${jobId}')" title="Generate new report">
+                        🔄 Regenerate
+                    </button>
+                </div>
+            `;
+        } else {
+            return `
+                <button class="dry-btn dry-btn-primary dry-btn-sm" id="generate-report-btn-${jobId}" onclick="jobDetailTabs._generateReport('${jobId}')" title="Generate drying report PDF">
+                    <span class="btn-text">📄 Generate Report</span>
+                    <span class="btn-spinner" style="display:none"></span>
+                </button>
+            `;
+        }
+    },
+
+    _viewReport(jobId, reportId) {
+        // Open report for download
+        window.open(`/api/apex-jobs/${jobId}/drying/reports/${reportId}/download`, '_blank');
+    },
+
+    /**
+     * Get equipment count active during a visit
+     * @param {Object} visit - Visit object with visited_at timestamp
+     * @returns {number} Count of equipment pieces active during this visit
+     */
+    _getEquipmentCountForVisit(visit) {
+        // For now, return 0 as equipment placement tracking is not fully implemented yet
+        // In production, this would query equipment placements and count active equipment
+        // during this visit's timeframe
+        
+        // Placeholder logic: count equipment from legacy visit data if available
+        if (visit.equipment && Array.isArray(visit.equipment)) {
+            return visit.equipment.reduce((count, eq) => count + (eq.quantity || 0), 0);
+        }
+        
+        // When the equipment placement API is available, use:
+        // const visitTime = new Date(visit.visited_at);
+        // return this._dryingEquipmentPlacements?.filter(eq => {
+        //     const placedDate = new Date(eq.placed_at);
+        //     const removedDate = eq.removed_at ? new Date(eq.removed_at) : null;
+        //     return placedDate <= visitTime && (!removedDate || removedDate > visitTime);
+        // }).length || 0;
+        
+        return 0;
+    },
+
+    // ========================================
+    // Document Preview & Download
+    // ========================================
+    
+    _previewDocument(docId, docName) {
+        if (typeof documentViewer !== 'undefined') {
+            documentViewer.open(docId, docName);
+        } else {
+            // Fallback to download if documentViewer not available
+            this._downloadDocument(docId, docName);
+        }
+    },
+
+    _downloadDocument(docId, docName) {
+        const link = document.createElement('a');
+        link.href = `/api/documents/${docId}/download`;
+        link.download = docName;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 };
 

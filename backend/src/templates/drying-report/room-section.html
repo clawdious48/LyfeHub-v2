@@ -1,0 +1,64 @@
+<div class="room-section">
+  <!-- Room Header -->
+  <h3 class="room-title">{{room_name}}</h3>
+
+  <!-- Reference Points Reading Matrix -->
+  <div class="reference-points">
+    <h4>Reference Points Readings</h4>
+    <table class="reference-points-table">
+      <thead>
+        <tr>
+          <th>Reference Point</th>
+          <!-- REPEAT:visit_dates -->
+          <th>{{visit_date}}</th>
+          <!-- END:visit_dates -->
+          <th>Dry Standard</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- REPEAT:reference_points -->
+        <tr>
+          <td class="point-name">{{point_name}}</td>
+          <!-- REPEAT:readings -->
+          <td class="reading {{reading_class}}">{{reading_value}}</td>
+          <!-- END:readings -->
+          <td class="dry-standard">{{dry_standard}}</td>
+          <td class="status-cell">
+            <span class="status-badge {{status_class}}">{{status_text}}</span>
+          </td>
+        </tr>
+        <!-- END:reference_points -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Equipment Daily Log -->
+  <div class="equipment-log">
+    <h4>Equipment Daily Log</h4>
+    <table class="equipment-log-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Dehumidifiers</th>
+          <th>Air Movers</th>
+          <th>Air Scrubbers</th>
+          <th>Other Equipment</th>
+          <th>Total Units</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- REPEAT:equipment_days -->
+        <tr>
+          <td>{{date}}</td>
+          <td class="equipment-count">{{dehumidifiers}}</td>
+          <td class="equipment-count">{{air_movers}}</td>
+          <td class="equipment-count">{{air_scrubbers}}</td>
+          <td class="equipment-count">{{other_equipment}}</td>
+          <td class="equipment-count equipment-total">{{total_units}}</td>
+        </tr>
+        <!-- END:equipment_days -->
+      </tbody>
+    </table>
+  </div>
+</div>

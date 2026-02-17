@@ -95,12 +95,12 @@ const SURFACE_MATERIALS = {
 
 // ── Equipment Types ─────────────────────────────────────────────────
 const EQUIPMENT_TYPES = [
-  { type: 'dehumidifier', label: 'Dehumidifiers', shortLabel: 'DH', category: 'equipment' },
-  { type: 'air_mover', label: 'Air Movers', shortLabel: 'AM', category: 'equipment' },
-  { type: 'negative_air', label: 'Negative Air Machines', shortLabel: 'NAM', category: 'equipment' },
-  { type: 'injectidry', label: 'Injectidry System', shortLabel: 'INJ', category: 'specialty' },
-  { type: 'multi_port', label: 'Multi-port Attachments', shortLabel: 'MPA', category: 'specialty' },
-  { type: 'heated_air_mover', label: 'Heated Air Movers', shortLabel: 'HAM', category: 'specialty' },
+  { type: 'AM', label: 'Air Mover', category: 'equipment' },
+  { type: 'DH', label: 'Dehumidifier', category: 'equipment' },
+  { type: 'AS', label: 'Air Scrubber', category: 'equipment' },
+  { type: 'HM', label: 'Humidistat/Monitor', category: 'equipment' },
+  { type: 'FN', label: 'Fan', category: 'equipment' },
+  { type: 'HT', label: 'Heater', category: 'specialty' }
 ];
 
 // ── Format GPP ──────────────────────────────────────────────────────

@@ -714,6 +714,295 @@ router.get('/photos/:filename', requireScope('drying', 'read'), async (req, res)
 });
 
 // ============================================
+// COMPLETION VALIDATION & LOCK ROUTES
+// ============================================
+
+// GET /completion-status - Check if log can be completed
+router.get('/completion-status', requireScope('drying', 'read'), async (req, res) => {
+  try {
+    const log = await requireLog(req.params.id);
+    if (!log) return res.status(404).json({ error: 'No drying log for this job' });
+
+    const status = await dryingLogs.getCompletionStatus(log.id);
+    res.json(status);
+  } catch (err) {
+    console.error('Error getting completion status:', err);
+    res.status(500).json({ error: 'Failed to get completion status' });
+  }
+});
+
+// POST /complete - Complete and lock the drying log
+router.post('/complete', requireScope('drying', 'write'), async (req, res) => {
+  try {
+    const log = await requireLog(req.params.id);
+    if (!log) return res.status(404).json({ error: 'No drying log for this job' });
+
+    // First validate completion status
+    const status = await dryingLogs.getCompletionStatus(log.id);
+    if (!status.canComplete) {
+      return res.status(400).json({ 
+        error: 'Cannot complete drying log', 
+        validationErrors: status.errors 
+      });
+    }
+
+    // Mark as completed and locked
+    await db.run(
+      'UPDATE drying_logs SET locked = 1, completed_at = NOW(), completed_by = $1, updated_at = NOW() WHERE id = $2',
+      [req.user?.id || null, log.id]
+    );
+
+    const updated = await dryingLogs.getLogByJobId(req.params.id);
+    res.json({ success: true, log: updated });
+  } catch (err) {
+    console.error('Error completing drying log:', err);
+    res.status(500).json({ error: 'Failed to complete drying log' });
+  }
+});
+
+// POST /reopen - Reopen a completed drying log (admin only)
+router.post('/reopen', requireScope('drying', 'write'), async (req, res) => {
+  try {
+    const log = await requireLog(req.params.id);
+    if (!log) return res.status(404).json({ error: 'No drying log for this job' });
+
+    // Check user is admin
+    const userRoles = req.user?.roles || req.user?.role || [];
+    const rolesArr = Array.isArray(userRoles) ? userRoles : [userRoles];
+    if (!rolesArr.includes('admin') && !rolesArr.includes('developer') && !rolesArr.includes('management')) {
+      return res.status(403).json({ error: 'Only admins can reopen completed logs' });
+    }
+
+    // Reopen the log
+    await db.run(
+      'UPDATE drying_logs SET locked = 0, completed_at = NULL, completed_by = NULL, updated_at = NOW() WHERE id = $1',
+      [log.id]
+    );
+
+    const updated = await dryingLogs.getLogByJobId(req.params.id);
+    res.json({ success: true, log: updated });
+  } catch (err) {
+    console.error('Error reopening drying log:', err);
+    res.status(500).json({ error: 'Failed to reopen drying log' });
+  }
+});
+
+// ============================================
+// EQUIPMENT PLACEMENT ROUTES
+// ============================================
+
+// GET /equipment - List all equipment placements for this log
+router.get('/equipment', requireScope('drying', 'read'), async (req, res) => {
+  try {
+    const log = await requireLog(req.params.id);
+    if (!log) return res.status(404).json({ error: 'No drying log for this job' });
+
+    const equipment = await dryingLogs.getEquipmentPlacements(log.id);
+    res.json(equipment);
+  } catch (err) {
+    console.error('Error getting equipment placements:', err);
+    res.status(500).json({ error: 'Failed to get equipment placements' });
+  }
+});
+
+// POST /equipment - Create equipment placement(s) (accepts single or array)
+router.post('/equipment', requireScope('drying', 'write'), async (req, res) => {
+  try {
+    const log = await requireLog(req.params.id);
+    if (!log) return res.status(404).json({ error: 'No drying log for this job' });
+
+    const body = req.body;
+    const placements = Array.isArray(body) ? body : [body];
+    const results = [];
+
+    for (const placement of placements) {
+      const { room_id, equipment_type, label, placed_at, placed_visit_id, notes } = placement;
+      if (!room_id) return res.status(400).json({ error: 'room_id is required' });
+      if (!equipment_type) return res.status(400).json({ error: 'equipment_type is required' });
+      if (!placed_at) return res.status(400).json({ error: 'placed_at is required' });
+
+      const result = await dryingLogs.createEquipmentPlacement({
+        logId: log.id,
+        roomId: room_id,
+        type: equipment_type,
+        label,
+        placedAt: placed_at,
+        placedVisitId: placed_visit_id,
+        notes
+      });
+      results.push(result);
+    }
+
+    res.status(201).json(Array.isArray(body) ? results : results[0]);
+  } catch (err) {
+    console.error('Error creating equipment placement:', err);
+    res.status(500).json({ error: 'Failed to create equipment placement' });
+  }
+});
+
+// PATCH /equipment/:pid - Update equipment placement
+router.patch('/equipment/:pid', requireScope('drying', 'write'), async (req, res) => {
+  try {
+    const log = await requireLog(req.params.id);
+    if (!log) return res.status(404).json({ error: 'No drying log for this job' });
+
+    const { equipment_type, label, placed_at, removed_at, placed_visit_id, removed_visit_id, notes, room_id } = req.body;
+    
+    const fields = {};
+    if (equipment_type !== undefined) fields.equipment_type = equipment_type;
+    if (label !== undefined) fields.label = label;
+    if (placed_at !== undefined) fields.placed_at = placed_at;
+    if (removed_at !== undefined) fields.removed_at = removed_at;
+    if (placed_visit_id !== undefined) fields.placed_visit_id = placed_visit_id;
+    if (removed_visit_id !== undefined) fields.removed_visit_id = removed_visit_id;
+    if (notes !== undefined) fields.notes = notes;
+    if (room_id !== undefined) fields.room_id = room_id;
+
+    await dryingLogs.updateEquipmentPlacement(req.params.pid, fields);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error updating equipment placement:', err);
+    res.status(500).json({ error: 'Failed to update equipment placement' });
+  }
+});
+
+// DELETE /equipment/:pid - Delete equipment placement
+router.delete('/equipment/:pid', requireScope('drying', 'delete'), async (req, res) => {
+  try {
+    await dryingLogs.deleteEquipmentPlacement(req.params.pid);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error deleting equipment placement:', err);
+    res.status(500).json({ error: 'Failed to delete equipment placement' });
+  }
+});
+
+// POST /equipment/:pid/remove - Remove equipment (set removed_at)
+router.post('/equipment/:pid/remove', requireScope('drying', 'write'), async (req, res) => {
+  try {
+    const { removed_at, removed_visit_id } = req.body;
+    if (!removed_at) return res.status(400).json({ error: 'removed_at is required' });
+
+    await dryingLogs.removeEquipmentPlacement(req.params.pid, { removedAt: removed_at, removedVisitId: removed_visit_id });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error removing equipment placement:', err);
+    res.status(500).json({ error: 'Failed to remove equipment placement' });
+  }
+});
+
+// POST /equipment/bulk-remove - Remove multiple equipment pieces
+router.post('/equipment/bulk-remove', requireScope('drying', 'write'), async (req, res) => {
+  try {
+    const { ids, removed_at, removed_visit_id } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'ids array is required' });
+    }
+    if (!removed_at) return res.status(400).json({ error: 'removed_at is required' });
+
+    for (const id of ids) {
+      await dryingLogs.removeEquipmentPlacement(id, { removedAt: removed_at, removedVisitId: removed_visit_id });
+    }
+
+    res.json({ success: true, removedCount: ids.length });
+  } catch (err) {
+    console.error('Error bulk removing equipment:', err);
+    res.status(500).json({ error: 'Failed to bulk remove equipment' });
+  }
+});
+
+// ============================================
+// PDF REPORT GENERATION ROUTES
+// ============================================
+
+const dryingReport = require('../services/dryingReport');
+
+// POST /generate-report - Generate PDF report for completed drying log
+router.post('/generate-report', requireScope('drying', 'write'), async (req, res) => {
+  try {
+    const log = await requireLog(req.params.id);
+    if (!log) return res.status(404).json({ error: 'No drying log for this job' });
+
+    // Check if log is completed and locked
+    if (!log.locked || !log.completed_at) {
+      return res.status(400).json({ error: 'Drying log must be completed before generating report' });
+    }
+
+    // Get organization ID from job
+    const job = await db.getOne('SELECT org_id FROM apex_jobs WHERE id = $1', [req.params.id]);
+    if (!job) return res.status(404).json({ error: 'Job not found' });
+
+    const result = await dryingReport.generate(
+      log.id,
+      req.params.id,
+      job.org_id,
+      req.user?.id || null
+    );
+
+    res.json(result);
+  } catch (err) {
+    console.error('Error generating drying report:', err);
+    res.status(500).json({ error: 'Failed to generate drying report', details: err.message });
+  }
+});
+
+// GET /reports - List reports for this drying log
+router.get('/reports', requireScope('drying', 'read'), async (req, res) => {
+  try {
+    const log = await requireLog(req.params.id);
+    if (!log) return res.status(404).json({ error: 'No drying log for this job' });
+
+    const reports = await dryingReport.listReports(log.id);
+    res.json(reports);
+  } catch (err) {
+    console.error('Error getting drying reports:', err);
+    res.status(500).json({ error: 'Failed to get drying reports' });
+  }
+});
+
+// Duplicate routes removed - Agent F code review fix
+
+// GET /reports/:reportId/download - Download a report file
+router.get('/reports/:reportId/download', requireScope('drying', 'read'), async (req, res) => {
+  try {
+    const report = await db.getOne(
+      'SELECT * FROM drying_reports WHERE id = $1',
+      [req.params.reportId]
+    );
+
+    if (!report) {
+      return res.status(404).json({ error: 'Report not found' });
+    }
+
+    // Verify report belongs to this job
+    if (report.job_id !== req.params.id) {
+      return res.status(404).json({ error: 'Report not found for this job' });
+    }
+
+    const filePath = path.join(UPLOAD_BASE, report.file_path);
+    const resolvedPath = path.resolve(filePath);
+
+    // Security check: ensure path is within upload directory
+    if (!resolvedPath.startsWith(path.resolve(UPLOAD_BASE))) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Report file not found on disk' });
+    }
+
+    // Set appropriate headers for PDF download
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${report.filename}"`);
+    
+    res.sendFile(resolvedPath);
+  } catch (err) {
+    console.error('Error downloading report:', err);
+    res.status(500).json({ error: 'Failed to download report' });
+  }
+});
+
+// ============================================
 // MULTER ERROR HANDLING
 // ============================================
 

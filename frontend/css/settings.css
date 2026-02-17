@@ -2066,3 +2066,58 @@
         width: 240px;
     }
 }
+
+/* ========================================
+   COMPANY LOGO SETTINGS
+   ======================================== */
+
+.company-logo-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.company-logo-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    padding: 1rem;
+    border: 2px dashed var(--border-color, rgba(0, 0, 0, 0.1));
+    border-radius: 8px;
+    background: var(--bg-subtle, rgba(0, 0, 0, 0.02));
+    transition: border-color 0.15s ease;
+}
+
+.company-logo-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted, rgba(0, 0, 0, 0.5));
+    text-align: center;
+}
+
+.company-logo-placeholder svg {
+    opacity: 0.3;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.5;
+}
+
+.company-logo-placeholder p {
+    margin: 0;
+    font-size: 0.85rem;
+}
+
+.company-logo-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.company-logo-actions .settings-field-hint {
+    font-size: 0.75rem;
+    margin: 0;
+}

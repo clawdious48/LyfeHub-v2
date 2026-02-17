@@ -228,6 +228,58 @@ router.patch('/:id', requireScope('documents', 'write'), async (req, res) => {
   }
 });
 
+// GET /:id/preview — serve file for preview (inline)
+router.get('/:id/preview', requireScope('documents', 'read'), async (req, res) => {
+  try {
+    const doc = await docsDb.getDocumentById(req.params.id, req.orgId);
+    if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+    const filePath = path.join(UPLOAD_BASE, doc.file_path);
+    const resolvedPath = path.resolve(filePath);
+    if (!resolvedPath.startsWith(path.resolve(UPLOAD_BASE))) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'File not found on disk' });
+    }
+
+    // Set Content-Disposition to inline for preview
+    res.setHeader('Content-Disposition', `inline; filename="${doc.file_name}"`);
+    res.setHeader('Content-Type', doc.mime_type || 'application/octet-stream');
+    
+    res.sendFile(resolvedPath);
+  } catch (err) {
+    console.error('Error serving file preview:', err);
+    res.status(500).json({ error: 'Failed to serve file preview' });
+  }
+});
+
+// GET /:id/download — serve file for download (attachment)
+router.get('/:id/download', requireScope('documents', 'read'), async (req, res) => {
+  try {
+    const doc = await docsDb.getDocumentById(req.params.id, req.orgId);
+    if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+    const filePath = path.join(UPLOAD_BASE, doc.file_path);
+    const resolvedPath = path.resolve(filePath);
+    if (!resolvedPath.startsWith(path.resolve(UPLOAD_BASE))) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'File not found on disk' });
+    }
+
+    // Set Content-Disposition to attachment for download
+    res.setHeader('Content-Disposition', `attachment; filename="${doc.file_name}"`);
+    res.setHeader('Content-Type', doc.mime_type || 'application/octet-stream');
+    
+    res.sendFile(resolvedPath);
+  } catch (err) {
+    console.error('Error serving file download:', err);
+    res.status(500).json({ error: 'Failed to serve file download' });
+  }
+});
+
 // DELETE /:id — delete document + file (management/office_coordinator only)
 router.delete('/:id', requireScope('documents', 'delete'), requireOrgRole('management', 'office_coordinator'), async (req, res) => {
   try {

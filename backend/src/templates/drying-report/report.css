@@ -1,0 +1,360 @@
+/* Professional Drying Report Styles */
+
+@page {
+  size: 8.5in 11in;
+  margin: 0.75in;
+  
+  @top-right {
+    content: "Page " counter(page);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    font-size: 10pt;
+    color: #6b7280;
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 11pt;
+  line-height: 1.4;
+  color: #374151;
+  background: white;
+}
+
+/* Header Styles */
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 24px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #1e3a5f;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.company-logo {
+  max-height: 60px;
+  max-width: 120px;
+  object-fit: contain;
+}
+
+.company-name {
+  font-size: 24pt;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin: 0;
+}
+
+.header-right {
+  text-align: right;
+  max-width: 400px;
+}
+
+.header-field {
+  margin-bottom: 4px;
+  font-size: 10pt;
+}
+
+.header-dates {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.header-dates > div {
+  margin-bottom: 4px;
+  font-size: 10pt;
+}
+
+.label {
+  font-weight: 600;
+  color: #1e3a5f;
+}
+
+/* Section Styles */
+.section {
+  margin-bottom: 32px;
+}
+
+.chamber-section {
+  page-break-before: always;
+  margin-bottom: 48px;
+}
+
+.chamber-section:first-of-type {
+  page-break-before: auto;
+}
+
+.chamber-header {
+  background: #1e3a5f;
+  color: white;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  border-radius: 4px;
+}
+
+.chamber-title {
+  font-size: 16pt;
+  font-weight: 700;
+  margin: 0;
+}
+
+.floor-level {
+  font-size: 11pt;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+.room-section {
+  margin-bottom: 32px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 6px;
+  border-left: 4px solid #1e3a5f;
+}
+
+.room-title {
+  font-size: 14pt;
+  font-weight: 600;
+  color: #1e3a5f;
+  margin-bottom: 16px;
+}
+
+h2 {
+  font-size: 16pt;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+h3 {
+  font-size: 13pt;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+/* Table Styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background: white;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+th {
+  background: #1e3a5f;
+  color: white;
+  font-weight: 600;
+  font-size: 10pt;
+  padding: 12px 8px;
+  text-align: left;
+  border-bottom: 2px solid #1e40af;
+}
+
+td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 10pt;
+}
+
+tr:nth-child(even) {
+  background: #f8f9fa;
+}
+
+tr:hover {
+  background: #f3f4f6;
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 9pt;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-dry {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.status-dry::before {
+  content: "✓ ";
+}
+
+.status-demolished {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.status-active {
+  background: #fecaca;
+  color: #dc2626;
+}
+
+.status-warning {
+  background: #fed7aa;
+  color: #ea580c;
+}
+
+/* Equipment Summary Styles */
+.equipment-summary table {
+  margin-top: 16px;
+}
+
+.equipment-summary th {
+  background: #374151;
+}
+
+.equipment-total {
+  font-weight: 600;
+  background: #f3f4f6 !important;
+}
+
+/* Visit Notes Styles */
+.visit-notes {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 6px;
+  border-left: 4px solid #6366f1;
+}
+
+.visit-notes h2 {
+  color: #6366f1;
+}
+
+.visit-note {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: white;
+  border-radius: 4px;
+  border-left: 3px solid #e5e7eb;
+}
+
+.visit-date {
+  font-weight: 600;
+  color: #1e3a5f;
+  font-size: 10pt;
+  margin-bottom: 6px;
+}
+
+.visit-content {
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+/* Atmospheric Readings Table */
+.atmospheric-table th {
+  background: #059669;
+}
+
+.atmospheric-table .high-reading {
+  background: #fecaca !important;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.atmospheric-table .normal-reading {
+  color: #16a34a;
+}
+
+/* Reference Points Table */
+.reference-points-table th {
+  background: #7c3aed;
+}
+
+.reference-points-table .dry-standard {
+  background: #f0fdf4;
+  font-weight: 600;
+  color: #16a34a;
+}
+
+.reference-points-table .reading-high {
+  background: #fef2f2;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* Equipment Log Table */
+.equipment-log-table th {
+  background: #0891b2;
+}
+
+.equipment-count {
+  text-align: center;
+  font-weight: 600;
+}
+
+/* Footer */
+.report-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
+  color: #6b7280;
+  font-size: 10pt;
+}
+
+/* Print Optimizations */
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .chamber-section {
+    page-break-before: always;
+  }
+  
+  .chamber-section:first-of-type {
+    page-break-before: auto;
+  }
+  
+  table {
+    page-break-inside: avoid;
+  }
+  
+  .room-section {
+    page-break-inside: avoid;
+  }
+}
+
+/* Responsive Adjustments for Digital Viewing */
+@media screen and (max-width: 768px) {
+  .report-header {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .header-right {
+    text-align: left;
+    max-width: none;
+  }
+  
+  table {
+    font-size: 9pt;
+  }
+  
+  th, td {
+    padding: 6px 4px;
+  }
+}

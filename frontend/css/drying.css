@@ -285,6 +285,45 @@
     white-space: nowrap;
 }
 
+/* Equipment badge in visit history */
+.dry-equipment-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    background: var(--apex-primary, #FF8C00);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 600;
+    border-radius: 8px;
+    line-height: 1;
+}
+
+/* Equipment badge positioning in cards */
+.dry-visit-card .dry-equipment-badge {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    font-size: 0.55rem;
+    min-width: 14px;
+    height: 14px;
+    border-radius: 7px;
+}
+
+/* Equipment badge positioning in list items */
+.dry-visit-list-item .dry-equipment-badge {
+    margin-left: auto;
+    margin-right: 0.5rem;
+}
+
+/* Dark mode equipment badge */
+[data-theme="dark"] .dry-equipment-badge {
+    background: var(--neon-orange);
+    color: rgba(26, 26, 46, 0.9);
+}
+
 .dry-visit-indicators {
     display: flex;
     gap: 0.5rem;
@@ -1450,6 +1489,27 @@
     }
 }
 
+/* ── Report Actions ──────────────────────────────── */
+
+.dry-report-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.dry-completed-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.75rem;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 6px;
+    color: var(--apex-success);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
 /* ── Custom Confirm Dialog ──────────────────────────────── */
 
 .dry-confirm-overlay {
@@ -1742,6 +1802,111 @@
     color: rgba(240, 240, 245, 0.6);
 }
 
+/* ── Completion Workflow ──────────────── */
+
+.dry-completed-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(5, 255, 161, 0.1);
+    border: 1px solid var(--apex-success);
+    border-radius: 8px;
+    color: var(--apex-success);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.dry-validation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.dry-validation-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    background: rgba(0, 0, 0, 0.02);
+    transition: var(--apex-transition-fast);
+}
+
+.dry-validation-pass {
+    background: rgba(16, 185, 129, 0.05);
+    border-color: rgba(16, 185, 129, 0.15);
+}
+
+.dry-validation-fail {
+    background: rgba(225, 29, 72, 0.05);
+    border-color: rgba(225, 29, 72, 0.15);
+}
+
+.dry-validation-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.dry-validation-content {
+    flex: 1;
+}
+
+.dry-validation-category {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(26, 26, 46, 0.9);
+    margin-bottom: 0.25rem;
+}
+
+.dry-validation-details {
+    font-size: 0.8rem;
+    color: rgba(26, 26, 46, 0.6);
+    line-height: 1.4;
+}
+
+.dry-validation-summary {
+    font-size: 0.9rem;
+    color: rgba(26, 26, 46, 0.6);
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+/* Dark mode validation styles */
+[data-theme="dark"] .dry-completed-badge {
+    background: rgba(5, 255, 161, 0.08);
+    border-color: var(--apex-success);
+}
+
+[data-theme="dark"] .dry-validation-row {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .dry-validation-pass {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+[data-theme="dark"] .dry-validation-fail {
+    background: rgba(225, 29, 72, 0.08);
+    border-color: rgba(225, 29, 72, 0.2);
+}
+
+[data-theme="dark"] .dry-validation-category {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="dark"] .dry-validation-details {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="dark"] .dry-validation-summary {
+    color: rgba(255, 255, 255, 0.6);
+}
+
 /* ── Photo Lightbox ────────────────────── */
 
 .photo-lightbox-overlay {
@@ -1933,4 +2098,353 @@
     .dry-visit-card-mode {
         grid-template-columns: repeat(4, 1fr);
     }
+}
+
+/* ── Document Viewer ────────────────────── */
+
+.document-viewer-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: none;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.document-viewer-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.document-viewer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.document-viewer-title {
+    color: white;
+    font-size: 1rem;
+    font-weight: 500;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.document-viewer-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.document-viewer-download {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.document-viewer-download:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.document-viewer-close {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.document-viewer-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.document-viewer-frame-container {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.document-viewer-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.document-viewer-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.1rem;
+    font-weight: 500;
+    pointer-events: none;
+}
+
+/* File row styling in Documents tab */
+.jdt-file-clickable {
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+    padding-right: 3rem; /* Make room for download button */
+}
+
+.jdt-file-clickable:hover {
+    background: rgba(0, 0, 0, 0.03);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.jdt-file-download {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: rgba(26, 26, 46, 0.4);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    opacity: 0;
+}
+
+.jdt-file-clickable:hover .jdt-file-download {
+    opacity: 1;
+}
+
+.jdt-file-download:hover {
+    background: rgba(0, 0, 0, 0.08);
+    color: rgba(26, 26, 46, 0.8);
+}
+
+/* Dark mode document viewer */
+[data-theme="dark"] .document-viewer-header {
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .jdt-file-clickable:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="dark"] .jdt-file-download {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+[data-theme="dark"] .jdt-file-download:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Mobile responsive for document viewer */
+@media (max-width: 768px) {
+    .document-viewer-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .document-viewer-title {
+        font-size: 0.9rem;
+    }
+    
+    .document-viewer-download {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+    }
+    
+    .document-viewer-close {
+        width: 36px;
+        height: 36px;
+        font-size: 1.3rem;
+    }
+}
+
+/* ── Equipment Management UI ──────────────────────────────────────── */
+
+.dry-equipment-section {
+    margin-bottom: 1.5rem;
+}
+
+.dry-equipment-section h4 {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(26, 26, 46, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.dry-equipment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.dry-equipment-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+
+.dry-equipment-type {
+    font-weight: 600;
+    color: var(--apex-primary, #FF8C00);
+    min-width: 80px;
+}
+
+.dry-equipment-label {
+    flex: 1;
+    color: rgba(26, 26, 46, 0.85);
+}
+
+.dry-equipment-date {
+    color: rgba(26, 26, 46, 0.5);
+    font-size: 0.75rem;
+    min-width: 80px;
+    text-align: right;
+}
+
+.dry-equipment-empty {
+    padding: 1rem;
+    text-align: center;
+    color: rgba(26, 26, 46, 0.4);
+    font-size: 0.8rem;
+    border: 1px dashed rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+}
+
+.dry-equipment-add-form {
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.dry-equipment-form-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.dry-equipment-type-select {
+    flex: 2;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.8);
+    font-size: 0.8rem;
+}
+
+.dry-equipment-label-input {
+    flex: 2;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.8);
+    font-size: 0.8rem;
+}
+
+.dry-equipment-quantity-input {
+    width: 60px;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.8);
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.dry-equipment-form-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+/* Dark mode equipment UI */
+[data-theme="dark"] .dry-equipment-item {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .dry-equipment-type {
+    color: var(--neon-orange);
+}
+
+[data-theme="dark"] .dry-equipment-label {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+[data-theme="dark"] .dry-equipment-date {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="dark"] .dry-equipment-empty {
+    color: rgba(255, 255, 255, 0.4);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .dry-equipment-add-form {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .dry-equipment-type-select,
+[data-theme="dark"] .dry-equipment-label-input,
+[data-theme="dark"] .dry-equipment-quantity-input {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="dark"] .dry-equipment-type-select:focus,
+[data-theme="dark"] .dry-equipment-label-input:focus,
+[data-theme="dark"] .dry-equipment-quantity-input:focus {
+    border-color: var(--neon-orange);
+    box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.15);
 }

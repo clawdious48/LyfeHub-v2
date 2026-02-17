@@ -106,18 +106,20 @@ const dryingVisit = {
 
         try {
             // Fetch structural data in parallel
-            const [chambers, rooms, refPoints, baselines, allVisits] = await Promise.all([
+            const [chambers, rooms, refPoints, baselines, allVisits, equipment] = await Promise.all([
                 api.getDryingChambers(jobId),
                 api.getDryingRooms(jobId),
                 api.getDryingRefPoints(jobId),
                 api.getDryingBaselines(jobId),
-                api.getDryingVisits(jobId)
+                api.getDryingVisits(jobId),
+                api.getDryingEquipment(jobId).catch(() => []) // Graceful fallback if endpoint doesn't exist yet
             ]);
 
             this._state.chambers = chambers;
             this._state.rooms = rooms;
             this._state.refPoints = refPoints;
             this._state.baselines = baselines;
+            this._state.equipmentPlacements = equipment;
 
             // DON'T create visit yet — defer until Save
             this._state.visitId = null;
@@ -167,13 +169,14 @@ const dryingVisit = {
         this._showLoading();
 
         try {
-            const [chambers, rooms, refPoints, baselines, allVisits, visitData] = await Promise.all([
+            const [chambers, rooms, refPoints, baselines, allVisits, visitData, equipment] = await Promise.all([
                 api.getDryingChambers(jobId),
                 api.getDryingRooms(jobId),
                 api.getDryingRefPoints(jobId),
                 api.getDryingBaselines(jobId),
                 api.getDryingVisits(jobId),
-                api.getDryingVisit(jobId, visitId)
+                api.getDryingVisit(jobId, visitId),
+                api.getDryingEquipment(jobId).catch(() => []) // Graceful fallback if endpoint doesn't exist yet
             ]);
 
             this._state.chambers = chambers;
@@ -181,6 +184,7 @@ const dryingVisit = {
             this._state.refPoints = refPoints;
             this._state.baselines = baselines;
             this._state.visit = visitData.visit;
+            this._state.equipmentPlacements = equipment;
 
             // Populate atmospheric/moisture/equipment state from fetched data
             this._populateStateFromVisitData(visitData);
@@ -216,13 +220,14 @@ const dryingVisit = {
         this._showLoading();
 
         try {
-            const [chambers, rooms, refPoints, baselines, allVisits, visitData] = await Promise.all([
+            const [chambers, rooms, refPoints, baselines, allVisits, visitData, equipment] = await Promise.all([
                 api.getDryingChambers(jobId),
                 api.getDryingRooms(jobId),
                 api.getDryingRefPoints(jobId),
                 api.getDryingBaselines(jobId),
                 api.getDryingVisits(jobId),
-                api.getDryingVisit(jobId, visitId)
+                api.getDryingVisit(jobId, visitId),
+                api.getDryingEquipment(jobId).catch(() => []) // Graceful fallback if endpoint doesn't exist yet
             ]);
 
             this._state.chambers = chambers;
@@ -230,6 +235,7 @@ const dryingVisit = {
             this._state.refPoints = refPoints;
             this._state.baselines = baselines;
             this._state.visit = visitData.visit;
+            this._state.equipmentPlacements = equipment;
 
             // Populate from existing data
             this._populateStateFromVisitData(visitData);
@@ -330,7 +336,8 @@ const dryingVisit = {
             photoFiles: [],
             photoPreviewUrls: [],
             visitedAt: null,
-            allVisits: []
+            allVisits: [],
+            equipmentPlacements: []
         };
     },
 
@@ -393,6 +400,7 @@ const dryingVisit = {
         `;
 
         this._bindEvents();
+        this._bindRoomEvents();
     },
 
     _renderHeader() {
@@ -628,39 +636,77 @@ const dryingVisit = {
     // ── Equipment Section ───────────────────
 
     _renderEquipmentSection(roomId) {
-        const { mode } = this._state;
-        const isInput = mode !== 'readonly';
+        const { mode, visitedAt, visit } = this._state;
+        const isReadOnly = mode === 'readonly';
+        const isEdit = mode === 'edit';
         const esc = dryingUtils.escapeHtml;
 
-        const equipTypes = dryingUtils.EQUIPMENT_TYPES.filter(et => et.category === 'equipment');
-        const specTypes = dryingUtils.EQUIPMENT_TYPES.filter(et => et.category === 'specialty');
+        // Get equipment placements for this room
+        const roomEquipment = this._getRoomEquipment(roomId);
+        const activeEquipment = roomEquipment.filter(e => this._isEquipmentActiveForVisit(e));
 
-        const renderCol = (types, title) => {
-            let col = `<div class="dry-equipment-col"><h4>${esc(title)}</h4>`;
-            for (const et of types) {
-                const key = `${roomId}|${et.type}`;
-                const qty = this._state.equipment[key] != null ? this._state.equipment[key] : 0;
-                if (isInput) {
-                    col += `<div class="dry-equipment-row">
-                        <div class="dry-equipment-label">${esc(et.label)}</div>
-                        <input type="number" min="0" class="dry-equipment-input dv-equip-input" data-room-id="${esc(roomId)}" data-equip-type="${esc(et.type)}" value="${qty}">
+        let html = `<div class="dry-equipment-section">
+            <h4>Equipment</h4>`;
+
+        // Show currently placed equipment
+        if (activeEquipment.length > 0) {
+            html += `<div class="dry-equipment-list">`;
+            for (const eq of activeEquipment) {
+                const equipType = dryingUtils.EQUIPMENT_TYPES.find(t => t.type === eq.equipment_type);
+                const typeLabel = equipType ? equipType.label : eq.equipment_type;
+                const placedDate = eq.placed_at ? new Date(eq.placed_at).toLocaleDateString() : '';
+                const label = eq.label || this._generateEquipmentLabel(eq.equipment_type, roomEquipment);
+
+                if (isReadOnly) {
+                    html += `<div class="dry-equipment-item">
+                        <span class="dry-equipment-type">${esc(typeLabel)}</span>
+                        <span class="dry-equipment-label">${esc(label)}</span>
+                        <span class="dry-equipment-date">${esc(placedDate)}</span>
                     </div>`;
                 } else {
-                    col += `<div class="dry-equipment-row">
-                        <div class="dry-equipment-label">${esc(et.label)}</div>
-                        <span style="font-size:0.85rem;color:rgba(255,255,255,0.85);">${qty}</span>
+                    html += `<div class="dry-equipment-item">
+                        <span class="dry-equipment-type">${esc(typeLabel)}</span>
+                        <span class="dry-equipment-label">${esc(label)}</span>
+                        <span class="dry-equipment-date">${esc(placedDate)}</span>
+                        <button class="dry-btn dry-btn-danger dry-btn-sm dv-remove-equipment" data-placement-id="${esc(eq.id)}">Remove</button>
                     </div>`;
                 }
             }
-            col += '</div>';
-            return col;
-        };
+            html += `</div>`;
+        } else {
+            html += `<div class="dry-equipment-empty">No equipment placed in this room</div>`;
+        }
 
-        let html = '<div class="dry-equipment-section">';
-        html += '<div class="dry-equipment-grid">';
-        html += renderCol(equipTypes, 'Equipment');
-        html += renderCol(specTypes, 'Specialty Equipment');
-        html += '</div></div>';
+        if (!isReadOnly) {
+            // Add equipment form (initially hidden)
+            html += `<div class="dry-equipment-add-form" id="dv-add-equipment-${esc(roomId)}" style="display:none;">
+                <div class="dry-equipment-form-row">
+                    <select class="dry-equipment-type-select" id="dv-equipment-type-${esc(roomId)}">
+                        <option value="">Select equipment type...</option>`;
+            
+            for (const et of dryingUtils.EQUIPMENT_TYPES) {
+                html += `<option value="${esc(et.type)}">${esc(et.label)}</option>`;
+            }
+
+            html += `    </select>
+                    <input type="number" class="dry-equipment-quantity-input" id="dv-equipment-quantity-${esc(roomId)}" min="1" value="1" placeholder="Qty">
+                </div>
+                <div class="dry-equipment-form-actions">
+                    <button class="dry-btn dry-btn-primary dry-btn-sm dv-place-equipment" data-room-id="${esc(roomId)}">Place</button>
+                    <button class="dry-btn dry-btn-secondary dry-btn-sm dv-cancel-add-equipment" data-room-id="${esc(roomId)}">Cancel</button>
+                </div>
+            </div>`;
+
+            // Add equipment button
+            html += `<button class="dry-btn dry-btn-secondary dry-btn-sm dv-add-equipment-btn" data-room-id="${esc(roomId)}">+ Add Equipment</button>`;
+
+            // Remove all button (if there's equipment)
+            if (activeEquipment.length > 0) {
+                html += `<button class="dry-btn dry-btn-danger dry-btn-sm dv-remove-all-equipment" data-room-id="${esc(roomId)}" style="margin-left: 0.5rem;">Remove All</button>`;
+            }
+        }
+
+        html += `</div>`;
         return html;
     },
 
@@ -918,6 +964,44 @@ const dryingVisit = {
         panel.querySelectorAll('.dv-add-rp-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 this._addRefPoint(btn.dataset.roomId);
+            });
+        });
+
+        // Equipment management events
+        const addBtns = panel.querySelectorAll('.dv-add-equipment-btn');
+        const cancelBtns = panel.querySelectorAll('.dv-cancel-add-equipment');
+        const placeBtns = panel.querySelectorAll('.dv-place-equipment');
+        console.log('[EQUIP] Binding events - add:', addBtns.length, 'cancel:', cancelBtns.length, 'place:', placeBtns.length);
+        
+        addBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                console.log('[EQUIP] Add button clicked for room:', btn.dataset.roomId);
+                this._showAddEquipmentForm(btn.dataset.roomId);
+            });
+        });
+
+        cancelBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                this._hideAddEquipmentForm(btn.dataset.roomId);
+            });
+        });
+
+        placeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                console.log('[EQUIP] Place button clicked for room:', btn.dataset.roomId);
+                this._handlePlaceEquipment(btn.dataset.roomId);
+            });
+        });
+
+        panel.querySelectorAll('.dv-remove-equipment').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this._handleRemoveEquipment(btn.dataset.placementId);
+            });
+        });
+
+        panel.querySelectorAll('.dv-remove-all-equipment').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this._handleRemoveAllEquipment(btn.dataset.roomId);
             });
         });
     },
@@ -1187,6 +1271,162 @@ const dryingVisit = {
         } catch (err) {
             console.error('Failed to add ref point:', err);
         }
+    },
+
+    // ========================================
+    // Equipment Management Helpers
+    // ========================================
+
+    _getRoomEquipment(roomId) {
+        // In production, this would come from this._state.equipmentPlacements
+        // For now, return empty array as placeholder
+        return this._state.equipmentPlacements ? 
+            this._state.equipmentPlacements.filter(e => e.room_id === roomId) : [];
+    },
+
+    _isEquipmentActiveForVisit(equipment) {
+        const visitTime = this._state.visitedAt || (this._state.visit ? this._state.visit.visited_at : null);
+        if (!visitTime) return equipment.removed_at == null;
+
+        const visitDate = new Date(visitTime);
+        const placedDate = equipment.placed_at ? new Date(equipment.placed_at) : null;
+        const removedDate = equipment.removed_at ? new Date(equipment.removed_at) : null;
+
+        // Equipment is active if: placed before/at visit AND (not removed OR removed after visit)
+        return placedDate && placedDate <= visitDate && (!removedDate || removedDate > visitDate);
+    },
+
+    _generateEquipmentLabel(equipmentType, roomEquipment) {
+        // Auto-generate labels like "Dehu #1", "AM #2", etc.
+        const typeEquipment = roomEquipment.filter(e => e.equipment_type === equipmentType && this._isEquipmentActiveForVisit(e));
+        const count = typeEquipment.length;
+        const equipTypeInfo = dryingUtils.EQUIPMENT_TYPES.find(t => t.type === equipmentType);
+        const shortLabel = equipTypeInfo ? equipmentType : equipmentType;
+        return `${shortLabel} #${count}`;
+    },
+
+    async _placeEquipment(roomId, equipmentType, label, quantity) {
+        const visitTime = this._state.visitedAt || new Date().toISOString();
+        
+        try {
+            for (let i = 0; i < quantity; i++) {
+                const placementLabel = label || this._generateEquipmentLabel(equipmentType, this._getRoomEquipment(roomId));
+                await api.createDryingEquipmentPlacement(this._state.jobId, {
+                    room_id: roomId,
+                    equipment_type: equipmentType,
+                    label: placementLabel,
+                    placed_at: visitTime
+                });
+            }
+            // Refresh equipment data
+            await this._loadEquipmentData();
+            this._switchRoom(this._state.activeRoomId); // Re-render current room
+        } catch (err) {
+            console.error('Failed to place equipment:', err);
+            alert('Failed to place equipment. Please try again.');
+        }
+    },
+
+    async _removeEquipment(placementId) {
+        const visitTime = this._state.visitedAt || new Date().toISOString();
+        
+        try {
+            await api.removeDryingEquipmentPlacement(this._state.jobId, placementId, {
+                removed_at: visitTime
+            });
+            // Refresh equipment data
+            await this._loadEquipmentData();
+            this._switchRoom(this._state.activeRoomId); // Re-render current room
+        } catch (err) {
+            console.error('Failed to remove equipment:', err);
+            alert('Failed to remove equipment. Please try again.');
+        }
+    },
+
+    async _removeAllEquipment(roomId) {
+        const visitTime = this._state.visitedAt || new Date().toISOString();
+        
+        try {
+            await api.bulkRemoveDryingEquipment(this._state.jobId, {
+                room_id: roomId,
+                removed_at: visitTime
+            });
+            // Refresh equipment data
+            await this._loadEquipmentData();
+            this._switchRoom(this._state.activeRoomId); // Re-render current room
+        } catch (err) {
+            console.error('Failed to remove all equipment:', err);
+            alert('Failed to remove all equipment. Please try again.');
+        }
+    },
+
+    async _loadEquipmentData() {
+        try {
+            this._state.equipmentPlacements = await api.getDryingEquipment(this._state.jobId);
+        } catch (err) {
+            console.error('Failed to load equipment data:', err);
+            this._state.equipmentPlacements = [];
+        }
+    },
+
+    _showAddEquipmentForm(roomId) {
+        const form = document.getElementById(`dv-add-equipment-${roomId}`);
+        const btn = document.querySelector(`.dv-add-equipment-btn[data-room-id="${roomId}"]`);
+        if (form && btn) {
+            form.style.display = 'block';
+            btn.style.display = 'none';
+            // Focus on the equipment type select
+            const typeSelect = document.getElementById(`dv-equipment-type-${roomId}`);
+            if (typeSelect) typeSelect.focus();
+        }
+    },
+
+    _hideAddEquipmentForm(roomId) {
+        const form = document.getElementById(`dv-add-equipment-${roomId}`);
+        const btn = document.querySelector(`.dv-add-equipment-btn[data-room-id="${roomId}"]`);
+        if (form && btn) {
+            form.style.display = 'none';
+            btn.style.display = 'inline-flex';
+            // Reset form
+            const typeSelect = document.getElementById(`dv-equipment-type-${roomId}`);
+            const quantityInput = document.getElementById(`dv-equipment-quantity-${roomId}`);
+            if (typeSelect) typeSelect.value = '';
+            if (quantityInput) quantityInput.value = '1';
+        }
+    },
+
+    async _handlePlaceEquipment(roomId) {
+        console.log('[EQUIP] _handlePlaceEquipment called, roomId:', roomId);
+        const typeSelect = document.getElementById(`dv-equipment-type-${roomId}`);
+        const quantityInput = document.getElementById(`dv-equipment-quantity-${roomId}`);
+
+        if (!typeSelect || !typeSelect.value) {
+            alert('Please select equipment type');
+            return;
+        }
+
+        const equipmentType = typeSelect.value;
+        const roomEquipment = this._getRoomEquipment(roomId);
+        const label = this._generateEquipmentLabel(equipmentType, roomEquipment);
+        const quantity = quantityInput ? parseInt(quantityInput.value) || 1 : 1;
+
+        if (quantity < 1) {
+            alert('Quantity must be at least 1');
+            return;
+        }
+
+        await this._placeEquipment(roomId, equipmentType, label, quantity);
+        this._hideAddEquipmentForm(roomId);
+    },
+
+    async _handleRemoveEquipment(placementId) {
+        if (!confirm('Remove this equipment?')) return;
+        await this._removeEquipment(placementId);
+    },
+
+    async _handleRemoveAllEquipment(roomId) {
+        if (!confirm('Remove all equipment from this room?')) return;
+        await this._removeAllEquipment(roomId);
     },
 
     async _save() {

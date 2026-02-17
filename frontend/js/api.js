@@ -1037,16 +1037,16 @@ const api = {
     // Job Fuel/Mileage
     // ========================================
     async getJobFuel(jobId) {
-        return this.request(`/apex-jobs/${jobId}/fuel`);
+        return this.request(`/apex-jobs/${jobId}/fuel-mileage`);
     },
     async createJobFuel(jobId, data) {
-        return this.request(`/apex-jobs/${jobId}/fuel`, { method: 'POST', body: data });
+        return this.request(`/apex-jobs/${jobId}/fuel-mileage`, { method: 'POST', body: data });
     },
     async updateJobFuel(jobId, id, data) {
-        return this.request(`/apex-jobs/${jobId}/fuel/${id}`, { method: 'PATCH', body: data });
+        return this.request(`/apex-jobs/${jobId}/fuel-mileage/${id}`, { method: 'PATCH', body: data });
     },
     async deleteJobFuel(jobId, id) {
-        return this.request(`/apex-jobs/${jobId}/fuel/${id}`, { method: 'DELETE' });
+        return this.request(`/apex-jobs/${jobId}/fuel-mileage/${id}`, { method: 'DELETE' });
     },
 
     async uploadDryingPhotos(jobId, files) {
@@ -1058,6 +1058,110 @@ const api = {
             method: 'POST',
             body: formData,
         });
+    },
+
+    /**
+     * Drying: Get all equipment placements for a job
+     */
+    async getDryingEquipment(jobId) {
+        return this.request(`/apex-jobs/${jobId}/drying/equipment`);
+    },
+
+    /**
+     * Drying: Create equipment placement
+     */
+    async createDryingEquipmentPlacement(jobId, data) {
+        return this.request(`/apex-jobs/${jobId}/drying/equipment`, {
+            method: 'POST',
+            body: data,
+        });
+    },
+
+    /**
+     * Drying: Remove equipment placement (soft remove)
+     */
+    async removeDryingEquipmentPlacement(jobId, placementId, data) {
+        return this.request(`/apex-jobs/${jobId}/drying/equipment/${placementId}/remove`, {
+            method: 'POST',
+            body: data,
+        });
+    },
+
+    /**
+     * Drying: Bulk remove all equipment in a room
+     */
+    async bulkRemoveDryingEquipment(jobId, data) {
+        return this.request(`/apex-jobs/${jobId}/drying/equipment/bulk-remove`, {
+            method: 'POST',
+            body: data,
+        });
+    },
+
+    /**
+     * Drying: Update equipment placement
+     */
+    async updateDryingEquipmentPlacement(jobId, placementId, data) {
+        return this.request(`/apex-jobs/${jobId}/drying/equipment/${placementId}`, {
+            method: 'PATCH',
+            body: data,
+        });
+    },
+
+    /**
+     * Drying: Hard delete equipment placement
+     */
+    async deleteDryingEquipmentPlacement(jobId, placementId) {
+        return this.request(`/apex-jobs/${jobId}/drying/equipment/${placementId}`, {
+            method: 'DELETE',
+        });
+    },
+
+    /**
+     * Drying: Check completion status
+     */
+    async getDryingCompletionStatus(jobId) {
+        return this.request(`/apex-jobs/${jobId}/drying/completion-status`);
+    },
+
+    /**
+     * Drying: Complete and lock drying log
+     */
+    async completeDrying(jobId) {
+        return this.request(`/apex-jobs/${jobId}/drying/complete`, {
+            method: 'POST',
+        });
+    },
+
+    /**
+     * Drying: Reopen completed drying log
+     */
+    async reopenDrying(jobId) {
+        return this.request(`/apex-jobs/${jobId}/drying/reopen`, {
+            method: 'POST',
+        });
+    },
+
+    /**
+     * Drying: Generate PDF report
+     */
+    async generateDryingReport(jobId) {
+        return this.request(`/apex-jobs/${jobId}/drying/generate-report`, {
+            method: 'POST',
+        });
+    },
+
+    /**
+     * Drying: List reports
+     */
+    async getDryingReports(jobId) {
+        return this.request(`/apex-jobs/${jobId}/drying/reports`);
+    },
+
+    /**
+     * Drying: Download report
+     */
+    async downloadDryingReport(jobId, reportId) {
+        return this.request(`/apex-jobs/${jobId}/drying/reports/${reportId}/download`);
     },
 
     // ========================================

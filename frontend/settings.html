@@ -248,6 +248,7 @@
                 <div class="admin-subtabs">
                     <button class="admin-subtab active" data-subtab="users">User Management</button>
                     <button class="admin-subtab" data-subtab="roles">Role Management</button>
+                    <button class="admin-subtab" data-subtab="company">Company Settings</button>
                 </div>
 
                 <!-- ===== User Management ===== -->
@@ -368,6 +369,34 @@
                         <div class="modal-actions">
                             <button class="btn-cancel" id="admin-bulk-role-cancel">Cancel</button>
                             <button class="settings-btn-primary" id="admin-bulk-role-confirm">Apply</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== Company Settings ===== -->
+                <div class="admin-subsection" id="admin-company">
+                    <div class="security-subsection">
+                        <h3 class="security-subsection-title">Company Logo</h3>
+                        <div class="company-logo-section">
+                            <div class="company-logo-preview" id="company-logo-preview">
+                                <div class="company-logo-placeholder" id="company-logo-placeholder">
+                                    <svg viewBox="0 0 24 24" width="48" height="48">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                                        <polyline points="21,15 16,10 5,21"/>
+                                    </svg>
+                                    <p>No logo uploaded</p>
+                                </div>
+                                <img id="company-logo-img" style="display: none; max-width: 200px; max-height: 100px; object-fit: contain;" />
+                            </div>
+                            <div class="company-logo-actions">
+                                <input type="file" id="company-logo-input" accept=".png,.jpg,.jpeg,.webp,.svg" style="display: none;" />
+                                <button type="button" class="settings-btn-primary" id="company-logo-upload-btn">
+                                    <span class="btn-text">Upload Logo</span>
+                                    <span class="btn-spinner" style="display:none"></span>
+                                </button>
+                                <div class="settings-field-hint">PNG, JPG, WebP, or SVG. Max 5MB.</div>
+                            </div>
                         </div>
                     </div>
                 </div>

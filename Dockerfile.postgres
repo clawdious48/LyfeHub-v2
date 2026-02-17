@@ -25,6 +25,21 @@ COPY frontend ./frontend
 # ============================================
 FROM node:20-alpine AS runtime
 
+# Install Chromium and dependencies for puppeteer
+RUN apk update && apk add --no-cache \
+  chromium \
+  nss \
+  freetype \
+  freetype-dev \
+  harfbuzz \
+  ca-certificates \
+  ttf-freefont \
+  && rm -rf /var/cache/apk/*
+
+# Set environment variables for puppeteer
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
 # Security: run as non-root user
 RUN addgroup -g 1001 kanban && \
     adduser -u 1001 -G kanban -s /bin/sh -D kanban

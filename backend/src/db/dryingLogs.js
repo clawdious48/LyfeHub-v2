@@ -267,4 +267,124 @@ module.exports = {
   // Visit note delete + get by id
   getNoteById: async (id) => await db.getOne('SELECT * FROM drying_visit_notes WHERE id = $1', [id]),
   deleteNote: async (id) => await db.run('DELETE FROM drying_visit_notes WHERE id = $1', [id]),
+
+  // Equipment Placements
+  getEquipmentPlacements: async (logId) => {
+    return db.getAll('SELECT * FROM drying_equipment_placements WHERE drying_log_id = $1 ORDER BY placed_at', [logId]);
+  },
+  getEquipmentPlacementsByRoom: async (roomId) => {
+    return db.getAll('SELECT * FROM drying_equipment_placements WHERE room_id = $1 ORDER BY placed_at', [roomId]);
+  },
+  getActiveEquipment: async (logId) => {
+    return db.getAll('SELECT * FROM drying_equipment_placements WHERE drying_log_id = $1 AND removed_at IS NULL ORDER BY placed_at', [logId]);
+  },
+  createEquipmentPlacement: async ({logId, roomId, type, label, placedAt, placedVisitId, notes}) => {
+    const id = uuidv4();
+    await db.run(
+      'INSERT INTO drying_equipment_placements (id, drying_log_id, room_id, equipment_type, label, placed_at, placed_visit_id, notes) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',
+      [id, logId, roomId, type, label || null, placedAt, placedVisitId || null, notes || null]
+    );
+    return { id };
+  },
+  removeEquipmentPlacement: async (placementId, {removedAt, removedVisitId}) => {
+    return db.run(
+      'UPDATE drying_equipment_placements SET removed_at = $1, removed_visit_id = $2 WHERE id = $3',
+      [removedAt, removedVisitId || null, placementId]
+    );
+  },
+  updateEquipmentPlacement: async (placementId, fields) => {
+    // Build dynamic SET clause from fields
+    const allowed = ['equipment_type', 'label', 'placed_at', 'removed_at', 'placed_visit_id', 'removed_visit_id', 'notes', 'room_id'];
+    const sets = [];
+    const vals = [];
+    let idx = 1;
+    for (const [k, v] of Object.entries(fields)) {
+      if (allowed.includes(k)) {
+        sets.push(`${k} = $${idx}`);
+        vals.push(v);
+        idx++;
+      }
+    }
+    if (sets.length === 0) return;
+    vals.push(placementId);
+    return db.run(`UPDATE drying_equipment_placements SET ${sets.join(', ')} WHERE id = $${idx}`, vals);
+  },
+  deleteEquipmentPlacement: async (id) => {
+    return db.run('DELETE FROM drying_equipment_placements WHERE id = $1', [id]);
+  },
+
+  // Completion Validation
+  getCompletionStatus: async (logId) => {
+    const errors = [];
+
+    // 1. Check ref points: all must meet dry standard OR be demolished
+    const refPoints = await db.getAll(`
+      SELECT rp.id, rp.label, rp.demolished_at, rp.room_id, r.name as room_name,
+        (SELECT mr.reading_value FROM drying_moisture_readings mr 
+         JOIN drying_visits v ON mr.visit_id = v.id 
+         WHERE mr.ref_point_id = rp.id ORDER BY v.visit_number DESC LIMIT 1) as last_reading,
+        (SELECT mr.meets_dry_standard FROM drying_moisture_readings mr 
+         JOIN drying_visits v ON mr.visit_id = v.id 
+         WHERE mr.ref_point_id = rp.id ORDER BY v.visit_number DESC LIMIT 1) as meets_dry_standard
+      FROM drying_ref_points rp
+      JOIN drying_rooms r ON rp.room_id = r.id
+      WHERE r.chamber_id IN (SELECT id FROM drying_chambers WHERE log_id = $1)
+    `, [logId]);
+
+    const badRefPoints = refPoints.filter(rp => {
+      if (rp.demolished_at) return false; // demolished = OK
+      if (rp.last_reading === null || rp.last_reading === undefined) return true; // no reading = bad
+      return !rp.meets_dry_standard;
+    });
+
+    if (badRefPoints.length > 0) {
+      errors.push({
+        type: 'reference_points',
+        message: `${badRefPoints.length} reference point(s) not within dry standard`,
+        details: badRefPoints.map(rp => ({room: rp.room_name, point: rp.label, reading: rp.last_reading, meets_standard: rp.meets_dry_standard}))
+      });
+    }
+
+    // 2. Check atmospheric readings: ensure each visit has complete atmospheric readings for each chamber
+    const incompleteReadings = await db.getAll(`
+      SELECT v.visit_number, v.visited_at, c.name as chamber_name
+      FROM drying_visits v
+      CROSS JOIN drying_chambers c
+      WHERE v.log_id = $1 
+        AND c.log_id = $1
+        AND NOT EXISTS (
+          SELECT 1 FROM drying_atmospheric_readings ar 
+          WHERE ar.visit_id = v.id 
+            AND (ar.chamber_id = c.id OR ar.reading_type = 'ambient')
+            AND ar.temp_f IS NOT NULL 
+            AND ar.rh_percent IS NOT NULL 
+            AND ar.gpp IS NOT NULL
+        )
+      ORDER BY v.visit_number, c.name
+    `, [logId]);
+
+    if (incompleteReadings.length > 0) {
+      errors.push({
+        type: 'atmospheric_readings',
+        message: `${incompleteReadings.length} visit/chamber combination(s) missing complete atmospheric readings`,
+        details: incompleteReadings.map(r => ({visit: r.visit_number, chamber: r.chamber_name, visited_at: r.visited_at}))
+      });
+    }
+
+    // 3. Check equipment: no active placements
+    const activeEquip = await db.getAll(
+      'SELECT ep.*, r.name as room_name FROM drying_equipment_placements ep JOIN drying_rooms r ON ep.room_id = r.id WHERE ep.drying_log_id = $1 AND ep.removed_at IS NULL',
+      [logId]
+    );
+
+    if (activeEquip.length > 0) {
+      errors.push({
+        type: 'equipment',
+        message: `${activeEquip.length} piece(s) of equipment not removed`,
+        details: activeEquip.map(e => ({id: e.id, type: e.equipment_type, label: e.label, room: e.room_name}))
+      });
+    }
+
+    return { canComplete: errors.length === 0, errors };
+  },
 };

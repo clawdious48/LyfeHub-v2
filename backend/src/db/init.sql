@@ -1169,6 +1169,10 @@ CREATE TABLE IF NOT EXISTS drying_logs (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_drying_logs_job_id ON drying_logs(job_id);
 
+-- Add completion columns to drying_logs (if not exists)
+ALTER TABLE drying_logs ADD COLUMN IF NOT EXISTS completed_by TEXT;
+ALTER TABLE drying_logs ADD COLUMN IF NOT EXISTS locked INTEGER DEFAULT 0;
+
 -- ============================================
 -- DRYING CHAMBERS
 -- ============================================
@@ -1299,6 +1303,56 @@ CREATE TABLE IF NOT EXISTS drying_visit_notes (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_drying_visit_notes_visit_id ON drying_visit_notes(visit_id);
+
+-- ============================================
+-- DRYING EQUIPMENT PLACEMENTS
+-- ============================================
+CREATE TABLE IF NOT EXISTS drying_equipment_placements (
+  id TEXT PRIMARY KEY,
+  drying_log_id TEXT NOT NULL REFERENCES drying_logs(id) ON DELETE CASCADE,
+  room_id TEXT NOT NULL REFERENCES drying_rooms(id) ON DELETE CASCADE,
+  equipment_type TEXT NOT NULL DEFAULT 'AM',
+  label TEXT,
+  placed_at TIMESTAMPTZ NOT NULL,
+  removed_at TIMESTAMPTZ,
+  placed_visit_id TEXT REFERENCES drying_visits(id),
+  removed_visit_id TEXT REFERENCES drying_visits(id),
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_equip_place_log ON drying_equipment_placements(drying_log_id);
+CREATE INDEX IF NOT EXISTS idx_equip_place_room ON drying_equipment_placements(room_id);
+CREATE INDEX IF NOT EXISTS idx_equip_place_dates ON drying_equipment_placements(placed_at, removed_at);
+
+-- ============================================
+-- COMPANY SETTINGS
+-- ============================================
+CREATE TABLE IF NOT EXISTS company_settings (
+  id TEXT PRIMARY KEY,
+  org_id TEXT NOT NULL,
+  setting_key TEXT NOT NULL,
+  setting_value TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(org_id, setting_key)
+);
+
+-- ============================================
+-- DRYING REPORTS
+-- ============================================
+CREATE TABLE IF NOT EXISTS drying_reports (
+  id TEXT PRIMARY KEY,
+  drying_log_id TEXT NOT NULL REFERENCES drying_logs(id) ON DELETE CASCADE,
+  job_id TEXT NOT NULL,
+  org_id TEXT NOT NULL,
+  filename TEXT NOT NULL,
+  file_path TEXT NOT NULL,
+  file_size INTEGER,
+  generated_by TEXT,
+  generated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_drying_reports_log ON drying_reports(drying_log_id);
+CREATE INDEX IF NOT EXISTS idx_drying_reports_job ON drying_reports(job_id);
 
 -- ============================================
 -- AREAS (Life Areas for task tagging)
