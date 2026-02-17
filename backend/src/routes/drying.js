@@ -784,6 +784,361 @@ router.get('/event-log/:sessionId', requireScope('drying', 'read'), async (req, 
 });
 
 // ============================================
+// DRYING REPORT (HTML for print-to-PDF)
+// ============================================
+
+router.get('/report', requireScope('drying', 'read'), async (req, res) => {
+  try {
+    const jobId = req.params.id;
+
+    // Fetch all data
+    const job = await db.getOne('SELECT * FROM apex_jobs WHERE id = $1', [jobId]);
+    if (!job) return res.status(404).send('Job not found');
+
+    const log = await db.getOne('SELECT * FROM drying_logs WHERE job_id = $1', [jobId]);
+    if (!log) return res.status(404).send('No drying log found for this job');
+
+    const chambers = await db.getAll('SELECT * FROM drying_chambers WHERE log_id = $1 ORDER BY position', [log.id]);
+    const visits = await db.getAll('SELECT * FROM drying_visits WHERE log_id = $1 ORDER BY visit_number', [log.id]);
+    const refPoints = await db.getAll('SELECT * FROM drying_ref_points WHERE log_id = $1 ORDER BY ref_number', [log.id]);
+    const baselines = await db.getAll('SELECT * FROM drying_baselines WHERE log_id = $1', [log.id]);
+
+    // Per-chamber rooms
+    const roomsByChamber = {};
+    for (const ch of chambers) {
+      roomsByChamber[ch.id] = await db.getAll('SELECT * FROM drying_rooms WHERE chamber_id = $1 ORDER BY position', [ch.id]);
+    }
+
+    // Per-visit data
+    const atmosphericByVisit = {};
+    const readingsByVisit = {};
+    const equipmentByVisit = {};
+    for (const v of visits) {
+      atmosphericByVisit[v.id] = await db.getAll('SELECT * FROM drying_atmospheric_readings WHERE visit_id = $1', [v.id]);
+      readingsByVisit[v.id] = await db.getAll(
+        `SELECT mr.*, rp.ref_number, rp.material_code, rp.label, rp.room_id, rp.surface_type, rp.demolished_at
+         FROM drying_moisture_readings mr
+         JOIN drying_ref_points rp ON mr.ref_point_id = rp.id
+         WHERE mr.visit_id = $1`, [v.id]);
+      equipmentByVisit[v.id] = await db.getAll('SELECT * FROM drying_equipment WHERE visit_id = $1', [v.id]);
+    }
+
+    // Material code map
+    const MATERIAL_MAP = {
+      'D': 'Drywall', 'I': 'Insulation', 'PNL': 'Paneling', 'C': 'Carpet', 'TL': 'Tile',
+      'SF': 'Subfloor', 'WF': 'Wood Floor', 'FRM': 'Framing', 'CJST': 'Ceiling Joist',
+      'FJST': 'Floor Joist', 'OSB': 'OSB', 'PB': 'Particle Board', 'PBU': 'PB Underlayment',
+      'PLY': 'Plywood', 'MDFB': 'MDF Baseboard', 'MDFC': 'MDF Casing', 'WDB': 'Wood Baseboard',
+      'WDC': 'Wood Casing', 'CAB': 'Cabinetry', 'CW': 'Concrete Wall', 'CF': 'Concrete Floor',
+      'TK': 'Tack Strip'
+    };
+
+    const SURFACE_MAP = { wall: 'Wall', ceiling: 'Ceiling', floor: 'Floor', cabinetry: 'Cabinetry' };
+    const FLOOR_MAP = { basement: 'Basement/Crawlspace', main_level: 'Main Level' };
+    for (let i = 2; i <= 25; i++) FLOOR_MAP[`floor_${i}`] = `Floor ${i}`;
+
+    const EQUIP_LABELS = {
+      dehumidifier: 'Dehumidifiers', air_mover: 'Air Movers', negative_air: 'Air Scrubbers',
+      injectidry: 'Injectidry', multi_port: 'Multi-port', heated_air_mover: 'Heated Air Movers'
+    };
+
+    // GPP calculation
+    function calcGPP(tempF, rh) {
+      if (tempF == null || rh == null) return null;
+      const c8=-10440.397,c9=-11.29465,c10=-0.027022355,c11=0.00001289036,c12=-0.0000000024780681,c13=6.5459673;
+      const tempR = tempF + 459.67;
+      const lnPws = c8/tempR + c9 + c10*tempR + c11*tempR*tempR + c12*tempR*tempR*tempR + c13*Math.log(tempR);
+      const Pws = Math.exp(lnPws);
+      const Pw = (rh / 100) * Pws;
+      const W = 0.62198 * Pw / (14.696 - Pw);
+      return Math.round(W * 7000 * 10) / 10;
+    }
+
+    function fmtDate(d) {
+      if (!d) return '';
+      const dt = new Date(d);
+      return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    function shortDate(d) {
+      if (!d) return '';
+      const dt = new Date(d);
+      return `${dt.getMonth()+1}/${dt.getDate()}`;
+    }
+
+    // Compute dates
+    const firstVisitDate = visits.length ? new Date(visits[0].visit_date) : null;
+    const lastVisitDate = visits.length ? new Date(visits[visits.length - 1].visit_date) : null;
+    const dryingDays = firstVisitDate && lastVisitDate
+      ? Math.round((lastVisitDate - firstVisitDate) / 86400000) + 1 : 0;
+
+    const totalRooms = Object.values(roomsByChamber).reduce((s, r) => s + r.length, 0);
+
+    // Build address
+    const addrParts = [job.prop_street, job.prop_city, job.prop_state, job.prop_zip].filter(Boolean);
+    const address = addrParts.join(', ');
+
+    // Header fields (only show non-empty)
+    const headerFields = [];
+    if (job.client_name) headerFields.push(['Client', job.client_name]);
+    if (address) headerFields.push(['Property Address', address]);
+    if (job.ins_carrier) headerFields.push(['Insurance Carrier', job.ins_carrier]);
+    if (job.ins_claim) headerFields.push(['Claim Number', job.ins_claim]);
+    if (job.adj_name) headerFields.push(['Adjuster', job.adj_name]);
+    if (job.adj_phone) headerFields.push(['Adjuster Phone', job.adj_phone]);
+    if (job.adj_email) headerFields.push(['Adjuster Email', job.adj_email]);
+    if (job.loss_date) headerFields.push(['Date of Loss', fmtDate(job.loss_date)]);
+    if (firstVisitDate) headerFields.push(['Mitigation Start', fmtDate(firstVisitDate)]);
+    if (lastVisitDate) headerFields.push(['Completion Date', fmtDate(lastVisitDate)]);
+    headerFields.push(['Report Generated', fmtDate(new Date())]);
+
+    // Build baseline map: ref_point_id -> value
+    const baselineMap = {};
+    for (const b of baselines) baselineMap[b.ref_point_id] = b.baseline_value;
+
+    // ---- Build HTML ----
+    let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Drying Report - ${job.client_name || 'Job'}</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #222; padding: 20px; max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 20px; color: #FF8C00; margin: 0; }
+  h2 { font-size: 15px; border-bottom: 2px solid #FF8C00; padding-bottom: 4px; margin: 20px 0 10px; }
+  h3 { font-size: 13px; margin: 14px 0 6px; color: #444; }
+  .header { border-bottom: 3px solid #FF8C00; padding-bottom: 12px; margin-bottom: 16px; }
+  .header-company { font-size: 22px; font-weight: bold; color: #FF8C00; }
+  .header-title { font-size: 16px; color: #333; margin-top: 2px; }
+  .header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 20px; margin-top: 10px; font-size: 11px; }
+  .header-grid .label { font-weight: 600; color: #555; }
+  .summary { background: #f8f8f8; padding: 12px; border-left: 3px solid #FF8C00; margin-bottom: 16px; font-size: 12px; line-height: 1.5; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10.5px; }
+  th, td { border: 1px solid #ccc; padding: 4px 6px; text-align: center; }
+  th { background: #f0f0f0; font-weight: 600; font-size: 10px; }
+  tr:nth-child(even) { background: #fafafa; }
+  .dry { color: #228B22; font-weight: bold; }
+  .demo { color: #999; text-decoration: line-through; }
+  .chamber-section { page-break-before: auto; margin-top: 20px; }
+  .chamber-header { background: #333; color: #fff; padding: 6px 10px; font-size: 13px; }
+  .room-header { background: #e8e8e8; padding: 4px 8px; font-size: 11px; font-weight: 600; margin: 10px 0 4px; }
+  .equip-summary { background: #fff8f0; border: 1px solid #FF8C00; padding: 10px; margin-top: 16px; }
+  .equip-summary h2 { border-color: #FF8C00; }
+  .ref-label { text-align: left; }
+  td.ref-label { text-align: left; }
+  .print-btn { position: fixed; top: 10px; right: 10px; background: #FF8C00; color: #fff; border: none; padding: 10px 20px; font-size: 14px; cursor: pointer; border-radius: 4px; z-index: 999; }
+  .print-btn:hover { background: #e07800; }
+  @media print {
+    .print-btn { display: none; }
+    body { padding: 0; font-size: 10px; }
+    .chamber-section { page-break-before: always; }
+    .chamber-section:first-of-type { page-break-before: avoid; }
+  }
+</style></head><body>
+<button class="print-btn" onclick="window.print()">🖨️ Print / Save PDF</button>
+
+<div class="header">
+  <div class="header-company">Apex Restoration LLC</div>
+  <div class="header-title">Moisture Mitigation &amp; Drying Report</div>
+  <div class="header-grid">`;
+
+    for (const [label, value] of headerFields) {
+      html += `<div><span class="label">${label}:</span> ${value}</div>`;
+    }
+    html += `</div></div>`;
+
+    // Executive Summary
+    html += `<div class="summary">`;
+    if (firstVisitDate && lastVisitDate) {
+      html += `Water mitigation began on <strong>${fmtDate(firstVisitDate)}</strong>. `;
+      html += `The structure reached dry standard on <strong>${fmtDate(lastVisitDate)}</strong>, `;
+      html += `totaling <strong>${dryingDays} drying day${dryingDays !== 1 ? 's' : ''}</strong> `;
+      html += `across <strong>${chambers.length} chamber${chambers.length !== 1 ? 's' : ''}</strong> `;
+      html += `and <strong>${totalRooms} affected room${totalRooms !== 1 ? 's' : ''}</strong>.`;
+    } else {
+      html += `Drying log created but no visits recorded yet.`;
+    }
+    html += `</div>`;
+
+    // Global equipment tracking for summary
+    const globalEquipDays = {};
+
+    // Per-chamber breakdown
+    for (const chamber of chambers) {
+      const rooms = roomsByChamber[chamber.id] || [];
+      const floorLabel = FLOOR_MAP[chamber.floor_level] || chamber.floor_level || '';
+
+      html += `<div class="chamber-section">`;
+      html += `<div class="chamber-header">${chamber.name || 'Chamber'}${floorLabel ? ' — ' + floorLabel : ''}</div>`;
+
+      // Atmospheric readings table
+      if (visits.length > 0) {
+        html += `<h3>Atmospheric Readings</h3><table><tr><th>Visit</th><th>Date</th>`;
+        // Find reading types present
+        const readingTypes = ['intake', 'exhaust', 'unaffected', 'outside'];
+        const typeLabels = { intake: 'Intake', exhaust: 'Exhaust', unaffected: 'Unaffected', outside: 'Outside' };
+        for (const rt of readingTypes) {
+          html += `<th>${typeLabels[rt]} Temp</th><th>${typeLabels[rt]} RH</th><th>${typeLabels[rt]} GPP</th>`;
+        }
+        html += `</tr>`;
+
+        for (const v of visits) {
+          const atmos = atmosphericByVisit[v.id] || [];
+          const atmosMap = {};
+          for (const a of atmos) {
+            if (a.chamber_id === chamber.id || a.reading_type === 'unaffected' || a.reading_type === 'outside') {
+              atmosMap[a.reading_type] = a;
+            }
+          }
+          html += `<tr><td>${v.visit_number}</td><td>${shortDate(v.visit_date)}</td>`;
+          for (const rt of readingTypes) {
+            const a = atmosMap[rt];
+            if (a) {
+              const gpp = calcGPP(a.temperature, a.humidity);
+              html += `<td>${a.temperature != null ? a.temperature + '°F' : '--'}</td>`;
+              html += `<td>${a.humidity != null ? a.humidity + '%' : '--'}</td>`;
+              html += `<td>${gpp != null ? gpp : '--'}</td>`;
+            } else {
+              html += `<td>--</td><td>--</td><td>--</td>`;
+            }
+          }
+          html += `</tr>`;
+        }
+        html += `</table>`;
+      }
+
+      // Per room
+      for (const room of rooms) {
+        html += `<div class="room-header">${room.name || 'Room'}</div>`;
+
+        // Ref points for this room
+        const roomRefs = refPoints.filter(rp => rp.room_id === room.id);
+        if (roomRefs.length > 0 && visits.length > 0) {
+          html += `<table><tr><th>Ref #</th><th>Material</th><th>Surface</th>`;
+          for (const v of visits) {
+            html += `<th>V${v.visit_number} (${shortDate(v.visit_date)})</th>`;
+          }
+          html += `<th>Baseline</th><th>Status</th></tr>`;
+
+          for (const rp of roomRefs) {
+            const demolished = !!rp.demolished_at;
+            const demoDate = rp.demolished_at ? new Date(rp.demolished_at) : null;
+            const baseline = baselineMap[rp.id];
+            html += `<tr><td>${rp.ref_number}</td>`;
+            html += `<td class="ref-label">${MATERIAL_MAP[rp.material_code] || rp.material_code || ''}</td>`;
+            html += `<td>${SURFACE_MAP[rp.surface_type] || rp.surface_type || ''}</td>`;
+
+            let lastValue = null;
+            for (const v of visits) {
+              const vReadings = readingsByVisit[v.id] || [];
+              const reading = vReadings.find(r => r.ref_point_id === rp.id);
+              const visitDate = new Date(v.visit_date);
+
+              if (demolished && demoDate && visitDate > demoDate) {
+                html += `<td class="demo">DEMO</td>`;
+              } else if (reading && reading.value != null) {
+                lastValue = reading.value;
+                html += `<td>${reading.value}</td>`;
+              } else {
+                html += `<td>--</td>`;
+              }
+            }
+
+            html += `<td>${baseline != null ? baseline : '--'}</td>`;
+            if (demolished) {
+              html += `<td class="demo">DEMOLISHED</td>`;
+            } else if (lastValue != null && baseline != null && lastValue <= baseline + 4) {
+              html += `<td class="dry">DRY ✓</td>`;
+            } else {
+              html += `<td>${lastValue != null ? lastValue : '--'}</td>`;
+            }
+            html += `</tr>`;
+          }
+          html += `</table>`;
+        }
+
+        // Equipment log (daily from first to last visit)
+        const roomEquipByVisit = {};
+        for (const v of visits) {
+          const equip = (equipmentByVisit[v.id] || []).filter(e => e.room_id === room.id);
+          roomEquipByVisit[v.id] = equip;
+        }
+
+        if (firstVisitDate && lastVisitDate) {
+          // Get all equipment types used in this room
+          const typesUsed = new Set();
+          for (const v of visits) {
+            for (const e of (roomEquipByVisit[v.id] || [])) {
+              typesUsed.add(e.equipment_type);
+            }
+          }
+          const typeArr = Array.from(typesUsed);
+
+          if (typeArr.length > 0) {
+            html += `<h3>Equipment Log — ${room.name || 'Room'}</h3>`;
+            html += `<table><tr><th>Date</th>`;
+            for (const t of typeArr) html += `<th>${EQUIP_LABELS[t] || t}</th>`;
+            html += `</tr>`;
+
+            // Build visit date -> equipment map
+            const visitEquipMap = {};
+            for (const v of visits) {
+              const dateKey = new Date(v.visit_date).toISOString().slice(0, 10);
+              const counts = {};
+              for (const e of (roomEquipByVisit[v.id] || [])) {
+                counts[e.equipment_type] = (counts[e.equipment_type] || 0) + e.quantity;
+              }
+              visitEquipMap[dateKey] = counts;
+            }
+
+            // Walk each day
+            let currentCounts = {};
+            const typeTotals = {};
+            for (const t of typeArr) typeTotals[t] = 0;
+
+            const dayMs = 86400000;
+            for (let d = new Date(firstVisitDate); d <= lastVisitDate; d = new Date(d.getTime() + dayMs)) {
+              const dk = d.toISOString().slice(0, 10);
+              if (visitEquipMap[dk]) currentCounts = { ...visitEquipMap[dk] };
+              html += `<tr><td>${shortDate(d)}</td>`;
+              for (const t of typeArr) {
+                const qty = currentCounts[t] || 0;
+                html += `<td>${qty}</td>`;
+                typeTotals[t] += qty;
+                if (!globalEquipDays[t]) globalEquipDays[t] = 0;
+                globalEquipDays[t] += qty;
+              }
+              html += `</tr>`;
+            }
+
+            // Totals row
+            html += `<tr style="font-weight:bold;background:#e8e8e8"><td>Total Equip-Days</td>`;
+            for (const t of typeArr) html += `<td>${typeTotals[t]}</td>`;
+            html += `</tr></table>`;
+          }
+        }
+      }
+
+      html += `</div>`; // chamber-section
+    }
+
+    // Equipment Summary
+    const equipTypes = Object.keys(globalEquipDays);
+    if (equipTypes.length > 0) {
+      html += `<div class="equip-summary"><h2>Equipment Summary</h2>`;
+      const totalAll = Object.values(globalEquipDays).reduce((s, v) => s + v, 0);
+      html += `<p><strong>Total equipment-days: ${totalAll}</strong></p><ul>`;
+      for (const t of equipTypes) {
+        html += `<li>${globalEquipDays[t]} ${(EQUIP_LABELS[t] || t).toLowerCase()}-days</li>`;
+      }
+      html += `</ul></div>`;
+    }
+
+    html += `</body></html>`;
+    res.send(html);
+  } catch (err) {
+    console.error('Error generating drying report:', err);
+    res.status(500).send('Failed to generate report');
+  }
+});
+
+// ============================================
 // MULTER ERROR HANDLING
 // ============================================
 

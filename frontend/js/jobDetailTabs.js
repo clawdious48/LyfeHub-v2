@@ -749,6 +749,9 @@ const jobDetailTabs = {
                 ${typeof userHasRole === 'function' && userHasRole('management', 'project_manager', 'office_coordinator', 'developer') ? `<button class="dry-btn dry-btn-secondary dry-btn-sm" onclick="jobDetailTabs._editDryingSetup('${jobId}')">
                     ✏️ Edit Setup
                 </button>` : ''}
+                <button class="dry-btn dry-btn-secondary dry-btn-sm" onclick="window.open('/api/apex-jobs/${jobId}/drying/report', '_blank')">
+                    📄 Report
+                </button>
                 <button class="dry-btn dry-btn-sm ${canComplete ? 'dry-btn-success' : ''}"
                     ${!canComplete ? 'disabled' : ''}
                     onclick="jobDetailTabs._completeDrying('${jobId}')"
