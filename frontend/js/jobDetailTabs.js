@@ -746,8 +746,8 @@ const jobDetailTabs = {
                 <button class="dry-btn dry-btn-primary dry-btn-sm${typeof dryingVisit !== 'undefined' && dryingVisit.hasDraft && dryingVisit.hasDraft(jobId) ? ' dry-btn-draft' : ''}" onclick="dryingVisit.open('${jobId}')">
                     ${typeof dryingVisit !== 'undefined' && dryingVisit.hasDraft && dryingVisit.hasDraft(jobId) ? '⏎ Resume Visit' : '+ Add Visit'}
                 </button>
-                ${typeof userHasRole === 'function' && userHasRole('management', 'project_manager', 'office_coordinator') ? `<button class="dry-btn dry-btn-secondary dry-btn-sm" onclick="jobDetailTabs._editDryingSetup('${jobId}')">
-                    Edit Job
+                ${typeof userHasRole === 'function' && userHasRole('management', 'project_manager', 'office_coordinator', 'developer') ? `<button class="dry-btn dry-btn-secondary dry-btn-sm" onclick="jobDetailTabs._editDryingSetup('${jobId}')">
+                    ✏️ Edit Setup
                 </button>` : ''}
                 <button class="dry-btn dry-btn-sm ${canComplete ? 'dry-btn-success' : ''}"
                     ${!canComplete ? 'disabled' : ''}

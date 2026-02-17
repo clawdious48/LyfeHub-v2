@@ -9,6 +9,7 @@ const TYPE_CODE_LABELS = { mitigation: 'Mitigation', reconstruction: 'Reconstruc
 // Permission helpers
 function userHasRole(...roles) {
     const role = window.currentOrg?.role;
+    if (role === 'developer') return true; // developer = god mode
     return role && roles.includes(role);
 }
 function canEditJob() { return userHasRole('management', 'office_coordinator'); }
