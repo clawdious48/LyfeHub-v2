@@ -34,8 +34,10 @@ function requireManagement(req, res, next) {
 router.get('/mine', requireScope('org', 'read'), async (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'User authentication required' });
-    const orgs = await apexOrgsDb.getUserOrgs(req.user.id);
-    res.json(orgs);
+    const orgs = await apexOrgsDb.getOrgsByUser(req.user.id);
+    // Frontend expects { org: { id, name, role, ... } } for first org
+    const first = orgs && orgs.length > 0 ? orgs[0] : null;
+    res.json({ org: first ? { ...first, role: first.member_role } : null, orgs });
   } catch (err) {
     console.error('Error getting user orgs:', err);
     res.status(500).json({ error: 'Failed to get organizations' });
