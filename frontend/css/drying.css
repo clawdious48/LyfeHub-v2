@@ -1585,8 +1585,18 @@
     background: rgba(255, 255, 255, 0.05);
 }
 [data-theme="dark"] .dry-step-dot {
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+[data-theme="dark"] .dry-step-dot.active {
+    background: var(--apex-primary, #FF8C00);
+    border-color: var(--apex-primary, #FF8C00);
+    box-shadow: 0 0 8px rgba(255, 140, 0, 0.4);
+}
+[data-theme="dark"] .dry-step-dot.completed {
+    background: var(--apex-success, #34d399);
+    border-color: var(--apex-success, #34d399);
+    box-shadow: 0 0 6px rgba(52, 211, 153, 0.3);
 }
 [data-theme="dark"] .dry-dot-tooltip {
     color: rgba(240, 240, 245, 0.85);
