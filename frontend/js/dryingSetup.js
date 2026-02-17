@@ -497,18 +497,18 @@ const dryingSetup = {
             const isDefault = /^(Chamber \d+|Default)$/.test(ch.name);
             html += `
                 <div class="dry-chamber-card" data-chamber-id="${esc(ch.id)}">
-                    <div class="dry-chamber-header">
+                    <div class="dry-chamber-header" style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
                         <input type="text" class="dry-input dry-chamber-name" value="${isDefault ? '' : esc(ch.name)}"
                                placeholder="Chamber ${i + 1}"
-                               data-chamber-id="${esc(ch.id)}" style="width:200px" />
+                               data-chamber-id="${esc(ch.id)}" style="flex:1;min-width:140px" />
+                        <select class="dry-input dry-chamber-floor" data-chamber-id="${esc(ch.id)}" style="width:160px;">
+                            ${dryingUtils.FLOOR_LEVELS.map(fl =>
+                                `<option value="${fl.key}" ${(ch.floor_level || 'main_level') === fl.key ? 'selected' : ''}>${fl.label}</option>`
+                            ).join('')}
+                        </select>
                         ${chambers.length > 1 ? `<button class="dry-btn dry-btn-sm dry-btn-danger dry-chamber-delete"
                             data-chamber-id="${esc(ch.id)}">&times;</button>` : ''}
                     </div>
-                    <select class="dry-input dry-chamber-floor" data-chamber-id="${esc(ch.id)}" style="width:200px;margin-top:0.5rem;">
-                        ${dryingUtils.FLOOR_LEVELS.map(fl =>
-                            `<option value="${fl.key}" ${(ch.floor_level || 'main_level') === fl.key ? 'selected' : ''}>${fl.label}</option>`
-                        ).join('')}
-                    </select>
                     <div class="dry-chamber-color" data-chamber-id="${esc(ch.id)}">
                         ${dryingUtils.buildColorPicker(ch.color)}
                     </div>
