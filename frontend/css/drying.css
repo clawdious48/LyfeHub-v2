@@ -1934,3 +1934,14 @@
         grid-template-columns: repeat(4, 1fr);
     }
 }
+
+/* Event Log Viewer */
+.event-log-list, .event-log-sessions, .event-log-events { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.event-log-job-row, .event-log-session-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; cursor: pointer; transition: background 0.15s; }
+.event-log-job-row:hover, .event-log-session-row:hover { background: rgba(255,255,255,0.06); }
+.event-log-job-name { font-weight: 500; font-size: 0.88rem; }
+.event-log-meta { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+.event-log-event-row { display: flex; gap: 8px; align-items: baseline; padding: 4px 8px; font-size: 0.8rem; margin-left: 4px; }
+.event-log-time { color: rgba(255,255,255,0.35); font-size: 0.72rem; min-width: 70px; }
+.event-log-event-name { font-weight: 600; font-size: 0.78rem; }
+.event-log-event-data { color: rgba(255,255,255,0.4); font-size: 0.72rem; font-family: monospace; word-break: break-all; }

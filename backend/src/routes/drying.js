@@ -714,6 +714,76 @@ router.get('/photos/:filename', requireScope('drying', 'read'), async (req, res)
 });
 
 // ============================================
+// EVENT LOG ROUTES
+// ============================================
+
+// POST /event-log — upsert events for a session
+router.post('/event-log', requireScope('drying', 'write'), async (req, res) => {
+  try {
+    const { session_id, events } = req.body;
+    if (!session_id || !Array.isArray(events) || events.length === 0) {
+      return res.status(400).json({ error: 'session_id and events[] are required' });
+    }
+    const jobId = req.params.id;
+    const userId = req.user?.id || null;
+
+    // Try to append to existing session row
+    const existing = await db.getOne(
+      'SELECT id FROM drying_event_logs WHERE session_id = $1 AND job_id = $2',
+      [session_id, jobId]
+    );
+
+    if (existing) {
+      await db.run(
+        `UPDATE drying_event_logs SET events = events || $1::jsonb WHERE id = $2`,
+        [JSON.stringify(events), existing.id]
+      );
+    } else {
+      const id = uuidv4();
+      await db.run(
+        `INSERT INTO drying_event_logs (id, job_id, session_id, user_id, events) VALUES ($1, $2, $3, $4, $5::jsonb)`,
+        [id, jobId, session_id, userId, JSON.stringify(events)]
+      );
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error saving event log:', err);
+    res.status(500).json({ error: 'Failed to save event log' });
+  }
+});
+
+// GET /event-log — list sessions for this job
+router.get('/event-log', requireScope('drying', 'read'), async (req, res) => {
+  try {
+    const rows = await db.getAll(
+      `SELECT id, session_id, user_id, created_at, jsonb_array_length(events) as event_count
+       FROM drying_event_logs WHERE job_id = $1 ORDER BY created_at DESC`,
+      [req.params.id]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('Error getting event logs:', err);
+    res.status(500).json({ error: 'Failed to get event logs' });
+  }
+});
+
+// GET /event-log/:sessionId — full events for a session
+router.get('/event-log/:sessionId', requireScope('drying', 'read'), async (req, res) => {
+  try {
+    const row = await db.getOne(
+      `SELECT * FROM drying_event_logs WHERE session_id = $1 AND job_id = $2`,
+      [req.params.sessionId, req.params.id]
+    );
+    if (!row) return res.status(404).json({ error: 'Session not found' });
+    res.json(row);
+  } catch (err) {
+    console.error('Error getting event log session:', err);
+    res.status(500).json({ error: 'Failed to get event log session' });
+  }
+});
+
+// ============================================
 // MULTER ERROR HANDLING
 // ============================================
 

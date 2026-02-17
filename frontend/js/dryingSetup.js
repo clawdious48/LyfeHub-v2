@@ -35,6 +35,7 @@ const dryingSetup = {
     async open(jobId) {
         this._state.jobId = jobId;
         this._state.currentStep = 0;
+        dryingEventLog.init(jobId);
 
         try {
             // Fetch existing data to detect partial setup
@@ -77,9 +78,17 @@ const dryingSetup = {
         this._ensureOverlay();
         this._overlay.style.display = 'flex';
         this._render();
+        dryingEventLog.log('WIZARD_OPEN', {
+            chambers: this._state.chambers.length,
+            rooms: this._state.rooms.length,
+            refPoints: this._state.refPoints.length,
+            baselines: this._state.baselines.length,
+            startStep: this._state.currentStep
+        });
     },
 
     close() {
+        dryingEventLog.destroy();
         if (this._overlay) {
             this._overlay.style.display = 'none';
         }
@@ -261,18 +270,29 @@ const dryingSetup = {
 
     async _nextStep() {
         this._collectCurrentStepState();
+        const fromStep = this._state.currentStep;
         // Clean up blank-name rooms when leaving Rooms Review (step 1)
         if (this._state.currentStep === 1) {
             const blanks = this._state.rooms.filter(r => !r.name || !r.name.trim());
+            const deleted = [];
+            const blocked = [];
             for (const room of blanks) {
-                try { await api.deleteDryingRoom(this._state.jobId, room.id); } catch (e) {}
+                const rpCount = this._state.refPoints.filter(rp => rp.room_id === room.id).length;
+                if (rpCount > 0) {
+                    dryingEventLog.log('DANGEROUS_CLEANUP_BLOCKED', { roomId: room.id, refPointCount: rpCount });
+                    blocked.push(room);
+                    continue;
+                }
+                try { await api.deleteDryingRoom(this._state.jobId, room.id); deleted.push(room.id); } catch (e) {}
             }
-            if (blanks.length) {
+            if (deleted.length || blocked.length) {
+                dryingEventLog.log('BLANK_ROOM_CLEANUP', { deleted: deleted.length, blocked: blocked.length });
                 this._state.rooms = await api.getDryingRooms(this._state.jobId);
             }
         }
         if (this._state.currentStep < this.TOTAL_STEPS - 1) {
             this._state.currentStep++;
+            dryingEventLog.log('STEP_CHANGE', { from: fromStep, to: this._state.currentStep });
             this._render();
         }
     },
@@ -280,7 +300,9 @@ const dryingSetup = {
     _prevStep() {
         this._collectCurrentStepState();
         if (this._state.currentStep > 0) {
+            const from = this._state.currentStep;
             this._state.currentStep--;
+            dryingEventLog.log('STEP_CHANGE', { from, to: this._state.currentStep, direction: 'back' });
             this._render();
         }
     },
@@ -288,7 +310,9 @@ const dryingSetup = {
     _goToStep(n) {
         if (n >= 0 && n < this.TOTAL_STEPS) {
             this._collectCurrentStepState();
+            const from = this._state.currentStep;
             this._state.currentStep = n;
+            dryingEventLog.log('STEP_CHANGE', { from, to: n, direction: 'jump' });
             this._render();
         }
     },
@@ -812,6 +836,7 @@ const dryingSetup = {
                     addBtn.textContent = 'Adding...';
                     for (const code of selectedCodes) {
                         await api.createDryingRefPoint(this._state.jobId, { room_id: this._state.activeRoomId, material_code: code, label: surfaceLabel });
+                        dryingEventLog.log('REFPOINT_CREATE', { roomId: this._state.activeRoomId, materialCode: code, surface: surfaceLabel });
                     }
                     this._state.refPoints = await api.getDryingRefPoints(this._state.jobId);
                     this._render();
@@ -884,10 +909,12 @@ const dryingSetup = {
         try {
             await api.createDryingRoom(jobId, { chamber_id: chamberId, name: name });
             this._state.rooms = await api.getDryingRooms(jobId);
+            dryingEventLog.log('ROOM_CREATE', { name });
             // Create a blank room for the next entry
             await this._addRoom();
         } catch (err) {
             console.error('Failed to create room:', err);
+            dryingEventLog.log('API_ERROR', { action: 'createRoom', error: err.message });
             alert('Failed to add room: ' + (err.message || 'Unknown error'));
         }
     },
@@ -905,6 +932,7 @@ const dryingSetup = {
             const roomNum = this._state.rooms.length + 1;
             await api.createDryingRoom(jobId, { chamber_id: chamberId, name: '' });
             this._state.rooms = await api.getDryingRooms(jobId);
+            dryingEventLog.log('ROOM_CREATE_BLANK', { roomCount: this._state.rooms.length });
             this._render();
             setTimeout(() => {
                 const inputs = this._overlay.querySelectorAll('.dry-room-name');
@@ -917,13 +945,17 @@ const dryingSetup = {
     },
 
     async _deleteRoom(roomId) {
+        const room = this._state.rooms.find(r => r.id === roomId);
+        const rpCount = this._state.refPoints.filter(rp => rp.room_id === roomId).length;
         try {
             await api.deleteDryingRoom(this._state.jobId, roomId);
             this._state.rooms = await api.getDryingRooms(this._state.jobId);
             this._state.refPoints = await api.getDryingRefPoints(this._state.jobId);
+            dryingEventLog.log('ROOM_DELETE', { roomId, name: room?.name, refPointCount: rpCount });
             this._render();
         } catch (err) {
             console.error('Failed to delete room:', err);
+            dryingEventLog.log('API_ERROR', { action: 'deleteRoom', error: err.message });
         }
     },
 
@@ -932,9 +964,11 @@ const dryingSetup = {
         try {
             await api.updateDryingRoom(this._state.jobId, roomId, { name: newName });
             this._state.rooms = await api.getDryingRooms(this._state.jobId);
+            dryingEventLog.log('ROOM_RENAME', { roomId, newName });
             this._render();
         } catch (err) {
             console.error('Failed to rename room:', err);
+            dryingEventLog.log('API_ERROR', { action: 'renameRoom', error: err.message });
         }
     },
 
@@ -948,9 +982,11 @@ const dryingSetup = {
                 color: nextColor.hex
             });
             this._state.chambers = await api.getDryingChambers(this._state.jobId);
+            dryingEventLog.log('CHAMBER_CREATE', { count: this._state.chambers.length });
             this._render();
         } catch (err) {
             console.error('Failed to add chamber:', err);
+            dryingEventLog.log('API_ERROR', { action: 'addChamber', error: err.message });
         }
     },
 
@@ -960,9 +996,11 @@ const dryingSetup = {
             await api.deleteDryingChamber(this._state.jobId, chamberId);
             this._state.chambers = await api.getDryingChambers(this._state.jobId);
             this._state.rooms = await api.getDryingRooms(this._state.jobId);
+            dryingEventLog.log('CHAMBER_DELETE', { chamberId });
             this._render();
         } catch (err) {
             console.error('Failed to delete chamber:', err);
+            dryingEventLog.log('API_ERROR', { action: 'deleteChamber', error: err.message });
         }
     },
 
@@ -1063,10 +1101,12 @@ const dryingSetup = {
     async _deleteRefPoint(rpId) {
         try {
             await api.deleteDryingRefPoint(this._state.jobId, rpId);
+            dryingEventLog.log('REFPOINT_DELETE', { rpId });
             this._state.refPoints = await api.getDryingRefPoints(this._state.jobId);
             this._render();
         } catch (err) {
             console.error('Failed to delete ref point:', err);
+            dryingEventLog.log('API_ERROR', { action: 'deleteRefPoint', error: err.message });
         }
     },
 
@@ -1100,17 +1140,50 @@ const dryingSetup = {
                 baseline_value: value
             });
             this._state.baselines = await api.getDryingBaselines(this._state.jobId);
+            dryingEventLog.log('BASELINE_SAVE', { materialCode, value });
             this._render();
         } catch (err) {
             console.error('Failed to save baseline:', err);
+            dryingEventLog.log('API_ERROR', { action: 'saveBaseline', error: err.message });
         }
     },
 
     async _confirmSetup() {
         const btn = this._overlay.querySelector('.dry-wizard-confirm');
+        const { rooms, refPoints, baselines } = this._state;
+
+        // Block: no rooms
+        if (rooms.length === 0) {
+            dryingEventLog.log('CONFIRM_BLOCKED', { reason: 'No rooms exist' });
+            alert('Cannot confirm setup: No rooms have been created.');
+            return;
+        }
+
+        // Warnings
+        const warnings = [];
+        const roomsNoRefs = rooms.filter(r => !refPoints.some(rp => rp.room_id === r.id));
+        if (roomsNoRefs.length) {
+            warnings.push(`${roomsNoRefs.length} room(s) have no reference points: ${roomsNoRefs.map(r => r.name || '(unnamed)').join(', ')}`);
+        }
+        const usedCodes = [...new Set(refPoints.map(rp => rp.material_code))];
+        const baselineCodes = new Set(baselines.map(b => b.material_code));
+        const missingBaselines = usedCodes.filter(c => !baselineCodes.has(c));
+        if (missingBaselines.length) {
+            warnings.push(`Missing baselines for: ${missingBaselines.join(', ')}`);
+        }
+
+        if (warnings.length) {
+            const proceed = confirm('Warnings:\n• ' + warnings.join('\n• ') + '\n\nConfirm anyway?');
+            if (!proceed) {
+                dryingEventLog.log('CONFIRM_BLOCKED', { reason: 'User cancelled after warnings', warnings });
+                return;
+            }
+        }
+
         if (btn) { btn.disabled = true; btn.textContent = 'Confirming...'; }
         try {
             await api.updateDryingLog(this._state.jobId, { setup_complete: 1 });
+            dryingEventLog.log('CONFIRM_SETUP', { rooms: rooms.length, refPoints: refPoints.length, baselines: baselines.length });
             this.close();
             if (typeof jobDetailTabs !== 'undefined' && jobDetailTabs._loadDryingState) {
                 apexJobs.activeTab = 'drying';
@@ -1118,6 +1191,7 @@ const dryingSetup = {
             }
         } catch (err) {
             console.error('Failed to confirm setup:', err);
+            dryingEventLog.log('API_ERROR', { action: 'confirmSetup', error: err.message });
             if (btn) { btn.disabled = false; btn.textContent = 'Confirm Setup'; }
         }
     }

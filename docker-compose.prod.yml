@@ -23,6 +23,8 @@ services:
     restart: unless-stopped
     ports:
       - "4000:3000"
+    volumes:
+      - /root/lyfehub-v2-production-data/uploads:/data/uploads
     environment:
       - DB_HOST=db
       - DB_PORT=5432

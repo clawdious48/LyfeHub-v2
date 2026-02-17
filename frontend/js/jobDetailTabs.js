@@ -1019,7 +1019,8 @@ const jobDetailTabs = {
     async _editDryingSetup(jobId) {
         try {
             await api.updateDryingLog(jobId, { setup_complete: 0 });
-            dryingSetup.open(jobId);
+            await dryingSetup.open(jobId);
+            dryingEventLog.log('WIZARD_REOPEN', { jobId });
         } catch (err) {
             console.error('Failed to reopen setup:', err);
         }

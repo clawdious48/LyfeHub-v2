@@ -47,6 +47,9 @@ EXPOSE 3000
 RUN mkdir -p /data/uploads/tmp && chown -R kanban:kanban /data
 
 # Switch to non-root user
+# Create uploads directory with correct ownership
+RUN mkdir -p /data/uploads/tmp && chown -R kanban:kanban /data
+
 USER kanban
 
 # Health check - hits the API health endpoint
