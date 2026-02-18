@@ -36,6 +36,10 @@
                 <svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
                 Developer
             </button>
+            <button class="settings-tab" data-tab="organization" role="tab">
+                <svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M9 8h1"/><path d="M9 12h1"/><path d="M9 16h1"/><path d="M14 8h1"/><path d="M14 12h1"/><path d="M14 16h1"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/></svg>
+                Organization
+            </button>
             <button class="settings-tab" data-tab="admin" role="tab">
                 <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 Admin
@@ -241,6 +245,48 @@
                 </div>
             </div>
 
+            <div class="settings-section" id="section-organization">
+                <h2 class="settings-section-header">Organization</h2>
+                <div id="org-header-info" style="display:flex;align-items:center;gap:12px;margin-bottom:20px;"></div>
+
+                <div class="admin-toolbar" id="org-toolbar">
+                    <div style="flex:1"><strong id="org-member-count"></strong></div>
+                    <button class="settings-btn-primary" id="org-add-member-btn" style="display:none">
+                        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 5v14M5 12h14"/></svg>
+                        Add Member
+                    </button>
+                </div>
+
+                <div class="admin-user-list" id="org-member-list">
+                    <div class="text-muted" style="padding:24px;text-align:center">Loading members…</div>
+                </div>
+            </div>
+
+            <!-- Add Member Modal -->
+            <div class="confirmation-modal" id="org-add-member-modal">
+                <div class="modal-content" style="max-width:400px">
+                    <div class="modal-title">Add Member</div>
+                    <div class="settings-field-group" style="margin-top:12px">
+                        <label class="settings-field-label" for="org-add-email">Email Address</label>
+                        <input type="email" class="settings-input" id="org-add-email" placeholder="user@example.com" />
+                    </div>
+                    <div class="settings-field-group">
+                        <label class="settings-field-label" for="org-add-role">Role</label>
+                        <select class="settings-select" id="org-add-role">
+                            <option value="field_tech">Field Tech</option>
+                            <option value="estimator">Estimator</option>
+                            <option value="project_manager">Project Manager</option>
+                            <option value="office_coordinator">Office Coordinator</option>
+                            <option value="management">Management</option>
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn-cancel" id="org-add-cancel">Cancel</button>
+                        <button class="settings-btn-primary" id="org-add-confirm">Add Member</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="settings-section" id="section-admin">
                 <h2 class="settings-section-header">Admin</h2>
 
@@ -400,6 +446,7 @@
     <script src="js/settings-security.js"></script>
     <script src="js/settings-system.js"></script>
     <script src="js/settings-admin.js"></script>
+    <script src="js/settings-organization.js"></script>
     <script src="js/settings-developer.js"></script>
     <script>
         // Highlight Settings in bottom nav if applicable

@@ -101,6 +101,13 @@ async function updateMemberRole(orgId, userId, newRole) {
   return getMembership(orgId, userId);
 }
 
+/**
+ * Look up a user by email (case-insensitive)
+ */
+async function getUserByEmail(email) {
+  return await db.getOne('SELECT * FROM users WHERE LOWER(email) = LOWER($1)', [email]);
+}
+
 module.exports = {
   createOrg,
   getOrgById,
@@ -108,7 +115,9 @@ module.exports = {
   addMember,
   removeMember,
   getMembersByOrg,
+  getOrgMembers: getMembersByOrg,
   getMembership,
   getUserOrgRole,
-  updateMemberRole
+  updateMemberRole,
+  getUserByEmail
 };

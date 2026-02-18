@@ -41,23 +41,37 @@ const apexJobs = {
             window.currentUser = {};
         }
 
-        // Fetch org membership for Apex RBAC
-        try {
-            const resp = await fetch('/api/apex-orgs/mine', { credentials: 'include' });
-            if (resp.ok) {
-                const data = await resp.json();
-                window.currentOrg = data.org || null;
-            } else {
-                window.currentOrg = null;
-            }
-        } catch(e) {
-            window.currentOrg = null;
+        // Org membership already fetched in app-init.js — fallback if not yet loaded
+        if (window.__appInitReady) await window.__appInitReady;
+        if (!window.currentOrg) {
+            try {
+                const resp = await fetch('/api/apex-orgs/mine', { credentials: 'include' });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    window.currentOrg = data.org || null;
+                }
+            } catch(e) {}
         }
 
         // Hide the Apex tab if user is not in any org
         if (!window.currentOrg) {
             const apexTab = document.querySelector('.tab[data-tab="apex"]');
             if (apexTab) apexTab.style.display = 'none';
+            // Show no-access message if they still land here (direct URL, bookmark)
+            const apexContent = document.querySelector('main.tab-content[data-tab="apex"]');
+            if (apexContent) {
+                apexContent.innerHTML = `
+                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;text-align:center;padding:2rem;">
+                        <div style="font-size:3rem;margin-bottom:1rem;">🔒</div>
+                        <h2 style="margin:0 0 0.5rem;color:var(--text-primary,#fff);">Organization Access Required</h2>
+                        <p style="color:var(--text-secondary,#999);max-width:400px;">
+                            You need to be added to an organization to access the Apex section.
+                            Contact your administrator to get access.
+                        </p>
+                    </div>
+                `;
+            }
+            return;
         }
 
         this.bindEvents();

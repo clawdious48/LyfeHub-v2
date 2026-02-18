@@ -2066,3 +2066,11 @@
         width: 240px;
     }
 }
+
+/* Organization tab */
+.org-header-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--apex-text-primary, #1a1a2e);
+}
+

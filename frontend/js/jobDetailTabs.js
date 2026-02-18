@@ -258,9 +258,7 @@ const jobDetailTabs = {
                 const typeText = typeBadgeTextColors[noteType] || typeBadgeTextColors.general;
                 const typeLabel = noteType.replace(/_/g, ' ');
                 const authorName = note.author_name || note.author || '';
-                const _delRoles = window.currentUser?.roles || window.currentUser?.role || [];
-                const _delArr = Array.isArray(_delRoles) ? _delRoles : [_delRoles];
-                const canDelete = _delArr.includes('management');
+                const canDelete = typeof canDeleteNote === 'function' ? canDeleteNote() : (window.currentOrg?.role === 'management' || window.currentOrg?.role === 'developer');
                 return `
                     <div class="jdt-note-item" style="border-left: 3px solid var(--neon-cyan)">
                         <div class="jdt-note-header">

@@ -6,7 +6,7 @@
 (function() {
     'use strict';
 
-    const TABS = ['profile', 'security', 'developer', 'admin', 'system'];
+    const TABS = ['profile', 'security', 'developer', 'organization', 'admin', 'system'];
     const ROLE_RESTRICTED = {
         admin: ['developer', 'management', 'office_coordinator'],
         system: ['developer']
@@ -42,6 +42,7 @@
             const data = await res.json();
             const u = data.user || data;
             currentUser = u;
+            window.currentUser = u;
             userRole = Array.isArray(u.role) ? u.role[0] : (u.role || 'field_tech');
             checkRoleVisibility(userRole);
         } catch (e) {

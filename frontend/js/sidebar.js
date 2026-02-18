@@ -249,7 +249,12 @@
   }
 
   /* --- Init --- */
-  function initSidebar() {
+  async function initSidebar() {
+    // Wait for org membership data before rendering
+    if (window.__appInitReady) {
+      try { await window.__appInitReady; } catch(e) {}
+    }
+
     const container = document.getElementById('app-sidebar');
     if (!container) return;
 
@@ -272,8 +277,14 @@
     container.appendChild(profile);
 
     // Main sections (excluding resources — pinned to bottom)
+    // Filter out apex item from areas if user has no org membership
     const sectionsWrap = el('div', { className: 'sidebar-sections' });
-    SECTIONS.filter(sec => sec.id !== 'resources').forEach(sec => sectionsWrap.appendChild(buildSection(sec, state)));
+    SECTIONS.filter(sec => sec.id !== 'resources').map(sec => {
+      if (sec.id === 'areas' && !window.currentOrg) {
+        return { ...sec, items: sec.items.filter(item => item.id !== 'apex') };
+      }
+      return sec;
+    }).forEach(sec => sectionsWrap.appendChild(buildSection(sec, state)));
 
     // Divider
     sectionsWrap.appendChild(el('div', { className: 'sidebar-divider' }));

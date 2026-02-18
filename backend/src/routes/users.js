@@ -60,6 +60,34 @@ router.get('/me', async (req, res) => {
 });
 
 /**
+ * GET /api/users/me/permissions
+ * Get current user's role permissions (any authenticated user)
+ */
+router.get('/me/permissions', async (req, res) => {
+  try {
+    if (req.isSystemUser) {
+      return res.json({ permissions: {} });
+    }
+    const user = await findUserById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const role = user.role || 'field_tech';
+    const rolesDb = require('../db/roles');
+    const roleRecord = await rolesDb.getRoleByName(role);
+    let permissions = {};
+    if (roleRecord) {
+      permissions = typeof roleRecord.permissions === 'string'
+        ? JSON.parse(roleRecord.permissions)
+        : (roleRecord.permissions || {});
+    }
+    res.json({ role, permissions });
+  } catch (err) {
+    console.error('Error fetching user permissions:', err);
+    res.status(500).json({ error: 'Failed to fetch permissions' });
+  }
+});
+
+/**
  * PATCH /api/users/me
  * Update current user profile (name, settings)
  */

@@ -92,7 +92,12 @@
         var itemsContainer = document.createElement('div');
         itemsContainer.className = 'bottom-nav-items';
         
-        NAV_ITEMS.forEach(function(item) {
+        // Filter out apex if user has no org membership
+        var visibleItems = NAV_ITEMS.filter(function(item) {
+            if (item.id === 'apex' && !window.currentOrg) return false;
+            return true;
+        });
+        visibleItems.forEach(function(item) {
             var button = document.createElement('button');
             button.className = 'bottom-nav-item';
             if (item.id === 'capture') button.className += ' bottom-nav-capture';
@@ -658,7 +663,11 @@
     /**
      * Initialize bottom nav when DOM is ready
      */
-    function init() {
+    async function init() {
+        // Wait for org membership data before rendering
+        if (window.__appInitReady) {
+            try { await window.__appInitReady; } catch(e) {}
+        }
         createBottomNav();
         setupTabSync();
         
