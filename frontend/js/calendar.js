@@ -69,6 +69,15 @@ const calendar = {
         // Bind click-drag event handlers to maintain 'this' context
         this.onClickDragMove = this._onClickDragMove.bind(this);
         this.onClickDragEnd = this._onClickDragEnd.bind(this);
+        this.onClickDragTouchMove = (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            this._onClickDragMove({ clientX: touch.clientX, clientY: touch.clientY });
+        };
+        this.onClickDragTouchEnd = (e) => {
+            const touch = e.changedTouches[0];
+            this._onClickDragEnd({ clientX: touch.clientX, clientY: touch.clientY });
+        };
 
         this.bindEvents();
         this.bindCalendarModalEvents();
@@ -109,6 +118,13 @@ const calendar = {
                 const section = header.closest('.calendar-section');
                 section.classList.toggle('collapsed');
             });
+        });
+
+        // Create Event button
+        document.getElementById('calendar-create-event-btn')?.addEventListener('click', () => {
+            if (typeof eventModal !== 'undefined') {
+                eventModal.open({ date: this.formatDateISO(this.currentDate) });
+            }
         });
 
         // Keyboard navigation
@@ -604,11 +620,32 @@ const calendar = {
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
 
+        // Touch equivalents for time picker
+        const onTouchStart = (e) => {
+            const touch = e.touches[0];
+            onMouseDown({ target: document.elementFromPoint(touch.clientX, touch.clientY), clientX: touch.clientX, clientY: touch.clientY, preventDefault: () => {} });
+            if (this.timePickerState.isDragging) e.preventDefault();
+        };
+        const onTouchMove = (e) => {
+            if (!this.timePickerState.isDragging) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            onMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
+        };
+        const onTouchEnd = () => onMouseUp();
+
+        container.addEventListener('touchstart', onTouchStart, { passive: false });
+        document.addEventListener('touchmove', onTouchMove, { passive: false });
+        document.addEventListener('touchend', onTouchEnd);
+
         // Store cleanup function (called when modal closes)
         this._timePickerCleanup = () => {
             container.removeEventListener('mousedown', onMouseDown);
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
+            container.removeEventListener('touchstart', onTouchStart);
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onTouchEnd);
         };
     },
 
@@ -775,6 +812,33 @@ const calendar = {
         popup.querySelector('.time-block-popup-close')?.addEventListener('click', () => this.closeTimeBlockPopup());
         document.getElementById('time-block-create')?.addEventListener('click', () => this.createTimeBlockTask());
 
+        // Type toggle buttons (Task / Event)
+        popup.querySelectorAll('.time-block-type-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                popup.querySelectorAll('.time-block-type-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const type = btn.dataset.type;
+                const body = popup.querySelector('.time-block-popup-body');
+                const footer = popup.querySelector('.time-block-popup-footer');
+                if (type === 'event') {
+                    // Switch to event: hide task UI, open event modal with time range
+                    const state = this.timeBlockPopupState;
+                    if (state) {
+                        const startTime = this.formatMinutesAsTimeString(state.startMinutes);
+                        const endTime = this.formatMinutesAsTimeString(state.endMinutes);
+                        this.closeTimeBlockPopup();
+                        if (typeof eventModal !== 'undefined') {
+                            eventModal.open({ date: state.dateStr, startTime, endTime });
+                        }
+                    }
+                } else {
+                    // Reset to task mode
+                    if (body) body.style.display = '';
+                    if (footer) footer.style.display = '';
+                }
+            });
+        });
+
         // Quick input - enter to create
         document.getElementById('time-block-quick-input')?.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -890,6 +954,15 @@ const calendar = {
 
         // Clear and reset input
         input.value = '';
+
+        // Reset type toggle to Task
+        popup.querySelectorAll('.time-block-type-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.type === 'task');
+        });
+        const body = popup.querySelector('.time-block-popup-body');
+        const footer = popup.querySelector('.time-block-popup-footer');
+        if (body) body.style.display = '';
+        if (footer) footer.style.display = '';
 
         // Render unscheduled task list
         this.renderTimeBlockTaskList();
@@ -1058,6 +1131,8 @@ const calendar = {
         // Add global listeners
         document.addEventListener('mousemove', this.onClickDragMove);
         document.addEventListener('mouseup', this.onClickDragEnd);
+        document.addEventListener('touchmove', this.onClickDragTouchMove, { passive: false });
+        document.addEventListener('touchend', this.onClickDragTouchEnd);
     },
 
     /**
@@ -1194,6 +1269,8 @@ const calendar = {
         // Remove global listeners
         document.removeEventListener('mousemove', this.onClickDragMove);
         document.removeEventListener('mouseup', this.onClickDragEnd);
+        document.removeEventListener('touchmove', this.onClickDragTouchMove);
+        document.removeEventListener('touchend', this.onClickDragTouchEnd);
 
         // Complete the selection
         this.completeClickDrag(e);
@@ -1409,8 +1486,8 @@ const calendar = {
             item.addEventListener('click', () => {
                 const taskId = item.dataset.id;
                 const task = this.findTask(taskId);
-                if (task && typeof taskModal !== 'undefined') {
-                    taskModal.openTask(task);
+                if (task) {
+                    calendar.openItemModal(task);
                 }
             });
 
@@ -1673,13 +1750,15 @@ const calendar = {
                 }
             });
 
-            // Click on cell to potentially add task
+            // Click on cell — open event modal for empty area
             cell.addEventListener('click', (e) => {
-                if (e.target.classList.contains('month-event')) {
-                    // Click on event, open task
-                    const taskId = e.target.dataset.id;
-                    const task = this.findTask(taskId);
-                    if (task) modal.openEdit(task);
+                if (e.target.classList.contains('month-event') || e.target.closest('.month-event')) {
+                    return; // Handled by month-event click handler
+                }
+                // Clicked empty area of cell → open event modal with this date
+                const date = cell.dataset.date;
+                if (date && typeof eventModal !== 'undefined') {
+                    eventModal.open({ date });
                 }
             });
         });
@@ -1690,8 +1769,8 @@ const calendar = {
                 e.stopPropagation();
                 const taskId = event.dataset.id;
                 const task = this.findTask(taskId);
-                if (task && typeof taskModal !== 'undefined') {
-                    taskModal.openTask(task);
+                if (task) {
+                    calendar.openItemModal(task);
                 }
             });
 
@@ -1943,8 +2022,8 @@ const calendar = {
                 e.stopPropagation();
                 const taskId = el.dataset.id;
                 const task = this.findTask(taskId);
-                if (task && typeof taskModal !== 'undefined') {
-                    taskModal.openTask(task);
+                if (task) {
+                    calendar.openItemModal(task);
                 }
             });
 
@@ -1968,8 +2047,8 @@ const calendar = {
                     e.stopPropagation();
                     const taskId = el.dataset.id;
                     const task = this.findTask(taskId);
-                    if (task && typeof taskModal !== 'undefined') {
-                        taskModal.openTask(task);
+                    if (task) {
+                        calendar.openItemModal(task);
                     }
                 });
 
@@ -1989,18 +2068,21 @@ const calendar = {
 
         // Click-drag to create time blocks on empty hour slots
         columnsEl.querySelectorAll('.week-hour-slot').forEach(slot => {
-            slot.addEventListener('mousedown', (e) => {
-                // Only left click
-                if (e.button !== 0) return;
-
+            const handleSlotDrag = (e) => {
                 const column = slot.closest('.week-column');
-                // Read date directly from slot (more reliable than traversing DOM)
                 const dateStr = slot.dataset.date || column.dataset.date;
                 const hour = parseInt(slot.dataset.hour, 10);
-
-                // Get the column for coordinate calculations
-                this.startClickDrag(e, column, dateStr, hour, 0); // No offset - all-day is outside
+                this.startClickDrag(e, column, dateStr, hour, 0);
+            };
+            slot.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                handleSlotDrag(e);
             });
+            slot.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                handleSlotDrag({ clientX: touch.clientX, clientY: touch.clientY, target: e.target });
+            }, { passive: false });
         });
 
         // Drag-and-drop scheduling for tasks from sidebar
@@ -2281,8 +2363,8 @@ const calendar = {
                 e.stopPropagation();
                 const taskId = el.dataset.id;
                 const task = this.findTask(taskId);
-                if (task && typeof taskModal !== 'undefined') {
-                    taskModal.openTask(task);
+                if (task) {
+                    calendar.openItemModal(task);
                 }
             });
 
@@ -2305,8 +2387,8 @@ const calendar = {
                     e.stopPropagation();
                     const taskId = el.dataset.id;
                     const task = this.findTask(taskId);
-                    if (task && typeof taskModal !== 'undefined') {
-                        taskModal.openTask(task);
+                    if (task) {
+                        calendar.openItemModal(task);
                     }
                 });
 
@@ -2357,15 +2439,20 @@ const calendar = {
 
         // Click-drag to create time blocks on empty hour content
         hourGridEl.querySelectorAll('.hour-content').forEach(hourContent => {
-            hourContent.addEventListener('mousedown', (e) => {
-                // Only left click
-                if (e.button !== 0) return;
-
+            const handleHourDrag = (e) => {
                 const hour = parseInt(hourContent.dataset.hour, 10);
                 const dateStr = hourContent.dataset.date;
-
                 this.startClickDrag(e, hourGridEl, dateStr, hour, 0);
+            };
+            hourContent.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                handleHourDrag(e);
             });
+            hourContent.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                handleHourDrag({ clientX: touch.clientX, clientY: touch.clientY, target: e.target });
+            }, { passive: false });
         });
 
         // Drag-and-drop scheduling for tasks from sidebar (Day view)
@@ -2542,6 +2629,12 @@ const calendar = {
                 const edge = handle.dataset.edge;
                 this.startPendingBlockResize(edge, containerEl);
             });
+            handle.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                const edge = handle.dataset.edge;
+                this.startPendingBlockResize(edge, containerEl);
+            }, { passive: false });
         });
 
         // Click on content area confirms (not on handles)
@@ -2573,10 +2666,20 @@ const calendar = {
             this.endPendingBlockResize();
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onTouchEnd);
         };
+        const onTouchMove = (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            this.onPendingBlockResize({ clientX: touch.clientX, clientY: touch.clientY }, containerEl);
+        };
+        const onTouchEnd = () => onMouseUp();
 
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
+        document.addEventListener('touchmove', onTouchMove, { passive: false });
+        document.addEventListener('touchend', onTouchEnd);
     },
 
     /**
@@ -3083,6 +3186,18 @@ const calendar = {
             return `rgba(255, 140, 0, ${alpha})`; // fallback orange
         }
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    },
+
+    /**
+     * Open the appropriate modal for a task or event item
+     */
+    openItemModal(item) {
+        if (!item) return;
+        if (item._type === 'event' && typeof eventModal !== 'undefined') {
+            eventModal.open({ event: item });
+        } else if (typeof taskModal !== 'undefined') {
+            taskModal.openTask(item);
+        }
     },
 
     /**

@@ -779,6 +779,7 @@
                         <button class="calendar-view-btn" data-view="3day">3-Day</button>
                         <button class="calendar-view-btn" data-view="day">Day</button>
                     </div>
+                    <button id="calendar-create-event-btn" class="btn btn-primary btn-small" title="Create Event">+ Event</button>
                 </div>
 
                 <!-- Calendar Views -->
@@ -2072,6 +2073,10 @@
             <div class="time-block-popup-header">
                 <span id="time-block-popup-time">9:00 AM - 10:00 AM</span>
                 <button class="time-block-popup-close" aria-label="Close">&times;</button>
+            </div>
+            <div class="time-block-popup-type-toggle">
+                <button type="button" class="time-block-type-btn active" data-type="task">Task</button>
+                <button type="button" class="time-block-type-btn" data-type="event">Event</button>
             </div>
             <div class="time-block-popup-body">
                 <input type="text" id="time-block-quick-input" class="time-block-quick-input" placeholder="Task title or select existing..." autocomplete="off" />
