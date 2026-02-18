@@ -6,7 +6,7 @@
 (function() {
     'use strict';
 
-    const TABS = ['profile', 'security', 'developer', 'admin', 'system'];
+    const TABS = ['profile', 'security', 'developer', 'admin', 'system', 'bases'];
     const ROLE_RESTRICTED = {
         admin: ['developer', 'management', 'office_coordinator'],
         system: ['developer']
@@ -99,6 +99,9 @@
         // Trigger tab-specific initialization
         if (tabId === 'developer' && window.SettingsDeveloper) {
             window.SettingsDeveloper.init();
+        }
+        if (tabId === 'bases') {
+            loadSettingsBases();
         }
     }
 
@@ -206,6 +209,48 @@
             }
         }
     })();
+
+    // Load bases list into settings
+    let basesLoaded = false;
+    async function loadSettingsBases() {
+        if (basesLoaded) return;
+        const container = document.getElementById('settings-bases-content');
+        if (!container) return;
+        try {
+            const res = await fetch('/api/bases', { credentials: 'include' });
+            const data = await res.json();
+            const bases = Array.isArray(data) ? data : (data.bases || []);
+            if (bases.length === 0) {
+                container.innerHTML = '<p class="text-muted">No bases yet.</p>';
+            } else {
+                container.innerHTML = '<div class="settings-bases-list">' + bases.map(function(b) {
+                    return '<div class="settings-base-item" data-base-id="' + b.id + '" style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;border:1px solid var(--border-color, #e0e0e0);border-radius:8px;margin-bottom:0.5rem;cursor:pointer;">' +
+                        '<div>' +
+                            '<div style="font-weight:600;">' + (b.name || 'Untitled') + '</div>' +
+                            (b.description ? '<div style="font-size:0.85rem;opacity:0.7;">' + b.description + '</div>' : '') +
+                        '</div>' +
+                        '<span style="font-size:0.8rem;opacity:0.5;">' + (b.record_count || 0) + ' records</span>' +
+                    '</div>';
+                }).join('') + '</div>';
+                // Click to open base
+                container.querySelectorAll('.settings-base-item').forEach(function(item) {
+                    item.addEventListener('click', function() {
+                        const baseId = item.dataset.baseId;
+                        const basesTab = document.querySelector('.tab[data-tab="bases"]');
+                        if (basesTab) {
+                            basesTab.click();
+                            setTimeout(function() {
+                                if (window.openBase) window.openBase(baseId);
+                            }, 200);
+                        }
+                    });
+                });
+            }
+            basesLoaded = true;
+        } catch (e) {
+            container.innerHTML = '<p class="text-muted">Failed to load bases.</p>';
+        }
+    }
 
     // Expose API
     window.Settings = {
