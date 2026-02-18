@@ -1302,21 +1302,33 @@ const calendar = {
     },
 
     /**
-     * Update sidebar scheduled tasks list
+     * Update sidebar scheduled tasks list (includes calendar events)
      */
     updateSidebarScheduled() {
         const container = document.getElementById('scheduled-tasks-list');
         const count = document.getElementById('scheduled-count');
 
-        if (count) count.textContent = this.scheduledTasks.length;
+        // Merge scheduled tasks and calendar events for sidebar
+        const allScheduled = [...this.scheduledTasks, ...this.calendarEvents];
+        // Sort by date then time
+        allScheduled.sort((a, b) => {
+            const dateA = a.due_date || a.event_date || '';
+            const dateB = b.due_date || b.event_date || '';
+            if (dateA !== dateB) return dateA.localeCompare(dateB);
+            const timeA = a.due_time || a.start_time || '';
+            const timeB = b.due_time || b.start_time || '';
+            return timeA.localeCompare(timeB);
+        });
+
+        if (count) count.textContent = allScheduled.length;
         if (!container) return;
 
-        if (this.scheduledTasks.length === 0) {
-            container.innerHTML = '<div class="calendar-task-empty">No scheduled tasks</div>';
+        if (allScheduled.length === 0) {
+            container.innerHTML = '<div class="calendar-task-empty">No scheduled items</div>';
             return;
         }
 
-        container.innerHTML = this.scheduledTasks.map(task => this.renderSidebarTask(task, true)).join('');
+        container.innerHTML = allScheduled.map(task => this.renderSidebarTask(task, true)).join('');
         this.bindSidebarTaskEvents(container);
     },
 
@@ -1347,23 +1359,39 @@ const calendar = {
         const isImportant = task.important;
         let timeDisplay = '';
 
-        if (isScheduled && task.due_date) {
-            const date = new Date(task.due_date + 'T00:00:00');
+        // Support both task fields (due_date/due_time) and event fields (event_date/start_time)
+        const itemDate = task.due_date || task.event_date;
+        const itemTime = task.due_time || task.start_time;
+        const itemTimeEnd = task.due_time_end || task.end_time;
+
+        if (isScheduled && itemDate) {
+            const date = new Date(itemDate + 'T00:00:00');
             const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-            if (task.due_time) {
-                const timeStr = task.due_time_end
-                    ? `${this.formatTime(task.due_time)} - ${this.formatTime(task.due_time_end)}`
-                    : this.formatTime(task.due_time);
+            if (itemTime) {
+                const timeStr = itemTimeEnd
+                    ? `${this.formatTime(itemTime)} - ${this.formatTime(itemTimeEnd)}`
+                    : this.formatTime(itemTime);
                 timeDisplay = `${dateStr} ${timeStr}`;
             } else {
                 timeDisplay = dateStr;
             }
         }
 
+        const isEvent = task._type === 'event';
+        const color = this.getItemColor(task);
+        let indicator;
+        if (isImportant) {
+            indicator = '<span class="important-star">★</span>';
+        } else if (isEvent) {
+            indicator = `<span class="sidebar-event-dot" style="background:${color}"></span>`;
+        } else {
+            indicator = '<span class="sidebar-task-checkbox">☐</span>';
+        }
+
         return `
-            <div class="calendar-task-item${isImportant ? ' important' : ''}" data-id="${task.id}" draggable="true">
-                ${isImportant ? '<span class="important-star">★</span>' : '<span class="task-bullet"></span>'}
+            <div class="calendar-task-item${isImportant ? ' important' : ''}${isEvent ? ' event-type' : ''}" data-id="${task.id}" draggable="true">
+                ${indicator}
                 <div class="calendar-task-info">
                     <div class="calendar-task-title">${this.escapeHtml(task.title)}</div>
                     ${timeDisplay ? `<div class="calendar-task-time">${timeDisplay}</div>` : ''}
@@ -1588,7 +1616,16 @@ const calendar = {
 
         const eventsHtml = dayTasks.slice(0, 3).map(task => {
             const importantClass = task.important ? ' important' : '';
-            return `<div class="month-event${importantClass}" data-id="${task.id}" title="${this.escapeHtml(task.title)}" draggable="true">${this.escapeHtml(task.title)}</div>`;
+            const isEvent = task._type === 'event';
+            const typeClass = isEvent ? ' event-type' : ' task-type';
+            const color = this.getItemColor(task);
+            const indicator = isEvent
+                ? `<span class="month-event-dot" style="background:${color}"></span>`
+                : `<span class="month-task-checkbox">☐</span>`;
+            const borderStyle = isEvent
+                ? `border-left-color:${color};background:${this.hexToRgba(color, 0.15)}`
+                : `border-left-color:${color};border-left-style:dashed;background:${this.hexToRgba(color, 0.1)}`;
+            return `<div class="month-event${importantClass}${typeClass}" data-id="${task.id}" title="${this.escapeHtml(task.title)}" draggable="true" style="${borderStyle}">${indicator}${this.escapeHtml(task.title)}</div>`;
         }).join('');
 
         const moreCount = dayTasks.length - 3;
@@ -1803,58 +1840,92 @@ const calendar = {
             const column = columnsEl.querySelector(`.week-column[data-date="${dateStr}"]`);
             const allDayCell = allDayCellsEl?.querySelector(`.week-all-day-cell[data-date="${dateStr}"]`);
 
+            const timedItems = [];
+
             dayTasks.forEach(task => {
                 if (!task.due_time) {
-                    // No time specified - show in frozen all-day row
                     if (allDayCell) {
+                        const isEvent = task._type === 'event';
+                        const color = this.getItemColor(task);
                         const el = document.createElement('div');
-                        el.className = `all-day-event${task.important ? ' important' : ''}`;
+                        el.className = `all-day-event${task.important ? ' important' : ''}${isEvent ? ' event-type' : ' task-type'}`;
                         el.dataset.id = task.id;
                         el.draggable = true;
+                        el.style.borderLeftColor = color;
+                        el.style.background = this.hexToRgba(color, 0.15);
+                        if (!isEvent) el.style.borderLeftStyle = 'dashed';
                         el.textContent = task.title;
                         el.title = task.title;
                         allDayCell.appendChild(el);
                     }
-                } else if (column) {
-                    // Timed event - place in column
-                    this.placeTimedTask(column, task);
+                } else {
+                    timedItems.push(task);
                 }
             });
+
+            // Compute overlap and place timed items
+            if (column && timedItems.length > 0) {
+                const overlapData = this.computeOverlapColumns(timedItems);
+                for (const entry of overlapData) {
+                    this.placeTimedTask(column, entry.item, { col: entry.col, totalCols: entry.totalCols });
+                }
+            }
         }
     },
 
     /**
-     * Place a timed task on a column
+     * Place a timed task on a column (with overlap info)
+     * @param {object} overlapInfo - { col, totalCols } from computeOverlapColumns (optional)
      */
-    placeTimedTask(column, task) {
+    placeTimedTask(column, task, overlapInfo) {
         if (!task.due_time) return;
 
         const [startHour, startMin] = task.due_time.split(':').map(Number);
         const startMinutes = startHour * 60 + startMin;
 
-        // Use end time if available, otherwise default 1 hour
         let endMinutes = startMinutes + 60;
         if (task.due_time_end) {
             const [endHour, endMin] = task.due_time_end.split(':').map(Number);
             endMinutes = endHour * 60 + endMin;
         }
 
-        const top = (startMinutes / 60) * 60; // 60px per hour
+        const top = (startMinutes / 60) * 60;
         const height = Math.max(((endMinutes - startMinutes) / 60) * 60, 20);
 
         const timeDisplay = task.due_time_end
             ? `${this.formatTime(task.due_time)} - ${this.formatTime(task.due_time_end)}`
             : this.formatTime(task.due_time);
 
+        const isEvent = task._type === 'event';
+        const typeClass = isEvent ? ' event-type' : ' task-type';
+        const color = this.getItemColor(task);
+
         const block = document.createElement('div');
-        block.className = `time-block${task.important ? ' important' : ''}`;
+        block.className = `time-block${task.important ? ' important' : ''}${typeClass}`;
         block.dataset.id = task.id;
         block.draggable = true;
-        block.style.top = `${top}px`; // No offset - all-day section is now outside columns
+        block.style.top = `${top}px`;
         block.style.height = `${height}px`;
+        block.style.borderLeftColor = color;
+        block.style.background = this.hexToRgba(color, isEvent ? 0.15 : 0.1);
+
+        if (!isEvent) {
+            block.style.borderLeftStyle = 'dashed';
+        }
+
+        // Overlap positioning
+        if (overlapInfo && overlapInfo.totalCols > 1) {
+            const widthPct = 100 / overlapInfo.totalCols;
+            const leftPct = widthPct * overlapInfo.col;
+            block.style.left = `calc(${leftPct}% + 2px)`;
+            block.style.right = 'auto';
+            block.style.width = `calc(${widthPct}% - 4px)`;
+        }
+
+        const checkboxHtml = !isEvent ? '<span class="time-block-checkbox">☐</span> ' : '';
 
         block.innerHTML = `
-            <div class="time-block-title">${this.escapeHtml(task.title)}</div>
+            <div class="time-block-title">${checkboxHtml}${this.escapeHtml(task.title)}</div>
             <div class="time-block-time">${timeDisplay}</div>
         `;
 
@@ -2108,58 +2179,91 @@ const calendar = {
 
         // Place tasks
         const dayTasks = this.getTasksForDate(dateStr);
+        const timedItems = [];
         dayTasks.forEach(task => {
             if (!task.due_time) {
-                // No time - show in all-day section
                 if (allDayEventsEl) {
+                    const isEvent = task._type === 'event';
+                    const color = this.getItemColor(task);
                     const el = document.createElement('div');
-                    el.className = `all-day-event${task.important ? ' important' : ''}`;
+                    el.className = `all-day-event${task.important ? ' important' : ''}${isEvent ? ' event-type' : ' task-type'}`;
                     el.dataset.id = task.id;
                     el.draggable = true;
+                    el.style.borderLeftColor = color;
+                    el.style.background = this.hexToRgba(color, 0.15);
+                    if (!isEvent) el.style.borderLeftStyle = 'dashed';
                     el.textContent = task.title;
                     allDayEventsEl.appendChild(el);
                 }
             } else {
-                // Timed event
-                this.placeTimedTaskOnDayView(hourGridEl, task);
+                timedItems.push(task);
             }
         });
+
+        // Compute overlap and place timed items
+        if (timedItems.length > 0) {
+            const overlapData = this.computeOverlapColumns(timedItems);
+            for (const entry of overlapData) {
+                this.placeTimedTaskOnDayView(hourGridEl, entry.item, { col: entry.col, totalCols: entry.totalCols });
+            }
+        }
 
         this.bindDayViewEvents(hourGridEl, allDayEventsEl);
     },
 
     /**
-     * Place a timed task on day view
+     * Place a timed task on day view (with overlap info)
      */
-    placeTimedTaskOnDayView(hourGridEl, task) {
+    placeTimedTaskOnDayView(hourGridEl, task, overlapInfo) {
         if (!task.due_time) return;
 
         const [startHour, startMin] = task.due_time.split(':').map(Number);
         const startMinutes = startHour * 60 + startMin;
 
-        // Use end time if available, otherwise default 1 hour
         let endMinutes = startMinutes + 60;
         if (task.due_time_end) {
             const [endHour, endMin] = task.due_time_end.split(':').map(Number);
             endMinutes = endHour * 60 + endMin;
         }
 
-        const top = (startMinutes / 60) * 60; // 60px per hour, absolute within grid
+        const top = (startMinutes / 60) * 60;
         const height = Math.max(((endMinutes - startMinutes) / 60) * 60, 20);
 
         const timeDisplay = task.due_time_end
             ? `${this.formatTime(task.due_time)} - ${this.formatTime(task.due_time_end)}`
             : this.formatTime(task.due_time);
 
+        const isEvent = task._type === 'event';
+        const typeClass = isEvent ? ' event-type' : ' task-type';
+        const color = this.getItemColor(task);
+
         const block = document.createElement('div');
-        block.className = `time-block${task.important ? ' important' : ''}`;
+        block.className = `time-block${task.important ? ' important' : ''}${typeClass}`;
         block.dataset.id = task.id;
         block.draggable = true;
         block.style.top = `${top}px`;
         block.style.height = `${height}px`;
+        block.style.borderLeftColor = color;
+        block.style.background = this.hexToRgba(color, isEvent ? 0.15 : 0.1);
+
+        if (!isEvent) {
+            block.style.borderLeftStyle = 'dashed';
+        }
+
+        // Day view overlap: positioned within the hour-content area (after 60px label)
+        if (overlapInfo && overlapInfo.totalCols > 1) {
+            const contentWidth = 100; // percentage of hour-content
+            const widthPct = contentWidth / overlapInfo.totalCols;
+            const leftPct = widthPct * overlapInfo.col;
+            block.style.left = `calc(60px + ${leftPct}% - ${leftPct * 0.6}px + 2px)`;
+            block.style.right = 'auto';
+            block.style.width = `calc(${widthPct}% - ${widthPct * 0.6}px - 4px)`;
+        }
+
+        const checkboxHtml = !isEvent ? '<span class="time-block-checkbox">☐</span> ' : '';
 
         block.innerHTML = `
-            <div class="time-block-title">${this.escapeHtml(task.title)}</div>
+            <div class="time-block-title">${checkboxHtml}${this.escapeHtml(task.title)}</div>
             <div class="time-block-time">${timeDisplay}</div>
         `;
 
@@ -2757,6 +2861,99 @@ const calendar = {
     },
 
     // ==================
+    // OVERLAP ALGORITHM
+    // ==================
+
+    /**
+     * Compute overlap columns for a list of timed items.
+     * Returns array of { item, col, totalCols } objects.
+     */
+    computeOverlapColumns(items) {
+        if (!items.length) return [];
+
+        // Parse start/end minutes for each item
+        const parsed = items.map(item => {
+            const [sh, sm] = item.due_time.split(':').map(Number);
+            const startMin = sh * 60 + sm;
+            let endMin = startMin + 60;
+            if (item.due_time_end) {
+                const [eh, em] = item.due_time_end.split(':').map(Number);
+                endMin = eh * 60 + em;
+            }
+            return { item, startMin, endMin, col: 0 };
+        });
+
+        // Sort by start time, then by longer duration first
+        parsed.sort((a, b) => a.startMin - b.startMin || (b.endMin - b.startMin) - (a.endMin - a.startMin));
+
+        // Greedy column assignment
+        // columns[i] = end time of the last item placed in column i
+        const columns = [];
+        for (const p of parsed) {
+            let placed = false;
+            for (let c = 0; c < columns.length; c++) {
+                if (columns[c] <= p.startMin) {
+                    p.col = c;
+                    columns[c] = p.endMin;
+                    placed = true;
+                    break;
+                }
+            }
+            if (!placed) {
+                p.col = columns.length;
+                columns.push(p.endMin);
+            }
+        }
+
+        // Now determine the max overlapping columns for each connected group
+        // Two items are in the same group if they overlap transitively
+        const totalCols = columns.length;
+
+        // Simple approach: for each item, totalCols = columns.length (max concurrent)
+        // More accurate: find connected components. Let's do the simple version.
+        // Actually let's do connected components for correctness.
+        const groups = []; // array of arrays of parsed items
+        const visited = new Set();
+
+        for (let i = 0; i < parsed.length; i++) {
+            if (visited.has(i)) continue;
+            const group = [i];
+            visited.add(i);
+            const queue = [i];
+            while (queue.length) {
+                const curr = queue.shift();
+                for (let j = 0; j < parsed.length; j++) {
+                    if (visited.has(j)) continue;
+                    // Check overlap between curr and j
+                    if (parsed[curr].startMin < parsed[j].endMin && parsed[j].startMin < parsed[curr].endMin) {
+                        visited.add(j);
+                        group.push(j);
+                        queue.push(j);
+                    }
+                }
+            }
+            groups.push(group);
+        }
+
+        // For each group, find max col + 1
+        for (const group of groups) {
+            const maxCol = Math.max(...group.map(i => parsed[i].col)) + 1;
+            for (const i of group) {
+                parsed[i].totalCols = maxCol;
+            }
+        }
+
+        return parsed;
+    },
+
+    /**
+     * Get the display color for an item (event or task)
+     */
+    getItemColor(item) {
+        return item.calendar_color || '#FF8C00';
+    },
+
+    // ==================
     // HELPER FUNCTIONS
     // ==================
 
@@ -2865,6 +3062,27 @@ const calendar = {
         const suffix = hours >= 12 ? 'PM' : 'AM';
         const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
         return mins === 0 ? `${displayHour} ${suffix}` : `${displayHour}:${mins.toString().padStart(2, '0')} ${suffix}`;
+    },
+
+    /**
+     * Convert hex color to rgba string
+     */
+    hexToRgba(hex, alpha) {
+        // Handle shorthand and full hex
+        let r = 0, g = 0, b = 0;
+        if (hex.startsWith('#')) hex = hex.slice(1);
+        if (hex.length === 3) {
+            r = parseInt(hex[0] + hex[0], 16);
+            g = parseInt(hex[1] + hex[1], 16);
+            b = parseInt(hex[2] + hex[2], 16);
+        } else if (hex.length === 6) {
+            r = parseInt(hex.slice(0, 2), 16);
+            g = parseInt(hex.slice(2, 4), 16);
+            b = parseInt(hex.slice(4, 6), 16);
+        } else {
+            return `rgba(255, 140, 0, ${alpha})`; // fallback orange
+        }
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     },
 
     /**

@@ -1754,6 +1754,78 @@
 }
 
 /* =============================================
+   Event vs Task Visual Distinction
+   ============================================= */
+
+/* Month view indicators */
+.month-event-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.month-task-checkbox {
+    font-size: 0.6rem;
+    margin-right: 3px;
+    color: var(--text-muted);
+    vertical-align: middle;
+}
+
+.month-event.task-type {
+    border-left-style: dashed;
+}
+
+/* Time block type distinction */
+.time-block.event-type {
+    border-left-style: solid;
+    border-left-width: 3px;
+}
+
+.time-block.task-type {
+    border-left-style: dashed;
+    border-left-width: 3px;
+}
+
+.time-block-checkbox {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-right: 2px;
+}
+
+/* All-day event type distinction */
+.all-day-event.task-type {
+    border-left-style: dashed;
+}
+
+/* Sidebar indicators */
+.sidebar-event-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 0.35rem;
+}
+
+.sidebar-task-checkbox {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    line-height: 1;
+}
+
+/* Dark mode for event/task distinction */
+[data-theme="dark"] .month-task-checkbox,
+[data-theme="dark"] .time-block-checkbox,
+[data-theme="dark"] .sidebar-task-checkbox {
+    color: rgba(240, 240, 245, 0.5);
+}
+
+/* =============================================
    Event Modal Extras
    ============================================= */
 
