@@ -21,15 +21,26 @@
         } catch { return ''; }
     }
 
+    function formatTime(timeStr) {
+        if (!timeStr) return '';
+        try {
+            const [h, m] = timeStr.split(':');
+            const hour = parseInt(h, 10);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const h12 = hour % 12 || 12;
+            return m === '00' ? `${h12} ${ampm}` : `${h12}:${m} ${ampm}`;
+        } catch { return timeStr; }
+    }
+
     function renderTask(task) {
         const isCompleted = !!task.completed;
-        const dueTime = formatDueTime(task.due_date);
+        const dueTime = task.due_time ? formatTime(task.due_time) : formatDueTime(task.due_date);
         const areaDot = task.area_id
             ? `<span class="my-day-area-dot" style="background:${task.area_color || '#888'}"></span>`
             : '';
 
         return `
-            <div class="my-day-task ${isCompleted ? 'completed' : ''}" data-id="${task.id}">
+            <div class="my-day-task ${isCompleted ? 'completed' : ''}" data-id="${task.id}" data-type="task">
                 <label class="my-day-check-label">
                     <input type="checkbox" class="my-day-checkbox" data-task-id="${task.id}"
                         ${isCompleted ? 'checked' : ''}>
@@ -43,12 +54,18 @@
             </div>`;
     }
 
-    function renderColumn(label, tasks) {
+    function renderEvent(event) {
+        const color = event.calendar_color || event.color || '#00aaff';
+        const timeStr = event.start_time ? formatTime(event.start_time) : '';
+        const endStr = event.end_time ? formatTime(event.end_time) : '';
+        const timeDisplay = timeStr && endStr ? `${timeStr} – ${endStr}` : timeStr || 'All day';
+
         return `
-            <div class="my-day-column">
-                <div class="my-day-column-header">${label} <span class="my-day-count">${tasks.length}</span></div>
-                <div class="my-day-column-tasks">
-                    ${tasks.length ? tasks.map(renderTask).join('') : '<div class="my-day-empty-col">—</div>'}
+            <div class="my-day-task my-day-event" data-id="${event.id}" data-type="event">
+                <span class="my-day-event-dot" style="background:${color}"></span>
+                <div class="my-day-task-info">
+                    <span class="my-day-task-title">${escapeHtml(event.title || event.name || 'Untitled')}</span>
+                    <span class="my-day-due-time">${timeDisplay}</span>
                 </div>
             </div>`;
     }
@@ -59,34 +76,64 @@
 
         try {
             const today = getUserToday();
-            const response = await fetch(`/api/task-items?view=my-day&today=${today}`, {
-                credentials: 'include'
-            });
-            if (!response.ok) throw new Error('Failed to load tasks');
-            const data = await response.json();
-            const allTasks = data.items || [];
 
-            if (allTasks.length === 0) {
+            // Fetch tasks and calendar events in parallel
+            const [tasksRes, eventsRes] = await Promise.allSettled([
+                fetch(`/api/task-items?view=my-day&today=${today}`, { credentials: 'include' }),
+                fetch(`/api/calendar-events?start=${today}&end=${today}`, { credentials: 'include' })
+            ]);
+
+            let allTasks = [];
+            let calEvents = [];
+
+            if (tasksRes.status === 'fulfilled' && tasksRes.value.ok) {
+                const data = await tasksRes.value.json();
+                allTasks = data.items || [];
+            }
+            if (eventsRes.status === 'fulfilled' && eventsRes.value.ok) {
+                const data = await eventsRes.value.json();
+                calEvents = data.events || data || [];
+            }
+
+            if (allTasks.length === 0 && calEvents.length === 0) {
                 container.innerHTML = `
                     <div class="widget-empty">
-                        <p>No tasks for today 🎉</p>
+                        <p>No tasks or events for today 🎉</p>
                         <p class="widget-empty-sub">Enjoy your day or add something new</p>
                     </div>`;
                 return;
             }
 
-            // Sort: incomplete first, then completed
-            const sorted = [
-                ...allTasks.filter(t => !t.completed),
-                ...allTasks.filter(t => t.completed)
-            ];
+            // Build merged timeline: events + tasks sorted by time
+            const timeline = [];
+
+            calEvents.forEach(ev => {
+                timeline.push({
+                    type: 'event',
+                    sortTime: ev.start_time || '00:00',
+                    data: ev
+                });
+            });
+
+            allTasks.forEach(task => {
+                timeline.push({
+                    type: 'task',
+                    sortTime: task.due_time || task.due_date?.substring(11, 16) || 'zz:zz',
+                    data: task
+                });
+            });
+
+            // Sort: timed items first (by time), then untimed
+            timeline.sort((a, b) => (a.sortTime || 'zz:zz').localeCompare(b.sortTime || 'zz:zz'));
 
             container.innerHTML = `
                 <div class="my-day-list">
-                    ${sorted.map(renderTask).join('')}
+                    ${timeline.map(item => 
+                        item.type === 'event' ? renderEvent(item.data) : renderTask(item.data)
+                    ).join('')}
                 </div>`;
 
-            // Bind checkboxes
+            // Bind checkboxes (tasks only)
             container.querySelectorAll('.my-day-checkbox').forEach(cb => {
                 cb.addEventListener('change', async (e) => {
                     e.stopPropagation();
@@ -104,9 +151,8 @@
             });
 
             // Bind task click → open reader modal
-            container.querySelectorAll('.my-day-task').forEach(item => {
+            container.querySelectorAll('.my-day-task[data-type="task"]').forEach(item => {
                 item.addEventListener('click', async (e) => {
-                    // Don't open modal if clicking checkbox
                     if (e.target.closest('.my-day-check-label')) return;
                     const taskId = item.dataset.id;
                     if (!taskId || typeof taskModal === 'undefined') return;

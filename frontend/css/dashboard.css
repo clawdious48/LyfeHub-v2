@@ -315,6 +315,15 @@
 .week-event-item { display: flex; gap: 8px; padding: 6px 0; font-size: 13px; }
 .week-event-time { color: #FF8C00; font-weight: 600; min-width: 50px; }
 .week-event-title { color: #282D30; }
+.event-dot.task-dot { background: #888; }
+.week-event-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.week-task-icon { font-size: 12px; color: #888; flex-shrink: 0; line-height: 1; }
+.week-event-item { align-items: flex-start; }
+
+/* My Day - Event items */
+.my-day-event-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; margin-left: 6px; margin-right: 2px; }
+.my-day-event { padding-left: 0; }
+.my-day-event .my-day-task-info { margin-left: 0; }
 
 /* Quick Notes Widget */
 .quick-notes-list { display: flex; flex-direction: column; gap: 2px; }
@@ -507,6 +516,8 @@
 [data-theme="dark"] .week-event-title {
     color: #f0f0f5;
 }
+[data-theme="dark"] .event-dot.task-dot { background: #aaa; }
+[data-theme="dark"] .week-task-icon { color: #aaa; }
 
 /* Quick notes widget */
 [data-theme="dark"] .quick-note-item:hover {

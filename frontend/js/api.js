@@ -358,6 +358,55 @@ const api = {
     },
 
     // ========================================
+    // CALENDAR EVENTS
+    // ========================================
+
+    /**
+     * Calendar Events: Get events within a date range
+     * @param {string} start - Start date (YYYY-MM-DD)
+     * @param {string} end - End date (YYYY-MM-DD)
+     */
+    async getCalendarEvents(start, end) {
+        return this.request(`/calendar-events?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
+    },
+
+    /**
+     * Calendar Events: Get single event by ID
+     */
+    async getCalendarEvent(id) {
+        return this.request(`/calendar-events/${id}`);
+    },
+
+    /**
+     * Calendar Events: Create new event
+     */
+    async createCalendarEvent(data) {
+        return this.request('/calendar-events', {
+            method: 'POST',
+            body: data,
+        });
+    },
+
+    /**
+     * Calendar Events: Update existing event
+     */
+    async updateCalendarEvent(id, data) {
+        return this.request(`/calendar-events/${id}`, {
+            method: 'PATCH',
+            body: data,
+        });
+    },
+
+    /**
+     * Calendar Events: Delete event
+     */
+    async deleteCalendarEvent(id) {
+        return this.request(`/calendar-events/${id}`, {
+            method: 'DELETE',
+        });
+    },
+
+    // ========================================
     // CALENDARS
     // ========================================
 

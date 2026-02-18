@@ -9,6 +9,7 @@ const calendar = {
     currentView: 'month',
     scheduledTasks: [],
     unscheduledTasks: [],
+    calendarEvents: [],
     calendars: [],
     selectedCalendarIds: [], // Track which calendars are selected for filtering
     isInitialized: false,
@@ -184,7 +185,8 @@ const calendar = {
         await Promise.all([
             this.loadCalendars(),
             this.loadScheduledTasks(),
-            this.loadUnscheduledTasks()
+            this.loadUnscheduledTasks(),
+            this.loadCalendarEvents()
         ]);
         this.updateTotalTasksCount();
         this.render();
@@ -1215,7 +1217,7 @@ const calendar = {
         try {
             // Always load all scheduled tasks for sidebar (no calendar filter)
             const response = await api.getScheduledTaskItems(null);
-            this.scheduledTasks = response.items || [];
+            this.scheduledTasks = (response.items || []).map(t => ({ ...t, _type: 'task' }));
             this.updateSidebarScheduled();
         } catch (err) {
             console.error('Failed to load scheduled tasks:', err);
@@ -1230,11 +1232,73 @@ const calendar = {
         try {
             // Always load all unscheduled tasks for sidebar (no calendar filter)
             const response = await api.getUnscheduledTaskItems(null);
-            this.unscheduledTasks = response.items || [];
+            this.unscheduledTasks = (response.items || []).map(t => ({ ...t, _type: 'task' }));
             this.updateSidebarUnscheduled();
         } catch (err) {
             console.error('Failed to load unscheduled tasks:', err);
         }
+    },
+
+    /**
+     * Load calendar events for the currently visible date range
+     */
+    async loadCalendarEvents() {
+        try {
+            const { start, end } = this.getVisibleDateRange();
+            const response = await api.getCalendarEvents(start, end);
+            this.calendarEvents = (response.events || []).map(ev => ({ ...ev, _type: 'event' }));
+        } catch (err) {
+            console.error('Failed to load calendar events:', err);
+        }
+    },
+
+    /**
+     * Get the visible date range for the current view
+     * @returns {{ start: string, end: string }} ISO date strings
+     */
+    getVisibleDateRange() {
+        const year = this.currentDate.getFullYear();
+        const month = this.currentDate.getMonth();
+        let start, end;
+
+        switch (this.currentView) {
+            case 'month': {
+                // Month view shows up to 6 weeks (prev month days through next month days)
+                const firstDay = new Date(year, month, 1);
+                const startDay = firstDay.getDay(); // 0 = Sunday
+                start = new Date(year, month, 1 - startDay);
+                end = new Date(start);
+                end.setDate(end.getDate() + 42); // 6 weeks
+                break;
+            }
+            case 'week': {
+                start = this.getWeekStart(7);
+                end = new Date(start);
+                end.setDate(end.getDate() + 7);
+                break;
+            }
+            case '3day': {
+                start = this.getWeekStart(3);
+                end = new Date(start);
+                end.setDate(end.getDate() + 3);
+                break;
+            }
+            case 'day': {
+                start = new Date(this.currentDate);
+                end = new Date(this.currentDate);
+                end.setDate(end.getDate() + 1);
+                break;
+            }
+            default: {
+                start = new Date(year, month, 1);
+                end = new Date(year, month + 1, 0);
+            }
+        }
+
+        return {
+            start: this.formatDateISO(start),
+            end: this.formatDateISO(end)
+        };
     },
 
     /**
@@ -1337,11 +1401,12 @@ const calendar = {
     },
 
     /**
-     * Find a task by ID from either list
+     * Find a task or event by ID from any list
      */
     findTask(id) {
         return this.scheduledTasks.find(t => t.id === id) ||
-               this.unscheduledTasks.find(t => t.id === id);
+               this.unscheduledTasks.find(t => t.id === id) ||
+               this.calendarEvents.find(t => t.id === id);
     },
 
     /**
@@ -1398,6 +1463,9 @@ const calendar = {
     render() {
         this.updateTitle();
 
+        // Reload calendar events for new visible date range
+        this.loadCalendarEvents();
+
         switch (this.currentView) {
             case 'month':
                 this.renderMonthView();
@@ -1415,6 +1483,11 @@ const calendar = {
 
         // Update current time indicator after rendering
         this.updateTimeIndicator();
+
+        // Auto-scroll to current time on time-based views
+        if (['day', 'week', '3day'].includes(this.currentView)) {
+            this.scrollToCurrentTime();
+        }
     },
 
     /**
@@ -1701,7 +1774,7 @@ const calendar = {
 
             let slotsHtml = '';
             for (let hour = 0; hour < 24; hour++) {
-                slotsHtml += `<div class="week-hour-slot" data-hour="${hour}"></div>`;
+                slotsHtml += `<div class="week-hour-slot" data-hour="${hour}" data-date="${dateStr}"></div>`;
             }
 
             columnsHtml += `
@@ -1850,7 +1923,8 @@ const calendar = {
                 if (e.button !== 0) return;
 
                 const column = slot.closest('.week-column');
-                const dateStr = column.dataset.date;
+                // Read date directly from slot (more reliable than traversing DOM)
+                const dateStr = slot.dataset.date || column.dataset.date;
                 const hour = parseInt(slot.dataset.hour, 10);
 
                 // Get the column for coordinate calculations
@@ -2070,10 +2144,7 @@ const calendar = {
             endMinutes = endHour * 60 + endMin;
         }
 
-        const hourRow = hourGridEl.querySelector(`.hour-content[data-hour="${startHour}"]`);
-        if (!hourRow) return;
-
-        const topOffset = (startMin / 60) * 60; // Position within the hour
+        const top = (startMinutes / 60) * 60; // 60px per hour, absolute within grid
         const height = Math.max(((endMinutes - startMinutes) / 60) * 60, 20);
 
         const timeDisplay = task.due_time_end
@@ -2084,7 +2155,7 @@ const calendar = {
         block.className = `time-block${task.important ? ' important' : ''}`;
         block.dataset.id = task.id;
         block.draggable = true;
-        block.style.top = `${topOffset}px`;
+        block.style.top = `${top}px`;
         block.style.height = `${height}px`;
 
         block.innerHTML = `
@@ -2092,8 +2163,8 @@ const calendar = {
             <div class="time-block-time">${timeDisplay}</div>
         `;
 
-        hourRow.style.position = 'relative';
-        hourRow.appendChild(block);
+        hourGridEl.style.position = 'relative';
+        hourGridEl.appendChild(block);
     },
 
     /**
@@ -2640,6 +2711,28 @@ const calendar = {
     },
 
     /**
+     * Auto-scroll the view so current time is visible
+     */
+    scrollToCurrentTime() {
+        const now = new Date();
+        const totalMinutes = now.getHours() * 60 + now.getMinutes();
+        // Scroll so current time is roughly 1/3 from top
+        const scrollTarget = Math.max(0, totalMinutes - 200);
+
+        let scrollContainer = null;
+        if (this.currentView === 'day') {
+            scrollContainer = document.querySelector('.calendar-view[data-view="day"] .day-body');
+        } else {
+            const viewKey = this.currentView === '3day' ? '3day' : 'week';
+            scrollContainer = document.querySelector(`.calendar-view[data-view="${viewKey}"] .week-body`);
+        }
+
+        if (scrollContainer) {
+            scrollContainer.scrollTop = scrollTarget;
+        }
+    },
+
+    /**
      * Update time indicator in the time picker modal
      */
     updateTimePickerIndicator() {
@@ -2685,12 +2778,21 @@ const calendar = {
     },
 
     /**
-     * Get tasks for a specific date (filtered by selected calendars)
+     * Get tasks and events for a specific date (filtered by selected calendars)
      */
     getTasksForDate(dateStr) {
-        return this.scheduledTasks.filter(task =>
+        const tasks = this.scheduledTasks.filter(task =>
             task.due_date === dateStr && this.taskMatchesSelectedCalendars(task)
         );
+
+        // Include calendar events for this date
+        const events = this.calendarEvents.filter(ev => {
+            // Match events by event_date (or start_date depending on schema)
+            const evDate = ev.event_date || ev.start_date;
+            return evDate === dateStr;
+        });
+
+        return [...tasks, ...events];
     },
 
     /**

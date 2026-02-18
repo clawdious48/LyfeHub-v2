@@ -1427,6 +1427,68 @@
         </div>
     </div>
 
+    <!-- Event Modal (Calendar Events) -->
+    <div id="event-modal" class="modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2 id="event-modal-title">New Event</h2>
+                <button class="modal-close" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="event-title">Title</label>
+                    <input type="text" id="event-title" placeholder="Event title" required />
+                </div>
+                <div class="form-group">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="event-all-day" />
+                        <span>All day</span>
+                    </label>
+                </div>
+                <div class="form-group form-row">
+                    <div class="form-col">
+                        <label for="event-start-date">Start</label>
+                        <input type="date" id="event-start-date" />
+                    </div>
+                    <div class="form-col event-time-field">
+                        <label for="event-start-time">&nbsp;</label>
+                        <input type="time" id="event-start-time" value="09:00" />
+                    </div>
+                </div>
+                <div class="form-group form-row">
+                    <div class="form-col">
+                        <label for="event-end-date">End</label>
+                        <input type="date" id="event-end-date" />
+                    </div>
+                    <div class="form-col event-time-field">
+                        <label for="event-end-time">&nbsp;</label>
+                        <input type="time" id="event-end-time" value="10:00" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="event-calendar">Calendar</label>
+                    <select id="event-calendar" class="form-input"></select>
+                </div>
+                <div class="form-group">
+                    <label for="event-location">Location</label>
+                    <input type="text" id="event-location" placeholder="Add location" />
+                </div>
+                <div class="form-group">
+                    <label for="event-description">Description</label>
+                    <textarea id="event-description" placeholder="Add description" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="event-delete-btn" class="btn btn-danger" style="display:none;">Delete</button>
+                <div class="modal-footer-right">
+                    <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+                    <button type="button" id="event-save-btn" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Project Modal -->
     <div id="task-modal" class="modal">
         <div class="modal-backdrop"></div>
@@ -2510,6 +2572,7 @@
     <script src="js/base-views.js"></script>
     <script src="js/people.js"></script>
     <script src="js/calendar.js"></script>
+    <script src="js/event-modal.js"></script>
     <script src="js/apex-jobs.js"></script>
     <script src="js/apex-inventory.js"></script>
     <script src="js/table-cards.js"></script>
