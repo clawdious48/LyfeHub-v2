@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS task_items (
   list_id TEXT,
   people_ids TEXT DEFAULT '[]',
   note_ids TEXT DEFAULT '[]',
+  smart_list TEXT DEFAULT 'inbox',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -87,6 +88,7 @@ CREATE INDEX IF NOT EXISTS idx_task_items_status ON task_items(status);
 CREATE INDEX IF NOT EXISTS idx_task_items_priority ON task_items(priority);
 CREATE INDEX IF NOT EXISTS idx_task_items_snooze_date ON task_items(snooze_date);
 CREATE INDEX IF NOT EXISTS idx_task_items_project_id ON task_items(project_id);
+CREATE INDEX IF NOT EXISTS idx_task_items_smart_list ON task_items(smart_list);
 
 -- ============================================
 -- TASK LISTS

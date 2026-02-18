@@ -1,0 +1,144 @@
+const express = require('express');
+const router = express.Router();
+const db = require('../db/pool');
+const { authMiddleware } = require('../middleware/auth');
+const { requireScope } = require('../middleware/scopeAuth');
+
+// Apply auth middleware to all inbox routes
+router.use(authMiddleware);
+
+/**
+ * Compute human-readable age string from a date
+ */
+function formatAge(createdAt) {
+  const now = Date.now();
+  const created = new Date(createdAt).getTime();
+  const diffMs = now - created;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+  return `${Math.floor(diffDays / 30)}mo ago`;
+}
+
+/**
+ * GET /api/inbox
+ * Returns unified inbox items across tasks, notes, and people.
+ * Query params: ?limit=10
+ */
+router.get('/', requireScope('tasks', 'read'), async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const limit = parseInt(req.query.limit) || 10;
+
+    // Query all three sources in parallel
+    const [tasks, notes, people] = await Promise.all([
+      // Tasks: smart_list = 'inbox' and not completed
+      db.getAll(
+        `SELECT id, title, 'task' as type, created_at FROM task_items
+         WHERE user_id = $1 AND smart_list = 'inbox' AND completed = 0
+         ORDER BY created_at ASC`,
+        [userId]
+      ),
+
+      // Notes: no type, no project, no tags
+      db.getAll(
+        `SELECT id, name as title, 'note' as type, created_at FROM notes
+         WHERE user_id = $1
+           AND (type = '' OR type IS NULL)
+           AND (project_id IS NULL OR project_id = '')
+           AND (tags = '[]' OR tags IS NULL OR tags = '')
+         ORDER BY created_at ASC`,
+        [userId]
+      ),
+
+      // People: only name, no email/phone/company/tags
+      db.getAll(
+        `SELECT id, name as title, 'person' as type, created_at FROM people
+         WHERE user_id = $1
+           AND (email = '' OR email IS NULL)
+           AND (phone_mobile = '' OR phone_mobile IS NULL)
+           AND (company = '' OR company IS NULL)
+           AND (tags = '[]' OR tags IS NULL OR tags = '')
+         ORDER BY created_at ASC`,
+        [userId]
+      )
+    ]);
+
+    // Merge and sort by created_at ASC (oldest first — FIFO)
+    const allItems = [...tasks, ...notes, ...people]
+      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+    const totalCount = allItems.length;
+    const items = allItems.slice(0, limit).map(item => ({
+      id: item.id,
+      type: item.type,
+      title: item.title,
+      created_at: item.created_at,
+      age: formatAge(item.created_at)
+    }));
+
+    res.json({
+      items,
+      count: totalCount,
+      limit
+    });
+  } catch (err) {
+    console.error('Inbox API error:', err);
+    res.status(500).json({ error: 'Failed to fetch inbox items' });
+  }
+});
+
+/**
+ * GET /api/inbox/count
+ * Quick count endpoint for badge updates without full data fetch
+ */
+router.get('/count', requireScope('tasks', 'read'), async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const [taskCount, noteCount, personCount] = await Promise.all([
+      db.getOne(
+        `SELECT COUNT(*) as cnt FROM task_items WHERE user_id = $1 AND smart_list = 'inbox' AND completed = 0`,
+        [userId]
+      ),
+      db.getOne(
+        `SELECT COUNT(*) as cnt FROM notes WHERE user_id = $1
+           AND (type = '' OR type IS NULL)
+           AND (project_id IS NULL OR project_id = '')
+           AND (tags = '[]' OR tags IS NULL OR tags = '')`,
+        [userId]
+      ),
+      db.getOne(
+        `SELECT COUNT(*) as cnt FROM people WHERE user_id = $1
+           AND (email = '' OR email IS NULL)
+           AND (phone_mobile = '' OR phone_mobile IS NULL)
+           AND (company = '' OR company IS NULL)
+           AND (tags = '[]' OR tags IS NULL OR tags = '')`,
+        [userId]
+      )
+    ]);
+
+    const total = (parseInt(taskCount?.cnt) || 0)
+                + (parseInt(noteCount?.cnt) || 0)
+                + (parseInt(personCount?.cnt) || 0);
+
+    res.json({
+      count: total,
+      tasks: parseInt(taskCount?.cnt) || 0,
+      notes: parseInt(noteCount?.cnt) || 0,
+      people: parseInt(personCount?.cnt) || 0
+    });
+  } catch (err) {
+    console.error('Inbox count error:', err);
+    res.status(500).json({ error: 'Failed to fetch inbox count' });
+  }
+});
+
+module.exports = router;

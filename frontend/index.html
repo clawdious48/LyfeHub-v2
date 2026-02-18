@@ -117,6 +117,15 @@
                         <div class="widget-skeleton"></div>
                     </div>
                 </div>
+                <div class="dashboard-widget widget-inbox" id="widget-inbox">
+                    <div class="widget-header">
+                        <h2 class="inbox-widget-header">📥 Inbox <span class="inbox-badge empty" id="inbox-badge">0</span></h2>
+                        <a href="#" class="widget-link" id="inbox-process-all">Process All →</a>
+                    </div>
+                    <div class="widget-content" id="inbox-content">
+                        <div class="widget-skeleton"></div>
+                    </div>
+                </div>
                 <div class="dashboard-widget widget-areas" id="widget-areas">
                     <div class="widget-header">
                         <h2>Areas at a Glance</h2>
@@ -2531,6 +2540,8 @@
     <script src="js/widgets/week-calendar.js"></script>
     <script src="js/widgets/quick-notes.js"></script>
     <script src="js/widgets/base-view.js"></script>
+    <script src="js/widgets/inbox.js"></script>
+    <script src="js/inbox-process.js"></script>
     <script>
     // Global: sidebar:navigate triggers actual tab switch
     document.addEventListener('sidebar:navigate', function(e) {
