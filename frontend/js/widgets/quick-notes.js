@@ -76,6 +76,8 @@
         return date.toLocaleDateString();
     }
     
-    document.addEventListener('DOMContentLoaded', loadQuickNotes);
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.getElementById('quick-notes-content')) loadQuickNotes();
+    });
     window.QuickNotesWidget = { refresh: loadQuickNotes };
 })();

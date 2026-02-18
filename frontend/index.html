@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="css/style.css?v=1770688306">
     <link rel="stylesheet" href="css/sidebar.css">
     <link rel="stylesheet" href="css/apex-theme.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@10/dist/gridstack.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@10/dist/gridstack-extra.min.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/dark-mode.css">
     <link rel="stylesheet" href="css/apex-jobs.css">
@@ -86,59 +88,14 @@
     <main class="tab-content active" data-tab="dashboard">
         <div class="dashboard-container">
             <div class="dashboard-header">
-                <h1 class="dashboard-greeting" id="dashboard-greeting">Good morning</h1>
-                <p class="dashboard-date" id="dashboard-date"></p>
+                <div class="dashboard-header-left">
+                    <h1 class="dashboard-greeting" id="dashboard-greeting">Good morning</h1>
+                    <p class="dashboard-date" id="dashboard-date"></p>
+                </div>
+                <button class="dashboard-edit-toggle" id="dashboard-edit-toggle">✏️ <span>Edit</span></button>
             </div>
-            <div class="dashboard-grid">
-                <div class="dashboard-widget widget-my-day" id="widget-my-day">
-                    <div class="widget-header">
-                        <h2>My Day</h2>
-                        <a href="#" class="widget-link" data-navigate="tasks">View All →</a>
-                    </div>
-                    <div class="widget-content" id="my-day-content">
-                        <div class="widget-skeleton"></div>
-                    </div>
-                </div>
-                <div class="dashboard-widget widget-calendar" id="widget-calendar">
-                    <div class="widget-header">
-                        <h2>This Week</h2>
-                        <a href="#" class="widget-link" data-navigate="calendar">View All →</a>
-                    </div>
-                    <div class="widget-content" id="week-calendar-content">
-                        <div class="widget-skeleton"></div>
-                    </div>
-                </div>
-                <div class="dashboard-widget widget-notes" id="widget-notes">
-                    <div class="widget-header">
-                        <h2>Quick Notes</h2>
-                        <a href="#" class="widget-link" data-navigate="notes">View All →</a>
-                    </div>
-                    <div class="widget-content" id="quick-notes-content">
-                        <div class="widget-skeleton"></div>
-                    </div>
-                </div>
-                <div class="dashboard-widget widget-inbox" id="widget-inbox">
-                    <div class="widget-header">
-                        <h2 class="inbox-widget-header">📥 Inbox <span class="inbox-badge empty" id="inbox-badge">0</span></h2>
-                        <a href="#" class="widget-link" id="inbox-process-all">Process All →</a>
-                    </div>
-                    <div class="widget-content" id="inbox-content">
-                        <div class="widget-skeleton"></div>
-                    </div>
-                </div>
-                <div class="dashboard-widget widget-areas" id="widget-areas">
-                    <div class="widget-header">
-                        <h2>Areas at a Glance</h2>
-                    </div>
-                    <div class="widget-content" id="areas-overview-content">
-                        <div class="widget-empty-state" style="text-align: center; padding: 2rem 1rem; color: var(--text-secondary, #888);">
-                            <p style="font-size: 1rem; margin-bottom: 0.5rem;">No areas configured yet</p>
-                            <p style="font-size: 0.85rem; opacity: 0.7;">Areas help you organize everything by life context</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Quick capture moved to mobile nav bar and desktop sidebar -->
+            <div class="grid-stack" id="dashboard-grid"></div>
+            <button class="widget-add-btn" id="widget-add-btn">+ Add Widget</button>
         </div>
     </main>
 
@@ -2535,6 +2492,9 @@
     <script src="js/context-sheet.js"></script>
     <script src="js/bottom-nav.js"></script>
     <script src="js/sheet-content.js"></script>
+    <!-- GridStack.js — dashboard grid framework -->
+    <script src="https://cdn.jsdelivr.net/npm/gridstack@10/dist/gridstack-all.js"></script>
+    <!-- Widget system -->
     <script src="js/widgets/my-day.js"></script>
     <!-- quick-capture.js removed — capture lives in nav bar + sidebar only -->
     <script src="js/widgets/week-calendar.js"></script>
@@ -2542,6 +2502,9 @@
     <script src="js/widgets/base-view.js"></script>
     <script src="js/widgets/inbox.js"></script>
     <script src="js/inbox-process.js"></script>
+    <script src="js/widget-registry.js"></script>
+    <script src="js/widget-picker.js"></script>
+    <script src="js/dashboard-controller.js"></script>
     <script>
     // Global: sidebar:navigate triggers actual tab switch
     document.addEventListener('sidebar:navigate', function(e) {

@@ -12,7 +12,14 @@
 
 /* Header */
 .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 2rem;
+}
+
+.dashboard-header-left {
+    flex: 1;
 }
 
 .dashboard-greeting {
@@ -28,33 +35,99 @@
     margin: 0;
 }
 
-/* Grid */
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-bottom: 2rem;
+/* Edit Mode Toggle */
+.dashboard-edit-toggle {
+    padding: 8px 16px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
-/* Widget Cards */
-.dashboard-widget {
+.dashboard-edit-toggle:hover {
+    border-color: #FF8C00;
+    color: #FF8C00;
+    background: rgba(255, 140, 0, 0.04);
+}
+
+.dashboard-edit-toggle.active {
+    background: #FF8C00;
+    border-color: #FF8C00;
+    color: #fff;
+}
+
+/* ========================================
+   GRIDSTACK OVERRIDES
+   ======================================== */
+
+.grid-stack {
+    min-height: 200px;
+}
+
+/* Widget frame inside grid items */
+.grid-stack-item-content {
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    inset: 6px !important;
+}
+
+.widget-frame {
     background: rgba(255, 255, 255, 0.75);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
     border: 1px solid rgba(255, 140, 0, 0.08);
     border-radius: 16px;
-    padding: 24px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(255, 140, 0, 0.04);
-    transition: all 0.3s ease;
+    transition: box-shadow 0.3s, border-color 0.3s;
 }
 
-.dashboard-widget:hover {
+.widget-frame:hover {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(255, 140, 0, 0.06);
     border-color: rgba(255, 140, 0, 0.15);
-    transform: translateY(-2px);
 }
 
-/* Widget Header */
+.widget-frame-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px 8px;
+    flex-shrink: 0;
+}
+
+.widget-frame-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #111111;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.widget-frame-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.widget-frame-body {
+    flex: 1;
+    padding: 8px 20px 16px;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* Widget Header (kept for backwards compat with existing widget internals) */
 .widget-header {
     display: flex;
     justify-content: space-between;
@@ -83,7 +156,7 @@
 
 /* Widget Content */
 .widget-content {
-    min-height: 120px;
+    min-height: 80px;
 }
 
 /* Skeleton Loading */
@@ -100,58 +173,218 @@
     100% { background-position: -200% 0; }
 }
 
-/* Quick Capture */
-.dashboard-capture {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
-.quick-capture-input {
-    flex: 1;
-    padding: 14px 20px;
-    font-size: 1rem;
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 12px;
-    color: #282D30;
-    outline: none;
-    transition: all 0.3s ease;
-}
-
-.quick-capture-input::placeholder {
-    color: #999;
-}
-
-.quick-capture-input:focus {
-    border-color: #FF8C00;
-    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.12);
-}
-
-.quick-capture-btn {
-    width: 48px;
-    height: 48px;
+/* Remove button (edit mode only) */
+.widget-remove-btn {
+    display: none;
+    width: 24px;
+    height: 24px;
     border: none;
-    border-radius: 12px;
-    background: #FF8C00;
-    color: #fff;
-    font-size: 1.5rem;
+    border-radius: 6px;
+    background: rgba(239, 68, 68, 0.08);
+    color: #dc2626;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    line-height: 1;
+    padding: 0;
+}
+
+.widget-remove-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+/* Config button (for configurable widgets) */
+.widget-config-btn {
+    display: none;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.05);
+    color: #888;
+    font-size: 14px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    line-height: 1;
+    padding: 0;
+}
+
+.widget-config-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+/* Edit mode indicators */
+.dashboard-editing .widget-remove-btn,
+.dashboard-editing .widget-config-btn {
+    display: flex;
+}
+
+.dashboard-editing .widget-frame {
+    border-color: rgba(255, 140, 0, 0.2);
+    border-style: dashed;
+}
+
+.dashboard-editing .grid-stack-item:hover .widget-frame {
+    border-color: #FF8C00;
+    box-shadow: 0 0 0 2px rgba(255, 140, 0, 0.15);
+}
+
+/* GridStack placeholder during drag */
+.grid-stack-placeholder > .placeholder-content {
+    border: 2px dashed #FF8C00 !important;
+    border-radius: 16px !important;
+    background: rgba(255, 140, 0, 0.05) !important;
+}
+
+/* Add Widget Button */
+.widget-add-btn {
+    display: none;
+    width: 100%;
+    padding: 24px;
+    border: 2px dashed rgba(255, 140, 0, 0.2);
+    border-radius: 16px;
+    background: rgba(255, 140, 0, 0.03);
+    color: #FF8C00;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s;
+    margin-top: 12px;
+}
+
+.widget-add-btn:hover {
+    border-color: #FF8C00;
+    background: rgba(255, 140, 0, 0.06);
+    transform: translateY(-1px);
+}
+
+.dashboard-editing .widget-add-btn {
+    display: block;
+}
+
+/* ========================================
+   WIDGET PICKER MODAL
+   ======================================== */
+
+.widget-picker-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
 }
 
-.quick-capture-btn:hover {
-    background: #E07800;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+.widget-picker-overlay.visible {
+    opacity: 1;
+    visibility: visible;
 }
+
+.widget-picker-modal {
+    background: #fff;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 480px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    transform: translateY(20px) scale(0.97);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.widget-picker-overlay.visible .widget-picker-modal {
+    transform: translateY(0) scale(1);
+}
+
+.widget-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.widget-picker-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111;
+    margin: 0;
+}
+
+.widget-picker-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    font-size: 18px;
+    color: #888;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.widget-picker-list {
+    padding: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.widget-picker-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 12px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: #fff;
+}
+
+.widget-picker-item:hover {
+    border-color: #FF8C00;
+    background: rgba(255, 140, 0, 0.04);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 140, 0, 0.1);
+}
+
+.widget-picker-icon {
+    font-size: 28px;
+    line-height: 1;
+}
+
+.widget-picker-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+}
+
+/* Quick Capture Bar */
+.dashboard-capture { display: flex; gap: 8px; margin-top: 24px; padding: 0 4px; }
+.quick-capture-input { flex: 1; padding: 14px 20px; border: 2px solid rgba(0,0,0,0.08); border-radius: 12px; font-size: 15px; background: rgba(255,255,255,0.8); backdrop-filter: blur(8px); transition: border-color 0.2s, box-shadow 0.2s; outline: none; color: #282D30; }
+.quick-capture-input:focus { border-color: #FF8C00; box-shadow: 0 0 0 3px rgba(255,140,0,0.1); }
+.quick-capture-input.capture-success { border-color: #4CAF50; box-shadow: 0 0 0 3px rgba(76,175,80,0.15); }
+.quick-capture-input.capture-error { border-color: #f44336; box-shadow: 0 0 0 3px rgba(244,67,54,0.15); }
+.quick-capture-btn { width: 48px; height: 48px; border-radius: 12px; border: none; background: #FF8C00; color: white; font-size: 24px; font-weight: 700; cursor: pointer; transition: background 0.15s, transform 0.1s; display: flex; align-items: center; justify-content: center; }
+.quick-capture-btn:hover { background: #E07800; transform: scale(1.05); }
+.quick-capture-btn:active { transform: scale(0.95); }
+.quick-capture-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -159,13 +392,16 @@
         padding: 1rem;
     }
 
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-
     .dashboard-greeting {
         font-size: 1.5rem;
+    }
+
+    .dashboard-edit-toggle span {
+        display: none;
+    }
+
+    .widget-picker-list {
+        grid-template-columns: 1fr 1fr;
     }
 }
 
@@ -408,7 +644,40 @@
     color: rgba(240, 240, 245, 0.6);
 }
 
-/* Widget cards */
+/* Edit toggle */
+[data-theme="dark"] .dashboard-edit-toggle {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(240, 240, 245, 0.6);
+}
+
+[data-theme="dark"] .dashboard-edit-toggle:hover {
+    border-color: #FF8C00;
+    color: #FF8C00;
+}
+
+/* Widget frame */
+[data-theme="dark"] .widget-frame {
+    background: rgba(30, 41, 59, 0.75);
+    border-color: rgba(255, 140, 0, 0.12);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .widget-frame:hover {
+    background: rgba(30, 41, 59, 0.85);
+    border-color: rgba(255, 140, 0, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .widget-frame-header h2 {
+    color: #f0f0f5;
+}
+
+[data-theme="dark"] .dashboard-editing .widget-frame {
+    border-color: rgba(255, 140, 0, 0.25);
+}
+
+/* Widget cards (backwards compat) */
 [data-theme="dark"] .dashboard-widget {
     background: rgba(30, 41, 59, 0.75);
     border-color: rgba(255, 140, 0, 0.12);
@@ -424,6 +693,61 @@
 /* Widget header */
 [data-theme="dark"] .widget-header h2 {
     color: #f0f0f5;
+}
+
+/* Add widget button */
+[data-theme="dark"] .widget-add-btn {
+    border-color: rgba(255, 140, 0, 0.15);
+    background: rgba(255, 140, 0, 0.04);
+}
+
+[data-theme="dark"] .widget-add-btn:hover {
+    border-color: #FF8C00;
+    background: rgba(255, 140, 0, 0.08);
+}
+
+/* Widget picker */
+[data-theme="dark"] .widget-picker-modal {
+    background: #1e293b;
+}
+
+[data-theme="dark"] .widget-picker-header {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .widget-picker-header h3 {
+    color: #f0f0f5;
+}
+
+[data-theme="dark"] .widget-picker-close {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(240, 240, 245, 0.6);
+}
+
+[data-theme="dark"] .widget-picker-item {
+    border-color: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] .widget-picker-item:hover {
+    border-color: #FF8C00;
+    background: rgba(255, 140, 0, 0.08);
+}
+
+[data-theme="dark"] .widget-picker-label {
+    color: #f0f0f5;
+}
+
+/* Remove/config buttons */
+[data-theme="dark"] .widget-config-btn {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(240, 240, 245, 0.5);
+}
+
+/* GridStack placeholder */
+[data-theme="dark"] .grid-stack-placeholder > .placeholder-content {
+    border-color: #FF8C00 !important;
+    background: rgba(255, 140, 0, 0.08) !important;
 }
 
 /* Quick capture */

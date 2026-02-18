@@ -127,9 +127,11 @@
         }
     }
 
-    // Initialize
+    // Initialize — only auto-load if #my-day-content exists in DOM already
     document.addEventListener('DOMContentLoaded', () => {
-        loadMyDay();
+        if (document.getElementById('my-day-content')) {
+            loadMyDay();
+        }
         document.addEventListener('sidebar:navigate', (e) => {
             if (e.detail && e.detail.tab === 'dashboard') setTimeout(loadMyDay, 100);
         });

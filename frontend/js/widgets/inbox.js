@@ -90,10 +90,11 @@
         }
     }
 
-    // Initialize
+    // Initialize — only auto-load if #inbox-content exists in DOM already
     document.addEventListener('DOMContentLoaded', () => {
-        loadInbox();
-        // Refresh when navigating back to dashboard
+        if (document.getElementById('inbox-content')) {
+            loadInbox();
+        }
         document.addEventListener('sidebar:navigate', (e) => {
             if (e.detail && e.detail.tab === 'dashboard') setTimeout(loadInbox, 100);
         });
