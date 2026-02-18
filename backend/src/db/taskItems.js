@@ -20,6 +20,10 @@ async function getAllTaskItems(userId, view = 'all', userDate = null) {
 
   console.log(`[getAllTaskItems] view=${view}, userDate=${userDate}, today=${today}, userId=${userId}`);
 
+  // Get today's day of week (0=Sun, 1=Mon, ... 6=Sat) for recurring check
+  const todayDate = new Date(today + 'T00:00:00');
+  const todayDow = todayDate.getDay();
+
   // Handle list: prefix for custom lists
   if (view.startsWith('list:')) {
     const listId = view.substring(5);
@@ -28,23 +32,30 @@ async function getAllTaskItems(userId, view = 'all', userDate = null) {
   } else {
     switch (view) {
       case 'my-day':
-        sql += ` AND due_date = $${paramIdx++}`;
-        params.push(today);
+        // Show: due today, flagged for My Day, recurring today, or overdue — all incomplete
+        sql += ` AND completed = 0 AND (
+          due_date = $${paramIdx++}
+          OR my_day = 1
+          OR (recurring IS NOT NULL AND recurring != '' AND recurring_days::jsonb @> $${paramIdx++}::jsonb)
+          OR (due_date IS NOT NULL AND due_date < $${paramIdx++})
+        )`;
+        params.push(today, JSON.stringify([todayDow]), today);
         break;
       case 'important':
-        sql += ` AND important = 1`;
+        sql += ` AND important = 1 AND completed = 0`;
         break;
       case 'scheduled':
-        sql += ` AND due_date IS NOT NULL`;
+        sql += ` AND due_date IS NOT NULL AND completed = 0`;
         break;
       case 'recurring':
-        sql += ` AND recurring IS NOT NULL AND recurring != ''`;
+        sql += ` AND recurring IS NOT NULL AND recurring != '' AND completed = 0`;
         break;
       case 'completed':
         sql += ` AND completed = 1`;
         break;
       case 'all':
       default:
+        sql += ` AND completed = 0`;
         break;
     }
   }
@@ -296,6 +307,10 @@ async function getTaskItemCounts(userId, userDate = null) {
     today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   }
 
+  // Get today's day of week for recurring check
+  const todayDate = new Date(today + 'T00:00:00');
+  const todayDow = todayDate.getDay();
+
   const counts = {
     'my-day': 0,
     'important': 0,
@@ -307,13 +322,18 @@ async function getTaskItemCounts(userId, userDate = null) {
   const result = await db.getOne(`
     SELECT
       COUNT(*) as total,
-      SUM(CASE WHEN due_date = $1 THEN 1 ELSE 0 END) as my_day,
+      SUM(CASE WHEN (
+        due_date = $1
+        OR my_day = 1
+        OR (recurring IS NOT NULL AND recurring != '' AND recurring_days::jsonb @> $3::jsonb)
+        OR (due_date IS NOT NULL AND due_date < $1)
+      ) THEN 1 ELSE 0 END) as my_day,
       SUM(CASE WHEN important = 1 THEN 1 ELSE 0 END) as important,
       SUM(CASE WHEN due_date IS NOT NULL THEN 1 ELSE 0 END) as scheduled,
       SUM(CASE WHEN recurring IS NOT NULL AND recurring != '' THEN 1 ELSE 0 END) as recurring
     FROM task_items
     WHERE user_id = $2 AND completed = 0
-  `, [today, userId]);
+  `, [today, userId, JSON.stringify([todayDow])]);
 
   if (result) {
     counts['my-day'] = parseInt(result.my_day) || 0;
