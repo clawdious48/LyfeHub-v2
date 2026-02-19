@@ -9,6 +9,7 @@ const calendar = {
     currentView: 'month',
     scheduledTasks: [],
     unscheduledTasks: [],
+    calendarEvents: [],
     calendars: [],
     selectedCalendarIds: [], // Track which calendars are selected for filtering
     isInitialized: false,
@@ -68,6 +69,15 @@ const calendar = {
         // Bind click-drag event handlers to maintain 'this' context
         this.onClickDragMove = this._onClickDragMove.bind(this);
         this.onClickDragEnd = this._onClickDragEnd.bind(this);
+        this.onClickDragTouchMove = (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            this._onClickDragMove({ clientX: touch.clientX, clientY: touch.clientY });
+        };
+        this.onClickDragTouchEnd = (e) => {
+            const touch = e.changedTouches[0];
+            this._onClickDragEnd({ clientX: touch.clientX, clientY: touch.clientY });
+        };
 
         this.bindEvents();
         this.bindCalendarModalEvents();
@@ -108,6 +118,13 @@ const calendar = {
                 const section = header.closest('.calendar-section');
                 section.classList.toggle('collapsed');
             });
+        });
+
+        // Create Event button
+        document.getElementById('calendar-create-event-btn')?.addEventListener('click', () => {
+            if (typeof eventModal !== 'undefined') {
+                eventModal.open({ date: this.formatDateISO(this.currentDate) });
+            }
         });
 
         // Keyboard navigation
@@ -184,7 +201,8 @@ const calendar = {
         await Promise.all([
             this.loadCalendars(),
             this.loadScheduledTasks(),
-            this.loadUnscheduledTasks()
+            this.loadUnscheduledTasks(),
+            this.loadCalendarEvents()
         ]);
         this.updateTotalTasksCount();
         this.render();
@@ -602,11 +620,32 @@ const calendar = {
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
 
+        // Touch equivalents for time picker
+        const onTouchStart = (e) => {
+            const touch = e.touches[0];
+            onMouseDown({ target: document.elementFromPoint(touch.clientX, touch.clientY), clientX: touch.clientX, clientY: touch.clientY, preventDefault: () => {} });
+            if (this.timePickerState.isDragging) e.preventDefault();
+        };
+        const onTouchMove = (e) => {
+            if (!this.timePickerState.isDragging) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            onMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
+        };
+        const onTouchEnd = () => onMouseUp();
+
+        container.addEventListener('touchstart', onTouchStart, { passive: false });
+        document.addEventListener('touchmove', onTouchMove, { passive: false });
+        document.addEventListener('touchend', onTouchEnd);
+
         // Store cleanup function (called when modal closes)
         this._timePickerCleanup = () => {
             container.removeEventListener('mousedown', onMouseDown);
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
+            container.removeEventListener('touchstart', onTouchStart);
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onTouchEnd);
         };
     },
 
@@ -773,6 +812,33 @@ const calendar = {
         popup.querySelector('.time-block-popup-close')?.addEventListener('click', () => this.closeTimeBlockPopup());
         document.getElementById('time-block-create')?.addEventListener('click', () => this.createTimeBlockTask());
 
+        // Type toggle buttons (Task / Event)
+        popup.querySelectorAll('.time-block-type-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                popup.querySelectorAll('.time-block-type-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const type = btn.dataset.type;
+                const body = popup.querySelector('.time-block-popup-body');
+                const footer = popup.querySelector('.time-block-popup-footer');
+                if (type === 'event') {
+                    // Switch to event: hide task UI, open event modal with time range
+                    const state = this.timeBlockPopupState;
+                    if (state) {
+                        const startTime = this.formatMinutesAsTimeString(state.startMinutes);
+                        const endTime = this.formatMinutesAsTimeString(state.endMinutes);
+                        this.closeTimeBlockPopup();
+                        if (typeof eventModal !== 'undefined') {
+                            eventModal.open({ date: state.dateStr, startTime, endTime });
+                        }
+                    }
+                } else {
+                    // Reset to task mode
+                    if (body) body.style.display = '';
+                    if (footer) footer.style.display = '';
+                }
+            });
+        });
+
         // Quick input - enter to create
         document.getElementById('time-block-quick-input')?.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -870,24 +936,43 @@ const calendar = {
         const popupWidth = 320;
         const popupHeight = 350;
 
-        let left = x + 10;
-        let top = y + 10;
+        // Mobile: bottom-sheet style
+        if (viewportWidth <= 768) {
+            popup.style.left = '0';
+            popup.style.right = '0';
+            popup.style.bottom = '0';
+            popup.style.top = 'auto';
+        } else {
+            let left = x + 10;
+            let top = y + 10;
 
-        // Keep within viewport
-        if (left + popupWidth > viewportWidth) {
-            left = x - popupWidth - 10;
-        }
-        if (top + popupHeight > viewportHeight) {
-            top = viewportHeight - popupHeight - 20;
-        }
-        if (left < 10) left = 10;
-        if (top < 10) top = 10;
+            // Keep within viewport
+            if (left + popupWidth > viewportWidth) {
+                left = x - popupWidth - 10;
+            }
+            if (top + popupHeight > viewportHeight) {
+                top = viewportHeight - popupHeight - 20;
+            }
+            if (left < 10) left = 10;
+            if (top < 10) top = 10;
 
-        popup.style.left = `${left}px`;
-        popup.style.top = `${top}px`;
+            popup.style.left = `${left}px`;
+            popup.style.top = `${top}px`;
+            popup.style.right = '';
+            popup.style.bottom = '';
+        }
 
         // Clear and reset input
         input.value = '';
+
+        // Reset type toggle to Task
+        popup.querySelectorAll('.time-block-type-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.type === 'task');
+        });
+        const body = popup.querySelector('.time-block-popup-body');
+        const footer = popup.querySelector('.time-block-popup-footer');
+        if (body) body.style.display = '';
+        if (footer) footer.style.display = '';
 
         // Render unscheduled task list
         this.renderTimeBlockTaskList();
@@ -1056,6 +1141,8 @@ const calendar = {
         // Add global listeners
         document.addEventListener('mousemove', this.onClickDragMove);
         document.addEventListener('mouseup', this.onClickDragEnd);
+        document.addEventListener('touchmove', this.onClickDragTouchMove, { passive: false });
+        document.addEventListener('touchend', this.onClickDragTouchEnd);
     },
 
     /**
@@ -1192,6 +1279,8 @@ const calendar = {
         // Remove global listeners
         document.removeEventListener('mousemove', this.onClickDragMove);
         document.removeEventListener('mouseup', this.onClickDragEnd);
+        document.removeEventListener('touchmove', this.onClickDragTouchMove);
+        document.removeEventListener('touchend', this.onClickDragTouchEnd);
 
         // Complete the selection
         this.completeClickDrag(e);
@@ -1215,7 +1304,7 @@ const calendar = {
         try {
             // Always load all scheduled tasks for sidebar (no calendar filter)
             const response = await api.getScheduledTaskItems(null);
-            this.scheduledTasks = response.items || [];
+            this.scheduledTasks = (response.items || []).map(t => ({ ...t, _type: 'task' }));
             this.updateSidebarScheduled();
         } catch (err) {
             console.error('Failed to load scheduled tasks:', err);
@@ -1230,7 +1319,7 @@ const calendar = {
         try {
             // Always load all unscheduled tasks for sidebar (no calendar filter)
             const response = await api.getUnscheduledTaskItems(null);
-            this.unscheduledTasks = response.items || [];
+            this.unscheduledTasks = (response.items || []).map(t => ({ ...t, _type: 'task' }));
             this.updateSidebarUnscheduled();
         } catch (err) {
             console.error('Failed to load unscheduled tasks:', err);
@@ -1238,21 +1327,95 @@ const calendar = {
     },
 
     /**
-     * Update sidebar scheduled tasks list
+     * Load calendar events for the currently visible date range
+     */
+    async loadCalendarEvents() {
+        try {
+            const { start, end } = this.getVisibleDateRange();
+            const response = await api.getCalendarEvents(start, end);
+            this.calendarEvents = (response.events || []).map(ev => ({ ...ev, _type: 'event' }));
+        } catch (err) {
+            console.error('Failed to load calendar events:', err);
+        }
+    },
+
+    /**
+     * Get the visible date range for the current view
+     * @returns {{ start: string, end: string }} ISO date strings
+     */
+    getVisibleDateRange() {
+        const year = this.currentDate.getFullYear();
+        const month = this.currentDate.getMonth();
+        let start, end;
+
+        switch (this.currentView) {
+            case 'month': {
+                // Month view shows up to 6 weeks (prev month days through next month days)
+                const firstDay = new Date(year, month, 1);
+                const startDay = firstDay.getDay(); // 0 = Sunday
+                start = new Date(year, month, 1 - startDay);
+                end = new Date(start);
+                end.setDate(end.getDate() + 42); // 6 weeks
+                break;
+            }
+            case 'week': {
+                start = this.getWeekStart(7);
+                end = new Date(start);
+                end.setDate(end.getDate() + 7);
+                break;
+            }
+            case '3day': {
+                start = this.getWeekStart(3);
+                end = new Date(start);
+                end.setDate(end.getDate() + 3);
+                break;
+            }
+            case 'day': {
+                start = new Date(this.currentDate);
+                end = new Date(this.currentDate);
+                end.setDate(end.getDate() + 1);
+                break;
+            }
+            default: {
+                start = new Date(year, month, 1);
+                end = new Date(year, month + 1, 0);
+            }
+        }
+
+        return {
+            start: this.formatDateISO(start),
+            end: this.formatDateISO(end)
+        };
+    },
+
+    /**
+     * Update sidebar scheduled tasks list (includes calendar events)
      */
     updateSidebarScheduled() {
         const container = document.getElementById('scheduled-tasks-list');
         const count = document.getElementById('scheduled-count');
 
-        if (count) count.textContent = this.scheduledTasks.length;
+        // Merge scheduled tasks and calendar events for sidebar
+        const allScheduled = [...this.scheduledTasks, ...this.calendarEvents];
+        // Sort by date then time
+        allScheduled.sort((a, b) => {
+            const dateA = a.due_date || a.event_date || '';
+            const dateB = b.due_date || b.event_date || '';
+            if (dateA !== dateB) return dateA.localeCompare(dateB);
+            const timeA = a.due_time || a.start_time || '';
+            const timeB = b.due_time || b.start_time || '';
+            return timeA.localeCompare(timeB);
+        });
+
+        if (count) count.textContent = allScheduled.length;
         if (!container) return;
 
-        if (this.scheduledTasks.length === 0) {
-            container.innerHTML = '<div class="calendar-task-empty">No scheduled tasks</div>';
+        if (allScheduled.length === 0) {
+            container.innerHTML = '<div class="calendar-task-empty">No scheduled items</div>';
             return;
         }
 
-        container.innerHTML = this.scheduledTasks.map(task => this.renderSidebarTask(task, true)).join('');
+        container.innerHTML = allScheduled.map(task => this.renderSidebarTask(task, true)).join('');
         this.bindSidebarTaskEvents(container);
     },
 
@@ -1283,23 +1446,39 @@ const calendar = {
         const isImportant = task.important;
         let timeDisplay = '';
 
-        if (isScheduled && task.due_date) {
-            const date = new Date(task.due_date + 'T00:00:00');
+        // Support both task fields (due_date/due_time) and event fields (event_date/start_time)
+        const itemDate = task.due_date || task.event_date;
+        const itemTime = task.due_time || task.start_time;
+        const itemTimeEnd = task.due_time_end || task.end_time;
+
+        if (isScheduled && itemDate) {
+            const date = new Date(itemDate + 'T00:00:00');
             const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-            if (task.due_time) {
-                const timeStr = task.due_time_end
-                    ? `${this.formatTime(task.due_time)} - ${this.formatTime(task.due_time_end)}`
-                    : this.formatTime(task.due_time);
+            if (itemTime) {
+                const timeStr = itemTimeEnd
+                    ? `${this.formatTime(itemTime)} - ${this.formatTime(itemTimeEnd)}`
+                    : this.formatTime(itemTime);
                 timeDisplay = `${dateStr} ${timeStr}`;
             } else {
                 timeDisplay = dateStr;
             }
         }
 
+        const isEvent = task._type === 'event';
+        const color = this.getItemColor(task);
+        let indicator;
+        if (isImportant) {
+            indicator = '<span class="important-star">★</span>';
+        } else if (isEvent) {
+            indicator = `<span class="sidebar-event-dot" style="background:${color}"></span>`;
+        } else {
+            indicator = '<span class="sidebar-task-checkbox">☐</span>';
+        }
+
         return `
-            <div class="calendar-task-item${isImportant ? ' important' : ''}" data-id="${task.id}" draggable="true">
-                ${isImportant ? '<span class="important-star">★</span>' : '<span class="task-bullet"></span>'}
+            <div class="calendar-task-item${isImportant ? ' important' : ''}${isEvent ? ' event-type' : ''}" data-id="${task.id}" draggable="true">
+                ${indicator}
                 <div class="calendar-task-info">
                     <div class="calendar-task-title">${this.escapeHtml(task.title)}</div>
                     ${timeDisplay ? `<div class="calendar-task-time">${timeDisplay}</div>` : ''}
@@ -1317,8 +1496,8 @@ const calendar = {
             item.addEventListener('click', () => {
                 const taskId = item.dataset.id;
                 const task = this.findTask(taskId);
-                if (task && typeof taskModal !== 'undefined') {
-                    taskModal.openTask(task);
+                if (task) {
+                    calendar.openItemModal(task);
                 }
             });
 
@@ -1337,11 +1516,12 @@ const calendar = {
     },
 
     /**
-     * Find a task by ID from either list
+     * Find a task or event by ID from any list
      */
     findTask(id) {
         return this.scheduledTasks.find(t => t.id === id) ||
-               this.unscheduledTasks.find(t => t.id === id);
+               this.unscheduledTasks.find(t => t.id === id) ||
+               this.calendarEvents.find(t => t.id === id);
     },
 
     /**
@@ -1398,6 +1578,9 @@ const calendar = {
     render() {
         this.updateTitle();
 
+        // Reload calendar events for new visible date range
+        this.loadCalendarEvents();
+
         switch (this.currentView) {
             case 'month':
                 this.renderMonthView();
@@ -1415,6 +1598,11 @@ const calendar = {
 
         // Update current time indicator after rendering
         this.updateTimeIndicator();
+
+        // Auto-scroll to current time on time-based views
+        if (['day', 'week', '3day'].includes(this.currentView)) {
+            this.scrollToCurrentTime();
+        }
     },
 
     /**
@@ -1515,7 +1703,16 @@ const calendar = {
 
         const eventsHtml = dayTasks.slice(0, 3).map(task => {
             const importantClass = task.important ? ' important' : '';
-            return `<div class="month-event${importantClass}" data-id="${task.id}" title="${this.escapeHtml(task.title)}" draggable="true">${this.escapeHtml(task.title)}</div>`;
+            const isEvent = task._type === 'event';
+            const typeClass = isEvent ? ' event-type' : ' task-type';
+            const color = this.getItemColor(task);
+            const indicator = isEvent
+                ? `<span class="month-event-dot" style="background:${color}"></span>`
+                : `<span class="month-task-checkbox">☐</span>`;
+            const borderStyle = isEvent
+                ? `border-left-color:${color};background:${this.hexToRgba(color, 0.15)}`
+                : `border-left-color:${color};border-left-style:dashed;background:${this.hexToRgba(color, 0.1)}`;
+            return `<div class="month-event${importantClass}${typeClass}" data-id="${task.id}" title="${this.escapeHtml(task.title)}" draggable="true" style="${borderStyle}">${indicator}${this.escapeHtml(task.title)}</div>`;
         }).join('');
 
         const moreCount = dayTasks.length - 3;
@@ -1563,13 +1760,15 @@ const calendar = {
                 }
             });
 
-            // Click on cell to potentially add task
+            // Click on cell — open event modal for empty area
             cell.addEventListener('click', (e) => {
-                if (e.target.classList.contains('month-event')) {
-                    // Click on event, open task
-                    const taskId = e.target.dataset.id;
-                    const task = this.findTask(taskId);
-                    if (task) modal.openEdit(task);
+                if (e.target.classList.contains('month-event') || e.target.closest('.month-event')) {
+                    return; // Handled by month-event click handler
+                }
+                // Clicked empty area of cell → open event modal with this date
+                const date = cell.dataset.date;
+                if (date && typeof eventModal !== 'undefined') {
+                    eventModal.open({ date });
                 }
             });
         });
@@ -1580,8 +1779,8 @@ const calendar = {
                 e.stopPropagation();
                 const taskId = event.dataset.id;
                 const task = this.findTask(taskId);
-                if (task && typeof taskModal !== 'undefined') {
-                    taskModal.openTask(task);
+                if (task) {
+                    calendar.openItemModal(task);
                 }
             });
 
@@ -1701,7 +1900,7 @@ const calendar = {
 
             let slotsHtml = '';
             for (let hour = 0; hour < 24; hour++) {
-                slotsHtml += `<div class="week-hour-slot" data-hour="${hour}"></div>`;
+                slotsHtml += `<div class="week-hour-slot" data-hour="${hour}" data-date="${dateStr}"></div>`;
             }
 
             columnsHtml += `
@@ -1730,58 +1929,92 @@ const calendar = {
             const column = columnsEl.querySelector(`.week-column[data-date="${dateStr}"]`);
             const allDayCell = allDayCellsEl?.querySelector(`.week-all-day-cell[data-date="${dateStr}"]`);
 
+            const timedItems = [];
+
             dayTasks.forEach(task => {
                 if (!task.due_time) {
-                    // No time specified - show in frozen all-day row
                     if (allDayCell) {
+                        const isEvent = task._type === 'event';
+                        const color = this.getItemColor(task);
                         const el = document.createElement('div');
-                        el.className = `all-day-event${task.important ? ' important' : ''}`;
+                        el.className = `all-day-event${task.important ? ' important' : ''}${isEvent ? ' event-type' : ' task-type'}`;
                         el.dataset.id = task.id;
                         el.draggable = true;
+                        el.style.borderLeftColor = color;
+                        el.style.background = this.hexToRgba(color, 0.15);
+                        if (!isEvent) el.style.borderLeftStyle = 'dashed';
                         el.textContent = task.title;
                         el.title = task.title;
                         allDayCell.appendChild(el);
                     }
-                } else if (column) {
-                    // Timed event - place in column
-                    this.placeTimedTask(column, task);
+                } else {
+                    timedItems.push(task);
                 }
             });
+
+            // Compute overlap and place timed items
+            if (column && timedItems.length > 0) {
+                const overlapData = this.computeOverlapColumns(timedItems);
+                for (const entry of overlapData) {
+                    this.placeTimedTask(column, entry.item, { col: entry.col, totalCols: entry.totalCols });
+                }
+            }
         }
     },
 
     /**
-     * Place a timed task on a column
+     * Place a timed task on a column (with overlap info)
+     * @param {object} overlapInfo - { col, totalCols } from computeOverlapColumns (optional)
      */
-    placeTimedTask(column, task) {
+    placeTimedTask(column, task, overlapInfo) {
         if (!task.due_time) return;
 
         const [startHour, startMin] = task.due_time.split(':').map(Number);
         const startMinutes = startHour * 60 + startMin;
 
-        // Use end time if available, otherwise default 1 hour
         let endMinutes = startMinutes + 60;
         if (task.due_time_end) {
             const [endHour, endMin] = task.due_time_end.split(':').map(Number);
             endMinutes = endHour * 60 + endMin;
         }
 
-        const top = (startMinutes / 60) * 60; // 60px per hour
+        const top = (startMinutes / 60) * 60;
         const height = Math.max(((endMinutes - startMinutes) / 60) * 60, 20);
 
         const timeDisplay = task.due_time_end
             ? `${this.formatTime(task.due_time)} - ${this.formatTime(task.due_time_end)}`
             : this.formatTime(task.due_time);
 
+        const isEvent = task._type === 'event';
+        const typeClass = isEvent ? ' event-type' : ' task-type';
+        const color = this.getItemColor(task);
+
         const block = document.createElement('div');
-        block.className = `time-block${task.important ? ' important' : ''}`;
+        block.className = `time-block${task.important ? ' important' : ''}${typeClass}`;
         block.dataset.id = task.id;
         block.draggable = true;
-        block.style.top = `${top}px`; // No offset - all-day section is now outside columns
+        block.style.top = `${top}px`;
         block.style.height = `${height}px`;
+        block.style.borderLeftColor = color;
+        block.style.background = this.hexToRgba(color, isEvent ? 0.15 : 0.1);
+
+        if (!isEvent) {
+            block.style.borderLeftStyle = 'dashed';
+        }
+
+        // Overlap positioning
+        if (overlapInfo && overlapInfo.totalCols > 1) {
+            const widthPct = 100 / overlapInfo.totalCols;
+            const leftPct = widthPct * overlapInfo.col;
+            block.style.left = `calc(${leftPct}% + 2px)`;
+            block.style.right = 'auto';
+            block.style.width = `calc(${widthPct}% - 4px)`;
+        }
+
+        const checkboxHtml = !isEvent ? '<span class="time-block-checkbox">☐</span> ' : '';
 
         block.innerHTML = `
-            <div class="time-block-title">${this.escapeHtml(task.title)}</div>
+            <div class="time-block-title">${checkboxHtml}${this.escapeHtml(task.title)}</div>
             <div class="time-block-time">${timeDisplay}</div>
         `;
 
@@ -1799,8 +2032,8 @@ const calendar = {
                 e.stopPropagation();
                 const taskId = el.dataset.id;
                 const task = this.findTask(taskId);
-                if (task && typeof taskModal !== 'undefined') {
-                    taskModal.openTask(task);
+                if (task) {
+                    calendar.openItemModal(task);
                 }
             });
 
@@ -1824,8 +2057,8 @@ const calendar = {
                     e.stopPropagation();
                     const taskId = el.dataset.id;
                     const task = this.findTask(taskId);
-                    if (task && typeof taskModal !== 'undefined') {
-                        taskModal.openTask(task);
+                    if (task) {
+                        calendar.openItemModal(task);
                     }
                 });
 
@@ -1845,17 +2078,21 @@ const calendar = {
 
         // Click-drag to create time blocks on empty hour slots
         columnsEl.querySelectorAll('.week-hour-slot').forEach(slot => {
-            slot.addEventListener('mousedown', (e) => {
-                // Only left click
-                if (e.button !== 0) return;
-
+            const handleSlotDrag = (e) => {
                 const column = slot.closest('.week-column');
-                const dateStr = column.dataset.date;
+                const dateStr = slot.dataset.date || column.dataset.date;
                 const hour = parseInt(slot.dataset.hour, 10);
-
-                // Get the column for coordinate calculations
-                this.startClickDrag(e, column, dateStr, hour, 0); // No offset - all-day is outside
+                this.startClickDrag(e, column, dateStr, hour, 0);
+            };
+            slot.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                handleSlotDrag(e);
             });
+            slot.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                handleSlotDrag({ clientX: touch.clientX, clientY: touch.clientY, target: e.target });
+            }, { passive: false });
         });
 
         // Drag-and-drop scheduling for tasks from sidebar
@@ -2034,66 +2271,96 @@ const calendar = {
 
         // Place tasks
         const dayTasks = this.getTasksForDate(dateStr);
+        const timedItems = [];
         dayTasks.forEach(task => {
             if (!task.due_time) {
-                // No time - show in all-day section
                 if (allDayEventsEl) {
+                    const isEvent = task._type === 'event';
+                    const color = this.getItemColor(task);
                     const el = document.createElement('div');
-                    el.className = `all-day-event${task.important ? ' important' : ''}`;
+                    el.className = `all-day-event${task.important ? ' important' : ''}${isEvent ? ' event-type' : ' task-type'}`;
                     el.dataset.id = task.id;
                     el.draggable = true;
+                    el.style.borderLeftColor = color;
+                    el.style.background = this.hexToRgba(color, 0.15);
+                    if (!isEvent) el.style.borderLeftStyle = 'dashed';
                     el.textContent = task.title;
                     allDayEventsEl.appendChild(el);
                 }
             } else {
-                // Timed event
-                this.placeTimedTaskOnDayView(hourGridEl, task);
+                timedItems.push(task);
             }
         });
+
+        // Compute overlap and place timed items
+        if (timedItems.length > 0) {
+            const overlapData = this.computeOverlapColumns(timedItems);
+            for (const entry of overlapData) {
+                this.placeTimedTaskOnDayView(hourGridEl, entry.item, { col: entry.col, totalCols: entry.totalCols });
+            }
+        }
 
         this.bindDayViewEvents(hourGridEl, allDayEventsEl);
     },
 
     /**
-     * Place a timed task on day view
+     * Place a timed task on day view (with overlap info)
      */
-    placeTimedTaskOnDayView(hourGridEl, task) {
+    placeTimedTaskOnDayView(hourGridEl, task, overlapInfo) {
         if (!task.due_time) return;
 
         const [startHour, startMin] = task.due_time.split(':').map(Number);
         const startMinutes = startHour * 60 + startMin;
 
-        // Use end time if available, otherwise default 1 hour
         let endMinutes = startMinutes + 60;
         if (task.due_time_end) {
             const [endHour, endMin] = task.due_time_end.split(':').map(Number);
             endMinutes = endHour * 60 + endMin;
         }
 
-        const hourRow = hourGridEl.querySelector(`.hour-content[data-hour="${startHour}"]`);
-        if (!hourRow) return;
-
-        const topOffset = (startMin / 60) * 60; // Position within the hour
+        const top = (startMinutes / 60) * 60;
         const height = Math.max(((endMinutes - startMinutes) / 60) * 60, 20);
 
         const timeDisplay = task.due_time_end
             ? `${this.formatTime(task.due_time)} - ${this.formatTime(task.due_time_end)}`
             : this.formatTime(task.due_time);
 
+        const isEvent = task._type === 'event';
+        const typeClass = isEvent ? ' event-type' : ' task-type';
+        const color = this.getItemColor(task);
+
         const block = document.createElement('div');
-        block.className = `time-block${task.important ? ' important' : ''}`;
+        block.className = `time-block${task.important ? ' important' : ''}${typeClass}`;
         block.dataset.id = task.id;
         block.draggable = true;
-        block.style.top = `${topOffset}px`;
+        block.style.top = `${top}px`;
         block.style.height = `${height}px`;
+        block.style.borderLeftColor = color;
+        block.style.background = this.hexToRgba(color, isEvent ? 0.15 : 0.1);
+
+        if (!isEvent) {
+            block.style.borderLeftStyle = 'dashed';
+        }
+
+        // Day view overlap: positioned within the hour-content area (after 60px label)
+        if (overlapInfo && overlapInfo.totalCols > 1) {
+            const contentWidth = 100; // percentage of hour-content
+            const widthPct = contentWidth / overlapInfo.totalCols;
+            const leftPct = widthPct * overlapInfo.col;
+            block.style.left = `calc(60px + ${leftPct}% - ${leftPct * 0.6}px + 2px)`;
+            block.style.right = 'auto';
+            block.style.width = `calc(${widthPct}% - ${widthPct * 0.6}px - 4px)`;
+        }
+
+        const checkboxHtml = !isEvent ? '<span class="time-block-checkbox">☐</span> ' : '';
 
         block.innerHTML = `
-            <div class="time-block-title">${this.escapeHtml(task.title)}</div>
+            <div class="time-block-title">${checkboxHtml}${this.escapeHtml(task.title)}</div>
             <div class="time-block-time">${timeDisplay}</div>
         `;
 
-        hourRow.style.position = 'relative';
-        hourRow.appendChild(block);
+        hourGridEl.style.position = 'relative';
+        hourGridEl.appendChild(block);
     },
 
     /**
@@ -2106,8 +2373,8 @@ const calendar = {
                 e.stopPropagation();
                 const taskId = el.dataset.id;
                 const task = this.findTask(taskId);
-                if (task && typeof taskModal !== 'undefined') {
-                    taskModal.openTask(task);
+                if (task) {
+                    calendar.openItemModal(task);
                 }
             });
 
@@ -2130,8 +2397,8 @@ const calendar = {
                     e.stopPropagation();
                     const taskId = el.dataset.id;
                     const task = this.findTask(taskId);
-                    if (task && typeof taskModal !== 'undefined') {
-                        taskModal.openTask(task);
+                    if (task) {
+                        calendar.openItemModal(task);
                     }
                 });
 
@@ -2182,15 +2449,20 @@ const calendar = {
 
         // Click-drag to create time blocks on empty hour content
         hourGridEl.querySelectorAll('.hour-content').forEach(hourContent => {
-            hourContent.addEventListener('mousedown', (e) => {
-                // Only left click
-                if (e.button !== 0) return;
-
+            const handleHourDrag = (e) => {
                 const hour = parseInt(hourContent.dataset.hour, 10);
                 const dateStr = hourContent.dataset.date;
-
                 this.startClickDrag(e, hourGridEl, dateStr, hour, 0);
+            };
+            hourContent.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                handleHourDrag(e);
             });
+            hourContent.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                handleHourDrag({ clientX: touch.clientX, clientY: touch.clientY, target: e.target });
+            }, { passive: false });
         });
 
         // Drag-and-drop scheduling for tasks from sidebar (Day view)
@@ -2367,6 +2639,12 @@ const calendar = {
                 const edge = handle.dataset.edge;
                 this.startPendingBlockResize(edge, containerEl);
             });
+            handle.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                const edge = handle.dataset.edge;
+                this.startPendingBlockResize(edge, containerEl);
+            }, { passive: false });
         });
 
         // Click on content area confirms (not on handles)
@@ -2398,10 +2676,20 @@ const calendar = {
             this.endPendingBlockResize();
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onTouchEnd);
         };
+        const onTouchMove = (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            this.onPendingBlockResize({ clientX: touch.clientX, clientY: touch.clientY }, containerEl);
+        };
+        const onTouchEnd = () => onMouseUp();
 
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
+        document.addEventListener('touchmove', onTouchMove, { passive: false });
+        document.addEventListener('touchend', onTouchEnd);
     },
 
     /**
@@ -2640,6 +2928,28 @@ const calendar = {
     },
 
     /**
+     * Auto-scroll the view so current time is visible
+     */
+    scrollToCurrentTime() {
+        const now = new Date();
+        const totalMinutes = now.getHours() * 60 + now.getMinutes();
+        // Scroll so current time is roughly 1/3 from top
+        const scrollTarget = Math.max(0, totalMinutes - 200);
+
+        let scrollContainer = null;
+        if (this.currentView === 'day') {
+            scrollContainer = document.querySelector('.calendar-view[data-view="day"] .day-body');
+        } else {
+            const viewKey = this.currentView === '3day' ? '3day' : 'week';
+            scrollContainer = document.querySelector(`.calendar-view[data-view="${viewKey}"] .week-body`);
+        }
+
+        if (scrollContainer) {
+            scrollContainer.scrollTop = scrollTarget;
+        }
+    },
+
+    /**
      * Update time indicator in the time picker modal
      */
     updateTimePickerIndicator() {
@@ -2664,6 +2974,99 @@ const calendar = {
     },
 
     // ==================
+    // OVERLAP ALGORITHM
+    // ==================
+
+    /**
+     * Compute overlap columns for a list of timed items.
+     * Returns array of { item, col, totalCols } objects.
+     */
+    computeOverlapColumns(items) {
+        if (!items.length) return [];
+
+        // Parse start/end minutes for each item
+        const parsed = items.map(item => {
+            const [sh, sm] = item.due_time.split(':').map(Number);
+            const startMin = sh * 60 + sm;
+            let endMin = startMin + 60;
+            if (item.due_time_end) {
+                const [eh, em] = item.due_time_end.split(':').map(Number);
+                endMin = eh * 60 + em;
+            }
+            return { item, startMin, endMin, col: 0 };
+        });
+
+        // Sort by start time, then by longer duration first
+        parsed.sort((a, b) => a.startMin - b.startMin || (b.endMin - b.startMin) - (a.endMin - a.startMin));
+
+        // Greedy column assignment
+        // columns[i] = end time of the last item placed in column i
+        const columns = [];
+        for (const p of parsed) {
+            let placed = false;
+            for (let c = 0; c < columns.length; c++) {
+                if (columns[c] <= p.startMin) {
+                    p.col = c;
+                    columns[c] = p.endMin;
+                    placed = true;
+                    break;
+                }
+            }
+            if (!placed) {
+                p.col = columns.length;
+                columns.push(p.endMin);
+            }
+        }
+
+        // Now determine the max overlapping columns for each connected group
+        // Two items are in the same group if they overlap transitively
+        const totalCols = columns.length;
+
+        // Simple approach: for each item, totalCols = columns.length (max concurrent)
+        // More accurate: find connected components. Let's do the simple version.
+        // Actually let's do connected components for correctness.
+        const groups = []; // array of arrays of parsed items
+        const visited = new Set();
+
+        for (let i = 0; i < parsed.length; i++) {
+            if (visited.has(i)) continue;
+            const group = [i];
+            visited.add(i);
+            const queue = [i];
+            while (queue.length) {
+                const curr = queue.shift();
+                for (let j = 0; j < parsed.length; j++) {
+                    if (visited.has(j)) continue;
+                    // Check overlap between curr and j
+                    if (parsed[curr].startMin < parsed[j].endMin && parsed[j].startMin < parsed[curr].endMin) {
+                        visited.add(j);
+                        group.push(j);
+                        queue.push(j);
+                    }
+                }
+            }
+            groups.push(group);
+        }
+
+        // For each group, find max col + 1
+        for (const group of groups) {
+            const maxCol = Math.max(...group.map(i => parsed[i].col)) + 1;
+            for (const i of group) {
+                parsed[i].totalCols = maxCol;
+            }
+        }
+
+        return parsed;
+    },
+
+    /**
+     * Get the display color for an item (event or task)
+     */
+    getItemColor(item) {
+        return item.calendar_color || '#FF8C00';
+    },
+
+    // ==================
     // HELPER FUNCTIONS
     // ==================
 
@@ -2685,12 +3088,21 @@ const calendar = {
     },
 
     /**
-     * Get tasks for a specific date (filtered by selected calendars)
+     * Get tasks and events for a specific date (filtered by selected calendars)
      */
     getTasksForDate(dateStr) {
-        return this.scheduledTasks.filter(task =>
+        const tasks = this.scheduledTasks.filter(task =>
             task.due_date === dateStr && this.taskMatchesSelectedCalendars(task)
         );
+
+        // Include calendar events for this date
+        const events = this.calendarEvents.filter(ev => {
+            // Match events by event_date (or start_date depending on schema)
+            const evDate = ev.event_date || ev.start_date;
+            return evDate === dateStr;
+        });
+
+        return [...tasks, ...events];
     },
 
     /**
@@ -2763,6 +3175,39 @@ const calendar = {
         const suffix = hours >= 12 ? 'PM' : 'AM';
         const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
         return mins === 0 ? `${displayHour} ${suffix}` : `${displayHour}:${mins.toString().padStart(2, '0')} ${suffix}`;
+    },
+
+    /**
+     * Convert hex color to rgba string
+     */
+    hexToRgba(hex, alpha) {
+        // Handle shorthand and full hex
+        let r = 0, g = 0, b = 0;
+        if (hex.startsWith('#')) hex = hex.slice(1);
+        if (hex.length === 3) {
+            r = parseInt(hex[0] + hex[0], 16);
+            g = parseInt(hex[1] + hex[1], 16);
+            b = parseInt(hex[2] + hex[2], 16);
+        } else if (hex.length === 6) {
+            r = parseInt(hex.slice(0, 2), 16);
+            g = parseInt(hex.slice(2, 4), 16);
+            b = parseInt(hex.slice(4, 6), 16);
+        } else {
+            return `rgba(255, 140, 0, ${alpha})`; // fallback orange
+        }
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    },
+
+    /**
+     * Open the appropriate modal for a task or event item
+     */
+    openItemModal(item) {
+        if (!item) return;
+        if (item._type === 'event' && typeof eventModal !== 'undefined') {
+            eventModal.open({ event: item });
+        } else if (typeof taskModal !== 'undefined') {
+            taskModal.openTask(item);
+        }
     },
 
     /**

@@ -49,6 +49,7 @@ app.use('/api/users', usersRoutes);
 app.use('/api/bases', basesRoutes);
 app.use('/api/bases/:baseId/views', require('./routes/base-views'));
 app.use('/api/calendars', calendarsRoutes);
+app.use('/api/calendar-events', require('./routes/calendarEvents'));
 
 app.use('/api/people', peopleRoutes);
 app.use('/api/uploads', uploadsRoutes);

@@ -32,6 +32,10 @@ const quickAdd = {
                     <h3 class="quick-add-title">Quick Add Task</h3>
                     <button class="quick-add-close">&times;</button>
                 </div>
+                <div class="quick-add-type-toggle">
+                    <button type="button" class="quick-add-type-btn active" data-type="task">Task</button>
+                    <button type="button" class="quick-add-type-btn" data-type="event">Event</button>
+                </div>
                 <input type="text" class="quick-add-input" placeholder="What do you need to do?" autocomplete="off">
                 <div class="quick-add-actions">
                     <button class="quick-add-more">
@@ -119,6 +123,25 @@ const quickAdd = {
         // Save button
         this.saveBtn.addEventListener('click', () => this.save());
 
+        // Type toggle (Task / Event)
+        this.overlay.querySelectorAll('.quick-add-type-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const type = btn.dataset.type;
+                if (type === 'event') {
+                    this.close();
+                    if (typeof eventModal !== 'undefined') {
+                        const today = new Date().toISOString().split('T')[0];
+                        eventModal.open({ date: today });
+                    }
+                    return;
+                }
+                // Reset active state
+                this.overlay.querySelectorAll('.quick-add-type-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.currentType = type;
+            });
+        });
+
         // Priority buttons
         this.expandedSection.querySelectorAll('.priority-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -161,6 +184,15 @@ const quickAdd = {
     },
 
     open(type = 'task') {
+        // If event type, delegate to eventModal directly
+        if (type === 'event') {
+            if (typeof eventModal !== 'undefined') {
+                const today = new Date().toISOString().split('T')[0];
+                eventModal.open({ date: today });
+            }
+            return;
+        }
+
         this.currentType = type;
         
         // Update title based on type
