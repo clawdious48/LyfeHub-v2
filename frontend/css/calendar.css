@@ -1969,3 +1969,285 @@
 .quick-add-type-btn:hover:not(.active) {
     background: var(--bg-hover, #e8e8e8);
 }
+
+/* =============================================
+   Mobile Polish (T15)
+   ============================================= */
+
+/* --- Tablet (≤768px) --- */
+@media (max-width: 768px) {
+    /* Toolbar: stack nav, views, and + button */
+    .calendar-toolbar {
+        padding: 0.75rem 1rem;
+        gap: 0.75rem;
+    }
+
+    .calendar-title {
+        font-size: 1rem;
+        margin-left: 0.5rem;
+    }
+
+    /* View toggle: scrollable if needed */
+    .calendar-view-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+        min-height: 44px;
+    }
+
+    /* + Event button: shorter label */
+    #calendar-create-event-btn {
+        min-height: 44px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    /* Nav buttons: 44px touch targets */
+    .calendar-nav-btn {
+        width: 44px;
+        height: 44px;
+    }
+
+    .calendar-today-btn {
+        min-height: 44px;
+        padding: 0.5rem 0.75rem;
+    }
+
+    /* Month cells smaller */
+    .month-cell {
+        min-height: 70px;
+        padding: 0.25rem;
+    }
+
+    .month-date {
+        font-size: 0.75rem;
+    }
+
+    .month-event {
+        font-size: 0.65rem;
+        padding: 0.15rem 0.3rem;
+    }
+
+    /* Week view: horizontal scroll to prevent column cutoff */
+    .week-body {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .week-columns {
+        min-width: 500px;
+    }
+
+    .week-header {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Shrink week header text */
+    .week-header-cell {
+        padding: 0.5rem 0.25rem;
+    }
+
+    .week-header-day {
+        font-size: 0.65rem;
+    }
+
+    .week-header-date {
+        font-size: 1rem;
+    }
+
+    /* Time block popup: full width at bottom on mobile */
+    .time-block-popup-content {
+        width: 100%;
+        max-width: 100vw;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .time-block-popup {
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        top: auto !important;
+    }
+
+    /* Time picker modal: full width */
+    .time-picker-content {
+        width: calc(100vw - 2rem);
+        max-width: 400px;
+    }
+
+    /* Event modal: ensure full width, scrollable */
+    #event-modal .modal-content.modal-small {
+        max-width: calc(100vw - 1.5rem);
+        max-height: 95vh;
+        margin: 0.5rem;
+        border-radius: 16px;
+    }
+
+    #event-modal .modal-body {
+        overflow-y: auto;
+        max-height: calc(95vh - 130px);
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Modal buttons: tappable */
+    #event-modal .btn {
+        min-height: 44px;
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    #event-modal .modal-footer {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    /* Calendar content padding */
+    .calendar-content {
+        padding: 0.5rem;
+    }
+
+    /* Quick-add type toggle */
+    .quick-add-type-toggle {
+        padding: 0 12px 8px;
+    }
+
+    .quick-add-type-btn {
+        min-height: 44px;
+        font-size: 0.85rem;
+    }
+
+    /* Time block popup type toggle */
+    .time-block-type-btn {
+        min-height: 44px;
+        font-size: 0.85rem;
+    }
+}
+
+/* --- Small phone (≤480px) --- */
+@media (max-width: 480px) {
+    /* Toolbar: tighter, + button uses icon only */
+    .calendar-toolbar {
+        padding: 0.5rem 0.75rem;
+        gap: 0.5rem;
+    }
+
+    .calendar-title {
+        font-size: 0.9rem;
+        margin-left: 0.25rem;
+    }
+
+    /* + Event → just "+" on tiny screens */
+    #calendar-create-event-btn {
+        padding: 0.5rem 0.6rem;
+        font-size: 0;
+        min-width: 44px;
+    }
+
+    #calendar-create-event-btn::before {
+        content: '+';
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+
+    /* View toggle: compact */
+    .calendar-view-btn {
+        padding: 0.4rem 0.5rem;
+        font-size: 0.7rem;
+    }
+
+    .calendar-view-toggle {
+        padding: 0.2rem;
+        gap: 0.15rem;
+    }
+
+    /* Month grid: tighter */
+    .month-cell {
+        min-height: 55px;
+        padding: 0.2rem;
+    }
+
+    .month-date {
+        font-size: 0.7rem;
+    }
+
+    .month-event {
+        font-size: 0.6rem;
+    }
+
+    .month-day-label {
+        font-size: 0.65rem;
+        padding: 0.25rem;
+    }
+
+    /* Calendar sidebar on mobile: collapsed further */
+    .calendar-sidebar {
+        max-height: 150px;
+    }
+
+    /* Day view header */
+    .day-header-date {
+        font-size: 1.5rem;
+    }
+
+    /* Time block popup: bottom sheet */
+    .time-block-popup-content {
+        border-radius: 16px 16px 0 0;
+    }
+
+    /* Event modal: almost full screen */
+    #event-modal .modal-content.modal-small {
+        max-width: 100vw;
+        max-height: 100vh;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    #event-modal .modal-body {
+        max-height: calc(100vh - 120px);
+    }
+
+    /* Inputs full width */
+    #event-modal input[type="date"],
+    #event-modal input[type="time"],
+    #event-modal input[type="text"],
+    #event-modal select,
+    #event-modal textarea {
+        width: 100%;
+        min-height: 44px;
+        font-size: 16px; /* Prevents iOS zoom */
+        box-sizing: border-box;
+    }
+
+    /* Calendar content: no padding */
+    .calendar-content {
+        padding: 0.25rem;
+    }
+
+    /* Week view: ensure minimum scroll width for 7 cols */
+    .week-columns {
+        min-width: 490px;
+    }
+
+    .week-header {
+        min-width: calc(60px + 490px);
+    }
+
+    /* All-day row scrollable */
+    .week-all-day-row {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .week-all-day-cells {
+        min-width: 490px;
+    }
+
+    /* Prevent any horizontal overflow on body */
+    .calendar-layout {
+        overflow-x: hidden;
+    }
+
+    .calendar-main {
+        overflow-x: hidden;
+    }
+}

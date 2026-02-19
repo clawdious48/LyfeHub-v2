@@ -936,21 +936,31 @@ const calendar = {
         const popupWidth = 320;
         const popupHeight = 350;
 
-        let left = x + 10;
-        let top = y + 10;
+        // Mobile: bottom-sheet style
+        if (viewportWidth <= 768) {
+            popup.style.left = '0';
+            popup.style.right = '0';
+            popup.style.bottom = '0';
+            popup.style.top = 'auto';
+        } else {
+            let left = x + 10;
+            let top = y + 10;
 
-        // Keep within viewport
-        if (left + popupWidth > viewportWidth) {
-            left = x - popupWidth - 10;
-        }
-        if (top + popupHeight > viewportHeight) {
-            top = viewportHeight - popupHeight - 20;
-        }
-        if (left < 10) left = 10;
-        if (top < 10) top = 10;
+            // Keep within viewport
+            if (left + popupWidth > viewportWidth) {
+                left = x - popupWidth - 10;
+            }
+            if (top + popupHeight > viewportHeight) {
+                top = viewportHeight - popupHeight - 20;
+            }
+            if (left < 10) left = 10;
+            if (top < 10) top = 10;
 
-        popup.style.left = `${left}px`;
-        popup.style.top = `${top}px`;
+            popup.style.left = `${left}px`;
+            popup.style.top = `${top}px`;
+            popup.style.right = '';
+            popup.style.bottom = '';
+        }
 
         // Clear and reset input
         input.value = '';
