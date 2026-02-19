@@ -72,6 +72,8 @@
         }
     }
     
-    document.addEventListener('DOMContentLoaded', loadWeekCalendar);
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.getElementById('week-calendar-content')) loadWeekCalendar();
+    });
     window.WeekCalendarWidget = { refresh: loadWeekCalendar };
 })();

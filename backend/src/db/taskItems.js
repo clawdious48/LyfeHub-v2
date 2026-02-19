@@ -2,6 +2,33 @@ const db = require('./schema');
 const { v4: uuidv4 } = require('uuid');
 
 /**
+ * Compute smart_list value based on task data (UB3 Smart List logic).
+ * Priority: explicit user choice > due_date > snooze_date > default inbox
+ * 
+ * Values: inbox, calendar, do_next, delegated, snoozed, someday
+ */
+function computeSmartList(data, existingSmartList = null) {
+  const explicit = data.smart_list || existingSmartList;
+  
+  // Explicit overrides that the user sets directly — never auto-change these
+  if (['do_next', 'delegated', 'someday'].includes(explicit)) {
+    return explicit;
+  }
+  
+  // Auto-compute from dates
+  const dueDate = data.due_date;
+  const snoozeDate = data.snooze_date;
+  
+  if (dueDate && dueDate !== '') return 'calendar';
+  if (snoozeDate && snoozeDate !== '') return 'snoozed';
+  
+  // If user explicitly set it to something, keep it
+  if (explicit && explicit !== 'inbox') return explicit;
+  
+  return 'inbox';
+}
+
+/**
  * Get all task items for a user
  */
 async function getAllTaskItems(userId, view = 'all', userDate = null) {
@@ -52,6 +79,9 @@ async function getAllTaskItems(userId, view = 'all', userDate = null) {
         break;
       case 'completed':
         sql += ` AND completed = 1`;
+        break;
+      case 'inbox':
+        sql += ` AND smart_list = 'inbox' AND completed = 0`;
         break;
       case 'all':
       default:
@@ -149,10 +179,11 @@ async function getTaskItemById(id, userId) {
 async function createTaskItem(data, userId) {
   const id = uuidv4();
   const now = new Date().toISOString();
+  const smartList = computeSmartList(data);
 
   await db.run(`
-    INSERT INTO task_items (id, title, description, status, my_day, due_date, due_time, due_time_end, snooze_date, priority, energy, location, important, recurring, recurring_days, project_id, list_id, people_ids, note_ids, subtasks, user_id, area_id, created_at, updated_at)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
+    INSERT INTO task_items (id, title, description, status, my_day, due_date, due_time, due_time_end, snooze_date, priority, energy, location, important, recurring, recurring_days, project_id, list_id, people_ids, note_ids, subtasks, user_id, area_id, smart_list, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)
   `, [
     id,
     data.title,
@@ -176,6 +207,7 @@ async function createTaskItem(data, userId) {
     JSON.stringify(data.subtasks || []),
     userId,
     data.area_id || null,
+    smartList,
     now,
     now
   ]);
@@ -197,6 +229,14 @@ async function updateTaskItem(id, data, userId) {
 
   const now = new Date().toISOString();
   const completedAt = data.completed && !existing.completed ? now : (data.completed ? existing.completed_at : null);
+
+  // Merge data with existing for smart_list computation
+  const mergedForSmartList = {
+    due_date: data.due_date ?? existing.due_date,
+    snooze_date: data.snooze_date ?? existing.snooze_date,
+    smart_list: data.smart_list // only pass explicit user override
+  };
+  const smartList = computeSmartList(mergedForSmartList, existing.smart_list);
 
   await db.run(`
     UPDATE task_items SET
@@ -222,8 +262,9 @@ async function updateTaskItem(id, data, userId) {
       note_ids = $20,
       subtasks = $21,
       area_id = $22,
-      updated_at = $23
-    WHERE id = $24 AND user_id = $25
+      smart_list = $23,
+      updated_at = $24
+    WHERE id = $25 AND user_id = $26
   `, [
     data.title ?? existing.title,
     data.description ?? existing.description,
@@ -247,6 +288,7 @@ async function updateTaskItem(id, data, userId) {
     JSON.stringify(data.note_ids ?? existing.note_ids ?? []),
     JSON.stringify(data.subtasks ?? existing.subtasks),
     data.area_id !== undefined ? data.area_id : (existing.area_id || null),
+    smartList,
     now,
     id,
     userId
@@ -525,6 +567,38 @@ async function unscheduleTaskItem(id, userId) {
   return await getTaskItemById(id, userId);
 }
 
+/**
+ * Get inbox tasks (smart_list = 'inbox', not completed)
+ */
+async function getInboxTasks(userId, limit = 50) {
+  const items = await db.getAll(
+    `SELECT * FROM task_items WHERE user_id = $1 AND smart_list = 'inbox' AND completed = 0 ORDER BY created_at ASC LIMIT $2`,
+    [userId, limit]
+  );
+
+  return items.map(item => ({
+    ...item,
+    subtasks: JSON.parse(item.subtasks || '[]'),
+    recurring_days: JSON.parse(item.recurring_days || '[]'),
+    important: !!item.important,
+    completed: !!item.completed,
+    my_day: !!item.my_day,
+    people_ids: JSON.parse(item.people_ids || '[]'),
+    note_ids: JSON.parse(item.note_ids || '[]'),
+  }));
+}
+
+/**
+ * Get count of inbox tasks
+ */
+async function getInboxTaskCount(userId) {
+  const result = await db.getOne(
+    `SELECT COUNT(*) as cnt FROM task_items WHERE user_id = $1 AND smart_list = 'inbox' AND completed = 0`,
+    [userId]
+  );
+  return parseInt(result?.cnt || 0);
+}
+
 module.exports = {
   getAllTaskItems,
   getTaskItemById,
@@ -533,6 +607,9 @@ module.exports = {
   deleteTaskItem,
   toggleTaskItemComplete,
   getTaskItemCounts,
+  getInboxTasks,
+  getInboxTaskCount,
+  computeSmartList,
   // Calendar functions
   getTaskItemsForCalendar,
   getScheduledTaskItems,
