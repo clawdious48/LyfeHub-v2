@@ -130,16 +130,12 @@
                 // Swipe right → Process
                 item.style.transform = 'translateX(0)';
                 resetBgs();
-                if (window.InboxProcessor) {
-                    window.InboxProcessor.open(id, type);
-                }
+                openItem(id, type);
             } else if (Math.abs(currentX) < 5 && elapsed < 300) {
                 // Tap → Process (same as before)
                 item.style.transform = 'translateX(0)';
                 resetBgs();
-                if (window.InboxProcessor) {
-                    window.InboxProcessor.open(id, type);
-                }
+                openItem(id, type);
             } else {
                 // Snap back
                 item.style.transform = 'translateX(0)';
@@ -165,6 +161,24 @@
         document.addEventListener('mouseup', () => {
             if (isDragging) onEnd();
         });
+    }
+
+    async function openItem(id, type) {
+        if (type === 'task' && window.taskModal) {
+            // Open the REAL task modal — same one used in the Tasks section
+            try {
+                const res = await fetch(`/api/task-items/${id}`, { credentials: 'include' });
+                if (!res.ok) throw new Error('Failed to fetch task');
+                const data = await res.json();
+                const task = data.item || data;
+                window.taskModal.openEdit(task);
+            } catch (err) {
+                console.error('Failed to open task:', err);
+            }
+        } else if (window.InboxProcessor) {
+            // Notes and people use InboxProcessor (no full modal exists for them)
+            window.InboxProcessor.open(id, type);
+        }
     }
 
     async function archiveItem(id, type) {

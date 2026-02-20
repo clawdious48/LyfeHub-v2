@@ -133,14 +133,7 @@ const InboxProcessor = {
         const container = this.overlay.querySelector('#process-quick-actions');
         let html = '';
 
-        if (this.currentType === 'task') {
-            html = `
-                <button class="process-quick-btn" data-action="do_next">📌 Do Next</button>
-                <button class="process-quick-btn" data-action="snooze">⏰ Snooze</button>
-                <button class="process-quick-btn" data-action="someday">💭 Someday</button>
-                <button class="process-quick-btn" data-action="my_day">☀️ My Day</button>
-            `;
-        }
+        // Tasks now open in the real taskModal — quick actions only for notes/people if needed
 
         container.innerHTML = html;
 
