@@ -39,13 +39,15 @@
             container.querySelectorAll('.area-card').forEach(card => {
                 card.addEventListener('click', () => {
                     const areaId = card.dataset.areaId;
-                    const tabBtn = document.querySelector('.tab[data-tab="tasks"]');
-                    if (tabBtn) {
-                        tabBtn.click();
-                        setTimeout(() => {
-                            document.dispatchEvent(new CustomEvent('area:filter', { detail: { areaId } }));
-                        }, 100);
+                    if (window.kanban && window.kanban.switchTab) {
+                        window.kanban.switchTab('tasks');
+                    } else {
+                        const tabBtn = document.querySelector('.tab[data-tab="tasks"]');
+                        if (tabBtn) tabBtn.click();
                     }
+                    setTimeout(() => {
+                        document.dispatchEvent(new CustomEvent('area:filter', { detail: { areaId } }));
+                    }, 100);
                 });
             });
         } catch (err) {

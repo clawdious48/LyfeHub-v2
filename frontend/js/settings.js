@@ -174,8 +174,12 @@
         var btn = document.getElementById('settings-back-btn');
         if (btn) {
             btn.addEventListener('click', function() {
-                var dashTab = document.querySelector('.tab[data-tab="dashboard"]');
-                if (dashTab) dashTab.click();
+                if (window.kanban && window.kanban.switchTab) {
+                    window.kanban.switchTab('dashboard');
+                } else {
+                    var dashTab = document.querySelector('.tab[data-tab="dashboard"]');
+                    if (dashTab) dashTab.click();
+                }
             });
         }
     }

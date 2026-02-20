@@ -256,10 +256,12 @@
      * Switch to a tab
      */
     function switchToTab(tabId) {
-        // Use the existing tab switching mechanism
-        const tabButton = document.querySelector(`.tab[data-tab="${tabId}"]`);
-        if (tabButton) {
-            tabButton.click();
+        // Use kanban.switchTab which handles all tab types (including tasks, people, calendar)
+        if (window.kanban && window.kanban.switchTab) {
+            window.kanban.switchTab(tabId);
+        } else {
+            const tabButton = document.querySelector(`.tab[data-tab="${tabId}"]`);
+            if (tabButton) tabButton.click();
         }
         
         // Update drawer active state

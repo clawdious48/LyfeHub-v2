@@ -264,8 +264,12 @@
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 const target = link.dataset.navigate;
-                const tab = document.querySelector(`.tab[data-tab="${target}"]`);
-                if (tab) tab.click();
+                if (window.kanban && window.kanban.switchTab) {
+                    window.kanban.switchTab(target);
+                } else {
+                    const tab = document.querySelector(`.tab[data-tab="${target}"]`);
+                    if (tab) tab.click();
+                }
             });
         });
     }
