@@ -271,19 +271,8 @@ const InboxProcessor = {
                 const today = new Date().toISOString().split('T')[0];
 
                 switch (action) {
-                    case 'do_next':
-                        updateData = { smart_list: 'do_next' };
-                        break;
-                    case 'snooze':
-                        // Snooze for 1 day by default
-                        const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-                        updateData = { snooze_date: tomorrow, smart_list: 'snoozed' };
-                        break;
-                    case 'someday':
-                        updateData = { smart_list: 'someday' };
-                        break;
                     case 'my_day':
-                        updateData = { due_date: today, my_day: true, smart_list: 'calendar' };
+                        updateData = { due_date: today, my_day: true };
                         break;
                 }
 
@@ -329,14 +318,7 @@ const InboxProcessor = {
                     project_id: projectId
                 };
 
-                // If due_date was set, smart_list auto-computes to 'calendar' on backend
-                // If no due_date but other fields filled, it's still processed (has metadata)
-                // We explicitly set smart_list based on what was filled
-                if (dueDate) {
-                    updateData.smart_list = 'calendar';
-                } else if (listId || projectId) {
-                    updateData.smart_list = 'do_next'; // Has organizational context
-                }
+                // smart_list is auto-computed on backend based on due_date and list_id
 
                 await fetch(`/api/task-items/${id}`, {
                     method: 'PATCH',

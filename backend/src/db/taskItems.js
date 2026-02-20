@@ -2,29 +2,22 @@ const db = require('./schema');
 const { v4: uuidv4 } = require('uuid');
 
 /**
- * Compute smart_list value based on task data (UB3 Smart List logic).
- * Priority: explicit user choice > due_date > snooze_date > default inbox
+ * Compute smart_list value based on task data.
+ * A task leaves inbox when it has a due date OR is assigned to a list.
  * 
- * Values: inbox, calendar, do_next, delegated, snoozed, someday
+ * Values: inbox, calendar, organized
  */
 function computeSmartList(data, existingSmartList = null) {
-  const explicit = data.smart_list || existingSmartList;
-  
-  // Explicit overrides that the user sets directly — never auto-change these
-  if (['do_next', 'delegated', 'someday'].includes(explicit)) {
-    return explicit;
-  }
-  
-  // Auto-compute from dates
   const dueDate = data.due_date;
-  const snoozeDate = data.snooze_date;
+  const listId = data.list_id;
   
+  // Has a due date → calendar
   if (dueDate && dueDate !== '') return 'calendar';
-  if (snoozeDate && snoozeDate !== '') return 'snoozed';
   
-  // If user explicitly set it to something, keep it
-  if (explicit && explicit !== 'inbox') return explicit;
+  // Assigned to a list → organized (it has a home)
+  if (listId && listId !== '') return 'organized';
   
+  // Nothing set → stays in inbox
   return 'inbox';
 }
 
@@ -59,14 +52,12 @@ async function getAllTaskItems(userId, view = 'all', userDate = null) {
   } else {
     switch (view) {
       case 'my-day':
-        // Show: due today, flagged for My Day, recurring today, or overdue — all incomplete
+        // Show: due today or recurring today — all incomplete
         sql += ` AND completed = 0 AND (
           due_date = $${paramIdx++}
-          OR my_day = 1
           OR (recurring IS NOT NULL AND recurring != '' AND recurring_days::jsonb @> $${paramIdx++}::jsonb)
-          OR (due_date IS NOT NULL AND due_date < $${paramIdx++})
         )`;
-        params.push(today, JSON.stringify([todayDow]), today);
+        params.push(today, JSON.stringify([todayDow]));
         break;
       case 'important':
         sql += ` AND important = 1 AND completed = 0`;
@@ -366,9 +357,7 @@ async function getTaskItemCounts(userId, userDate = null) {
       COUNT(*) as total,
       SUM(CASE WHEN (
         due_date = $1
-        OR my_day = 1
         OR (recurring IS NOT NULL AND recurring != '' AND recurring_days::jsonb @> $3::jsonb)
-        OR (due_date IS NOT NULL AND due_date < $1)
       ) THEN 1 ELSE 0 END) as my_day,
       SUM(CASE WHEN important = 1 THEN 1 ELSE 0 END) as important,
       SUM(CASE WHEN due_date IS NOT NULL THEN 1 ELSE 0 END) as scheduled,

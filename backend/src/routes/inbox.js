@@ -159,7 +159,7 @@ router.post('/:id/archive', requireScope('tasks', 'write'), async (req, res) => 
     let result;
     if (type === 'task') {
       result = await db.run(
-        `UPDATE task_items SET smart_list = 'someday', updated_at = datetime('now') WHERE id = $1 AND user_id = $2`,
+        `UPDATE task_items SET smart_list = 'organized', updated_at = datetime('now') WHERE id = $1 AND user_id = $2`,
         [id, userId]
       );
     } else if (type === 'note') {
