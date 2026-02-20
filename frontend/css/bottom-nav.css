@@ -154,6 +154,15 @@
     color: #FF8C00 !important;
 }
 
+.bottom-nav-item[data-nav="apex"] {
+    color: #FF8C00;
+}
+
+.bottom-nav-item[data-nav="apex"] svg {
+    stroke: #FF8C00;
+    filter: drop-shadow(0 0 4px rgba(255, 140, 0, 0.25));
+}
+
 .bottom-nav-capture:active {
     transform: scale(0.9);
 }

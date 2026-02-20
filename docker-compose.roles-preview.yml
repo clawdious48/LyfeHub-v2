@@ -1,0 +1,39 @@
+version: '3.8'
+name: lyfehub-roles-preview
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: lyfehub-v2-roles-db
+    environment:
+      POSTGRES_DB: lyfehub
+      POSTGRES_USER: lyfehub
+      POSTGRES_PASSWORD: lyfehub
+    volumes:
+      - roles_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lyfehub"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    container_name: lyfehub-v2-preview-roles
+    ports:
+      - "4008:3000"
+    environment:
+      NODE_ENV: production
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: lyfehub
+      DB_USER: lyfehub
+      DB_PASSWORD: lyfehub
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  roles_postgres_data:
