@@ -447,6 +447,32 @@ const taskModal = {
                 return;
             }
             
+            // Check if sun/myday was clicked (or its SVG child)
+            const myday = target.closest('.task-item-myday, .task-card-myday');
+            if (myday) {
+                e.stopPropagation();
+                const taskItem = myday.closest('.task-item, .task-card');
+                const taskId = taskItem?.dataset?.id;
+                if (taskId) {
+                    // Optimistic toggle
+                    myday.classList.toggle('active');
+                    const svg = myday.querySelector('svg');
+                    if (svg) {
+                        svg.setAttribute('fill', myday.classList.contains('active') ? 'currentColor' : 'none');
+                    }
+                    fetch(`/api/task-items/${taskId}/toggle-my-day`, {
+                        method: 'POST',
+                        credentials: 'include'
+                    }).then(() => {
+                        if (window.taskManager) taskManager.loadTasks();
+                    }).catch(err => {
+                        console.error('Failed to toggle my day:', err);
+                        myday.classList.toggle('active');
+                    });
+                }
+                return;
+            }
+
             // Check if star was clicked (or its SVG child)
             const star = target.closest('.task-item-star, .task-card-star');
             if (star) {
@@ -863,6 +889,9 @@ const taskModal = {
         
         // Helper to render a single task item
         const renderTaskItem = (task) => {
+            const _today = new Date();
+            const _todayStr = `${_today.getFullYear()}-${String(_today.getMonth() + 1).padStart(2, '0')}-${String(_today.getDate()).padStart(2, '0')}`;
+            const isDueToday = task.due_date && task.due_date.substring(0, 10) === _todayStr;
             const dueClass = task.due_date ? this.getDueClass(task.due_date) : '';
             const dueText = task.due_date ? this.formatDueDate(task.due_date) : '';
             const timeText = task.due_time
@@ -883,6 +912,11 @@ const taskModal = {
                     <span class="task-item-title">${this.escapeHtml(task.title)}</span>
                     ${task.recurring ? `<span class="task-item-recurring">🔄</span>` : ''}
                 </div>
+                <button type="button" class="task-item-myday ${isDueToday ? 'active' : ''}" title="Add to My Day">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="${isDueToday ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                </button>
                 <button type="button" class="task-item-star ${task.important ? 'active' : ''}">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="${task.important ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
@@ -912,6 +946,9 @@ const taskModal = {
         cardsContainer.classList.add('size-' + this.cardSize);
         
         cardsContainer.innerHTML = sortedTasks.map(task => {
+            const _today2 = new Date();
+            const _todayStr2 = `${_today2.getFullYear()}-${String(_today2.getMonth() + 1).padStart(2, '0')}-${String(_today2.getDate()).padStart(2, '0')}`;
+            const isDueToday = task.due_date && task.due_date.substring(0, 10) === _todayStr2;
             const subtasks = task.subtasks || [];
             const subtaskCount = subtasks.length;
             const subtasksDone = subtasks.filter(s => s.completed).length;
@@ -971,6 +1008,11 @@ const taskModal = {
                         </svg>
                     </button>
                     <span class="task-card-title">${this.escapeHtml(task.title)}</span>
+                    <button class="task-card-myday task-item-myday ${isDueToday ? 'active' : ''}" title="Add to My Day">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="${isDueToday ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </svg>
+                    </button>
                     <button class="task-card-star ${task.important ? 'active' : ''}">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="${task.important ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
                             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
