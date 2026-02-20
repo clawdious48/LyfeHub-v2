@@ -1268,9 +1268,9 @@ const taskModal = {
             completeBtn.classList.remove('completed');
         }
         
-        // Show delete button and edit button for existing tasks
+        // Show delete button, hide edit toggle (always in edit mode now)
         document.getElementById('delete-task-item').style.display = '';
-        document.getElementById('task-edit-mode-btn').style.display = '';
+        document.getElementById('task-edit-mode-btn').style.display = 'none';
         
         // Show created date
         if (task.created_at) {
@@ -1298,8 +1298,8 @@ const taskModal = {
         // Load and render calendars
         this.loadCalendarsForModal();
 
-        // Start in reader view for existing tasks
-        this.isEditMode = false;
+        // Always open in edit mode
+        this.isEditMode = true;
         this.updateViewMode();
 
         // Show modal
