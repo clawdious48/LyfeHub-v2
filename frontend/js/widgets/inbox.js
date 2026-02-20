@@ -13,6 +13,8 @@
         person: 'type-person'
     };
 
+    let refreshInterval = null;
+
     function escapeHtml(str) {
         if (!str) return '';
         const div = document.createElement('div');
@@ -41,6 +43,7 @@
                 <div class="inbox-empty-icon">🧘</div>
                 <p class="inbox-empty-text">All clear — nothing to process</p>
                 <p class="inbox-empty-sub">Quick capture something or add items via the API</p>
+                <button class="widget-action-btn" onclick="if(window.QuickAdd) QuickAdd.open()">+ Quick Capture</button>
             </div>`;
     }
 
@@ -48,6 +51,11 @@
         const container = document.getElementById('inbox-content');
         const badge = document.getElementById('inbox-badge');
         if (!container) return;
+
+        // Show loading skeleton if container is empty (first load)
+        if (!container.children.length || container.querySelector('.widget-skeleton')) {
+            container.innerHTML = '<div class="widget-skeleton"></div>';
+        }
 
         try {
             const response = await fetch('/api/inbox?limit=10', {
@@ -64,31 +72,39 @@
 
             if (data.items.length === 0) {
                 container.innerHTML = renderEmpty();
-                return;
+            } else {
+                container.innerHTML = `
+                    <div class="inbox-list">
+                        ${data.items.map(renderItem).join('')}
+                    </div>
+                    ${data.count > data.items.length ? `<div class="inbox-more">${data.count - data.items.length} more items...</div>` : ''}
+                `;
+
+                // Bind click handlers
+                container.querySelectorAll('.inbox-item').forEach(el => {
+                    el.addEventListener('click', () => {
+                        const id = el.dataset.id;
+                        const type = el.dataset.type;
+                        if (window.InboxProcessor) {
+                            window.InboxProcessor.open(id, type);
+                        }
+                    });
+                });
             }
 
-            container.innerHTML = `
-                <div class="inbox-list">
-                    ${data.items.map(renderItem).join('')}
-                </div>
-                ${data.count > data.items.length ? `<div class="inbox-more">${data.count - data.items.length} more items...</div>` : ''}
-            `;
+            // Set up auto-refresh every 30s
+            if (refreshInterval) clearInterval(refreshInterval);
+            refreshInterval = setInterval(loadInbox, 30000);
 
-            // Bind click handlers
-            container.querySelectorAll('.inbox-item').forEach(el => {
-                el.addEventListener('click', () => {
-                    const id = el.dataset.id;
-                    const type = el.dataset.type;
-                    if (window.InboxProcessor) {
-                        window.InboxProcessor.open(id, type);
-                    }
-                });
-            });
         } catch (err) {
             container.innerHTML = '<div class="widget-empty"><p>Could not load inbox</p></div>';
             console.error('Inbox widget error:', err);
         }
     }
+
+    // Listen for processing/deletion events to sync badge
+    document.addEventListener('inbox:processed', loadInbox);
+    document.addEventListener('inbox:deleted', loadInbox);
 
     // Initialize — only auto-load if #inbox-content exists in DOM already
     document.addEventListener('DOMContentLoaded', () => {

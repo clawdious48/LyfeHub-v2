@@ -66,7 +66,8 @@
 
             displayRows.forEach(function(record) {
                 var values = record.values || record;
-                html += '<tr>';
+                var recordId = record.id || record._id || '';
+                html += '<tr' + (recordId ? ' data-record-id="' + escapeHtml(String(recordId)) + '"' : '') + '>';
                 displayCols.forEach(function(col) {
                     var key = col.key || col.name;
                     var val = values[key];
@@ -79,11 +80,37 @@
 
             html += '</tbody></table></div>';
 
-            if (records.length > MAX_ROWS) {
-                html += '<div class="base-view-widget-more">' + (records.length - MAX_ROWS) + ' more rows</div>';
+            var totalCount = data.total_count || records.length;
+            if (totalCount > MAX_ROWS) {
+                html += '<div class="base-view-widget-more"><a href="#" class="widget-link" data-navigate="bases">' + (totalCount - MAX_ROWS) + ' more rows →</a></div>';
             }
 
             container.innerHTML = html;
+
+            // Clickable rows
+            var rows = container.querySelectorAll('.base-view-widget-table tbody tr[data-record-id]');
+            rows.forEach(function(row) {
+                row.addEventListener('click', function() {
+                    var recordId = row.dataset.recordId;
+                    var baseId = config.base_id;
+                    if (window.ContextSheet && typeof ContextSheet.showRecord === 'function') {
+                        ContextSheet.showRecord(baseId, recordId);
+                    } else {
+                        var tabBtn = document.querySelector('.tab[data-tab="bases"]');
+                        if (tabBtn) tabBtn.click();
+                    }
+                });
+            });
+
+            // "Show more" link click
+            var moreLink = container.querySelector('.base-view-widget-more a');
+            if (moreLink) {
+                moreLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var tabBtn = document.querySelector('.tab[data-tab="bases"]');
+                    if (tabBtn) tabBtn.click();
+                });
+            }
         })
         .catch(function() {
             container.innerHTML = '<div class="widget-empty"><p>Could not load view</p><p class="widget-empty-sub">The view or base may no longer exist</p></div>';

@@ -568,6 +568,33 @@
 .my-day-event { padding-left: 0; }
 .my-day-event .my-day-task-info { margin-left: 0; }
 
+/* Widget Action Button */
+.widget-action-btn {
+    margin-top: 12px;
+    padding: 8px 20px;
+    border: 1px solid rgba(255, 140, 0, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 140, 0, 0.08);
+    color: #FF8C00;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.widget-action-btn:hover {
+    background: #FF8C00;
+    color: #fff;
+    border-color: #FF8C00;
+}
+[data-theme="dark"] .widget-action-btn {
+    border-color: rgba(255, 140, 0, 0.3);
+    background: rgba(255, 140, 0, 0.12);
+}
+[data-theme="dark"] .widget-action-btn:hover {
+    background: #FF8C00;
+    color: #fff;
+}
+
 /* Quick Notes Widget */
 .quick-notes-list { display: flex; flex-direction: column; gap: 2px; }
 .quick-note-item { padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: background 0.15s; }
@@ -615,6 +642,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+.base-view-widget-table tbody tr {
+    cursor: pointer;
+    transition: background 0.15s;
 }
 
 .base-view-widget-table tbody tr:hover {
@@ -1359,3 +1390,29 @@
     color: #FF8C00;
     background: rgba(255, 140, 0, 0.08);
 }
+
+/* Week Calendar Navigation & Selection */
+.week-nav { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; }
+.week-nav-btn { width: 28px; height: 28px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; background: transparent; color: #666; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.week-nav-btn:hover { border-color: #FF8C00; color: #FF8C00; }
+.week-nav-label { font-size: 13px; font-weight: 600; color: #555; min-width: 100px; text-align: center; }
+.week-day.selected { background: rgba(255, 140, 0, 0.15); }
+.week-day.selected .week-day-number { background: rgba(255, 140, 0, 0.3); color: #FF8C00; }
+[data-theme="dark"] .week-nav-btn { border-color: rgba(255,255,255,0.1); color: rgba(240,240,245,0.6); }
+[data-theme="dark"] .week-nav-btn:hover { border-color: #FF8C00; color: #FF8C00; }
+[data-theme="dark"] .week-nav-label { color: rgba(240,240,245,0.7); }
+[data-theme="dark"] .week-day.selected { background: rgba(255, 140, 0, 0.18); }
+[data-theme="dark"] .week-day.selected .week-day-number { background: rgba(255, 140, 0, 0.35); color: #FF8C00; }
+
+/* Areas Widget */
+.areas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.area-card { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 8px; border-radius: 12px; background: rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.06); cursor: pointer; transition: all 0.15s; text-align: center; }
+.area-card:hover { background: rgba(255,140,0,0.06); border-color: rgba(255,140,0,0.2); transform: translateY(-1px); }
+.area-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 12px 12px 0 0; background: var(--area-color, #FF8C00); opacity: 0; transition: opacity 0.15s; }
+.area-card:hover::before { opacity: 1; }
+.area-icon { font-size: 24px; line-height: 1; }
+.area-name { font-size: 12px; font-weight: 600; color: #333; }
+
+[data-theme="dark"] .area-card { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.08); }
+[data-theme="dark"] .area-card:hover { background: rgba(255,140,0,0.1); border-color: rgba(255,140,0,0.25); }
+[data-theme="dark"] .area-name { color: #f0f0f5; }

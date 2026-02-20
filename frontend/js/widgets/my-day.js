@@ -1,6 +1,8 @@
 (function() {
     'use strict';
 
+    let refreshInterval = null;
+
     function getUserToday() {
         const now = new Date();
         return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -74,6 +76,8 @@
         const container = document.getElementById('my-day-content');
         if (!container) return;
 
+        container.innerHTML = '<div class="widget-skeleton"></div>';
+
         try {
             const today = getUserToday();
 
@@ -98,9 +102,12 @@
             if (allTasks.length === 0 && calEvents.length === 0) {
                 container.innerHTML = `
                     <div class="widget-empty">
-                        <p>No tasks or events for today 🎉</p>
+                        <p>No tasks or events today 🎉</p>
                         <p class="widget-empty-sub">Enjoy your day or add something new</p>
+                        <button class="widget-action-btn" onclick="if(window.QuickAdd) QuickAdd.open('task')">+ Add Task</button>
                     </div>`;
+                if (refreshInterval) clearInterval(refreshInterval);
+                refreshInterval = setInterval(loadMyDay, 60000);
                 return;
             }
 
@@ -167,6 +174,24 @@
                 });
                 item.style.cursor = 'pointer';
             });
+
+            // Bind event click → open event modal
+            container.querySelectorAll('.my-day-event').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    const eventId = item.dataset.id;
+                    if (!eventId) return;
+                    if (window.eventModal) {
+                        eventModal.open(eventId);
+                    } else {
+                        console.log('Event clicked:', eventId);
+                    }
+                });
+                item.style.cursor = 'pointer';
+            });
+
+            // Auto-refresh every 60s
+            if (refreshInterval) clearInterval(refreshInterval);
+            refreshInterval = setInterval(loadMyDay, 60000);
         } catch (err) {
             container.innerHTML = '<div class="widget-empty"><p>Could not load tasks</p></div>';
             console.error('My Day widget error:', err);
@@ -179,7 +204,12 @@
             loadMyDay();
         }
         document.addEventListener('sidebar:navigate', (e) => {
-            if (e.detail && e.detail.tab === 'dashboard') setTimeout(loadMyDay, 100);
+            if (e.detail && e.detail.tab === 'dashboard') {
+                setTimeout(loadMyDay, 100);
+            } else {
+                if (refreshInterval) clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
         });
     });
 

@@ -182,12 +182,14 @@
         minSize: { w: 4, h: 2 },
         render(container) {
             container.id = 'areas-overview-content';
-            container.innerHTML = `
-                <div class="widget-empty-state" style="text-align: center; padding: 2rem 1rem; color: var(--text-secondary, #888);">
-                    <p style="font-size: 1rem; margin-bottom: 0.5rem;">No areas configured yet</p>
-                    <p style="font-size: 0.85rem; opacity: 0.7;">Areas help you organize everything by life context</p>
-                </div>
-            `;
+            if (window.AreasWidget) {
+                window.AreasWidget.refresh();
+            } else {
+                container.innerHTML = '<div class="widget-skeleton"></div>';
+            }
+        },
+        refresh(container) {
+            if (window.AreasWidget) window.AreasWidget.refresh();
         }
     });
 

@@ -303,7 +303,7 @@ const InboxProcessor = {
             }
 
             this.close();
-            this.refreshWidgets();
+            this.refreshWidgets('process');
         } catch (err) {
             console.error('Quick action failed:', err);
         }
@@ -379,7 +379,7 @@ const InboxProcessor = {
             }
 
             this.close();
-            this.refreshWidgets();
+            this.refreshWidgets('process');
         } catch (err) {
             console.error('Process save failed:', err);
         }
@@ -404,13 +404,14 @@ const InboxProcessor = {
             });
 
             this.close();
-            this.refreshWidgets();
+            this.refreshWidgets('delete');
         } catch (err) {
             console.error('Delete failed:', err);
         }
     },
 
-    refreshWidgets() {
+    refreshWidgets(action) {
+        document.dispatchEvent(new CustomEvent(action === 'delete' ? 'inbox:deleted' : 'inbox:processed'));
         if (window.InboxWidget) window.InboxWidget.refresh();
         if (window.MyDayWidget) window.MyDayWidget.refresh();
     },
