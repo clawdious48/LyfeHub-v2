@@ -157,20 +157,43 @@ body.apex-tab-active #mobile-filter-btn {
     }
 }
 
-/* 5. People — hide sidebar on mobile, polish */
+/* 5. People — mobile layout */
 @media (max-width: 1199px) {
+    /* Hide sidebar on mobile — people-page handles its own layout */
     .people-sidebar {
         display: none !important;
     }
+
     .people-main-content {
         margin-left: 0 !important;
         width: 100% !important;
     }
+
     .people-layout {
         display: block !important;
     }
-    
-    /* People search full-width */
+
+    /* People page fills viewport below header */
+    .tab-content[data-tab="people"] {
+        height: calc(100vh - 60px);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .people-page {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    /* Search bar full-width */
+    .people-search-bar {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
     .people-search,
     .people-search-input,
     #people-search {
@@ -178,8 +201,44 @@ body.apex-tab-active #mobile-filter-btn {
         max-width: 100% !important;
         box-sizing: border-box;
     }
-    
-    /* + Add Person button — smaller on mobile */
+
+    /* Contact list scrolls */
+    .people-contact-list {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    /* Detail view slides in from right (absolute overlay) */
+    .people-detail {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    }
+
+    .people-detail.visible {
+        transform: translateX(0);
+    }
+
+    /* FAB clears bottom nav */
+    .people-fab {
+        bottom: calc(var(--bottom-nav-height, 70px) + env(safe-area-inset-bottom, 0px) + 12px);
+    }
+
+    /* Modal slides up from bottom */
+    .people-modal-overlay {
+        align-items: flex-end;
+    }
+
+    .people-modal {
+        border-radius: 20px 20px 0 0;
+        border-bottom: none;
+        max-height: 85vh;
+    }
+
+    /* Legacy add-person button smaller on mobile */
     .sidebar-new-person-btn {
         display: inline-block !important;
         width: auto !important;

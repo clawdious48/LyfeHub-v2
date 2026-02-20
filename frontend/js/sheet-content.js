@@ -233,10 +233,13 @@
     var html = '<div class="sheet-label">Filter</div>';
     html += pillsHTML('sheet-people-filters', [
       { value: 'all', label: 'All' },
-      { value: 'clients', label: 'Clients' },
-      { value: 'adjusters', label: 'Adjusters' },
-      { value: 'contractors', label: 'Contractors' },
-      { value: 'team', label: 'Team' }
+      { value: 'family', label: 'Family' },
+      { value: 'friend', label: 'Friends' },
+      { value: 'colleague', label: 'Colleagues' },
+      { value: 'client', label: 'Clients' },
+      { value: 'vendor', label: 'Vendors' },
+      { value: 'acquaintance', label: 'Acquaintances' },
+      { value: 'other', label: 'Other' }
     ], 'all');
 
     html += '<div class="sheet-divider"></div>';

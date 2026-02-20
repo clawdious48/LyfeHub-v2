@@ -529,7 +529,7 @@
 .month-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: repeat(6, 1fr);
+    grid-template-rows: repeat(6, minmax(0, 1fr));
     gap: 1px;
     flex: 1;
     background: var(--glass-border);
@@ -540,8 +540,7 @@
 .month-cell {
     background: var(--glass-bg);
     padding: 0.5rem;
-    min-height: 100px;
-    max-height: 120px;
+    min-height: 0;
     cursor: pointer;
     transition: var(--transition);
     overflow: hidden;

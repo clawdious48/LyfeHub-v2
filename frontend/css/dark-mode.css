@@ -200,15 +200,15 @@
 
 /* ---- Bases Cards ---- */
 [data-theme="dark"] .base-card,
-[data-theme="dark"] .people-card {
+[data-theme="dark"] .person-card {
     background: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 255, 255, 0.08);
 }
 
 [data-theme="dark"] .base-card:hover,
-[data-theme="dark"] .people-card:hover {
+[data-theme="dark"] .person-card:hover {
     background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(20, 184, 166, 0.3);
+    border-color: rgba(255, 140, 0, 0.3);
 }
 
 /* ---- Base Table View ---- */
@@ -312,7 +312,8 @@
 /* ---- Card Size Buttons ---- */
 [data-theme="dark"] .card-size-btn,
 [data-theme="dark"] .bases-card-size-btn,
-[data-theme="dark"] .people-card-size-btn {
+[data-theme="dark"] .people-card-size-btn,
+[data-theme="dark"] .people-display-btn {
     background: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 255, 255, 0.1);
     color: rgba(240, 240, 245, 0.7);
@@ -970,4 +971,174 @@
 
 [data-theme="dark"] .job-detail-back:hover {
     color: rgba(255, 255, 255, 0.9);
+}
+
+/* ========================================
+   PEOPLE TAB v2 — DARK MODE
+   (New classes from rebuilt people tab)
+   ======================================== */
+
+/* Search bar */
+[data-theme="dark"] .people-search-bar {
+    background: rgba(15, 23, 42, 0.9);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .people-search-input {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .people-search-input:focus {
+    border-color: rgba(255, 140, 0, 0.5);
+    background: rgba(255, 255, 255, 0.07);
+}
+
+/* Contact list items */
+[data-theme="dark"] .people-card {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+    background: transparent;
+}
+
+[data-theme="dark"] .people-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .people-card:active {
+    background: rgba(255, 140, 0, 0.08);
+}
+
+/* Detail view */
+[data-theme="dark"] .people-detail {
+    background: var(--bg-primary);
+}
+
+[data-theme="dark"] .people-detail-header {
+    background: rgba(15, 23, 42, 0.92);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .people-back-btn {
+    color: #fb923c;
+}
+
+[data-theme="dark"] .people-detail-name-header {
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .people-detail-quick-actions {
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .people-detail-section {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .people-detail-field {
+    border-bottom-color: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="dark"] .people-detail-link {
+    color: #fb923c;
+}
+
+[data-theme="dark"] .people-detail-link:hover {
+    color: #FF8C00;
+}
+
+[data-theme="dark"] .people-detail-tag {
+    background: rgba(255, 140, 0, 0.15);
+    color: #fb923c;
+}
+
+/* FAB */
+[data-theme="dark"] .people-fab {
+    box-shadow: 0 4px 16px rgba(255, 140, 0, 0.35);
+}
+
+/* Modal */
+[data-theme="dark"] .people-modal-overlay {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .people-modal {
+    background: rgba(15, 23, 42, 0.97);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .people-modal-header {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .people-modal-footer {
+    background: rgba(15, 23, 42, 0.97);
+    border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .people-modal-cancel {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .people-modal-cancel:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* Form */
+[data-theme="dark"] .people-form-section {
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .people-form-section-toggle {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .people-form-section-toggle:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .people-form-section-content {
+    border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .people-form-input,
+[data-theme="dark"] .people-form-select,
+[data-theme="dark"] .people-form-textarea {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .people-form-input:focus,
+[data-theme="dark"] .people-form-select:focus,
+[data-theme="dark"] .people-form-textarea:focus {
+    border-color: rgba(255, 140, 0, 0.5);
+    background: rgba(255, 255, 255, 0.07);
+}
+
+/* Legacy person-card dark mode */
+[data-theme="dark"] .person-card-relationship {
+    color: #fb923c;
+}
+
+[data-theme="dark"] .person-card-phone,
+[data-theme="dark"] .person-card-email,
+[data-theme="dark"] .person-card-address {
+    color: #fb923c;
+}
+
+[data-theme="dark"] .person-card-phone:hover,
+[data-theme="dark"] .person-card-email:hover,
+[data-theme="dark"] .person-card-address:hover {
+    background: rgba(255, 140, 0, 0.1);
+}
+
+[data-theme="dark"] .people-add-btn-empty {
+    box-shadow: 0 2px 8px rgba(255, 140, 0, 0.25);
 }

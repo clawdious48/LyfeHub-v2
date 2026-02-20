@@ -598,74 +598,71 @@
 
     <!-- People Tab Content -->
     <main class="tab-content" data-tab="people">
-        <div id="people-layout" class="people-layout">
-            <!-- Sidebar -->
-            <aside id="people-sidebar" class="people-sidebar">
-                <button id="sidebar-new-person-btn" class="sidebar-new-person-btn">+ Add Person</button>
-                <div class="sidebar-header">
-                    <button id="people-add-group-btn" class="btn btn-primary sidebar-add-group-btn">+ New Group</button>
-                    <button id="people-toggle-all-groups-btn" class="sidebar-btn toggle-groups-btn" title="Expand/Collapse All">
-                        <svg class="toggle-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="6 9 12 4 18 9"/>
-                            <polyline points="6 15 12 20 18 15"/>
-                        </svg>
+        <div class="people-page">
+            <!-- Search bar - sticky -->
+            <div class="people-search-bar">
+                <div class="people-search-bar-inner">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="search" id="people-search" class="people-search-input" placeholder="Search people..." autocomplete="off">
+                </div>
+            </div>
+
+            <!-- Contact list -->
+            <div id="people-contact-list" class="people-contact-list">
+                <!-- Rendered by JS -->
+            </div>
+
+            <!-- Empty state -->
+            <div id="people-empty" class="people-empty-state" style="display:none">
+                <div class="people-empty-icon">👥</div>
+                <p>No contacts yet</p>
+                <button class="people-add-btn-empty" onclick="peopleShowAddModal()">+ Add Person</button>
+            </div>
+
+            <!-- Detail view (hidden by default) -->
+            <div id="people-detail" class="people-detail" style="display:none">
+                <div class="people-detail-header">
+                    <button class="people-back-btn" onclick="peopleCloseDetail()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                        Back
                     </button>
+                    <div class="people-detail-actions">
+                        <button class="people-edit-btn" id="people-edit-btn">Edit</button>
+                        <button class="people-delete-btn" id="people-delete-btn">Delete</button>
+                    </div>
                 </div>
-                <div id="people-sidebar-content" class="sidebar-content">
-                    <!-- Groups and people populated by JS -->
+                <div id="people-detail-content" class="people-detail-content">
+                    <!-- Rendered by JS -->
                 </div>
-            </aside>
+            </div>
 
-            <!-- Main Content -->
-            <div class="people-main-content">
-                <!-- List View (shows all people) -->
-                <div id="people-list-view" class="people-list-view">
-                    <div class="people-view-controls">
-                        <div class="people-display-toggle">
-                            <button class="people-display-btn active" data-display="cards">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-                                    <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
-                                </svg>
-                                Cards
-                            </button>
-                            <button class="people-display-btn" data-display="list">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/>
-                                    <line x1="3" y1="18" x2="21" y2="18"/>
-                                </svg>
-                                List
-                            </button>
-                        </div>
-                        <div class="people-card-size-control" id="people-card-size-control">
-                            <span class="people-card-size-label">Size:</span>
-                            <button class="people-card-size-btn" data-size="small" title="Small cards">S</button>
-                            <button class="people-card-size-btn active" data-size="medium" title="Medium cards">M</button>
-                            <button class="people-card-size-btn" data-size="large" title="Large cards">L</button>
-                        </div>
-                    </div>
-                    <div id="people-list" class="people-list people-cards-grid size-medium">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
+            <!-- FAB for adding -->
+            <button class="people-fab" id="people-fab" onclick="peopleShowAddModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+        </div>
 
-                <!-- Person Detail View (hidden by default) -->
-                <div id="person-detail-view" class="person-detail-view" style="display: none;">
-                    <div class="person-detail-header">
-                        <button id="back-to-people" class="btn btn-icon" title="Back to people">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="19" y1="12" x2="5" y2="12"/>
-                                <polyline points="12 19 5 12 12 5"/>
-                            </svg>
-                        </button>
-                        <h2 id="person-name-display" class="person-name-display"></h2>
-                    </div>
-                    <div id="person-detail-content" class="person-detail-content">
-                        <!-- Person details rendered by JS -->
-                    </div>
+        <!-- Add/Edit Modal -->
+        <div id="people-modal-overlay" class="people-modal-overlay">
+            <div class="people-modal">
+                <div class="people-modal-header">
+                    <h3 id="people-modal-title">Add Person</h3>
+                    <button class="people-modal-close" onclick="peopleCloseModal()">&times;</button>
                 </div>
-            </div><!-- /.people-main-content -->
-        </div><!-- /.people-layout -->
+                <div class="people-modal-body" id="people-modal-body">
+                    <!-- Form rendered by JS -->
+                </div>
+                <div class="people-modal-footer">
+                    <button class="people-modal-cancel" onclick="peopleCloseModal()">Cancel</button>
+                    <button class="people-modal-save" id="people-modal-save">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keep sidebar for desktop -->
+        <aside id="people-sidebar" class="people-sidebar" style="display:none">
+            <div id="people-sidebar-content" class="sidebar-content"></div>
+        </aside>
     </main>
 
     <!-- Notes Tab Content -->

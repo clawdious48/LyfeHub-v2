@@ -7995,7 +7995,7 @@ body.column-dragging .base-table {
 }
 
 /* ---- Detail Hero ---- */
-.people-detail-hero {
+.people-detail-name-header {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -8006,7 +8006,7 @@ body.column-dragging .base-table {
     background: rgba(255, 255, 255, 0.5);
 }
 
-.people-detail-hero-avatar {
+.people-detail-avatar {
     width: 80px;
     height: 80px;
     min-width: 80px;
@@ -8022,7 +8022,7 @@ body.column-dragging .base-table {
     box-shadow: 0 4px 16px rgba(255, 140, 0, 0.25);
 }
 
-.people-detail-hero-name {
+.people-detail-name {
     font-size: 1.3rem;
     font-weight: 700;
     color: var(--text-primary);
@@ -8030,7 +8030,7 @@ body.column-dragging .base-table {
     line-height: 1.2;
 }
 
-.people-detail-hero-meta {
+.people-detail-nickname {
     font-size: 0.875rem;
     color: var(--text-muted);
     margin: 0;
@@ -9113,11 +9113,11 @@ body.column-dragging .base-table {
         font-size: 0.75rem;
     }
 
-    .people-detail-hero {
+    .people-detail-name-header {
         padding: 16px 20px 12px;
     }
 
-    .people-detail-hero-avatar {
+    .people-detail-avatar {
         width: 60px;
         height: 60px;
         font-size: 1.35rem;
@@ -9215,7 +9215,7 @@ body.column-dragging .base-table {
     border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
-[data-theme="dark"] .people-detail-hero {
+[data-theme="dark"] .people-detail-name-header {
     background: rgba(255, 255, 255, 0.03);
     border-bottom-color: rgba(255, 255, 255, 0.08);
 }
