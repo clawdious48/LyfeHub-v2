@@ -294,6 +294,41 @@ router.post('/:id/toggle', requireScope('tasks', 'write'), async (req, res) => {
 });
 
 /**
+ * Toggle "My Day" for a task — sets due_date to today if not today, clears due_date if already today
+ * POST /api/task-items/:id/toggle-my-day
+ */
+router.post('/:id/toggle-my-day', requireScope('tasks', 'write'), async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const taskId = req.params.id;
+    
+    // Get current task
+    const current = await getTaskItemById(taskId, userId);
+    if (!current) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+    
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    
+    let newDueDate;
+    if (current.due_date && current.due_date.substring(0, 10) === todayStr) {
+      // Already due today → clear due_date
+      newDueDate = null;
+    } else {
+      // Not due today → set to today
+      newDueDate = todayStr;
+    }
+    
+    const updated = await updateTaskItem(taskId, { due_date: newDueDate }, userId);
+    res.json({ item: updated });
+  } catch (err) {
+    console.error('Toggle my-day error:', err);
+    res.status(500).json({ error: 'Failed to toggle my day' });
+  }
+});
+
+/**
  * DELETE /api/task-items/:id
  * Delete a task item
  */

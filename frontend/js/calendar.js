@@ -1760,15 +1760,15 @@ const calendar = {
                 }
             });
 
-            // Click on cell — open event modal for empty area
+            // Click on cell — open day detail modal for empty area
             cell.addEventListener('click', (e) => {
                 if (e.target.classList.contains('month-event') || e.target.closest('.month-event')) {
                     return; // Handled by month-event click handler
                 }
-                // Clicked empty area of cell → open event modal with this date
+                // Clicked empty area of cell → open day detail timeline modal
                 const date = cell.dataset.date;
-                if (date && typeof eventModal !== 'undefined') {
-                    eventModal.open({ date });
+                if (date) {
+                    this.openDayDetailModal(date);
                 }
             });
         });
@@ -3085,6 +3085,152 @@ const calendar = {
         }
         // Check if any of the task's calendars are selected
         return task.calendar_ids.some(calId => this.selectedCalendarIds.includes(calId));
+    },
+
+    // ==========================================
+    // DAY DETAIL MODAL (month cell tap → timeline)
+    // ==========================================
+
+    /**
+     * Open the day detail modal showing a full timeline for a date
+     */
+    openDayDetailModal(dateStr) {
+        const modal = document.getElementById('day-detail-modal');
+        if (!modal) return;
+
+        const date = new Date(dateStr + 'T00:00:00');
+        const titleEl = document.getElementById('day-detail-title');
+        if (titleEl) {
+            titleEl.textContent = date.toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        const dayTasks = this.getTasksForDate(dateStr);
+
+        // Separate all-day (no time) vs time-blocked items
+        const allDayItems = dayTasks.filter(t => {
+            const time = t.due_time || t.start_time;
+            return !time;
+        });
+        const timedItems = dayTasks.filter(t => {
+            const time = t.due_time || t.start_time;
+            return !!time;
+        });
+
+        // Render all-day section
+        const allDayContainer = document.getElementById('day-detail-all-day');
+        const allDayItemsEl = document.getElementById('day-detail-all-day-items');
+        if (allDayItems.length === 0) {
+            allDayContainer.style.display = 'none';
+        } else {
+            allDayContainer.style.display = '';
+            allDayItemsEl.innerHTML = allDayItems.map(item => {
+                const color = this.getItemColor(item);
+                const isEvent = item._type === 'event';
+                const typeClass = isEvent ? 'event-type' : 'task-type';
+                return `<div class="day-detail-all-day-item ${typeClass}" data-id="${item.id}" style="border-left-color:${color};background:${this.hexToRgba(color, 0.15)};color:var(--text-primary)">${this.escapeHtml(item.title)}</div>`;
+            }).join('');
+
+            // Bind click events on all-day items
+            allDayItemsEl.querySelectorAll('.day-detail-all-day-item').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const task = this.findTask(el.dataset.id);
+                    if (task) this.openItemModal(task);
+                });
+            });
+        }
+
+        // Render hour grid + time blocks
+        const timeline = document.getElementById('day-detail-timeline');
+        let html = '';
+
+        // Hour rows
+        for (let hour = 0; hour < 24; hour++) {
+            html += `<div class="day-detail-hour-row" style="top:${hour * 60}px">
+                <div class="day-detail-hour-label">${this.formatHour(hour)}</div>
+                <div class="day-detail-hour-slot"></div>
+            </div>`;
+        }
+
+        // Time blocks
+        timedItems.forEach(item => {
+            const startTime = item.due_time || item.start_time;
+            const endTime = item.due_time_end || item.end_time;
+            const [sh, sm] = startTime.split(':').map(Number);
+            const startMins = sh * 60 + sm;
+
+            let endMins;
+            if (endTime) {
+                const [eh, em] = endTime.split(':').map(Number);
+                endMins = eh * 60 + em;
+            } else {
+                endMins = startMins + 60; // Default 1 hour
+            }
+
+            const top = startMins; // 1px per minute
+            const height = Math.max(20, endMins - startMins);
+            const color = this.getItemColor(item);
+            const isEvent = item._type === 'event';
+            const typeClass = isEvent ? 'event-type' : 'task-type';
+            const timeStr = endTime
+                ? `${this.formatTime(startTime)} – ${this.formatTime(endTime)}`
+                : this.formatTime(startTime);
+
+            html += `<div class="day-detail-time-block ${typeClass}" data-id="${item.id}" style="top:${top}px;height:${height}px;border-left-color:${color};background:${this.hexToRgba(color, 0.2)}">
+                <div class="day-detail-block-title">${this.escapeHtml(item.title)}</div>
+                <div class="day-detail-block-time">${timeStr}</div>
+            </div>`;
+        });
+
+        // Current time indicator if viewing today
+        const today = this.formatDateISO(new Date());
+        if (dateStr === today) {
+            const now = new Date();
+            const nowMins = now.getHours() * 60 + now.getMinutes();
+            html += `<div class="day-detail-now-line" style="top:${nowMins}px"></div>`;
+        }
+
+        timeline.innerHTML = html;
+
+        // Bind click on time blocks
+        timeline.querySelectorAll('.day-detail-time-block').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const task = this.findTask(el.dataset.id);
+                if (task) this.openItemModal(task);
+            });
+        });
+
+        // Open modal
+        modal.classList.add('open');
+
+        // Close handlers
+        document.getElementById('day-detail-close').onclick = () => this.closeDayDetailModal();
+        modal.querySelector('.day-detail-backdrop').onclick = () => this.closeDayDetailModal();
+
+        // Scroll to ~7 AM or current time
+        const scrollEl = document.getElementById('day-detail-scroll');
+        if (scrollEl) {
+            if (dateStr === today) {
+                const now = new Date();
+                const nowMins = now.getHours() * 60 + now.getMinutes();
+                scrollEl.scrollTop = Math.max(0, nowMins - 60);
+            } else {
+                scrollEl.scrollTop = 7 * 60; // 7 AM
+            }
+        }
+    },
+
+    /**
+     * Close the day detail modal
+     */
+    closeDayDetailModal() {
+        const modal = document.getElementById('day-detail-modal');
+        if (modal) modal.classList.remove('open');
     },
 
     /**

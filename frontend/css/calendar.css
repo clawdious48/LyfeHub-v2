@@ -541,8 +541,10 @@
     background: var(--glass-bg);
     padding: 0.5rem;
     min-height: 100px;
+    max-height: 120px;
     cursor: pointer;
     transition: var(--transition);
+    overflow: hidden;
 }
 
 .month-cell:hover {
@@ -2015,7 +2017,9 @@
     /* Month cells smaller */
     .month-cell {
         min-height: 70px;
+        max-height: 90px;
         padding: 0.25rem;
+        overflow: hidden;
     }
 
     .month-date {
@@ -2163,7 +2167,9 @@
     /* Month grid: tighter */
     .month-cell {
         min-height: 55px;
+        max-height: 75px;
         padding: 0.2rem;
+        overflow: hidden;
     }
 
     .month-date {
@@ -2250,4 +2256,215 @@
     .calendar-main {
         overflow-x: hidden;
     }
+}
+
+/* =============================================
+   Day Detail Modal (month cell tap → day timeline)
+   ============================================= */
+.day-detail-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.day-detail-modal.open {
+    display: flex;
+}
+
+.day-detail-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.day-detail-content {
+    position: relative;
+    background: var(--glass-bg, #fff);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 420px;
+    height: 75vh;
+    max-height: 700px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.1));
+}
+
+.day-detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.08));
+    flex-shrink: 0;
+}
+
+.day-detail-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.day-detail-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0 0.25rem;
+    line-height: 1;
+}
+
+.day-detail-close:hover {
+    color: var(--text-primary);
+}
+
+.day-detail-all-day {
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.08));
+    flex-shrink: 0;
+    min-height: 36px;
+}
+
+.day-detail-all-day-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+    letter-spacing: 0.5px;
+}
+
+.day-detail-all-day-items {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.day-detail-all-day-item {
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-left: 3px solid;
+    transition: background 0.15s;
+}
+
+.day-detail-all-day-item:hover {
+    filter: brightness(1.15);
+}
+
+.day-detail-all-day-item.task-type {
+    border-left-style: dashed;
+}
+
+.day-detail-timeline-scroll {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.day-detail-timeline {
+    position: relative;
+    height: 1440px; /* 24h × 60px per hour */
+    min-height: 1440px;
+}
+
+.day-detail-hour-row {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 60px;
+    border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.05));
+    display: flex;
+    align-items: flex-start;
+}
+
+.day-detail-hour-label {
+    width: 55px;
+    padding: 0.2rem 0.5rem 0 0;
+    text-align: right;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.day-detail-hour-slot {
+    flex: 1;
+    height: 100%;
+    border-left: 1px solid var(--glass-border, rgba(255,255,255,0.05));
+}
+
+.day-detail-time-block {
+    position: absolute;
+    left: 60px;
+    right: 8px;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    overflow: hidden;
+    border-left: 3px solid;
+    z-index: 2;
+    transition: filter 0.15s;
+}
+
+.day-detail-time-block:hover {
+    filter: brightness(1.15);
+}
+
+.day-detail-time-block.task-type {
+    border-left-style: dashed;
+}
+
+.day-detail-block-title {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.day-detail-block-time {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+}
+
+.day-detail-now-line {
+    position: absolute;
+    left: 55px;
+    right: 0;
+    height: 2px;
+    background: #FF8C00;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.day-detail-now-line::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: -3px;
+    width: 8px;
+    height: 8px;
+    background: #FF8C00;
+    border-radius: 50%;
+}
+
+.day-detail-empty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 2rem;
+    font-size: 0.85rem;
 }

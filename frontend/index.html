@@ -2055,6 +2055,26 @@
         </div>
     </div>
 
+    <!-- Day Detail Modal (month cell tap → day timeline) -->
+    <div id="day-detail-modal" class="day-detail-modal">
+        <div class="day-detail-backdrop"></div>
+        <div class="day-detail-content">
+            <div class="day-detail-header">
+                <span class="day-detail-title" id="day-detail-title">Friday, Feb 20</span>
+                <button type="button" class="day-detail-close" id="day-detail-close">&times;</button>
+            </div>
+            <div class="day-detail-all-day" id="day-detail-all-day">
+                <div class="day-detail-all-day-label">All Day</div>
+                <div class="day-detail-all-day-items" id="day-detail-all-day-items"></div>
+            </div>
+            <div class="day-detail-timeline-scroll" id="day-detail-scroll">
+                <div class="day-detail-timeline" id="day-detail-timeline">
+                    <!-- Hours + time blocks rendered by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Task Assignment Popup (for click-drag time selection) -->
     <div id="time-block-popup" class="time-block-popup">
         <div class="time-block-popup-content">
