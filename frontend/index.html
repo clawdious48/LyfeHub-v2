@@ -2603,8 +2603,12 @@
     document.addEventListener('sidebar:navigate', function(e) {
         var tab = e.detail && e.detail.tab;
         if (!tab) return;
-        var headerTab = document.querySelector('.tabs .tab[data-tab="' + tab + '"]');
-        if (headerTab) headerTab.click();
+        if (window.kanban && window.kanban.switchTab) {
+            window.kanban.switchTab(tab);
+        } else {
+            var headerTab = document.querySelector('.tabs .tab[data-tab="' + tab + '"]');
+            if (headerTab) headerTab.click();
+        }
     });
 
     // Mobile: move tasks view toggle into the tasks-view-bar

@@ -603,10 +603,14 @@
             window.contextSheet.hide();
         }
         
-        // Normal navigation
-        var headerTab = document.querySelector('.tabs .tab[data-tab="' + tabId + '"]');
-        if (headerTab) {
-            headerTab.click();
+        // Normal navigation — use kanban.switchTab which handles all tab types
+        if (window.kanban && window.kanban.switchTab) {
+            window.kanban.switchTab(tabId);
+        } else {
+            var headerTab = document.querySelector('.tabs .tab[data-tab="' + tabId + '"]');
+            if (headerTab) {
+                headerTab.click();
+            }
         }
         
         currentActiveTab = tabId;

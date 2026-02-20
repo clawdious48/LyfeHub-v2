@@ -19,7 +19,7 @@ services:
 
   lyfehub-v2:
     build:
-      context: .
+      context: ./worktrees/projects
       dockerfile: Dockerfile.postgres
     container_name: lyfehub-v2-projects-preview
     restart: unless-stopped
