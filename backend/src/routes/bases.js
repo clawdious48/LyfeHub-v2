@@ -49,6 +49,27 @@ router.get('/', requireScope('bases', 'read'), async (req, res) => {
   }
 });
 
+// GET /api/bases/list - Alias for GET /api/bases (used by mobile context sheet)
+router.get('/list', requireScope('bases', 'read'), async (req, res) => {
+  try {
+    const bases = await basesDb.getAllBases(req.user.id);
+    const enrichedBases = await Promise.all(bases.map(async (base) => {
+      const records = await basesDb.getRecordsByBase(base.id);
+      const properties = await basesDb.getPropertiesByBase(base.id);
+      return {
+        ...base,
+        record_count: records.length,
+        column_count: properties.length,
+        columns: properties.slice(0, 6).map(p => ({ name: p.name, type: p.type }))
+      };
+    }));
+    res.json(enrichedBases);
+  } catch (error) {
+    console.error('Error fetching bases:', error);
+    res.status(500).json({ error: 'Failed to fetch bases' });
+  }
+});
+
 // GET /api/bases/:id - Get single base with properties and records
 // Query params: ?expandRelations=true to include resolved relation data
 
