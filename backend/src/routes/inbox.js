@@ -141,4 +141,46 @@ router.get('/count', requireScope('tasks', 'read'), async (req, res) => {
   }
 });
 
+/**
+ * POST /api/inbox/:id/archive
+ * Archive an inbox item (moves it out of inbox without deleting).
+ * For tasks: sets smart_list to 'someday'
+ * For notes: sets type to 'Reference'
+ * For people: sets tags to '["archived"]'
+ */
+router.post('/:id/archive', requireScope('tasks', 'write'), async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+    const { type } = req.body; // 'task', 'note', or 'person'
+
+    if (!type) return res.status(400).json({ error: 'type is required' });
+
+    let result;
+    if (type === 'task') {
+      result = await db.run(
+        `UPDATE task_items SET smart_list = 'someday', updated_at = datetime('now') WHERE id = $1 AND user_id = $2`,
+        [id, userId]
+      );
+    } else if (type === 'note') {
+      result = await db.run(
+        `UPDATE notes SET type = 'Reference', updated_at = datetime('now') WHERE id = $1 AND user_id = $2`,
+        [id, userId]
+      );
+    } else if (type === 'person') {
+      result = await db.run(
+        `UPDATE people SET tags = '["archived"]', updated_at = datetime('now') WHERE id = $1 AND user_id = $2`,
+        [id, userId]
+      );
+    } else {
+      return res.status(400).json({ error: 'Invalid type' });
+    }
+
+    res.json({ success: true, archived: true });
+  } catch (err) {
+    console.error('Inbox archive error:', err);
+    res.status(500).json({ error: 'Failed to archive item' });
+  }
+});
+
 module.exports = router;
