@@ -7429,7 +7429,7 @@ body.column-dragging .base-table {
    ======================================== */
 
 /* ---- Page Container ---- */
-.tab-content[data-tab="people"] {
+.tab-content[data-tab="people"].active {
     height: calc(100vh - 60px);
     overflow: hidden;
     display: flex;
