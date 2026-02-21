@@ -480,3 +480,72 @@
         margin-left: 0 !important;
     }
 }
+
+/* ===== Show full sidebar on tablet landscape (iPad) ===== */
+@media (min-width: 769px) and (max-width: 1199px) and (orientation: landscape) {
+    .sidebar {
+        display: flex !important;
+        width: 220px;
+    }
+    .sidebar.sidebar-collapsed {
+        width: 60px;
+    }
+    .app-content {
+        margin-left: 220px !important;
+    }
+    .sidebar-is-collapsed .app-content {
+        margin-left: 60px !important;
+    }
+    /* Hide the icon-strip side-nav — full sidebar replaces it */
+    .side-nav {
+        display: none !important;
+    }
+    /* Hide bottom nav — sidebar handles navigation */
+    .bottom-nav {
+        display: none !important;
+    }
+    /* Override side-nav.css margin-left (which sets 64px for icon strip) */
+    .header {
+        margin-left: 220px !important;
+    }
+    .sidebar-is-collapsed .header {
+        margin-left: 60px !important;
+    }
+    .tab-content,
+    .dashboard-content,
+    main,
+    #apex-job-detail {
+        margin-left: 220px !important;
+    }
+    .sidebar-is-collapsed .tab-content,
+    .sidebar-is-collapsed .dashboard-content,
+    .sidebar-is-collapsed main,
+    .sidebar-is-collapsed #apex-job-detail {
+        margin-left: 60px !important;
+    }
+    /* Show header tabs (side-nav.css hides them) */
+    .header .tabs,
+    header .tabs,
+    nav.tabs {
+        display: flex !important;
+    }
+    /* Module sidebars (people, bases) — match desktop layout */
+    .people-page {
+        flex-direction: row;
+    }
+    .people-sidebar {
+        display: flex;
+    }
+    .people-detail {
+        position: relative;
+        transform: none;
+        transition: none;
+        flex: 1;
+    }
+    .people-detail.hidden-desktop {
+        display: none;
+    }
+    .bases-sidebar {
+        display: flex !important;
+    }
+}
