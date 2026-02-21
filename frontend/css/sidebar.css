@@ -507,7 +507,9 @@
     .bottom-nav {
         display: none !important;
     }
-    /* Override side-nav.css margin-left (which sets 64px for icon strip) */
+    /* Override side-nav.css margin-left: 64px on these elements.
+       .app-content handles the sidebar offset — children must NOT also have margin-left
+       or they'll double-offset. Reset them to 0. */
     .header {
         margin-left: 220px !important;
     }
@@ -518,13 +520,7 @@
     .dashboard-content,
     main,
     #apex-job-detail {
-        margin-left: 220px !important;
-    }
-    .sidebar-is-collapsed .tab-content,
-    .sidebar-is-collapsed .dashboard-content,
-    .sidebar-is-collapsed main,
-    .sidebar-is-collapsed #apex-job-detail {
-        margin-left: 60px !important;
+        margin-left: 0 !important;
     }
     /* Show header tabs (side-nav.css hides them) */
     .header .tabs,
