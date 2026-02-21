@@ -174,7 +174,7 @@ body.apex-tab-active #mobile-filter-btn {
     }
 
     /* People page fills viewport below header */
-    .tab-content[data-tab="people"] {
+    .tab-content[data-tab="people"].active {
         height: calc(100vh - 60px);
         overflow: hidden;
         display: flex;
