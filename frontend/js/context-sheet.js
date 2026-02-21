@@ -115,6 +115,10 @@
         currentSection = sectionId;
         isVisible = true;
         
+        // Remove any sticky footer from previous section
+        var oldFooter = sheetBody && sheetBody.querySelector('.sheet-sticky-footer');
+        if (oldFooter) oldFooter.remove();
+        
         // Show correct section content
         sheet.querySelectorAll('.sheet-section').forEach(function(el) {
             el.classList.toggle('active', el.getAttribute('data-section') === sectionId);
@@ -130,6 +134,10 @@
     function hide() {
         if (!sheet) return;
         isVisible = false;
+        
+        // Remove any sticky footer
+        var stickyFooter = sheetBody && sheetBody.querySelector('.sheet-sticky-footer');
+        if (stickyFooter) stickyFooter.remove();
         
         backdrop.classList.remove('visible');
         sheet.classList.remove('visible');

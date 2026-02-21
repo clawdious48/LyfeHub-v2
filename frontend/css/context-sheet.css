@@ -28,13 +28,14 @@
     box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.12);
     max-height: calc(100vh - env(safe-area-inset-top, 0px));
     max-height: calc(100dvh - env(safe-area-inset-top, 0px));
-    min-height: 120px;
+    min-height: calc(100vh - env(safe-area-inset-top, 0px));
+    min-height: calc(100dvh - env(safe-area-inset-top, 0px));
     overflow: hidden;
     display: flex;
     flex-direction: column;
     /* Extend to bottom of screen, covering bottom nav */
     margin-bottom: 0;
-    padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: 0;
 }
 
 .context-sheet.expanded .context-sheet-body {
@@ -63,7 +64,7 @@
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 0 20px 20px;
+    padding: 0 20px calc(20px + 58px + env(safe-area-inset-bottom, 0px));
     -webkit-overflow-scrolling: touch;
 }
 
@@ -212,6 +213,24 @@
 .sheet-action-btn:active {
     background: rgba(255, 140, 0, 0.08);
     border-style: solid;
+}
+
+/* When sticky footer is present, reduce content bottom padding */
+.context-sheet-body:has(.sheet-sticky-footer) .context-sheet-content {
+    padding-bottom: 20px;
+}
+
+/* Sticky footer for action buttons */
+.sheet-sticky-footer {
+    flex-shrink: 0;
+    padding: 12px 20px;
+    padding-bottom: calc(12px + 58px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    background: inherit;
+}
+
+[data-theme="dark"] .sheet-sticky-footer {
+    border-top-color: rgba(255, 255, 255, 0.06);
 }
 
 /* ===== Responsive ===== */

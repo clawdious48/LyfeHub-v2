@@ -4876,6 +4876,7 @@ function showNewBaseModal() {
   document.getElementById('new-base-description').value = '';
   document.getElementById('new-base-name').focus();
 }
+window.showNewBaseModal = showNewBaseModal;
 
 function closeNewBaseModal() {
   const modal = document.getElementById('new-base-modal');

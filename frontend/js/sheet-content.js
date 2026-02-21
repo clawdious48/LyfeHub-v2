@@ -271,9 +271,7 @@
 
   // ── Bases ──
   function populateBases(section) {
-    var html = '<div class="sheet-action-btn" id="sheet-new-base">+ Create Base</div>';
-    html += '<div class="sheet-divider"></div>';
-    html += '<div class="sheet-label">Core Bases</div>';
+    var html = '<div class="sheet-label">Core Bases</div>';
     html += '<div id="sheet-bases-core"><div class="sheet-label" style="opacity:0.5">Loading...</div></div>';
     html += '<div class="sheet-divider"></div>';
     html += '<div class="sheet-label">My Bases</div>';
@@ -281,11 +279,21 @@
 
     section.innerHTML = html;
 
-    section.querySelector('#sheet-new-base').addEventListener('click', function() {
-      var addBtn = document.querySelector('#create-base-btn, .create-base-btn, [data-action="create-base"]');
-      if (addBtn) addBtn.click();
-      else document.dispatchEvent(new CustomEvent('bases:create'));
+    // Add sticky create button to sheet body (outside scrollable content)
+    var sheetBody = section.closest('.context-sheet-body');
+    var existingSticky = sheetBody.querySelector('.sheet-sticky-footer');
+    if (existingSticky) existingSticky.remove();
+
+    var footer = document.createElement('div');
+    footer.className = 'sheet-sticky-footer';
+    footer.innerHTML = '<div class="sheet-action-btn" id="sheet-new-base">+ Create Base</div>';
+    sheetBody.appendChild(footer);
+
+    footer.querySelector('#sheet-new-base').addEventListener('click', function() {
       dismissSheet();
+      if (typeof window.showNewBaseModal === 'function') {
+        window.showNewBaseModal();
+      }
     });
 
     loadBases(section);
