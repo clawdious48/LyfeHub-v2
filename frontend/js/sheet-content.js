@@ -70,33 +70,30 @@
 
     section.innerHTML = html;
 
-    // Wire view pills
+    // Wire view pills — call taskModal.switchView directly
     section.querySelector('#sheet-tasks-views').addEventListener('click', function(e) {
       var btn = e.target.closest('.sheet-pill');
       if (!btn) return;
       activatePill(this, btn);
-      var target = document.querySelector('.tasks-view-toggle .view-btn[data-view="' + btn.dataset.value + '"]');
-      if (target) target.click();
+      if (window.taskModal && taskModal.switchView) taskModal.switchView(btn.dataset.value);
       dismissSheet();
     });
 
-    // Wire sort pills
+    // Wire sort pills — call taskModal.handleSortClick directly
     section.querySelector('#sheet-tasks-sort').addEventListener('click', function(e) {
       var btn = e.target.closest('.sheet-pill');
       if (!btn) return;
       activatePill(this, btn);
-      var target = document.querySelector('.sort-btn[data-sort="' + btn.dataset.value + '"]');
-      if (target) target.click();
+      if (window.taskModal && taskModal.handleSortClick) taskModal.handleSortClick(btn.dataset.value, btn);
       dismissSheet();
     });
 
-    // Wire display pills
+    // Wire display pills — call taskModal.switchDisplay directly
     section.querySelector('#sheet-tasks-view-mode').addEventListener('click', function(e) {
       var btn = e.target.closest('.sheet-pill');
       if (!btn) return;
       activatePill(this, btn);
-      var target = document.querySelector('.tasks-display-btn[data-display="' + btn.dataset.value + '"]');
-      if (target) target.click();
+      if (window.taskModal && taskModal.switchDisplay) taskModal.switchDisplay(btn.dataset.value);
       dismissSheet();
     });
 
@@ -139,14 +136,12 @@
       html += '</div>';
     });
     el.innerHTML = html;
+    // Call taskModal.switchToList directly
     el.addEventListener('click', function(e) {
       var item = e.target.closest('.sheet-list-item');
       if (!item) return;
       var listId = item.dataset.listId;
-      // Try clicking the list in the My Lists menu
-      var target = document.querySelector('#my-lists-items .my-lists-item[data-list-id="' + listId + '"]');
-      if (target) target.click();
-      else document.dispatchEvent(new CustomEvent('tasks:select-list', { detail: { listId: listId } }));
+      if (window.taskModal && taskModal.switchToList) taskModal.switchToList(listId);
       dismissSheet();
     });
   }
@@ -170,12 +165,12 @@
 
     section.innerHTML = html;
 
+    // Call calendar.switchView directly
     section.querySelector('#sheet-cal-views').addEventListener('click', function(e) {
       var btn = e.target.closest('.sheet-pill');
       if (!btn) return;
       activatePill(this, btn);
-      var target = document.querySelector('.calendar-view-btn[data-view="' + btn.dataset.value + '"]');
-      if (target) target.click();
+      if (window.calendar && calendar.switchView) calendar.switchView(btn.dataset.value);
       dismissSheet();
     });
 
@@ -440,9 +435,11 @@
       var lossVal = section.querySelector('#sheet-apex-loss-type').value || 'all';
       var ownerVal = section.querySelector('#sheet-apex-owner').value || 'all';
 
-      if (statusSelect) { statusSelect.value = statusVal; statusSelect.dispatchEvent(new Event('change')); }
-      if (lossSelect) { lossSelect.value = lossVal || 'all'; lossSelect.dispatchEvent(new Event('change')); }
-      if (ownerSelect) { ownerSelect.value = ownerVal || 'all'; ownerSelect.dispatchEvent(new Event('change')); }
+      // Set filter values directly, then call applyFilters once
+      if (statusSelect) statusSelect.value = statusVal;
+      if (lossSelect) lossSelect.value = lossVal || 'all';
+      if (ownerSelect) ownerSelect.value = ownerVal || 'all';
+      if (window.apexJobs && apexJobs.applyFilters) apexJobs.applyFilters();
 
       dismissSheet();
     });
@@ -476,18 +473,15 @@
 
     section.innerHTML = html;
 
+    // Call kanban.switchTab directly
     section.querySelector('#sheet-dash-tables').addEventListener('click', function() {
-      var basesTab = document.querySelector('.tabs .tab[data-tab="bases"]');
-      if (basesTab) basesTab.click();
+      if (window.kanban && kanban.switchTab) kanban.switchTab('bases');
       if (window.bottomNav) window.bottomNav.updateActiveState('bases');
       dismissSheet();
     });
 
     section.querySelector('#sheet-dash-settings').addEventListener('click', function() {
-      var settingsTab = document.querySelector('.tab[data-tab="settings"]');
-      if (settingsTab) {
-        settingsTab.click();
-      }
+      if (window.kanban && kanban.switchTab) kanban.switchTab('settings');
       dismissSheet();
     });
   }

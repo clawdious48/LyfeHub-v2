@@ -47,6 +47,25 @@ All routes are REST, JSON-based, and require auth via `authMiddleware`. Key rout
 - **CSS** (`frontend/css/`): `style.css` is the main stylesheet. `apex-theme.css` + `apex-jobs.css` for Apex styling. Multiple `*-mobile.css` and `*-responsive.css` files for mobile support.
 - **Design system:** Dark mode (#0a0a0f background), neon glassmorphic cards with blur effects, CSS variables for neon palette (`--neon-purple`, `--neon-blue`, `--neon-cyan`, `--neon-pink`, `--neon-orange`, `--neon-green`). See `resources/apex-integration/STYLE-GUIDE.md` for full color system.
 
+## Design Principles (Non-Negotiable)
+
+### Direct Function Binding — NO Daisy-Chaining
+**Every UI button/action MUST call its logic function directly.** Never have a button that programmatically `.click()`s another button in the DOM.
+
+❌ **WRONG:** `document.querySelector('#some-other-btn').click()`
+✅ **RIGHT:** `someFunction()` — call the actual function
+
+When the same action needs to be triggered from multiple places (e.g., desktop sidebar AND mobile context sheet), **expose the function globally** (`window.myFunction = myFunction`) and call it from both places. This prevents:
+- Silent breakage when the target button is renamed/removed
+- Tight coupling between unrelated UI components
+- Debugging nightmares where button A breaks because button B changed
+
+### Naming Conventions
+- DB/API types: `snake_case` → `multi_select` NOT `multi-select`
+- API JSON fields: `snake_case` → `base_id` NOT `baseId`
+- CSS classes: `kebab-case` → `.job-card`
+- JS variables: `camelCase` → `activeTab`
+
 ## Key Patterns
 
 - **IDs:** UUID v4 for all records (generated server-side via `uuid` package)
