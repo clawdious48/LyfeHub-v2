@@ -482,7 +482,10 @@
 }
 
 /* ===== Show full sidebar on tablet landscape (iPad) ===== */
-@media (min-width: 769px) and (max-width: 1199px) and (orientation: landscape) {
+/* Note: Using min-width: 1025px without orientation so it works on iPad 11"+ 
+   regardless of Safari's orientation reporting. iPads < 1025px wide stay on
+   bottom nav in portrait. */
+@media (min-width: 1025px) and (max-width: 1199px) {
     .sidebar {
         display: flex !important;
         width: 220px;
