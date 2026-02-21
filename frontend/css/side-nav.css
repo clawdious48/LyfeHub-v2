@@ -1,0 +1,151 @@
+/* ========================================
+   SIDE NAVIGATION — iPad Landscape
+   Vertical icon nav on the left edge
+   ======================================== */
+
+.side-nav {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 64px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 0;
+    gap: 2px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.side-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    color: #888;
+    padding: 0;
+    gap: 2px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.side-nav-item svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+}
+
+.side-nav-item span {
+    font-size: 9px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.2px;
+}
+
+.side-nav-item:active {
+    background: rgba(255, 140, 0, 0.08);
+}
+
+.side-nav-item.active {
+    color: #FF8C00;
+    background: rgba(255, 140, 0, 0.1);
+}
+
+/* Spacer to push items apart */
+.side-nav-spacer {
+    flex: 1;
+}
+
+/* Capture button in side nav */
+.side-nav-item.side-nav-capture {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FF8C00, #E07800);
+    color: white;
+    margin: 8px 0;
+    box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
+}
+
+.side-nav-item.side-nav-capture svg {
+    stroke: white;
+    width: 20px;
+    height: 20px;
+}
+
+.side-nav-item.side-nav-capture span {
+    display: none;
+}
+
+.side-nav-item.side-nav-capture:active {
+    transform: scale(0.95);
+    background: linear-gradient(135deg, #E07800, #C06800);
+}
+
+/* ========================================
+   Show side-nav on tablet landscape
+   ======================================== */
+@media (min-width: 769px) and (max-width: 1199px) and (orientation: landscape) {
+    .side-nav {
+        display: flex;
+    }
+
+    /* Offset main content for side nav */
+    .header,
+    .tab-content,
+    .dashboard-content,
+    main,
+    #apex-job-detail {
+        margin-left: 64px;
+    }
+
+    /* Hide bottom nav when side nav is active */
+    .bottom-nav {
+        display: none !important;
+    }
+
+    /* Hide header tabs — side nav handles navigation */
+    .header .tabs,
+    header .tabs,
+    nav.tabs {
+        display: none !important;
+    }
+}
+
+/* ========================================
+   Dark Mode
+   ======================================== */
+[data-theme="dark"] .side-nav {
+    background: rgba(15, 23, 42, 0.95);
+    border-right-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .side-nav-item {
+    color: rgba(240, 240, 245, 0.5);
+}
+
+[data-theme="dark"] .side-nav-item.active {
+    color: #FF8C00;
+    background: rgba(255, 140, 0, 0.12);
+}
+
+[data-theme="dark"] .side-nav-item:active {
+    background: rgba(255, 140, 0, 0.12);
+}

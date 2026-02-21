@@ -4435,27 +4435,11 @@ a.apex-address.info-link {
         grid-template-columns: repeat(3, 1fr) !important;
     }
 
-    /* Hide bottom nav and FAB on landscape tablet (use desktop nav) */
-    .bottom-nav {
-        display: none !important;
-    }
+    /* Side nav handles navigation on landscape tablet — see side-nav.css */
     .fab-container,
     .fab-btn,
     #fab-btn {
         display: none !important;
-    }
-
-    /* Restore desktop header tabs */
-    .header .tabs,
-    header .tabs,
-    nav.tabs {
-        display: flex !important;
-    }
-    .header-right {
-        display: flex !important;
-    }
-    .header {
-        justify-content: unset !important;
     }
 }
 
