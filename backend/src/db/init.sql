@@ -362,6 +362,21 @@ CREATE INDEX IF NOT EXISTS idx_api_keys_user_id ON api_keys(user_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_api_keys_key_hash ON api_keys(key_hash);
 
 -- ============================================
+-- BASE GROUPS (Organize bases into groups)
+-- ============================================
+CREATE TABLE IF NOT EXISTS base_groups (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  icon TEXT DEFAULT '📁',
+  user_id TEXT REFERENCES users(id),
+  position INTEGER DEFAULT 0,
+  collapsed INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_base_groups_user_id ON base_groups(user_id);
+
+-- ============================================
 -- BASES (Notion/Airtable-style databases)
 -- ============================================
 CREATE TABLE IF NOT EXISTS bases (
@@ -370,6 +385,8 @@ CREATE TABLE IF NOT EXISTS bases (
   description TEXT DEFAULT '',
   icon TEXT DEFAULT '📊',
   user_id TEXT REFERENCES users(id),
+  group_id TEXT,
+  position INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -397,7 +414,9 @@ CREATE INDEX IF NOT EXISTS idx_base_properties_base_id ON base_properties(base_i
 CREATE TABLE IF NOT EXISTS base_records (
   id TEXT PRIMARY KEY,
   base_id TEXT REFERENCES bases(id) ON DELETE CASCADE,
-  values_json TEXT DEFAULT '{}',
+  data TEXT DEFAULT '{}',
+  global_id INTEGER,
+  position INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -1446,3 +1465,14 @@ CREATE TABLE IF NOT EXISTS event_reminders (
 );
 
 ALTER TABLE task_items ADD COLUMN IF NOT EXISTS calendar_id TEXT REFERENCES calendars(id) ON DELETE SET NULL;
+
+-- ============================================
+-- MIGRATION: Fix base_records schema
+-- ============================================
+DO $$ BEGIN
+  ALTER TABLE base_records RENAME COLUMN values_json TO data;
+EXCEPTION WHEN undefined_column THEN NULL; END $$;
+ALTER TABLE base_records ADD COLUMN IF NOT EXISTS global_id INTEGER;
+ALTER TABLE base_records ADD COLUMN IF NOT EXISTS position INTEGER DEFAULT 0;
+ALTER TABLE bases ADD COLUMN IF NOT EXISTS group_id TEXT;
+ALTER TABLE bases ADD COLUMN IF NOT EXISTS position INTEGER DEFAULT 0;
