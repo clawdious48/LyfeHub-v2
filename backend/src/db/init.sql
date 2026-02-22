@@ -19,36 +19,6 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email);
 
 -- ============================================
--- TASKS (Kanban board)
--- ============================================
-CREATE TABLE IF NOT EXISTS tasks (
-  id TEXT PRIMARY KEY,
-  title TEXT NOT NULL,
-  description TEXT DEFAULT '',
-  acceptance_criteria TEXT DEFAULT '[]',
-  status TEXT DEFAULT 'planned' CHECK(status IN ('planned', 'ready', 'in_progress', 'blocked', 'review', 'done')),
-  priority INTEGER DEFAULT 3 CHECK(priority >= 1 AND priority <= 5),
-  context_links TEXT DEFAULT '[]',
-  notes TEXT DEFAULT '',
-  activity_log TEXT DEFAULT '[]',
-  session_id TEXT,
-  user_id TEXT REFERENCES users(id),
-  scheduled_date TEXT,
-  scheduled_start TEXT,
-  scheduled_end TEXT,
-  is_all_day INTEGER DEFAULT 0,
-  review_state TEXT DEFAULT '{}',
-  apex_job_ref TEXT DEFAULT '',
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  completed_at TIMESTAMPTZ
-);
-CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
-CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority);
-CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
-CREATE INDEX IF NOT EXISTS idx_tasks_scheduled_date ON tasks(scheduled_date);
-
--- ============================================
 -- TASK ITEMS (Personal tasks / My Day)
 -- ============================================
 CREATE TABLE IF NOT EXISTS task_items (

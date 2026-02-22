@@ -5,7 +5,6 @@ const path = require('path');
 
 // Import routes
 const authRoutes = require('./routes/auth');
-const tasksRoutes = require('./routes/tasks');
 const taskItemsRoutes = require('./routes/taskItems');
 const taskListsRoutes = require('./routes/taskLists');
 const usersRoutes = require('./routes/users');
@@ -42,7 +41,6 @@ if (process.env.NODE_ENV !== 'production') {
 
 // API Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/tasks', tasksRoutes);
 app.use('/api/task-items', taskItemsRoutes);
 app.use('/api/task-lists', taskListsRoutes);
 app.use('/api/users', usersRoutes);
