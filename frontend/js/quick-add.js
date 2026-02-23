@@ -10,54 +10,58 @@
     function build() {
         overlay = document.createElement('div');
         overlay.className = 'quick-add-overlay';
-        overlay.addEventListener('click', close);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
 
         panel = document.createElement('div');
-        panel.className = 'quick-add-panel';
+        panel.className = 'quick-add-modal';
         panel.innerHTML = `
-            <button class="quick-add-close" type="button">&times;</button>
-            <input class="quick-add-title" type="text" placeholder="What do you need to do?" autocomplete="off" />
-            <div class="quick-add-divider"></div>
+            <div class="quick-add-header">
+                <h2 class="quick-add-title">New Task</h2>
+                <button class="quick-add-close" type="button">&times;</button>
+            </div>
+            <input class="quick-add-input" type="text" placeholder="What do you need to do?" autocomplete="off" />
 
-            <div class="quick-add-field">
-                <label>Status</label>
-                <div class="quick-add-segments" id="qa-status-group">
-                    <button class="quick-add-segment active" data-value="todo" type="button">To Do</button>
-                    <button class="quick-add-segment" data-value="in_progress" type="button">In Progress</button>
-                    <button class="quick-add-segment" data-value="done" type="button">Done</button>
+            <div class="quick-add-expanded visible">
+                <div class="quick-add-field">
+                    <label>Status</label>
+                    <div class="quick-add-status-group" id="qa-status-group">
+                        <button class="status-btn active" data-value="todo" type="button">To Do</button>
+                        <button class="status-btn" data-value="in_progress" type="button">In Progress</button>
+                        <button class="status-btn" data-value="done" type="button">Done</button>
+                    </div>
+                </div>
+
+                <div class="quick-add-row">
+                    <div class="quick-add-field">
+                        <label>Due Date</label>
+                        <input id="qa-date" type="date" />
+                    </div>
+                </div>
+
+                <div class="quick-add-field">
+                    <label>Priority</label>
+                    <div class="quick-add-priority-group" id="qa-priority-group">
+                        <button class="priority-btn" data-priority="low" data-value="4" type="button">Low</button>
+                        <button class="priority-btn" data-priority="medium" data-value="3" type="button">Medium</button>
+                        <button class="priority-btn" data-priority="high" data-value="2" type="button">High</button>
+                    </div>
+                </div>
+
+                <div class="quick-add-myday-toggle" id="qa-myday">
+                    <span>Add to My Day</span>
                 </div>
             </div>
 
-            <div class="quick-add-field">
-                <label>Due Date</label>
-                <input id="qa-date" type="date" />
-            </div>
-
-            <div class="quick-add-field">
-                <label>Priority</label>
-                <div class="quick-add-pills" id="qa-priority-group">
-                    <button class="quick-add-pill" data-value="1" type="button">Critical</button>
-                    <button class="quick-add-pill" data-value="2" type="button">High</button>
-                    <button class="quick-add-pill" data-value="3" type="button">Medium</button>
-                    <button class="quick-add-pill" data-value="4" type="button">Low</button>
-                </div>
-            </div>
-
-            <div class="quick-add-myday" id="qa-myday">
-                <span class="quick-add-myday-icon">My Day</span>
-                <span class="quick-add-myday-text">Add to My Day</span>
-            </div>
-
-            <button class="quick-add-create" type="button" disabled>Create Task</button>
+            <button class="quick-add-save" type="button" disabled>Create Task</button>
         `;
 
+        overlay.appendChild(panel);
         document.body.appendChild(overlay);
-        document.body.appendChild(panel);
 
-        titleInput = panel.querySelector('.quick-add-title');
+        titleInput = panel.querySelector('.quick-add-input');
         dateInput = panel.querySelector('#qa-date');
         mydayToggle = panel.querySelector('#qa-myday');
-        createBtn = panel.querySelector('.quick-add-create');
+        createBtn = panel.querySelector('.quick-add-save');
 
         titleInput.addEventListener('input', () => {
             createBtn.disabled = !titleInput.value.trim();
@@ -71,18 +75,18 @@
         });
 
         panel.querySelector('#qa-status-group').addEventListener('click', (e) => {
-            const seg = e.target.closest('.quick-add-segment');
+            const seg = e.target.closest('.status-btn');
             if (!seg) return;
-            panel.querySelectorAll('#qa-status-group .quick-add-segment').forEach(s => s.classList.remove('active'));
+            panel.querySelectorAll('#qa-status-group .status-btn').forEach(s => s.classList.remove('active'));
             seg.classList.add('active');
             statusValue = seg.dataset.value;
         });
 
         panel.querySelector('#qa-priority-group').addEventListener('click', (e) => {
-            const pill = e.target.closest('.quick-add-pill');
+            const pill = e.target.closest('.priority-btn');
             if (!pill) return;
             const wasActive = pill.classList.contains('active');
-            panel.querySelectorAll('#qa-priority-group .quick-add-pill').forEach(p => p.classList.remove('active'));
+            panel.querySelectorAll('#qa-priority-group .priority-btn').forEach(p => p.classList.remove('active'));
             if (!wasActive) { pill.classList.add('active'); priorityValue = pill.dataset.value; }
             else { priorityValue = ''; }
         });
@@ -141,9 +145,9 @@
         priorityValue = '';
         dateInput.value = '';
         mydayToggle.classList.remove('active');
-        panel.querySelectorAll('.quick-add-segment').forEach(s => s.classList.remove('active'));
-        panel.querySelector('.quick-add-segment[data-value="todo"]').classList.add('active');
-        panel.querySelectorAll('.quick-add-pill').forEach(p => p.classList.remove('active'));
+        panel.querySelectorAll('.status-btn').forEach(s => s.classList.remove('active'));
+        panel.querySelector('.status-btn[data-value="todo"]').classList.add('active');
+        panel.querySelectorAll('.priority-btn').forEach(p => p.classList.remove('active'));
         createBtn.disabled = true;
         createBtn.textContent = 'Create Task';
         requestAnimationFrame(() => {
