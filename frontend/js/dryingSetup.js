@@ -347,7 +347,7 @@ const dryingSetup = {
         const message = rooms.length
             ? 'Rooms were pre-populated from the job\'s affected areas. Rename, remove, or add rooms below.'
             : 'Add your first room below.';
-        let html = `<p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0 0 1rem">
+        let html = `<p style="color:var(--text-muted);font-size:0.82rem;margin:0 0 1rem">
             ${message}
         </p>`;
         html += `<div class="dry-room-list" id="dry-wiz-rooms">`;
@@ -388,7 +388,7 @@ const dryingSetup = {
         }
         const activeId = this._state.activeRoomId;
 
-        let html = `<p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0 0 0.75rem">
+        let html = `<p style="color:var(--text-muted);font-size:0.82rem;margin:0 0 0.75rem">
             Add moisture reference points for each room. Pick a surface type, then a material.
         </p>`;
 
@@ -463,12 +463,12 @@ const dryingSetup = {
         const baselineMap = {};
         for (const b of baselines) baselineMap[b.material_code] = b.baseline_value;
 
-        let html = `<p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0 0 1rem">
+        let html = `<p style="color:var(--text-muted);font-size:0.82rem;margin:0 0 1rem">
             Set baseline (unaffected) moisture values for each material type in use.
         </p>`;
 
         if (!usedCodes.length) {
-            html += `<p style="color:rgba(255,255,255,0.4);font-size:0.85rem;">No reference points added yet. Go back to the Reference Points step to add some.</p>`;
+            html += `<p style="color:var(--text-muted);font-size:0.85rem;">No reference points added yet. Go back to the Reference Points step to add some.</p>`;
             return html;
         }
 
@@ -489,7 +489,7 @@ const dryingSetup = {
     _renderStep3() {
         const { chambers } = this._state;
         const esc = dryingUtils.escapeHtml;
-        let html = `<p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0 0 1rem">
+        let html = `<p style="color:var(--text-muted);font-size:0.82rem;margin:0 0 1rem">
             Chambers group rooms that share the same dehumidification zone. Rename the default or add more.
         </p>`;
         for (let i = 0; i < chambers.length; i++) {
@@ -529,7 +529,7 @@ const dryingSetup = {
             return ai - bi;
         });
 
-        let html = `<p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0 0 1rem">
+        let html = `<p style="color:var(--text-muted);font-size:0.82rem;margin:0 0 1rem">
             Assign each room to a chamber. Use the dropdown to select which chamber a room belongs to.
         </p>`;
         html += `<div class="dry-room-list">`;
@@ -573,16 +573,16 @@ const dryingSetup = {
         // ── Atmospheric Preview ──
         html += `<div class="dry-atmo-section"><h4>Atmospheric Readings</h4>`;
         html += `<div class="dry-atmo-table">`;
-        html += `<div class="dry-atmo-row" style="background:rgba(255,255,255,0.04);">
-            <div class="dry-atmo-label" style="font-weight:600;color:rgba(255,255,255,0.5);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;">Location</div>
-            <div class="dry-atmo-cell" style="font-weight:600;color:rgba(255,255,255,0.5);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;text-align:center;">Temp / RH</div>
-            <div class="dry-atmo-cell" style="font-weight:600;color:rgba(255,255,255,0.5);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;text-align:center;">GPP</div>
+        html += `<div class="dry-atmo-row" style="background:var(--bg-hover);">
+            <div class="dry-atmo-label" style="font-weight:600;color:var(--text-muted);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;">Location</div>
+            <div class="dry-atmo-cell" style="font-weight:600;color:var(--text-muted);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;text-align:center;">Temp / RH</div>
+            <div class="dry-atmo-cell" style="font-weight:600;color:var(--text-muted);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;text-align:center;">GPP</div>
         </div>`;
         html += this._previewAtmoRow('Unaffected Area');
         html += this._previewAtmoRow('Outside');
         for (const ch of chambers) {
             const color = ch.color || 'var(--apex-primary)';
-            html += `<div class="dry-atmo-row" style="background:rgba(255,255,255,0.05);border-left:3px solid ${color};">
+            html += `<div class="dry-atmo-row" style="background:var(--bg-hover);border-left:3px solid ${color};">
                 <div class="dry-atmo-label" style="grid-column:1/-1;font-weight:600;color:${color};font-size:0.8rem;">${esc(ch.name)}</div>
             </div>`;
             html += this._previewAtmoRow('Intake');
@@ -646,7 +646,7 @@ const dryingSetup = {
             for (const et of equipTypes) {
                 html += `<div class="dry-equipment-row">
                     <div class="dry-equipment-label">${esc(et.label)}</div>
-                    <span style="font-size:0.85rem;color:rgba(255,255,255,0.3);">0</span>
+                    <span style="font-size:0.85rem;color:var(--text-muted);">0</span>
                 </div>`;
             }
             html += `</div>`;
@@ -654,7 +654,7 @@ const dryingSetup = {
             for (const et of specTypes) {
                 html += `<div class="dry-equipment-row">
                     <div class="dry-equipment-label">${esc(et.label)}</div>
-                    <span style="font-size:0.85rem;color:rgba(255,255,255,0.3);">0</span>
+                    <span style="font-size:0.85rem;color:var(--text-muted);">0</span>
                 </div>`;
             }
             html += `</div></div></div>`;

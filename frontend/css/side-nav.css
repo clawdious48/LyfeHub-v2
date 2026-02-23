@@ -11,10 +11,10 @@
     bottom: 0;
     width: 64px;
     z-index: 1000;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--bg-surface);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-right: 1px solid rgba(0, 0, 0, 0.08);
+    border-right: 1px solid var(--border);
     flex-direction: column;
     align-items: center;
     padding: 12px 0;
@@ -35,7 +35,7 @@
     background: transparent;
     cursor: pointer;
     transition: background 0.15s ease, color 0.15s ease;
-    color: #888;
+    color: var(--text-muted);
     padding: 0;
     gap: 2px;
     -webkit-tap-highlight-color: transparent;
@@ -60,12 +60,12 @@
 }
 
 .side-nav-item:active {
-    background: rgba(255, 140, 0, 0.08);
+    background: var(--accent-light);
 }
 
 .side-nav-item.active {
-    color: #FF8C00;
-    background: rgba(255, 140, 0, 0.1);
+    color: var(--accent);
+    background: var(--accent-light);
 }
 
 /* Spacer to push items apart */
@@ -78,10 +78,10 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #FF8C00, #E07800);
+    background: linear-gradient(135deg, var(--accent), var(--accent-hover));
     color: white;
     margin: 8px 0;
-    box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
+    box-shadow: 0 2px 8px var(--accent-glow);
 }
 
 .side-nav-item.side-nav-capture svg {
@@ -96,7 +96,7 @@
 
 .side-nav-item.side-nav-capture:active {
     transform: scale(0.95);
-    background: linear-gradient(135deg, #E07800, #C06800);
+    background: linear-gradient(135deg, var(--accent-hover), var(--accent-hover));
 }
 
 /* ========================================
@@ -132,20 +132,4 @@
 /* ========================================
    Dark Mode
    ======================================== */
-[data-theme="dark"] .side-nav {
-    background: rgba(15, 23, 42, 0.95);
-    border-right-color: rgba(255, 255, 255, 0.08);
-}
-
-[data-theme="dark"] .side-nav-item {
-    color: rgba(240, 240, 245, 0.5);
-}
-
-[data-theme="dark"] .side-nav-item.active {
-    color: #FF8C00;
-    background: rgba(255, 140, 0, 0.12);
-}
-
-[data-theme="dark"] .side-nav-item:active {
-    background: rgba(255, 140, 0, 0.12);
-}
+/* Most colors handled by CSS tokens; only shadow overrides remain */

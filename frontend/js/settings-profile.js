@@ -15,6 +15,7 @@
         await loadProfile();
         setupNameEditing();
         setupThemeSelector();
+        setupFontSelector();
         setupDateFormat();
     }
 
@@ -143,6 +144,34 @@
             }
             localStorage.setItem('theme', theme);
         }
+    }
+
+    function setupFontSelector() {
+        var selector = document.getElementById('font-selector');
+        if (!selector) return;
+        var buttons = selector.querySelectorAll('.theme-option');
+        var saved = (window.LyfeHubTheme && window.LyfeHubTheme.getFont) ? window.LyfeHubTheme.getFont() : (localStorage.getItem('lyfehub-font') || 'serif');
+        buttons.forEach(function(btn) {
+            btn.classList.toggle('active', btn.dataset.font === saved);
+        });
+        buttons.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var font = btn.dataset.font;
+                buttons.forEach(function(b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                if (window.LyfeHubTheme && window.LyfeHubTheme.setFont) {
+                    window.LyfeHubTheme.setFont(font);
+                } else {
+                    localStorage.setItem('lyfehub-font', font);
+                    if (font === 'mono') {
+                        document.documentElement.setAttribute('data-font', 'mono');
+                    } else {
+                        document.documentElement.removeAttribute('data-font');
+                    }
+                }
+                Settings.showToast('Font updated', 'success');
+            });
+        });
     }
 
     function setupDateFormat() {

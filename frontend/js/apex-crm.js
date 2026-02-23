@@ -171,7 +171,7 @@ const apexCrm = {
     renderOrgRow(org) {
         const isExpanded = this.expandedId === org.id;
         const tags = (org.tags || []).map(t =>
-            `<span class="crm-tag" style="background:${t.color || 'rgba(0,170,255,0.2)'}">${this._esc(t.name || t.tag)}</span>`
+            `<span class="crm-tag" style="background:${t.color || 'var(--calendar-light, rgba(0,170,255,0.2))'}">${this._esc(t.name || t.tag)}</span>`
         ).join('');
         const contactCount = org.contact_count || 0;
         const typeLabel = (org.type || '').replace(/_/g, ' ');
@@ -306,7 +306,7 @@ const apexCrm = {
         const isExpanded = this.expandedId === contact.id;
         const name = [contact.first_name, contact.last_name].filter(Boolean).join(' ');
         const tags = (contact.tags || []).map(t =>
-            `<span class="crm-tag" style="background:${t.color || 'rgba(5,255,161,0.2)'}">${this._esc(t.name || t.tag)}</span>`
+            `<span class="crm-tag" style="background:${t.color || 'var(--success-light, rgba(5,255,161,0.2))'}">${this._esc(t.name || t.tag)}</span>`
         ).join('');
         const orgs = (contact.organizations || contact.orgs || []).map(o =>
             `<span class="crm-org-badge">${this._esc(o.name || o.org_name || '')}</span>`
@@ -602,7 +602,7 @@ const apexCrm = {
                         const checked = currentTags.includes(t.id) ? 'checked' : '';
                         return `<label class="crm-tag-checkbox">
                             <input type="checkbox" value="${t.id}" ${checked}>
-                            <span class="crm-tag" style="background:${t.color || 'rgba(0,170,255,0.2)'}">${this._esc(t.name)}</span>
+                            <span class="crm-tag" style="background:${t.color || 'var(--calendar-light, rgba(0,170,255,0.2))'}">${this._esc(t.name)}</span>
                         </label>`;
                     }).join('')}
                     ${allTags.length === 0 ? '<div class="apex-empty-state">No tags defined yet</div>' : ''}
@@ -660,7 +660,7 @@ const apexCrm = {
                         const checked = currentTags.includes(t.id) ? 'checked' : '';
                         return `<label class="crm-tag-checkbox">
                             <input type="checkbox" value="${t.id}" ${checked}>
-                            <span class="crm-tag" style="background:${t.color || 'rgba(5,255,161,0.2)'}">${this._esc(t.name)}</span>
+                            <span class="crm-tag" style="background:${t.color || 'var(--success-light, rgba(5,255,161,0.2))'}">${this._esc(t.name)}</span>
                         </label>`;
                     }).join('')}
                     ${allTags.length === 0 ? '<div class="apex-empty-state">No tags defined yet</div>' : ''}

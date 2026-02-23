@@ -226,7 +226,7 @@ const jobDetailTabs = {
         };
 
         const typeBadgeTextColors = {
-            general: '#aaa',
+            general: 'var(--text-muted)',
             call: 'var(--neon-blue)',
             email: 'var(--neon-purple)',
             site_visit: 'var(--neon-green)',

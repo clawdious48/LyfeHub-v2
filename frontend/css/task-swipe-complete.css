@@ -24,7 +24,7 @@
     top: 0;
     bottom: 0;
     right: 0;
-    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    background: linear-gradient(135deg, var(--success) 0%, #16a34a 100%);
     display: flex;
     align-items: center;
     padding-left: 20px;
@@ -131,7 +131,7 @@
    ========================================================================== */
 
 .swipe-complete-ready .swipe-complete-bg {
-    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    background: linear-gradient(135deg, var(--success) 0%, #15803d 100%);
 }
 
 .swipe-complete-ready .swipe-complete-icon {

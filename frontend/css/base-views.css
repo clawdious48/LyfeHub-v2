@@ -40,9 +40,9 @@
 }
 
 .view-tab.active {
-  background: #FF8C00;
+  background: var(--accent);
   color: #fff;
-  border-color: #FF8C00;
+  border-color: var(--accent);
   font-weight: 600;
 }
 
@@ -76,7 +76,7 @@
 
 .view-tab.active .view-tab-edit,
 .view-tab.active .view-tab-delete {
-  color: #fff;
+  color: #fff; /* white-on-accent is fine */
 }
 
 /* "+" Add View Button */
@@ -99,9 +99,9 @@
 }
 
 .view-tab-add:hover {
-  border-color: #FF8C00;
-  color: #FF8C00;
-  background: rgba(255, 140, 0, 0.06);
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
 }
 
 /* Views Toolbar */
@@ -157,9 +157,9 @@
 }
 
 .toolbar-btn.active {
-  background: rgba(255, 140, 0, 0.1);
-  border-color: #FF8C00;
-  color: #FF8C00;
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .toolbar-btn .btn-icon {
@@ -183,8 +183,8 @@
   gap: 4px;
   padding: 2px 8px;
   font-size: 0.75rem;
-  background: rgba(255, 140, 0, 0.08);
-  border: 1px solid rgba(255, 140, 0, 0.3);
+  background: var(--accent-light);
+  border: 1px solid var(--accent-light);
   border-radius: 12px;
   color: var(--text-primary, #333);
 }
@@ -200,7 +200,7 @@
 }
 
 .filter-pill-remove:hover {
-  color: #e74c3c;
+  color: var(--danger);
 }
 
 .clear-all-filters-btn {
@@ -214,7 +214,7 @@
 }
 
 .clear-all-filters-btn:hover {
-  color: #e74c3c;
+  color: var(--danger);
 }
 
 /* View Config Panel (modal) */
@@ -251,7 +251,7 @@
 .view-config-add-btn {
   background: none;
   border: none;
-  color: #FF8C00;
+  color: var(--accent);
   font-size: 0.8rem;
   cursor: pointer;
   padding: 2px 6px;
@@ -259,7 +259,7 @@
 }
 
 .view-config-add-btn:hover {
-  background: rgba(255, 140, 0, 0.1);
+  background: var(--accent-light);
 }
 
 /* Filter/Sort Rule Row */
@@ -303,7 +303,7 @@
 }
 
 .view-config-rule-remove:hover {
-  color: #e74c3c;
+  color: var(--danger);
 }
 
 /* Column Visibility Toggles */
@@ -326,7 +326,7 @@
 }
 
 .view-config-column-row input[type="checkbox"] {
-  accent-color: #FF8C00;
+  accent-color: var(--accent);
 }
 
 .view-config-column-row .column-label {
@@ -381,7 +381,7 @@
 }
 
 .view-default-toggle input[type="checkbox"] {
-  accent-color: #FF8C00;
+  accent-color: var(--accent);
 }
 
 /* Column Toggle in Columns Modal */
@@ -406,7 +406,7 @@
 }
 
 .column-toggle input[type="checkbox"] {
-  accent-color: #FF8C00;
+  accent-color: var(--accent);
 }
 
 .column-toggle .column-name {
@@ -437,9 +437,9 @@
 }
 
 [data-theme="dark"] .view-tab.active {
-  background: #FF8C00;
+  background: var(--accent);
   color: #fff;
-  border-color: #FF8C00;
+  border-color: var(--accent);
 }
 
 [data-theme="dark"] .view-tab-add {
@@ -448,8 +448,8 @@
 }
 
 [data-theme="dark"] .view-tab-add:hover {
-  border-color: #FF8C00;
-  color: #FF8C00;
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 [data-theme="dark"] .toolbar-btn {
@@ -464,9 +464,9 @@
 }
 
 [data-theme="dark"] .toolbar-btn.active {
-  background: rgba(255, 140, 0, 0.15);
-  border-color: #FF8C00;
-  color: #FF8C00;
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 [data-theme="dark"] .filter-pills-bar {
@@ -475,8 +475,8 @@
 }
 
 [data-theme="dark"] .filter-pill {
-  background: rgba(255, 140, 0, 0.12);
-  border-color: rgba(255, 140, 0, 0.3);
+  background: var(--accent-light);
+  border-color: var(--accent-light);
   color: var(--text-primary, #ddd);
 }
 

@@ -243,7 +243,7 @@
 
 .apex-btn-primary {
     background: var(--apex-gradient-primary);
-    color: #ffffff;
+    color: #fff;
     border: none;
     box-shadow: var(--apex-btn-glow);
     transition: var(--apex-transition);

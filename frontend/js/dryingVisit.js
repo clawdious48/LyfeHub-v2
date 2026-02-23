@@ -61,10 +61,10 @@ const dryingVisit = {
                     <button class="dry-btn dry-btn-primary" id="dv-date-today" style="width: 100%; padding: 0.75rem; font-size: 1rem;">
                         📅 Today — ${now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                     </button>
-                    <div style="text-align: center; color: rgba(26,26,46,0.4); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">or pick a date</div>
+                    <div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">or pick a date</div>
                     <div style="display: flex; gap: 0.5rem;">
-                        <input type="date" id="dv-date-input" class="dry-atmo-input" value="${localDate}" style="flex: 2; padding: 0.6rem; font-size: 0.95rem; border-radius: 8px; border: 1px solid rgba(0,0,0,0.12); background: rgba(255,255,255,0.8);">
-                        <input type="time" id="dv-time-input" class="dry-atmo-input" value="${localTime}" style="flex: 1; padding: 0.6rem; font-size: 0.95rem; border-radius: 8px; border: 1px solid rgba(0,0,0,0.12); background: rgba(255,255,255,0.8);">
+                        <input type="date" id="dv-date-input" class="dry-atmo-input" value="${localDate}" style="flex: 2; padding: 0.6rem; font-size: 0.95rem; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--bg-surface);">
+                        <input type="time" id="dv-time-input" class="dry-atmo-input" value="${localTime}" style="flex: 1; padding: 0.6rem; font-size: 0.95rem; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--bg-surface);">
                     </div>
                     <button class="dry-btn dry-btn-secondary" id="dv-date-confirm" style="width: 100%; padding: 0.65rem; font-size: 0.95rem;">
                         Use Selected Date
@@ -416,7 +416,7 @@ const dryingVisit = {
             return `<div class="dry-visit-header">
                 <button class="dry-btn dry-btn-sm" onclick="dryingVisit.close()">&times;</button>
                 <div class="dry-edit-date-center">
-                    <span style="font-size:0.75rem;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em;">Visit #${visit.visit_number}</span>
+                    <span style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Visit #${visit.visit_number}</span>
                     <div class="dry-edit-date-row">
                         <input type="date" class="dry-edit-date-input" id="dv-edit-date" value="${dateVal}">
                         <input type="time" class="dry-edit-date-input" id="dv-edit-time" value="${timeVal}">
@@ -442,11 +442,11 @@ const dryingVisit = {
         let rows = '';
 
         // Header row
-        rows += `<div class="dry-atmo-row" style="background:rgba(255,255,255,0.04);">
-            <div class="dry-atmo-label" style="font-weight:600;color:rgba(255,255,255,0.5);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;">Location</div>
-            <div class="dry-atmo-cell" style="font-weight:600;color:rgba(255,255,255,0.5);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;text-align:center;">Temp / RH</div>
-            <div class="dry-atmo-cell" style="font-weight:600;color:rgba(255,255,255,0.5);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;text-align:center;">GPP / Prior</div>
-            <div class="dry-gpp-value" style="font-weight:600;color:rgba(255,255,255,0.5);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;">Delta</div>
+        rows += `<div class="dry-atmo-row" style="background:var(--bg-hover);">
+            <div class="dry-atmo-label" style="font-weight:600;color:var(--text-muted);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;">Location</div>
+            <div class="dry-atmo-cell" style="font-weight:600;color:var(--text-muted);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;text-align:center;">Temp / RH</div>
+            <div class="dry-atmo-cell" style="font-weight:600;color:var(--text-muted);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;text-align:center;">GPP / Prior</div>
+            <div class="dry-gpp-value" style="font-weight:600;color:var(--text-muted);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;">Delta</div>
         </div>`;
 
         // Unaffected
@@ -458,7 +458,7 @@ const dryingVisit = {
         for (const ch of chambers) {
             const color = esc(ch.color || '#bf5af2');
             // Chamber header
-            rows += `<div class="dry-atmo-row" style="background:rgba(255,255,255,0.05);border-left:3px solid ${color};">
+            rows += `<div class="dry-atmo-row" style="background:var(--bg-hover);border-left:3px solid ${color};">
                 <div class="dry-atmo-label" style="grid-column:1/-1;font-weight:600;color:${color};font-size:0.8rem;">${esc(ch.name)}</div>
             </div>`;
             // Intake
@@ -496,8 +496,8 @@ const dryingVisit = {
                 </div>
                 <div class="dry-atmo-cell" style="display:flex;gap:4px;align-items:center;justify-content:center;">
                     <span class="dry-gpp-value dry-gpp-auto" data-gpp-key="${esc(key)}">${dryingUtils.formatGPP(gpp)}</span>
-                    <span style="color:rgba(255,255,255,0.3);font-size:0.75rem;">/</span>
-                    <span style="font-size:0.8rem;color:rgba(255,255,255,0.45);">${dryingUtils.formatGPP(priorGPP)}</span>
+                    <span style="color:var(--text-muted);font-size:0.75rem;">/</span>
+                    <span style="font-size:0.8rem;color:var(--text-muted);">${dryingUtils.formatGPP(priorGPP)}</span>
                 </div>
                 <div class="dry-gpp-value"><span class="dry-delta ${deltaClass}" data-delta-key="${esc(key)}">${deltaText}</span></div>
             </div>`;
@@ -511,8 +511,8 @@ const dryingVisit = {
             </div>
             <div class="dry-atmo-cell" style="display:flex;gap:4px;align-items:center;justify-content:center;">
                 <span class="dry-gpp-value dry-gpp-auto">${dryingUtils.formatGPP(gpp)}</span>
-                <span style="color:rgba(255,255,255,0.3);font-size:0.75rem;">/</span>
-                <span style="font-size:0.8rem;color:rgba(255,255,255,0.45);">${dryingUtils.formatGPP(priorGPP)}</span>
+                <span style="color:var(--text-muted);font-size:0.75rem;">/</span>
+                <span style="font-size:0.8rem;color:var(--text-muted);">${dryingUtils.formatGPP(priorGPP)}</span>
             </div>
             <div class="dry-gpp-value"><span class="dry-delta ${deltaClass}">${deltaText}</span></div>
         </div>`;
@@ -522,7 +522,7 @@ const dryingVisit = {
 
     _renderRoomTabs() {
         const { rooms, chambers, activeRoomId } = this._state;
-        if (rooms.length === 0) return '<p style="color:rgba(255,255,255,0.4);font-size:0.82rem;">No rooms configured.</p>';
+        if (rooms.length === 0) return '<p style="color:var(--text-muted);font-size:0.82rem;">No rooms configured.</p>';
 
         const esc = dryingUtils.escapeHtml;
         let html = '<div class="dry-room-tabs">';
@@ -553,7 +553,7 @@ const dryingVisit = {
 
         const roomRPs = refPoints.filter(rp => rp.room_id === roomId);
         if (roomRPs.length === 0 && !isInput) {
-            return '<p style="color:rgba(255,255,255,0.4);font-size:0.82rem;margin-bottom:1rem;">No reference points in this room.</p>';
+            return '<p style="color:var(--text-muted);font-size:0.82rem;margin-bottom:1rem;">No reference points in this room.</p>';
         }
 
         let html = `<div class="dry-moisture-table">`;
@@ -648,7 +648,7 @@ const dryingVisit = {
                 } else {
                     col += `<div class="dry-equipment-row">
                         <div class="dry-equipment-label">${esc(et.label)}</div>
-                        <span style="font-size:0.85rem;color:rgba(255,255,255,0.85);">${qty}</span>
+                        <span style="font-size:0.85rem;color:var(--text-primary);">${qty}</span>
                     </div>`;
                 }
             }
@@ -707,8 +707,8 @@ const dryingVisit = {
         const allPhotos = [];
         for (const note of notes) {
             const photos = typeof note.photos === 'string' ? JSON.parse(note.photos || '[]') : (note.photos || []);
-            html += `<div style="padding:0.6rem 0.75rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;margin-bottom:0.5rem;">
-                <p style="margin:0;font-size:0.82rem;color:rgba(255,255,255,0.85);">${esc(note.content)}</p>
+            html += `<div style="padding:0.6rem 0.75rem;background:var(--bg-hover);border:1px solid var(--glass-border);border-radius:8px;margin-bottom:0.5rem;">
+                <p style="margin:0;font-size:0.82rem;color:var(--text-primary);">${esc(note.content)}</p>
             </div>`;
             for (const p of photos) { allPhotos.push(p); }
         }

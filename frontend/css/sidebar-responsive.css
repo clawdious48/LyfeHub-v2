@@ -104,8 +104,8 @@
 }
 
 .sidebar-expand-btn:hover {
-  background: rgba(0, 0, 0, 0.04);
-  color: var(--text-primary, #1a1a2e);
+  background: var(--bg-app);
+  color: var(--text-primary);
 }
 
 .sidebar-expand-btn svg {
@@ -238,9 +238,7 @@
 /* ========================================
    DARK MODE OVERRIDES
    ======================================== */
-[data-theme="dark"] .sidebar-expand-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
-}
+/* Dark mode expand btn hover handled by --bg-app token */
 @media (max-width: 768px) {
     [data-theme="dark"] .bases-sidebar,
   .people-sidebar,

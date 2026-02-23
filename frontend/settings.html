@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Settings - LyfeHub</title>
+    <link rel="stylesheet" href="css/theme-tokens.css">
+    <link rel="stylesheet" href="css/theme-overrides.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/apex-theme.css">
     <link rel="stylesheet" href="css/dark-mode.css">
@@ -87,6 +89,21 @@
                         <button class="theme-option" data-theme="system">
                             <svg viewBox="0 0 24 24" width="16" height="16"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><path d="M8 21h8M12 17v4"/></svg>
                             System
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Font Toggle -->
+                <div class="settings-field-group">
+                    <label class="settings-field-label">Font</label>
+                    <div class="theme-selector" id="font-selector">
+                        <button class="theme-option" data-font="serif">
+                            <svg viewBox="0 0 24 24" width="16" height="16"><path d="M4 7V4h16v3M9 20h6M12 4v16" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                            Serif
+                        </button>
+                        <button class="theme-option" data-font="mono">
+                            <svg viewBox="0 0 24 24" width="16" height="16"><polyline points="16 18 22 12 16 6" stroke="currentColor" stroke-width="2" fill="none"/><polyline points="8 6 2 12 8 18" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                            Mono
                         </button>
                     </div>
                 </div>

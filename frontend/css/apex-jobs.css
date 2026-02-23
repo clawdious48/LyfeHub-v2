@@ -69,7 +69,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 2rem;
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--bg-surface);
     border-bottom: 1px solid var(--glass-border);
 }
 
@@ -139,7 +139,7 @@
 }
 
 .apex-filter-select option {
-    background: #ffffff;
+    background: var(--bg-surface);
 }
 
 /* Apex View Containers */
@@ -271,7 +271,7 @@
 
 /* Apex Job Cards (Kanban) */
 .apex-job-card {
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--bg-surface);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(0, 0, 0, 0.04);
@@ -361,7 +361,7 @@
 
 .apex-loss-badge.loss-smoke {
     background: rgba(128, 128, 128, 0.2);
-    color: #666;
+    color: var(--text-secondary);
     border: 1px solid rgba(128, 128, 128, 0.3);
 }
 
@@ -483,7 +483,7 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    background: rgba(255, 255, 255, 0.5);
+    background: var(--bg-surface);
     backdrop-filter: blur(8px);
     border-radius: 16px;
     overflow: hidden;
@@ -559,7 +559,7 @@
 }
 
 .apex-project-card {
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--bg-surface);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(0, 0, 0, 0.04);
@@ -593,8 +593,8 @@
     background: linear-gradient(90deg, var(--apex-success), transparent);
     box-shadow: 0 0 10px var(--apex-success);
 }
-.apex-project-card.loss-border-smoke::before { 
-    background: linear-gradient(90deg, #888, transparent);
+.apex-project-card.loss-border-smoke::before {
+    background: linear-gradient(90deg, var(--text-secondary), transparent);
 }
 .apex-project-card.loss-border-storm::before,
 .apex-project-card.loss-border-wind::before { 
@@ -678,7 +678,7 @@
 
 #apex-job-modal .modal-content {
     position: relative;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--bg-surface);
     backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
     border: 1px solid rgba(0, 0, 0, 0.08);
@@ -1109,7 +1109,7 @@
 
 /* Phase status badges */
 .phase-status-not_started {
-    background: rgba(128, 128, 128, 0.15);
+    background: var(--bg-hover);
     color: var(--text-muted);
 }
 
@@ -1238,7 +1238,7 @@
 
 /* 3. Header Card */
 .job-detail-header {
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--bg-surface);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     padding: 1.5rem;
@@ -1295,7 +1295,7 @@
 
 .job-detail-header-text .client-name {
     font-size: 1rem;
-    color: rgba(26, 26, 46, 0.9);
+    color: var(--text-primary);
     font-weight: 500;
     margin-bottom: 0.25rem;
 }
@@ -1378,7 +1378,7 @@
 }
 
 .job-info-card {
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--bg-surface);
     border: 1px solid var(--glass-border);
     border-radius: 12px;
     padding: 1rem;
@@ -1425,7 +1425,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    color: var(--apex-primary, #FF8C00);
+    color: var(--accent);
     text-decoration: none;
     font-size: 0.8rem;
     padding: 0.15rem 0;
@@ -1693,7 +1693,7 @@ a.apex-address.info-link {
 
 .note-type-badge.type-general {
     background: rgba(128, 128, 128, 0.2);
-    color: #666;
+    color: var(--text-secondary);
 }
 
 .note-type-badge.type-call {
@@ -1841,12 +1841,12 @@ a.apex-address.info-link {
 
 .category-badge.cat-other {
     background: rgba(128, 128, 128, 0.2);
-    color: #666;
+    color: var(--text-secondary);
 }
 
 /* 11. Accounting Sidebar */
 .job-accounting {
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--bg-surface);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     padding: 1.25rem;
@@ -1911,7 +1911,7 @@ a.apex-address.info-link {
 }
 
 .accounting-metric .metric-value.gp-bad {
-    color: #ff4444;
+    color: var(--danger);
 }
 
 .accounting-actions {
@@ -2022,7 +2022,7 @@ a.apex-address.info-link {
 
 /* 12. Activity Sidebar */
 .job-activity {
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--bg-surface);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     padding: 1.25rem;
@@ -2129,7 +2129,7 @@ a.apex-address.info-link {
 
 /* 13. Contacts Section */
 .job-contacts {
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--bg-surface);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     padding: 1.25rem;
@@ -2307,7 +2307,7 @@ a.apex-address.info-link {
 
 .job-detail-modal-overlay .modal-content {
     position: relative;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--bg-surface);
     backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
     border: 1px solid rgba(0, 0, 0, 0.08);
@@ -2399,7 +2399,7 @@ a.apex-address.info-link {
     right: 0;
     top: 100%;
     margin-top: 0.5rem;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--bg-surface);
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
@@ -2573,7 +2573,7 @@ a.apex-address.info-link {
 }
 
 .jdt-icon-image { color: var(--apex-info); }
-.jdt-icon-pdf { color: #ff4444; }
+.jdt-icon-pdf { color: var(--danger); }
 .jdt-icon-excel { color: var(--apex-success); }
 
 .jdt-file-name {
@@ -2740,7 +2740,7 @@ a.apex-address.info-link {
 }
 
 .jdt-note-delete:hover {
-    color: #ff4444;
+    color: var(--danger);
 }
 
 .jdt-note-subject {
@@ -2948,7 +2948,7 @@ a.apex-address.info-link {
 
 .jdm-card {
     position: relative;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--bg-surface);
     backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
     border: 1px solid rgba(0, 0, 0, 0.08);
@@ -3069,7 +3069,7 @@ a.apex-address.info-link {
 
 .jdm-btn-danger {
     background: rgba(255, 68, 68, 0.15);
-    color: #ff4444;
+    color: var(--danger);
     border-color: rgba(255, 68, 68, 0.3);
     margin-right: auto;
 }
@@ -3127,7 +3127,7 @@ a.apex-address.info-link {
 }
 .jdm-field label {
     font-size: 0.75rem;
-    color: var(--text-muted, #999);
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.03em;
 }
@@ -3142,7 +3142,7 @@ a.apex-address.info-link {
     font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--text-muted, #888);
+    color: var(--text-muted);
     border-top: 1px solid rgba(0, 0, 0, 0.05);
     padding-top: 0.6rem;
     margin-top: 0.25rem;
@@ -3152,7 +3152,7 @@ a.apex-address.info-link {
 .jdm-est-helper {
     font-size: 11px;
     margin-top: 4px;
-    color: rgba(26, 26, 46, 0.5);
+    color: var(--text-muted);
 }
 
 /* =====================================================
@@ -3172,7 +3172,7 @@ a.apex-address.info-link {
     border-radius: 12px;
     background: rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.08);
-    color: rgba(26, 26, 46, 0.6);
+    color: var(--text-secondary);
     cursor: pointer;
     transition: var(--transition);
     white-space: nowrap;
@@ -3180,13 +3180,13 @@ a.apex-address.info-link {
 
 .acct-phase-tab:hover {
     background: rgba(0, 0, 0, 0.08);
-    color: rgba(26, 26, 46, 0.8);
+    color: var(--text-primary);
 }
 
 .acct-phase-tab.active {
-    border-color: #0891b2;
+    border-color: var(--calendar);
     box-shadow: 0 2px 6px rgba(8, 145, 178, 0.08);
-    color: #1a1a2e;
+    color: var(--text-primary);
 }
 
 /* Estimates Breakdown (collapsible section) */
@@ -3208,19 +3208,19 @@ a.apex-address.info-link {
 .estimates-breakdown-header h4 {
     margin: 0;
     font-size: 13px;
-    color: rgba(26, 26, 46, 0.8);
+    color: var(--text-primary);
 }
 
 .estimates-breakdown-header .breakdown-total {
     font-size: 13px;
-    color: #059669;
+    color: var(--success);
 }
 
 .estimates-breakdown-header .collapse-icon {
     transition: transform 0.2s;
     width: 14px;
     height: 14px;
-    color: rgba(26, 26, 46, 0.4);
+    color: var(--text-muted);
 }
 
 .estimates-breakdown.collapsed .breakdown-content {
@@ -3246,7 +3246,7 @@ a.apex-address.info-link {
     border-radius: 12px;
     background: rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.08);
-    color: rgba(26, 26, 46, 0.6);
+    color: var(--text-secondary);
     cursor: pointer;
     transition: var(--transition);
     white-space: nowrap;
@@ -3254,13 +3254,13 @@ a.apex-address.info-link {
 
 .est-tab:hover {
     background: rgba(0, 0, 0, 0.08);
-    color: rgba(26, 26, 46, 0.8);
+    color: var(--text-primary);
 }
 
 .est-tab.active {
-    border-color: #0891b2;
+    border-color: var(--calendar);
     box-shadow: 0 2px 6px rgba(8, 145, 178, 0.08);
-    color: #1a1a2e;
+    color: var(--text-primary);
 }
 
 /* Estimate Current / Summary */
@@ -3276,11 +3276,11 @@ a.apex-address.info-link {
 }
 
 .estimate-current .current-label {
-    color: rgba(26, 26, 46, 0.5);
+    color: var(--text-muted);
 }
 
 .estimate-current .current-value {
-    color: #1a1a2e;
+    color: var(--text-primary);
     font-weight: 500;
 }
 
@@ -3291,19 +3291,19 @@ a.apex-address.info-link {
 }
 
 .reduction-green {
-    color: #059669;
+    color: var(--success);
 }
 
 .reduction-yellow {
-    color: #ffd700;
+    color: var(--warning);
 }
 
 .reduction-orange {
-    color: #ff8c00;
+    color: var(--accent);
 }
 
 .reduction-red {
-    color: #ff4444;
+    color: var(--danger);
 }
 
 /* Estimate Type Section Header */
@@ -3319,13 +3319,13 @@ a.apex-address.info-link {
 .est-type-label {
     font-size: 12px;
     font-weight: 600;
-    color: rgba(26, 26, 46, 0.8);
+    color: var(--text-primary);
 }
 
 .est-type-total {
     font-size: 12px;
     font-weight: 600;
-    color: #059669;
+    color: var(--success);
 }
 
 /* Estimate Summary Rows (current/original/reduction) */
@@ -3334,7 +3334,7 @@ a.apex-address.info-link {
     justify-content: space-between;
     font-size: 11px;
     padding: 2px 0;
-    color: rgba(26, 26, 46, 0.6);
+    color: var(--text-secondary);
 }
 
 /* Estimate Version List */
@@ -3356,19 +3356,19 @@ a.apex-address.info-link {
 }
 
 .est-ver-num {
-    color: rgba(26, 26, 46, 0.7);
+    color: var(--text-secondary);
     font-weight: 500;
     min-width: 32px;
 }
 
 .est-original-tag {
     font-size: 9px;
-    color: rgba(26, 26, 46, 0.4);
+    color: var(--text-muted);
     font-weight: 400;
 }
 
 .est-ver-amount {
-    color: rgba(26, 26, 46, 0.8);
+    color: var(--text-primary);
 }
 
 .est-ver-delta {
@@ -3376,11 +3376,11 @@ a.apex-address.info-link {
 }
 
 .est-ver-delta.delta-neg {
-    color: #059669;
+    color: var(--success);
 }
 
 .est-ver-delta.delta-pos {
-    color: #ff4444;
+    color: var(--danger);
 }
 
 /* Estimate Status Badges */
@@ -3395,7 +3395,7 @@ a.apex-address.info-link {
 
 .est-status-badge.est-draft {
     background: rgba(102, 102, 102, 0.2);
-    color: #666;
+    color: var(--text-secondary);
 }
 
 .est-status-badge.est-submitted {
@@ -3429,7 +3429,7 @@ a.apex-address.info-link {
 
 .original-amount-display {
     font-size: 11px;
-    color: rgba(26, 26, 46, 0.5);
+    color: var(--text-muted);
     margin-top: 4px;
 }
 
@@ -3536,7 +3536,7 @@ a.apex-address.info-link {
 }
 
 .team-select.open .team-select-trigger {
-    border-color: #FF8C00;
+    border-color: var(--accent);
     background: rgba(0, 0, 0, 0.06);
 }
 
@@ -3548,7 +3548,7 @@ a.apex-address.info-link {
     left: 0;
     right: 0;
     margin-top: 4px;
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--bg-surface);
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     backdrop-filter: blur(20px);
@@ -3580,7 +3580,7 @@ a.apex-address.info-link {
 }
 
 .team-select-option input[type="checkbox"] {
-    accent-color: var(--apex-primary, #FF8C00);
+    accent-color: var(--accent);
     cursor: pointer;
     flex-shrink: 0;
 }
@@ -3788,7 +3788,7 @@ a.apex-address.info-link {
         border-radius: 50%;
         background: var(--apex-primary);
         border: none;
-        color: #1a1a2e;
+        color: var(--text-primary);
         font-size: 1.75rem;
         cursor: pointer;
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -3921,7 +3921,7 @@ a.apex-address.info-link {
 .filter-sheet-apply {
     background: var(--apex-primary);
     border: none;
-    color: #1a1a2e;
+    color: var(--text-primary);
 }
 
 /* ========================================
@@ -4130,7 +4130,7 @@ a.apex-address.info-link {
     font-size: 0.85rem;
 }
 .inv-back-btn svg { width: 16px; height: 16px; }
-.inv-back-btn:hover { border-color: var(--neon-cyan, #FF8C00); color: var(--neon-cyan, #FF8C00); }
+.inv-back-btn:hover { border-color: var(--accent); color: var(--accent); }
 
 .inv-tabs {
     display: flex;
@@ -4149,8 +4149,8 @@ a.apex-address.info-link {
     transition: all 0.2s;
 }
 .inv-tab.active {
-    color: var(--neon-cyan, #FF8C00);
-    border-bottom-color: var(--neon-cyan, #FF8C00);
+    color: var(--accent);
+    border-bottom-color: var(--accent);
 }
 .inv-tab:hover { color: var(--text-primary, #282D30); }
 
@@ -4176,8 +4176,8 @@ a.apex-address.info-link {
 }
 .inv-cat-btn.active {
     background: rgba(0,240,255,0.1);
-    border-color: var(--neon-cyan, #FF8C00);
-    color: var(--neon-cyan, #FF8C00);
+    border-color: var(--accent);
+    color: var(--accent);
 }
 
 .inv-catalog-header, .inv-stock-header, .inv-purchase-header, .inv-alloc-subheader {
@@ -4219,7 +4219,7 @@ a.apex-address.info-link {
 }
 .inv-edit-btn:hover, .inv-archive-btn:hover { opacity: 1; }
 
-.low-stock { color: #ff6b35 !important; }
+.low-stock { color: var(--accent) !important; }
 .inv-stock-row.low-stock { background: rgba(255,107,53,0.05); }
 
 .inv-alert-bar {
@@ -4229,7 +4229,7 @@ a.apex-address.info-link {
     padding: 0.5rem 0.75rem;
     margin-bottom: 1rem;
     font-size: 0.85rem;
-    color: #ff6b35;
+    color: var(--accent);
     display: flex;
     gap: 0.5rem;
     align-items: center;
@@ -4264,7 +4264,7 @@ a.apex-address.info-link {
 }
 .inv-alloc-total {
     font-size: 0.8rem;
-    color: var(--neon-cyan, #FF8C00);
+    color: var(--accent);
 }
 
 /* ========================================
@@ -4382,10 +4382,10 @@ a.apex-address.info-link {
 }
 @media (max-width: 480px) {
     [data-theme="dark"] .mobile-add-btn {
-        color: #f0f0f5;
+        color: var(--text-primary);
     }
     [data-theme="dark"] .filter-sheet-apply {
-        color: #f0f0f5;
+        color: var(--text-primary);
     }
 }
 
@@ -4520,7 +4520,7 @@ a.apex-address.info-link {
 
 /* Fix 3: .jdt-modal dark override */
 [data-theme="dark"] .jdt-modal {
-    background: #1a1a2e;
+    background: var(--bg-app);
     border-color: rgba(255, 255, 255, 0.1);
 }
 [data-theme="dark"] .jdt-cancel-btn {
@@ -4532,27 +4532,27 @@ a.apex-address.info-link {
 
 /* Fix 4: Neon green dark overrides */
 [data-theme="dark"] .estimates-breakdown-header .breakdown-total {
-    color: #05ffa1;
+    color: var(--success);
 }
 [data-theme="dark"] .reduction-green {
-    color: #05ffa1;
+    color: var(--success);
 }
 [data-theme="dark"] .est-type-total {
-    color: #05ffa1;
+    color: var(--success);
 }
 [data-theme="dark"] .est-ver-delta.delta-neg {
-    color: #05ffa1;
+    color: var(--success);
 }
 
 /* Fix 5: Badge contrast dark overrides */
 [data-theme="dark"] .apex-loss-badge.loss-smoke {
-    color: #aaa;
+    color: var(--text-muted);
 }
 [data-theme="dark"] .note-type-badge.type-general {
-    color: #aaa;
+    color: var(--text-muted);
 }
 [data-theme="dark"] .category-badge.cat-other {
-    color: #aaa;
+    color: var(--text-muted);
 }
 
 /* Fix 6: Status dropdown dark override */
@@ -4711,7 +4711,7 @@ a.apex-address.info-link {
     color: rgba(240, 240, 245, 0.8);
 }
 [data-theme="dark"] .acct-phase-tab.active {
-    color: #f0f0f5;
+    color: var(--text-primary);
 }
 [data-theme="dark"] .estimates-breakdown {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -4735,13 +4735,13 @@ a.apex-address.info-link {
     color: rgba(240, 240, 245, 0.8);
 }
 [data-theme="dark"] .est-tab.active {
-    color: #f0f0f5;
+    color: var(--text-primary);
 }
 [data-theme="dark"] .estimate-current .current-label {
     color: rgba(240, 240, 245, 0.5);
 }
 [data-theme="dark"] .estimate-current .current-value {
-    color: #f0f0f5;
+    color: var(--text-primary);
 }
 [data-theme="dark"] .est-type-header {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);

@@ -15,7 +15,7 @@
     background: rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 8px;
-    color: rgba(26, 26, 46, 0.95);
+    color: var(--text-primary);
     font-size: 0.85rem;
     font-family: inherit;
     transition: var(--apex-transition-fast);
@@ -24,20 +24,20 @@
 .dry-select:focus,
 .dry-input:focus {
     outline: none;
-    border-color: var(--apex-primary, #FF8C00);
-    box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.15);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 .dry-select option,
 .dry-input option {
-    background: rgba(255, 255, 255, 0.95);
-    color: rgba(26, 26, 46, 0.95);
+    background: var(--bg-surface);
+    color: var(--text-primary);
 }
 
 .dry-select optgroup,
 .dry-input optgroup {
-    background: rgba(245, 245, 245, 1);
-    color: var(--apex-primary, #FF8C00);
+    background: var(--bg-hover);
+    color: var(--accent);
     font-weight: 600;
 }
 
@@ -47,7 +47,7 @@
     background: rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 8px;
-    color: rgba(26, 26, 46, 0.95);
+    color: var(--text-primary);
     font-size: 0.85rem;
     font-family: inherit;
     resize: vertical;
@@ -57,8 +57,8 @@
 
 .dry-textarea:focus {
     outline: none;
-    border-color: var(--apex-primary, #FF8C00);
-    box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.15);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 .dry-btn {
@@ -85,7 +85,7 @@
 
 .dry-btn-primary {
     background: var(--apex-gradient-primary);
-    color: rgba(255, 255, 255, 0.95);
+    color: #fff;
     box-shadow: var(--apex-btn-glow);
 }
 
@@ -95,24 +95,24 @@
 }
 
 .dry-btn-draft {
-    background: linear-gradient(135deg, #ff6b35, #e63946) !important;
-    box-shadow: 0 0 12px rgba(230, 57, 70, 0.4) !important;
+    background: linear-gradient(135deg, var(--accent), var(--danger)) !important;
+    box-shadow: 0 0 12px var(--danger-glow, rgba(230, 57, 70, 0.4)) !important;
     animation: draft-pulse 2s ease-in-out infinite;
 }
 
 .dry-btn-draft:hover:not(:disabled) {
-    box-shadow: 0 0 18px rgba(230, 57, 70, 0.6) !important;
+    box-shadow: 0 0 18px var(--danger-glow, rgba(230, 57, 70, 0.6)) !important;
 }
 
 @keyframes draft-pulse {
-    0%, 100% { box-shadow: 0 0 12px rgba(230, 57, 70, 0.4); }
-    50% { box-shadow: 0 0 20px rgba(255, 107, 53, 0.6); }
+    0%, 100% { box-shadow: 0 0 12px var(--danger-glow, rgba(230, 57, 70, 0.4)); }
+    50% { box-shadow: 0 0 20px var(--accent-glow); }
 }
 
 .dry-btn-secondary {
     background: transparent;
-    color: var(--apex-primary, #FF8C00);
-    border: 1px solid var(--apex-primary, #FF8C00);
+    color: var(--accent);
+    border: 1px solid var(--accent);
 }
 
 .dry-btn-secondary:hover:not(:disabled) {
@@ -154,11 +154,11 @@
     border: 1px solid rgba(0, 0, 0, 0.04);
     border-radius: 10px;
     font-size: 0.8rem;
-    color: rgba(26, 26, 46, 0.5);
+    color: var(--text-muted);
 }
 
 .dry-status-bar .dry-status-label {
-    color: rgba(26, 26, 46, 0.95);
+    color: var(--text-primary);
     font-weight: 500;
 }
 
@@ -176,7 +176,7 @@
     background: rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.06);
     border-radius: 8px;
-    color: rgba(26, 26, 46, 0.7);
+    color: var(--text-secondary);
     font-size: 0.8rem;
     font-weight: 500;
     cursor: pointer;
@@ -185,8 +185,8 @@
 
 .dry-action-btn:hover {
     background: rgba(0, 0, 0, 0.06);
-    color: rgba(26, 26, 46, 0.95);
-    border-color: var(--apex-primary, #FF8C00);
+    color: var(--text-primary);
+    border-color: var(--accent);
 }
 
 /* ── 3. Visit History ─────────────────────────────────────────────── */
@@ -218,7 +218,7 @@
     align-items: center;
     justify-content: center;
     padding: 6px 4px;
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--bg-surface);
     border: 1px solid rgba(0, 0, 0, 0.06);
     border-radius: 8px;
     cursor: pointer;
@@ -228,20 +228,20 @@
 }
 
 .dry-visit-card:hover {
-    border-color: var(--apex-primary, #FF8C00);
-    box-shadow: 0 0 8px rgba(20, 184, 166, 0.12);
+    border-color: var(--accent);
+    box-shadow: 0 0 8px var(--accent-glow);
 }
 
 .dry-visit-card-num {
     font-size: 0.72rem;
     font-weight: 700;
-    color: var(--apex-primary, #FF8C00);
+    color: var(--accent);
     line-height: 1;
 }
 
 .dry-visit-card-date {
     font-size: 0.62rem;
-    color: rgba(26, 26, 46, 0.6);
+    color: var(--text-secondary);
     font-weight: 500;
     line-height: 1;
     margin-top: 2px;
@@ -279,7 +279,7 @@
 .dry-visit-summary {
     flex: 1;
     font-size: 0.78rem;
-    color: rgba(26, 26, 46, 0.5);
+    color: var(--text-muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -339,7 +339,7 @@
     max-height: 85vh;
     display: flex;
     flex-direction: column;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--bg-surface);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(0, 0, 0, 0.06);
@@ -366,7 +366,7 @@
     margin: 0;
     font-size: 0.95rem;
     font-weight: 600;
-    color: rgba(26, 26, 46, 0.95);
+    color: var(--text-primary);
     flex: 1;
     text-align: center;
     white-space: nowrap;
@@ -375,7 +375,7 @@
 .dry-wizard-close {
     background: none;
     border: none;
-    color: rgba(26, 26, 46, 0.4);
+    color: var(--text-muted);
     font-size: 1.4rem;
     cursor: pointer;
     padding: 0.15rem 0.3rem;
@@ -428,9 +428,9 @@
 }
 
 .dry-step-dot.active {
-    background: var(--apex-primary, #FF8C00);
-    border-color: var(--apex-primary, #FF8C00);
-    box-shadow: 0 0 8px rgba(20, 184, 166, 0.3);
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 8px var(--accent-glow);
 }
 
 .dry-step-dot.completed {
@@ -477,7 +477,7 @@
     transform: translateX(-50%);
     font-size: 0.65rem;
     font-weight: 600;
-    color: rgba(26, 26, 46, 0.85);
+    color: var(--text-primary);
     white-space: nowrap;
     pointer-events: none;
     opacity: 0;
@@ -524,7 +524,7 @@
 .dry-room-item .dry-room-name {
     flex: 1;
     font-size: 0.85rem;
-    color: rgba(26, 26, 46, 0.95);
+    color: var(--text-primary);
 }
 
 /* Chamber group divider (step 2) */
@@ -537,7 +537,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: rgba(26, 26, 46, 0.4);
+    color: var(--text-muted);
     margin-top: 0.25rem;
 }
 
@@ -567,7 +567,7 @@
     margin-bottom: 0.75rem;
     font-size: 0.85rem;
     font-weight: 600;
-    color: rgba(26, 26, 46, 0.95);
+    color: var(--text-primary);
 }
 
 .dry-color-picker {
@@ -592,7 +592,7 @@
 
 .dry-color-swatch.dry-color-selected,
 .dry-color-swatch.selected {
-    border-color: rgba(255, 255, 255, 0.95);
+    border-color: #fff;
     box-shadow: 0 0 4px currentColor;
 }
 
@@ -605,7 +605,7 @@
     color: var(--apex-secondary);
     padding: 0.5rem 0.75rem 0.2rem;
     margin-top: 0.25rem;
-    border-bottom: 1px solid rgba(8, 145, 178, 0.1);
+    border-bottom: 1px solid var(--glass-border);
 }
 
 .dry-rp-category-label:first-child {
@@ -617,13 +617,13 @@
 }
 
 .dry-rp-number {
-    color: var(--apex-primary, #FF8C00);
+    color: var(--accent);
     font-weight: 600;
     min-width: 32px;
 }
 
 .dry-rp-code {
-    color: rgba(26, 26, 46, 0.45);
+    color: var(--text-muted);
     font-size: 0.78rem;
     min-width: 40px;
     margin-right: 0.4rem;
@@ -645,7 +645,7 @@
 .dry-rp-delete {
     background: none;
     border: none;
-    color: rgba(26, 26, 46, 0.25);
+    color: var(--text-muted);
     font-size: 1rem;
     cursor: pointer;
     padding: 0.1rem 0.35rem;
@@ -658,7 +658,7 @@
 
 .dry-rp-delete:hover {
     color: var(--apex-danger);
-    background: rgba(225, 29, 72, 0.1);
+    background: var(--danger-light, rgba(225, 29, 72, 0.1));
 }
 
 .dry-assign-grid {
@@ -694,7 +694,7 @@
     max-height: 90vh;
     display: flex;
     flex-direction: column;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--bg-surface);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(0, 0, 0, 0.06);
@@ -715,7 +715,7 @@
     margin: 0;
     font-size: 1rem;
     font-weight: 600;
-    color: rgba(26, 26, 46, 0.95);
+    color: var(--text-primary);
 }
 
 .dry-edit-date-center {
@@ -737,15 +737,15 @@
     font-size: 0.85rem;
     border: 1px solid rgba(0, 0, 0, 0.12);
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.8);
-    color: rgba(26, 26, 46, 0.9);
+    background: var(--bg-surface);
+    color: var(--text-primary);
     font-weight: 500;
 }
 
 .dry-edit-date-input:focus {
     outline: none;
-    border-color: var(--apex-primary, #FF8C00);
-    box-shadow: 0 0 0 2px rgba(255, 140, 0, 0.15);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 .dry-visit-body {
@@ -773,7 +773,7 @@
     margin: 0 0 0.75rem 0;
     font-size: 0.85rem;
     font-weight: 600;
-    color: rgba(26, 26, 46, 0.7);
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
@@ -806,7 +806,7 @@
     padding: 0.5rem 0.75rem;
     font-size: 0.8rem;
     font-weight: 500;
-    color: rgba(26, 26, 46, 0.6);
+    color: var(--text-secondary);
     border-right: 1px solid rgba(0, 0, 0, 0.03);
 }
 
@@ -820,7 +820,7 @@
     background: rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.06);
     border-radius: 6px;
-    color: rgba(26, 26, 46, 0.95);
+    color: var(--text-primary);
     font-size: 0.82rem;
     font-family: inherit;
     text-align: center;
@@ -829,8 +829,8 @@
 
 .dry-atmo-input:focus {
     outline: none;
-    border-color: var(--apex-primary, #FF8C00);
-    box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.1);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 .dry-gpp-value {
@@ -874,13 +874,13 @@
 }
 
 .dry-room-tab:hover {
-    color: rgba(255, 255, 255, 0.95);
+    color: #fff;
     background: color-mix(in srgb, var(--tab-chamber-color, #fff) 12%, transparent);
 }
 
 .dry-room-tab.active {
     background: color-mix(in srgb, var(--tab-chamber-color, #fff) 15%, transparent);
-    color: rgba(255, 255, 255, 0.95);
+    color: #fff;
     border-color: var(--tab-chamber-color, rgba(255, 255, 255, 0.3));
     border-bottom: none;
     box-shadow: 0 0 8px color-mix(in srgb, var(--tab-chamber-color, transparent) 30%, transparent);
@@ -913,7 +913,7 @@
     background: rgba(0, 0, 0, 0.03);
     border: 1px solid rgba(0, 0, 0, 0.06);
     border-radius: 1rem;
-    color: rgba(26, 26, 46, 0.6);
+    color: var(--text-secondary);
     padding: 0.35rem 0.8rem;
     font-size: 0.8rem;
     font-weight: 500;
@@ -923,31 +923,31 @@
 
 .dry-chip:hover {
     background: rgba(0, 0, 0, 0.06);
-    color: rgba(26, 26, 46, 0.85);
+    color: var(--text-primary);
     border-color: rgba(0, 0, 0, 0.12);
 }
 
 .dry-chip-surface.active {
-    background: rgba(20, 184, 166, 0.1);
-    border-color: var(--apex-primary, #FF8C00);
-    color: var(--apex-primary, #FF8C00);
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
 }
 
 .dry-chip-material {
     font-size: 0.78rem;
     padding: 0.28rem 0.65rem;
-    background: rgba(8, 145, 178, 0.06);
-    border-color: rgba(8, 145, 178, 0.1);
+    background: var(--apex-secondary-muted);
+    border-color: var(--glass-border);
 }
 
 .dry-chip-material:hover {
-    background: rgba(8, 145, 178, 0.12);
+    background: var(--apex-secondary-muted);
     border-color: var(--apex-secondary);
     color: var(--apex-secondary);
 }
 
 .dry-chip-material.active {
-    background: rgba(8, 145, 178, 0.15);
+    background: var(--apex-secondary-muted);
     border-color: var(--apex-secondary);
     color: var(--apex-secondary);
     box-shadow: none;
@@ -975,7 +975,7 @@
 .dry-moisture-header .dry-moisture-cell {
     font-size: 0.72rem;
     font-weight: 600;
-    color: rgba(26, 26, 46, 0.5);
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
@@ -999,7 +999,7 @@
 .dry-moisture-cell {
     padding: 0.45rem 0.6rem;
     font-size: 0.82rem;
-    color: rgba(26, 26, 46, 0.85);
+    color: var(--text-primary);
 }
 
 .dry-moisture-cell input {
@@ -1008,7 +1008,7 @@
     background: rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.06);
     border-radius: 5px;
-    color: rgba(26, 26, 46, 0.95);
+    color: var(--text-primary);
     font-size: 0.82rem;
     font-family: inherit;
     text-align: center;
@@ -1017,13 +1017,13 @@
 
 .dry-moisture-cell input:focus {
     outline: none;
-    border-color: var(--apex-primary, #FF8C00);
-    box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.1);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 /* Dry standard met - green highlight */
 .dry-moisture-dry {
-    background: rgba(16, 185, 129, 0.08);
+    background: var(--success-light, rgba(16, 185, 129, 0.08));
     border-left: 2px solid var(--apex-success);
 }
 
@@ -1038,7 +1038,7 @@
 
 .dry-moisture-demolished .dry-moisture-cell {
     text-decoration: line-through;
-    color: rgba(26, 26, 46, 0.35);
+    color: var(--text-muted);
 }
 
 /* ── 11. Equipment Section ────────────────────────────────────────── */
@@ -1051,7 +1051,7 @@
     margin: 0 0 0.75rem 0;
     font-size: 0.85rem;
     font-weight: 600;
-    color: rgba(26, 26, 46, 0.7);
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
@@ -1071,7 +1071,7 @@
 .dry-equipment-label {
     min-width: 140px;
     font-size: 0.82rem;
-    color: rgba(26, 26, 46, 0.6);
+    color: var(--text-secondary);
 }
 
 .dry-equipment-input {
@@ -1080,7 +1080,7 @@
     background: rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.06);
     border-radius: 6px;
-    color: rgba(26, 26, 46, 0.95);
+    color: var(--text-primary);
     font-size: 0.82rem;
     font-family: inherit;
     text-align: center;
@@ -1089,8 +1089,8 @@
 
 .dry-equipment-input:focus {
     outline: none;
-    border-color: var(--apex-primary, #FF8C00);
-    box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.1);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 .dry-equipment-grid {
@@ -1103,7 +1103,7 @@
     margin: 0 0 0.75rem 0;
     font-size: 0.85rem;
     font-weight: 600;
-    color: rgba(26, 26, 46, 0.7);
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
@@ -1118,7 +1118,7 @@
     margin: 0 0 0.75rem 0;
     font-size: 0.85rem;
     font-weight: 600;
-    color: rgba(26, 26, 46, 0.7);
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
@@ -1130,7 +1130,7 @@
     background: rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.06);
     border-radius: 8px;
-    color: rgba(26, 26, 46, 0.95);
+    color: var(--text-primary);
     font-size: 0.82rem;
     font-family: inherit;
     resize: vertical;
@@ -1139,8 +1139,8 @@
 
 .dry-note-input:focus {
     outline: none;
-    border-color: var(--apex-primary, #FF8C00);
-    box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.1);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 .dry-photo-upload {
@@ -1158,15 +1158,15 @@
     background: rgba(0, 0, 0, 0.04);
     border: 1px dashed rgba(0, 0, 0, 0.12);
     border-radius: 8px;
-    color: rgba(26, 26, 46, 0.5);
+    color: var(--text-muted);
     font-size: 0.8rem;
     cursor: pointer;
     transition: var(--apex-transition-fast);
 }
 
 .dry-photo-upload label:hover {
-    border-color: var(--apex-primary, #FF8C00);
-    color: var(--apex-primary, #FF8C00);
+    border-color: var(--accent);
+    color: var(--accent);
     background: var(--apex-primary-muted);
 }
 
@@ -1217,8 +1217,8 @@
 
 .dry-save-bar {
     padding: 1rem 1.5rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.04);
-    background: rgba(255, 255, 255, 0.95);
+    border-top: 1px solid var(--glass-border);
+    background: var(--bg-surface);
 }
 
 .dry-save-btn {
@@ -1231,7 +1231,7 @@
     background: var(--apex-gradient-primary);
     border: none;
     border-radius: 10px;
-    color: rgba(255, 255, 255, 0.95);
+    color: #fff;
     font-size: 0.9rem;
     font-weight: 600;
     font-family: inherit;
@@ -1265,18 +1265,18 @@
 /* Down = improvement = green */
 .dry-delta-down {
     color: var(--apex-success);
-    background: rgba(16, 185, 129, 0.1);
+    background: var(--success-light, rgba(16, 185, 129, 0.1));
 }
 
 /* Up = worse = red/warning */
 .dry-delta-up {
     color: var(--apex-danger);
-    background: rgba(225, 29, 72, 0.1);
+    background: var(--danger-light, rgba(225, 29, 72, 0.1));
 }
 
 /* Flat = no change */
 .dry-delta-flat {
-    color: rgba(26, 26, 46, 0.35);
+    color: var(--text-muted);
     background: rgba(0, 0, 0, 0.03);
 }
 
@@ -1296,19 +1296,19 @@
 }
 
 .dry-wizard-preview h4 {
-    color: rgba(26, 26, 46, 0.6);
+    color: var(--text-secondary);
 }
 
 /* Confirm Setup button (neon green) */
 .dry-btn-confirm {
-    background: linear-gradient(135deg, #05ffa1 0%, #00d68f 100%);
-    #1a1a2e;
+    background: linear-gradient(135deg, var(--success), var(--success-dark, #00d68f));
+    color: var(--text-primary);
     font-weight: 600;
-    box-shadow: 0 0 15px rgba(5, 255, 161, 0.3);
+    box-shadow: 0 0 15px var(--success-glow, rgba(5, 255, 161, 0.3));
 }
 
 .dry-btn-confirm:hover:not(:disabled) {
-    box-shadow: 0 0 25px rgba(5, 255, 161, 0.5);
+    box-shadow: 0 0 25px var(--success-glow, rgba(5, 255, 161, 0.5));
     transform: translateY(-1px);
 }
 
@@ -1319,13 +1319,13 @@
 
 /* Success button variant */
 .dry-btn-success {
-    background: rgba(5, 255, 161, 0.15);
+    background: var(--success-light, rgba(5, 255, 161, 0.15));
     color: var(--apex-success);
     border: 1px solid var(--apex-success);
 }
 
 .dry-btn-success:hover:not(:disabled) {
-    background: rgba(5, 255, 161, 0.25);
+    background: var(--success-light, rgba(5, 255, 161, 0.25));
 }
 
 /* ── 17. Responsive ───────────────────────────────────────────────── */
@@ -1498,14 +1498,14 @@
 }
 
 .dry-confirm-title {
-    color: rgba(255, 255, 255, 0.95);
+    color: var(--text-primary);
     font-size: 1.05rem;
     font-weight: 600;
     margin: 0 0 0.5rem;
 }
 
 .dry-confirm-message {
-    color: rgba(26, 26, 46, 0.6);
+    color: var(--text-secondary);
     font-size: 0.88rem;
     line-height: 1.5;
     margin: 0 0 1.25rem;
@@ -1530,43 +1530,43 @@
 .dry-input {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(240, 240, 245, 0.95);
+    color: var(--text-primary);
 }
 [data-theme="dark"] .dry-select option,
 .dry-input option {
     background: rgba(255, 255, 255, 0.08);
-    color: rgba(240, 240, 245, 0.95);
+    color: var(--text-primary);
 }
 [data-theme="dark"] .dry-textarea {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(240, 240, 245, 0.95);
+    color: var(--text-primary);
 }
 [data-theme="dark"] .dry-status-bar {
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(240, 240, 245, 0.5);
+    color: var(--text-muted);
 }
 [data-theme="dark"] .dry-status-bar .dry-status-label {
-    color: rgba(240, 240, 245, 0.95);
+    color: var(--text-primary);
 }
 [data-theme="dark"] .dry-action-btn {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(240, 240, 245, 0.7);
+    color: var(--text-secondary);
 }
 [data-theme="dark"] .dry-action-btn:hover {
     background: rgba(255, 255, 255, 0.05);
-    color: rgba(240, 240, 245, 0.95);
+    color: var(--text-primary);
 }
 [data-theme="dark"] .dry-visit-card {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 [data-theme="dark"] .dry-visit-date {
-    color: rgba(240, 240, 245, 0.95);
+    color: var(--text-primary);
 }
 [data-theme="dark"] .dry-visit-summary {
-    color: rgba(240, 240, 245, 0.5);
+    color: var(--text-muted);
 }
 [data-theme="dark"] .dry-wizard-card {
     background: rgba(255, 255, 255, 0.08);
@@ -1576,10 +1576,10 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 [data-theme="dark"] .dry-wizard-nav h3 {
-    color: rgba(240, 240, 245, 0.95);
+    color: var(--text-primary);
 }
 [data-theme="dark"] .dry-wizard-close {
-    color: rgba(240, 240, 245, 0.4);
+    color: var(--text-muted);
 }
 [data-theme="dark"] .dry-wizard-progress {
     background: rgba(255, 255, 255, 0.05);
@@ -1589,17 +1589,17 @@
     border: 2px solid rgba(255, 255, 255, 0.2);
 }
 [data-theme="dark"] .dry-step-dot.active {
-    background: var(--apex-primary, #FF8C00);
-    border-color: var(--apex-primary, #FF8C00);
-    box-shadow: 0 0 8px rgba(255, 140, 0, 0.4);
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 8px var(--accent-glow);
 }
 [data-theme="dark"] .dry-step-dot.completed {
-    background: var(--apex-success, #34d399);
-    border-color: var(--apex-success, #34d399);
-    box-shadow: 0 0 6px rgba(52, 211, 153, 0.3);
+    background: var(--success);
+    border-color: var(--success);
+    box-shadow: 0 0 6px var(--success-glow, rgba(52, 211, 153, 0.3));
 }
 [data-theme="dark"] .dry-dot-tooltip {
-    color: rgba(240, 240, 245, 0.85);
+    color: var(--text-primary);
 }
 [data-theme="dark"] .dry-room-item {
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1609,25 +1609,25 @@
     border-color: rgba(255, 255, 255, 0.1);
 }
 [data-theme="dark"] .dry-room-item .dry-room-name {
-    color: rgba(240, 240, 245, 0.95);
+    color: var(--text-primary);
 }
 [data-theme="dark"] .dry-chamber-divider {
-    color: rgba(240, 240, 245, 0.4);
+    color: var(--text-muted);
 }
 [data-theme="dark"] .dry-chamber-card {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 [data-theme="dark"] .dry-chamber-header {
-    color: rgba(240, 240, 245, 0.95);
+    color: var(--text-primary);
 }
 [data-theme="dark"] .dry-rp-code {
-    color: rgba(240, 240, 245, 0.45);
+    color: var(--text-muted);
 }
 [data-theme="dark"] .dry-rp-material:hover {
     background: rgba(255, 255, 255, 0.05);
 }
 [data-theme="dark"] .dry-rp-delete {
-    color: rgba(240, 240, 245, 0.25);
+    color: var(--text-muted);
 }
 [data-theme="dark"] .dry-visit-modal {
     background: rgba(255, 255, 255, 0.08);
@@ -1637,25 +1637,25 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 [data-theme="dark"] .dry-visit-header h3 {
-    color: rgba(240, 240, 245, 0.95);
+    color: var(--text-primary);
 }
 [data-theme="dark"] .dry-visit-footer {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 [data-theme="dark"] .dry-atmo-section h4 {
-    color: rgba(240, 240, 245, 0.7);
+    color: var(--text-secondary);
 }
 [data-theme="dark"] .dry-atmo-table {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 [data-theme="dark"] .dry-atmo-label {
-    color: rgba(240, 240, 245, 0.6);
+    color: var(--text-secondary);
     border-right: 1px solid rgba(255, 255, 255, 0.06);
 }
 [data-theme="dark"] .dry-atmo-input {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(240, 240, 245, 0.95);
+    color: var(--text-primary);
 }
 [data-theme="dark"] .dry-room-tabs {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -1665,11 +1665,11 @@
 }
 [data-theme="dark"] .dry-chip {
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(240, 240, 245, 0.6);
+    color: var(--text-secondary);
 }
 [data-theme="dark"] .dry-chip:hover {
     background: rgba(255, 255, 255, 0.05);
-    color: rgba(240, 240, 245, 0.85);
+    color: var(--text-primary);
     border-color: rgba(255, 255, 255, 0.15);
 }
 [data-theme="dark"] .dry-moisture-table {
@@ -1679,51 +1679,51 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 [data-theme="dark"] .dry-moisture-header .dry-moisture-cell {
-    color: rgba(240, 240, 245, 0.5);
+    color: var(--text-muted);
 }
 [data-theme="dark"] .dry-moisture-row {
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 [data-theme="dark"] .dry-moisture-cell {
-    color: rgba(240, 240, 245, 0.85);
+    color: var(--text-primary);
 }
 [data-theme="dark"] .dry-moisture-cell input {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(240, 240, 245, 0.95);
+    color: var(--text-primary);
 }
 [data-theme="dark"] .dry-moisture-demolished .dry-moisture-cell {
-    color: rgba(240, 240, 245, 0.35);
+    color: var(--text-muted);
 }
 [data-theme="dark"] .dry-equipment-section h4 {
-    color: rgba(240, 240, 245, 0.7);
+    color: var(--text-secondary);
 }
 [data-theme="dark"] .dry-equipment-row {
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 [data-theme="dark"] .dry-equipment-label {
-    color: rgba(240, 240, 245, 0.6);
+    color: var(--text-secondary);
 }
 [data-theme="dark"] .dry-equipment-input {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(240, 240, 245, 0.95);
+    color: var(--text-primary);
 }
 [data-theme="dark"] .dry-equipment-col h4 {
-    color: rgba(240, 240, 245, 0.7);
+    color: var(--text-secondary);
 }
 [data-theme="dark"] .dry-notes-section h4 {
-    color: rgba(240, 240, 245, 0.7);
+    color: var(--text-secondary);
 }
 [data-theme="dark"] .dry-note-input {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(240, 240, 245, 0.95);
+    color: var(--text-primary);
 }
 [data-theme="dark"] .dry-photo-upload label {
     background: rgba(255, 255, 255, 0.05);
     border: 1px dashed rgba(255, 255, 255, 0.15);
-    color: rgba(240, 240, 245, 0.5);
+    color: var(--text-muted);
 }
 [data-theme="dark"] .dry-photo-thumb {
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1733,7 +1733,7 @@
     background: rgba(255, 255, 255, 0.08);
 }
 [data-theme="dark"] .dry-delta-flat {
-    color: rgba(240, 240, 245, 0.35);
+    color: var(--text-muted);
 }
 [data-theme="dark"] .dry-wizard-preview .dry-atmo-input,
 .dry-wizard-preview .dry-moisture-cell input,
@@ -1742,14 +1742,14 @@
     border-color: rgba(255, 255, 255, 0.06);
 }
 [data-theme="dark"] .dry-wizard-preview h4 {
-    color: rgba(240, 240, 245, 0.6);
+    color: var(--text-secondary);
 }
 [data-theme="dark"] .dry-confirm-card {
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 [data-theme="dark"] .dry-confirm-message {
-    color: rgba(240, 240, 245, 0.6);
+    color: var(--text-secondary);
 }
 
 /* ── Photo Lightbox ────────────────────── */
@@ -1929,7 +1929,7 @@
 }
 .dry-view-toggle .dry-btn.dry-btn-active {
     opacity: 1;
-    background: var(--apex-primary, #FF8C00);
+    background: var(--accent);
     color: #fff;
 }
 

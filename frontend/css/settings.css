@@ -95,7 +95,7 @@
 
 .settings-tab.active {
     background: var(--apex-primary-muted);
-    color: #FF8C00;
+    color: var(--accent);
 }
 
 .settings-tab svg {
@@ -108,7 +108,7 @@
 }
 
 .settings-tab.active svg {
-    color: #FF8C00;
+    color: var(--accent);
 }
 
 /* --- Content Area --- */
@@ -188,8 +188,8 @@
 }
 
 .toggle-switch input:checked + .slider {
-    background: #FF8C00;
-    border-color: #FF8C00;
+    background: var(--accent);
+    border-color: var(--accent);
 }
 
 .toggle-switch input:checked + .slider::before {
@@ -269,7 +269,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #FF8C00;
+    color: var(--accent);
     font-weight: 600;
     font-size: 16px;
     flex-shrink: 0;
@@ -351,7 +351,7 @@
 }
 
 .bulk-actions-bar .bulk-action-primary {
-    background: #FF8C00;
+    background: var(--accent);
     color: white;
 }
 
@@ -446,7 +446,7 @@
 }
 
 .settings-toast.success {
-    background: #FF8C00;
+    background: var(--accent);
     color: white;
 }
 
@@ -474,7 +474,7 @@
     width: 72px;
     height: 72px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #FF8C00, #E07800);
+    background: linear-gradient(135deg, var(--accent), var(--accent-hover));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -574,7 +574,7 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     background: var(--apex-primary-muted);
-    color: #FF8C00;
+    color: var(--accent);
 }
 
 /* --- Settings Field Groups --- */
@@ -651,20 +651,17 @@
     align-items: center;
     gap: 6px;
     padding: 8px 16px;
-    border: 1px solid rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border);
     border-radius: 8px;
     background: transparent;
-    color: var(--apex-text-primary, #282D30);
+    color: var(--text-primary);
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     transition: var(--apex-transition-fast);
 }
 
-[data-theme="dark"] .theme-option {
-    border-color: rgba(255, 255, 255, 0.2);
-    color: var(--apex-text-secondary);
-}
+/* Dark mode theme-option handled by var(--border) */
 
 .theme-option svg {
     stroke: currentColor;
@@ -678,9 +675,9 @@
 }
 
 .theme-option.active {
-    background: rgba(255, 140, 0, 0.12);
-    border-color: #FF8C00;
-    color: #FF8C00;
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
 }
 
 /* --- Security Section --- */
@@ -723,7 +720,7 @@
     align-items: center;
     gap: 8px;
     padding: 10px 24px;
-    background: #FF8C00;
+    background: var(--accent);
     color: white;
     border: none;
     border-radius: 8px;
@@ -734,7 +731,7 @@
 }
 
 .settings-btn-primary:hover {
-    background: #E07800;
+    background: var(--accent-hover);
     box-shadow: var(--apex-btn-glow);
 }
 
@@ -883,7 +880,7 @@
     font-size: 11px;
     font-weight: 600;
     background: var(--apex-primary-muted);
-    color: #FF8C00;
+    color: var(--accent);
 }
 
 .key-status {
@@ -897,7 +894,7 @@
 
 .key-status.status-active {
     background: rgba(34, 197, 94, 0.15);
-    color: #22c55e;
+    color: var(--success);
 }
 
 .key-status.status-expired {
@@ -984,8 +981,8 @@
 }
 
 .scope-preset-btn.active {
-    background: #FF8C00;
-    border-color: #FF8C00;
+    background: var(--accent);
+    border-color: var(--accent);
     color: white;
 }
 
@@ -997,9 +994,9 @@
     transition: color 0.2s ease;
 }
 
-.scope-counter-green { color: #22c55e; }
-.scope-counter-orange { color: #eab308; }
-.scope-counter-red { color: #ef4444; }
+.scope-counter-green { color: var(--success); }
+.scope-counter-orange { color: var(--warning); }
+.scope-counter-red { color: var(--danger); }
 
 /* Filter */
 .scope-filter-wrap {
@@ -1122,7 +1119,7 @@
 
 .scope-summary-all {
     background: rgba(255, 140, 0, 0.12);
-    color: #FF8C00;
+    color: var(--accent);
 }
 
 /* "All" toggle in header */
@@ -1182,8 +1179,8 @@
 }
 
 .toggle-switch-sm input:checked + .slider-sm {
-    background: #FF8C00;
-    border-color: #FF8C00;
+    background: var(--accent);
+    border-color: var(--accent);
 }
 
 .toggle-switch-sm input:checked + .slider-sm::before {
@@ -1287,12 +1284,12 @@
 }
 
 [data-theme="dark"] .slider-sm::before {
-    background: #cbd5e1;
+    background: var(--border);
 }
 
 [data-theme="dark"] .toggle-switch-sm input:checked + .slider-sm {
-    background: #FF8C00;
-    border-color: #FF8C00;
+    background: var(--accent);
+    border-color: var(--accent);
 }
 
 [data-theme="dark"] .scope-nested {
@@ -1320,7 +1317,7 @@
 .new-key-warning {
     font-size: 13px;
     font-weight: 600;
-    color: #FF8C00;
+    color: var(--accent);
     margin-bottom: 10px;
 }
 
@@ -1355,7 +1352,7 @@
 }
 
 .new-key-copy-btn:hover {
-    color: #FF8C00;
+    color: var(--accent);
 }
 
 .new-key-copy-btn svg {
@@ -1390,7 +1387,7 @@
 }
 
 .system-card-title svg {
-    stroke: #FF8C00;
+    stroke: var(--accent);
     stroke-width: 2;
     fill: none;
     flex-shrink: 0;
@@ -1433,7 +1430,7 @@
 .system-stat-value {
     font-size: 22px;
     font-weight: 700;
-    color: #FF8C00;
+    color: var(--accent);
 }
 
 .system-loading {
@@ -1482,9 +1479,9 @@
     font-weight: 500;
 }
 
-.health-ok { color: #22c55e; }
-.health-warning { color: #eab308; }
-.health-error { color: #ef4444; }
+.health-ok { color: var(--success); }
+.health-warning { color: var(--warning); }
+.health-error { color: var(--danger); }
 
 /* Audit table */
 .audit-table {
@@ -1524,7 +1521,7 @@
     font-size: 12px;
     font-weight: 500;
     background: var(--apex-primary-muted);
-    color: #FF8C00;
+    color: var(--accent);
     white-space: nowrap;
 }
 
@@ -1578,7 +1575,7 @@
 .system-about-brand {
     font-size: 22px;
     font-weight: 700;
-    color: #FF8C00;
+    color: var(--accent);
     margin-bottom: 4px;
 }
 
@@ -1597,7 +1594,7 @@
 }
 
 .system-about-links a {
-    color: #FF8C00;
+    color: var(--accent);
     text-decoration: none;
 }
 
@@ -1639,7 +1636,7 @@
 }
 
 .admin-subtab:hover { background: var(--apex-bg-hover); color: var(--apex-text-primary); }
-.admin-subtab.active { background: rgba(255,140,0,0.12); color: #FF8C00; }
+.admin-subtab.active { background: var(--accent-light); color: var(--accent); }
 
 .admin-subsection { display: none; }
 .admin-subsection.active { display: block; }
@@ -1735,7 +1732,7 @@
 }
 
 .admin-user-list .user-card.selected {
-    border-color: #FF8C00;
+    border-color: var(--accent);
     background: rgba(255,140,0,0.04);
 }
 
@@ -1758,8 +1755,8 @@
     white-space: nowrap;
 }
 
-.admin-status-badge.active { background: rgba(16,185,129,0.12); color: #10b981; }
-.admin-status-badge.suspended { background: rgba(239,68,68,0.12); color: #ef4444; }
+.admin-status-badge.active { background: rgba(16,185,129,0.12); color: var(--success); }
+.admin-status-badge.suspended { background: rgba(239,68,68,0.12); color: var(--danger); }
 
 .admin-date { font-size: 12px; white-space: nowrap; }
 
@@ -1768,7 +1765,7 @@
     padding: 1px 6px;
     border-radius: 8px;
     background: rgba(255,140,0,0.12);
-    color: #FF8C00;
+    color: var(--accent);
     font-weight: 600;
     margin-left: 4px;
 }
@@ -1820,7 +1817,7 @@
     padding: 1px 6px;
     border-radius: 8px;
     background: rgba(245,158,11,0.15);
-    color: #f59e0b;
+    color: var(--warning);
     font-weight: 600;
 }
 
@@ -1829,7 +1826,7 @@
     padding: 1px 6px;
     border-radius: 8px;
     background: rgba(168,85,247,0.12);
-    color: #a855f7;
+    color: var(--neon-purple);
     font-weight: 600;
 }
 
@@ -1855,8 +1852,8 @@
 }
 
 .perm-cell.checked .perm-indicator {
-    background: #FF8C00;
-    border-color: #FF8C00;
+    background: var(--accent);
+    border-color: var(--accent);
 }
 
 .perm-cell.checked .perm-indicator::after {
@@ -1891,7 +1888,7 @@
 
 .perm-col-toggle, .perm-row-toggle {
     margin-left: 4px;
-    accent-color: #FF8C00;
+    accent-color: var(--accent);
 }
 
 /* Cancel button (reusable) */
@@ -1976,7 +1973,7 @@
 }
 
 [data-theme="dark"] .toggle-switch .slider::before {
-    background: #cbd5e1;
+    background: var(--border);
 }
 
 [data-theme="dark"] .permission-matrix th,
@@ -2071,6 +2068,6 @@
 .org-header-name {
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--apex-text-primary, #1a1a2e);
+    color: var(--text-primary);
 }
 

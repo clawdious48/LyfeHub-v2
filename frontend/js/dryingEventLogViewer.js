@@ -4,13 +4,15 @@
 (function() {
     'use strict';
 
+    const s = getComputedStyle(document.documentElement);
+    const _v = (name, fb) => s.getPropertyValue(name).trim() || fb;
     const EVENT_COLORS = {
-        API_ERROR: '#ef4444', CONFIRM_BLOCKED: '#f59e0b', DANGEROUS_CLEANUP_BLOCKED: '#f59e0b',
-        ROOM_DELETE: '#ef4444', REFPOINT_DELETE: '#ef4444', CHAMBER_DELETE: '#ef4444',
-        ROOM_CREATE: '#22c55e', ROOM_CREATE_BLANK: '#22c55e', CHAMBER_CREATE: '#22c55e',
-        REFPOINT_CREATE: '#22c55e', BASELINE_SAVE: '#22c55e', CONFIRM_SETUP: '#22c55e',
+        API_ERROR: _v('--danger', '#ef4444'), CONFIRM_BLOCKED: _v('--warning', '#f59e0b'), DANGEROUS_CLEANUP_BLOCKED: _v('--warning', '#f59e0b'),
+        ROOM_DELETE: _v('--danger', '#ef4444'), REFPOINT_DELETE: _v('--danger', '#ef4444'), CHAMBER_DELETE: _v('--danger', '#ef4444'),
+        ROOM_CREATE: _v('--success', '#22c55e'), ROOM_CREATE_BLANK: _v('--success', '#22c55e'), CHAMBER_CREATE: _v('--success', '#22c55e'),
+        REFPOINT_CREATE: _v('--success', '#22c55e'), BASELINE_SAVE: _v('--success', '#22c55e'), CONFIRM_SETUP: _v('--success', '#22c55e'),
         WIZARD_OPEN: '#6b7280', WIZARD_REOPEN: '#a855f7', STEP_CHANGE: '#6b7280',
-        ROOM_RENAME: '#3b82f6', BLANK_ROOM_CLEANUP: '#f59e0b'
+        ROOM_RENAME: _v('--calendar', '#3b82f6'), BLANK_ROOM_CLEANUP: _v('--warning', '#f59e0b')
     };
 
     async function initEventLogViewer() {

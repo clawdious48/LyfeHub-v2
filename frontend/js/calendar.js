@@ -3063,7 +3063,7 @@ const calendar = {
      * Get the display color for an item (event or task)
      */
     getItemColor(item) {
-        return item.calendar_color || '#FF8C00';
+        return item.calendar_color || getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#FF8C00';
     },
 
     // ==================

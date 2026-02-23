@@ -19,7 +19,7 @@
     function hashColor(str) {
         let hash = 0;
         for (let i = 0; i < (str || '').length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        const colors = ['#FF8C00','#6366f1','#22c55e','#ef4444','#a855f7','#06b6d4','#ec4899','#eab308'];
+        const colors = ['var(--accent)','var(--neon-purple)','var(--success)','var(--danger)','#a855f7','var(--calendar)','#ec4899','var(--warning)'];
         return colors[Math.abs(hash) % colors.length];
     }
 

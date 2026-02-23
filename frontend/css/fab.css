@@ -23,7 +23,7 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: #FF8C00;
+    background: var(--accent);
     border: none;
     box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3),
                 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -108,7 +108,7 @@
     align-items: center;
     gap: 10px;
     padding: 10px 16px;
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--bg-surface);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(0, 0, 0, 0.08);
@@ -130,7 +130,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #FF8C00;
+    color: var(--accent);
 }
 
 .fab-menu-item .menu-icon svg {
@@ -144,7 +144,7 @@
 .fab-menu-item .menu-label {
     font-size: 14px;
     font-weight: 500;
-    color: var(--text-primary, #1a1a2e);
+    color: var(--text-primary);
 }
 
 /* Backdrop when menu is open */
