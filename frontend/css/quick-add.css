@@ -1,23 +1,26 @@
 /**
- * Quick Add Modal Styles
- * Minimal capture modal with optional expanded form
+ * Quick Add Modal — Centered Editorial Design
+ * Uses theme tokens for automatic light/dark support.
  */
 
-/* Modal Overlay */
+/* ========================================
+   OVERLAY
+   ======================================== */
 .quick-add-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    inset: 0;
+    background: rgba(0, 0, 0, 0.25);
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
-    z-index: 2000;
+    z-index: 9998;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.2s ease;
+    transition: opacity var(--transition), visibility var(--transition);
+}
+
+[data-theme="dark"] .quick-add-overlay {
+    background: rgba(0, 0, 0, 0.5);
 }
 
 .quick-add-overlay.visible {
@@ -25,174 +28,157 @@
     visibility: visible;
 }
 
-/* Modal Card */
+/* ========================================
+   PANEL
+   ======================================== */
 .quick-add-modal {
-    width: 100%;
-    max-width: 500px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-radius: 16px 16px 0 0;
-    padding: 20px;
-    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-    transform: translateY(100%);
-    transition: transform 0.3s ease;
+    position: relative;
+    width: 520px;
+    max-width: calc(100vw - 32px);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: var(--bg-surface);
+    border-radius: var(--radius-xl);
+    padding: 36px;
+    box-shadow: var(--shadow-lg);
+    z-index: 9999;
+    transform: scale(0.96);
+    opacity: 0;
+    transition: transform var(--transition-slow), opacity var(--transition-slow);
 }
 
 .quick-add-overlay.visible .quick-add-modal {
-    transform: translateY(0);
+    transform: scale(1);
+    opacity: 1;
 }
 
-/* Header */
+/* ========================================
+   HEADER + CLOSE
+   ======================================== */
 .quick-add-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .quick-add-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text-primary, #1a1a2e);
+    font-family: var(--font-heading);
+    font-size: var(--font-size-xl);
+    font-weight: normal;
+    color: var(--text-primary);
     margin: 0;
 }
 
 .quick-add-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
     width: 32px;
     height: 32px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.05);
+    border-radius: var(--radius-md);
+    background: transparent;
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-secondary, #666);
+    color: var(--text-muted);
     font-size: 20px;
     line-height: 1;
+    transition: color var(--transition);
 }
 
-.quick-add-close:active {
-    background: rgba(0, 0, 0, 0.1);
+.quick-add-close:hover {
+    color: var(--text-primary);
 }
 
-/* Main Input */
+/* ========================================
+   TITLE INPUT
+   ======================================== */
 .quick-add-input {
     width: 100%;
-    padding: 14px 16px;
-    font-size: 16px;
-    background: #f8fafc;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 12px;
-    color: var(--text-primary, #1a1a2e);
+    padding: 14px 0;
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: normal;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-primary);
     outline: none;
-    transition: border-color 0.15s ease;
+    transition: border-color var(--transition);
 }
 
 .quick-add-input::placeholder {
-    color: var(--text-muted, #666);
+    color: var(--text-muted);
 }
 
 .quick-add-input:focus {
-    border-color: #FF8C00;
+    border-bottom-color: var(--accent);
 }
 
-/* Actions */
-.quick-add-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 16px;
-}
-
-.quick-add-more {
-    color: #FF8C00;
-    background: none;
-    border: none;
-    font-size: 14px;
-    cursor: pointer;
-    padding: 8px 0;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.quick-add-more svg {
-    width: 16px;
-    height: 16px;
-    stroke: currentColor;
-    stroke-width: 2;
-    fill: none;
-    transition: transform 0.2s ease;
-}
-
-.quick-add-more.expanded svg {
-    transform: rotate(180deg);
-}
-
-.quick-add-save {
-    padding: 10px 24px;
-    font-size: 15px;
-    font-weight: 600;
-    background: #FF8C00;
-    border: none;
-    border-radius: 20px;
-    color: white;
-    cursor: pointer;
-    transition: transform 0.1s ease, opacity 0.15s ease;
-}
-
-.quick-add-save:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.quick-add-save:not(:disabled):active {
-    transform: scale(0.97);
-}
-
-/* Expanded Form Section */
+/* ========================================
+   DIVIDER
+   ======================================== */
 .quick-add-expanded {
     display: none;
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-light);
 }
 
 .quick-add-expanded.visible {
     display: block;
+    animation: fieldStagger 300ms ease;
 }
 
+@keyframes fieldStagger {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========================================
+   FIELD LABELS
+   ======================================== */
 .quick-add-field {
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .quick-add-field label {
     display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-secondary, #666);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-secondary);
     margin-bottom: 6px;
+    font-family: var(--font-body);
 }
 
+/* ========================================
+   INPUTS
+   ======================================== */
 .quick-add-field input,
 .quick-add-field select,
 .quick-add-field textarea {
     width: 100%;
-    padding: 10px 12px;
-    font-size: 15px;
-    background: #f8fafc;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 8px;
-    color: var(--text-primary, #1a1a2e);
+    padding: 10px 14px;
+    font-size: var(--font-size-base);
+    font-family: var(--font-body);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
     outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
 }
 
 .quick-add-field input:focus,
 .quick-add-field select:focus,
 .quick-add-field textarea:focus {
-    border-color: #FF8C00;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
 }
 
 .quick-add-field textarea {
@@ -200,7 +186,43 @@
     min-height: 80px;
 }
 
-/* Priority Buttons */
+[data-theme="dark"] .quick-add-field input[type="date"] {
+    color-scheme: dark;
+}
+
+/* ========================================
+   STATUS SEGMENTS
+   ======================================== */
+.quick-add-status-group {
+    display: flex;
+    background: var(--bg-app);
+    border-radius: var(--radius-md);
+    padding: 3px;
+    gap: 2px;
+}
+
+.quick-add-status-group .status-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.quick-add-status-group .status-btn.active {
+    background: var(--accent);
+    color: #fff;
+}
+
+/* ========================================
+   PRIORITY PILLS
+   ======================================== */
 .quick-add-priority-group {
     display: flex;
     gap: 8px;
@@ -209,34 +231,69 @@
 .priority-btn {
     flex: 1;
     padding: 8px 12px;
-    font-size: 13px;
+    font-size: var(--font-size-sm);
     font-weight: 500;
-    background: #f8fafc;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 8px;
-    color: var(--text-secondary, #666);
+    font-family: var(--font-body);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all var(--transition);
+    text-align: center;
+}
+
+.priority-btn:hover {
+    border-color: var(--accent);
 }
 
 .priority-btn.active {
-    color: white;
-    border-color: transparent;
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
 }
 
 .priority-btn[data-priority="low"].active {
-    background: #30d158;
+    background: var(--success);
+    border-color: var(--success);
 }
 
 .priority-btn[data-priority="medium"].active {
-    background: #ff9f0a;
+    background: var(--warning);
+    border-color: var(--warning);
 }
 
 .priority-btn[data-priority="high"].active {
-    background: #ff453a;
+    background: var(--danger);
+    border-color: var(--danger);
 }
 
-/* Date/Time Row */
+/* ========================================
+   MY DAY TOGGLE
+   ======================================== */
+.quick-add-myday-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: var(--bg-app);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    transition: all var(--transition);
+}
+
+.quick-add-myday-toggle.active {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* ========================================
+   DATE/TIME ROW
+   ======================================== */
 .quick-add-row {
     display: flex;
     gap: 12px;
@@ -256,25 +313,95 @@
     padding-right: 36px;
 }
 
-/* Toast notification */
+/* ========================================
+   ACTIONS
+   ======================================== */
+.quick-add-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+}
+
+.quick-add-more {
+    color: var(--accent);
+    background: none;
+    border: none;
+    font-size: var(--font-size-sm);
+    font-family: var(--font-body);
+    cursor: pointer;
+    padding: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color var(--transition);
+}
+
+.quick-add-more svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    transition: transform var(--transition);
+}
+
+.quick-add-more.expanded svg {
+    transform: rotate(180deg);
+}
+
+/* ========================================
+   CREATE BUTTON
+   ======================================== */
+.quick-add-save {
+    width: 100%;
+    height: 48px;
+    margin-top: 24px;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius-lg);
+    color: #fff;
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: background var(--transition), transform var(--transition);
+}
+
+.quick-add-save:hover:not(:disabled) {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+}
+
+.quick-add-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.quick-add-save:not(:disabled):active {
+    transform: scale(0.98);
+}
+
+/* ========================================
+   TOAST
+   ======================================== */
 .quick-add-toast {
     position: fixed;
     bottom: 100px;
     left: 50%;
     transform: translateX(-50%) translateY(20px);
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    color: var(--text-primary, #1a1a2e);
+    background: var(--bg-surface);
+    color: var(--text-primary);
     padding: 12px 20px;
-    border-radius: 8px;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    font-size: 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+    font-size: var(--font-size-base);
+    font-family: var(--font-body);
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
-    z-index: 2100;
+    z-index: 10100;
 }
 
 .quick-add-toast.visible {
@@ -283,44 +410,201 @@
     transform: translateX(-50%) translateY(0);
 }
 
-/* Desktop adjustments */
-@media (min-width: 1201px) {
+/* ========================================
+   DESKTOP — already centered
+   ======================================== */
+@media (min-width: 641px) {
     .quick-add-modal {
-        border-radius: 16px;
-        margin-bottom: 20px;
-        max-height: 80vh;
-        overflow-y: auto;
+        border-radius: var(--radius-xl);
     }
 }
 
 /* ========================================
-   DARK MODE OVERRIDES
+   MOBILE — bottom sheet
    ======================================== */
-[data-theme="dark"] .quick-add-modal {
-    background: rgba(255, 255, 255, 0.08);
+@media (max-width: 640px) {
+    .quick-add-overlay {
+        align-items: flex-end;
+    }
+
+    .quick-add-modal {
+        width: 100%;
+        max-width: 100%;
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        padding: 24px 20px;
+        padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+        transform: translateY(100%);
+        opacity: 1;
+    }
+
+    .quick-add-overlay.visible .quick-add-modal {
+        transform: translateY(0);
+    }
 }
-[data-theme="dark"] .quick-add-close {
-    background: rgba(255, 255, 255, 0.05);
+
+/* ========================================
+   CAPTURE MODALS (bottom-nav radial bubbles)
+   ======================================== */
+.capture-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s ease;
 }
-[data-theme="dark"] .quick-add-input {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+
+.capture-modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
 }
-[data-theme="dark"] .quick-add-expanded {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+.capture-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.25);
 }
-[data-theme="dark"] .quick-add-field input,
-.quick-add-field select,
-.quick-add-field textarea {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+
+[data-theme="dark"] .capture-modal-backdrop {
+    background: rgba(0, 0, 0, 0.5);
 }
-[data-theme="dark"] .priority-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+
+.capture-modal {
+    position: relative;
+    width: 90%;
+    max-width: 400px;
+    background: var(--bg-surface);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    transform: translateY(40px);
+    transition: transform var(--transition-slow);
+    overflow: hidden;
 }
-[data-theme="dark"] .quick-add-toast {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+
+.capture-modal-overlay.visible .capture-modal {
+    transform: translateY(0);
+}
+
+.capture-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 8px;
+}
+
+.capture-modal-header h3 {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-lg);
+    font-weight: normal;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.capture-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    transition: color var(--transition);
+}
+
+.capture-modal-close:hover {
+    color: var(--text-primary);
+}
+
+.capture-modal-body {
+    padding: 8px 20px 12px;
+}
+
+.capture-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    font-family: var(--font-body);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color var(--transition);
+    box-sizing: border-box;
+    margin-bottom: 8px;
+}
+
+.capture-input:focus {
+    border-color: var(--accent);
+}
+
+.capture-textarea {
+    resize: none;
+}
+
+.capture-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.capture-toggle input[type="checkbox"] {
+    accent-color: var(--accent);
+    width: 18px;
+    height: 18px;
+}
+
+.capture-modal-footer {
+    padding: 8px 20px 20px;
+}
+
+.capture-submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: background var(--transition);
+}
+
+.capture-submit-btn:hover {
+    background: var(--accent-hover);
+}
+
+.capture-submit-btn:disabled {
+    opacity: 0.6;
+}
+
+.capture-photo-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--accent-light);
+    border: 2px dashed var(--accent-glow);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-lg);
+    color: var(--accent);
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: background var(--transition);
+}
+
+.capture-photo-btn:active {
+    background: var(--accent-glow);
+}
+
+.capture-photo-preview {
+    margin-bottom: 8px;
 }

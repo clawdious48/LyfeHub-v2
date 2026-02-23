@@ -1,0 +1,230 @@
+/* ========================================
+   THEME OVERRIDES — Loads LAST
+   Forces unified theme tokens on all legacy CSS.
+   ======================================== */
+
+/* ---- Force theme colors on all containers ---- */
+.app-content,
+.tab-content,
+.tab-content.active,
+main,
+.view-controls,
+.tasks-content,
+.dev-projects-content,
+.view-container,
+.board,
+.card-grid,
+.list-view,
+.people-content,
+.people-main-content,
+.bases-main-content,
+.settings-content,
+.apex-content,
+.calendar-content,
+.core-page {
+    background: var(--bg-app) !important;
+    color: var(--text-primary) !important;
+}
+
+/* ---- Inputs, selects, cards ---- */
+select,
+input[type="text"],
+input[type="date"],
+input[type="search"],
+textarea {
+    background: var(--bg-surface) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border) !important;
+    border-radius: var(--radius-md);
+}
+
+select option {
+    background: var(--bg-surface);
+}
+
+[data-theme="dark"] input[type="date"] {
+    color-scheme: dark;
+}
+
+/* ---- Context sheets, dropdowns ---- */
+.context-sheet,
+.my-lists-menu,
+.dropdown-menu {
+    background: var(--bg-surface) !important;
+    border-color: var(--border) !important;
+    box-shadow: var(--shadow-lg);
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-app);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+}
+
+/* ---- Links ---- */
+a {
+    color: var(--accent);
+}
+
+/* ---- Staggered widget reveal ---- */
+.grid-stack-item {
+    opacity: 0;
+    animation: reveal 400ms ease forwards;
+}
+
+.grid-stack-item:nth-child(1) { animation-delay: 80ms; }
+.grid-stack-item:nth-child(2) { animation-delay: 160ms; }
+.grid-stack-item:nth-child(3) { animation-delay: 240ms; }
+.grid-stack-item:nth-child(4) { animation-delay: 320ms; }
+.grid-stack-item:nth-child(5) { animation-delay: 400ms; }
+
+@keyframes reveal {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Greeting entrance ---- */
+.dashboard-greeting {
+    animation: greetFade 600ms ease;
+}
+
+@keyframes greetFade {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Tab content transitions ---- */
+.tab-content.active {
+    animation: pageFade 250ms ease;
+}
+
+@keyframes pageFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ---- Checkbox bounce ---- */
+.task-checkbox:checked,
+.task-item-checkbox:checked {
+    animation: checkBounce 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes checkBounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+/* ---- Typography overrides ---- */
+.dashboard-greeting,
+.modal-header h2,
+.quick-add-title,
+.capture-modal-header h3,
+.process-modal-title {
+    font-family: var(--font-heading);
+    font-weight: normal;
+}
+
+/* ---- Modal backgrounds ---- */
+.modal-content,
+.process-modal,
+.widget-picker-modal {
+    background: var(--bg-surface) !important;
+    border-color: var(--border) !important;
+}
+
+.modal-header,
+.modal-footer {
+    border-color: var(--border-light) !important;
+}
+
+.modal-footer {
+    background: var(--bg-app) !important;
+}
+
+/* ---- Process modal ---- */
+.process-modal-header {
+    border-bottom-color: var(--border-light) !important;
+}
+
+.process-field input,
+.process-field select,
+.process-field textarea {
+    background: var(--bg-surface) !important;
+    border-color: var(--border) !important;
+    color: var(--text-primary) !important;
+}
+
+.process-field input:focus,
+.process-field select:focus,
+.process-field textarea:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px var(--accent-light) !important;
+}
+
+.process-priority-btn {
+    background: var(--bg-surface) !important;
+    border-color: var(--border) !important;
+    color: var(--text-secondary) !important;
+}
+
+.process-priority-btn.active {
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+    color: #fff !important;
+}
+
+.process-btn-primary {
+    background: var(--accent) !important;
+}
+
+.process-btn-primary:hover {
+    background: var(--accent-hover) !important;
+}
+
+.process-btn-secondary {
+    background: var(--bg-app) !important;
+    color: var(--text-secondary) !important;
+}
+
+.process-modal-actions {
+    border-top-color: var(--border-light) !important;
+}
+
+.process-quick-btn {
+    background: var(--bg-surface) !important;
+    border-color: var(--border) !important;
+    color: var(--text-secondary) !important;
+}
+
+.process-quick-btn:hover {
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+}
+
+/* ---- Inbox dark mode simplification ---- */
+.inbox-item {
+    background: var(--bg-surface) !important;
+}
+
+.inbox-item:hover {
+    background: var(--accent-light) !important;
+    border-color: var(--accent-glow) !important;
+}
+
+.inbox-item-title {
+    color: var(--text-primary) !important;
+}
+
+.inbox-badge.empty {
+    background: var(--bg-app) !important;
+    color: var(--text-muted) !important;
+}

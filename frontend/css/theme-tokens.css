@@ -1,0 +1,146 @@
+/* ========================================
+   THEME TOKENS — Editorial Productivity
+   Instrument Serif + Outfit + IBM Plex Mono
+   ======================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Outfit:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+/* ---- Light Mode (default) ---- */
+:root {
+    /* Backgrounds */
+    --bg-app: #fafaf9;
+    --bg-surface: #ffffff;
+    --bg-elevated: #ffffff;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+
+    /* Borders */
+    --border: #e7e5e4;
+    --border-light: #f5f5f4;
+
+    /* Text */
+    --text-primary: #1c1917;
+    --text-secondary: #78716c;
+    --text-muted: #a8a29e;
+
+    /* Accent */
+    --accent: #ea580c;
+    --accent-hover: #c2410c;
+    --accent-light: rgba(234,88,12,0.06);
+    --accent-glow: rgba(234,88,12,0.15);
+
+    /* Semantic */
+    --calendar: #2563eb;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --warning: #d97706;
+
+    /* Typography */
+    --font-heading: 'Instrument Serif', Georgia, serif;
+    --font-body: 'Outfit', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-heading-alt: 'IBM Plex Mono', monospace;
+    --font-body-alt: 'Geist', system-ui, sans-serif;
+
+    /* Font sizes */
+    --font-size-xs: 11px;
+    --font-size-sm: 13px;
+    --font-size-base: 14px;
+    --font-size-lg: 16px;
+    --font-size-xl: 20px;
+    --font-size-2xl: 28px;
+    --font-size-3xl: 36px;
+
+    /* Radii */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 24px;
+
+    /* Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+
+    /* Layout */
+    --nav-height: 56px;
+
+    /* Transitions */
+    --transition: 200ms ease;
+    --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Legacy compat — map old vars to new tokens */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: var(--border);
+    --glass-shadow: var(--shadow-md);
+    --blur: blur(16px);
+    --bg-primary: var(--bg-surface);
+    --bg-secondary: var(--bg-app);
+    --bg-tertiary: var(--bg-app);
+    --bg-hover: #eeeeee;
+    --border-color: var(--border);
+    --neon-purple: var(--accent);
+    --neon-blue: #0891b2;
+    --neon-cyan: var(--accent);
+    --neon-pink: var(--danger);
+    --neon-orange: #f97316;
+    --neon-yellow: var(--warning);
+    --neon-green: var(--success);
+}
+
+/* ---- Dark Mode ---- */
+[data-theme="dark"] {
+    --bg-app: #09090b;
+    --bg-surface: #18181b;
+    --bg-elevated: #27272a;
+
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+
+    --border: #3f3f46;
+    --border-light: #27272a;
+
+    --text-primary: #fafafa;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+
+    --accent: #f97316;
+    --accent-hover: #fb923c;
+    --accent-light: rgba(249,115,22,0.1);
+    --accent-glow: rgba(249,115,22,0.2);
+
+    --calendar: #06b6d4;
+    --success: #10b981;
+    --danger: #f43f5e;
+    --warning: #fbbf24;
+
+    /* Legacy compat */
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: var(--border);
+    --glass-shadow: var(--shadow-lg);
+    --bg-primary: var(--bg-surface);
+    --bg-secondary: var(--bg-elevated);
+    --bg-tertiary: var(--bg-app);
+    --bg-hover: rgba(255, 255, 255, 0.08);
+    --border-color: var(--border);
+    --neon-purple: var(--accent);
+    --neon-blue: #22d3ee;
+    --neon-cyan: var(--accent);
+    --neon-pink: var(--danger);
+    --neon-orange: #fb923c;
+    --neon-yellow: var(--warning);
+    --neon-green: var(--success);
+}
+
+/* ---- Mono Font Alternative ---- */
+[data-font="mono"] {
+    --font-heading: var(--font-heading-alt);
+    --font-body: var(--font-body-alt);
+}
