@@ -33,8 +33,8 @@
      * @returns {string} Tab ID (e.g., 'projects', 'tasks')
      */
     function getActiveTabId() {
-        const activeTab = document.querySelector('.tab.active');
-        return activeTab ? activeTab.dataset.tab : 'projects';
+        const activeTab = document.querySelector('.nav-link[data-tab].active');
+        return activeTab ? activeTab.dataset.tab : 'dashboard';
     }
 
     /**

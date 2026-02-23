@@ -55,7 +55,7 @@ const apexJobs = {
 
         // Hide the Apex tab if user is not in any org
         if (!window.currentOrg) {
-            const apexTab = document.querySelector('.tab[data-tab="apex"]');
+            const apexTab = document.querySelector('.nav-link[data-tab="apex"]');
             if (apexTab) apexTab.style.display = 'none';
             // Show no-access message if they still land here (direct URL, bookmark)
             const apexContent = document.querySelector('main.tab-content[data-tab="apex"]');
@@ -76,7 +76,7 @@ const apexJobs = {
 
         this.bindEvents();
         // Auto-load if apex tab is active
-        const apexTab = document.querySelector(".tab[data-tab=\"apex\"]");
+        const apexTab = document.querySelector('.nav-link[data-tab="apex"]');
         if (apexTab && apexTab.classList.contains("active")) {
             this.loadJobs();
         }

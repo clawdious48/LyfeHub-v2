@@ -157,7 +157,7 @@
         var nested = NESTED_SECTIONS[parentId];
         if (!nested) return null;
         // Check if the current active header tab matches a nested section
-        var activeTab = document.querySelector('.tabs .tab.active');
+        var activeTab = document.querySelector('.nav-link[data-tab].active');
         var activeTabId = activeTab ? activeTab.getAttribute('data-tab') : null;
         for (var i = 0; i < nested.length; i++) {
             if (activeTabId === nested[i]) return nested[i];
@@ -603,14 +603,9 @@
             window.contextSheet.hide();
         }
         
-        // Normal navigation — use kanban.switchTab which handles all tab types
-        if (window.kanban && window.kanban.switchTab) {
-            window.kanban.switchTab(tabId);
-        } else {
-            var headerTab = document.querySelector('.tabs .tab[data-tab="' + tabId + '"]');
-            if (headerTab) {
-                headerTab.click();
-            }
+        // Normal navigation — use global switchTab
+        if (window.switchTab) {
+            window.switchTab(tabId);
         }
         
         currentActiveTab = tabId;
@@ -623,7 +618,7 @@
      */
     function updateActiveState(activeTabId) {
         if (!activeTabId) {
-            var activeHeaderTab = document.querySelector('.tabs .tab.active');
+            var activeHeaderTab = document.querySelector('.nav-link[data-tab].active');
             if (activeHeaderTab) {
                 activeTabId = activeHeaderTab.getAttribute('data-tab');
             }
@@ -661,11 +656,18 @@
      * Listen for tab changes from header to sync state
      */
     function setupTabSync() {
-        document.querySelectorAll('.tabs .tab').forEach(function(tab) {
-            tab.addEventListener('click', function() {
-                var tabId = tab.getAttribute('data-tab');
+        // Sync with new nav-link tabs
+        document.querySelectorAll('.nav-link[data-tab]').forEach(function(link) {
+            link.addEventListener('click', function() {
+                var tabId = link.getAttribute('data-tab');
                 updateActiveState(tabId);
             });
+        });
+        // Also listen for tab:activated events from switchTab()
+        document.addEventListener('tab:activated', function(e) {
+            if (e.detail && e.detail.tab) {
+                updateActiveState(e.detail.tab);
+            }
         });
     }
     

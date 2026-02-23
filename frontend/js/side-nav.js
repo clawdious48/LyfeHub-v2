@@ -96,9 +96,9 @@
             return;
         }
 
-        // Navigate directly via kanban.switchTab
-        if (window.kanban && kanban.switchTab) {
-            kanban.switchTab(tabId);
+        // Navigate directly via global switchTab
+        if (window.switchTab) {
+            window.switchTab(tabId);
         }
 
         updateActiveState(tabId);
@@ -109,7 +109,7 @@
 
     function updateActiveState(activeTabId) {
         if (!activeTabId) {
-            var activeTab = document.querySelector('.tabs .tab.active');
+            var activeTab = document.querySelector('.nav-link[data-tab].active');
             if (activeTab) activeTabId = activeTab.getAttribute('data-tab');
         }
 
@@ -122,10 +122,9 @@
 
     // Sync when tabs change from other sources
     function setupSync() {
-        document.querySelectorAll('.tabs .tab').forEach(function(tab) {
-            tab.addEventListener('click', function() {
-                updateActiveState(tab.getAttribute('data-tab'));
-            });
+        // Listen for tab:activated events from switchTab()
+        document.addEventListener('tab:activated', function(e) {
+            if (e.detail && e.detail.tab) updateActiveState(e.detail.tab);
         });
 
         document.addEventListener('sidebar:navigate', function(e) {

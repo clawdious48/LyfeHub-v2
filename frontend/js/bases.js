@@ -5000,14 +5000,12 @@ function initBases() {
     loadBases();
   }
 
-  // Also load on tab click
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      if (tab.dataset.tab === "bases") {
-        console.log("[BASES] Tab click detected, calling loadBases");
-        loadBases();
-      }
-    });
+  // Also load on tab activation
+  document.addEventListener('tab:activated', (e) => {
+    if (e.detail && e.detail.tab === 'bases') {
+      console.log("[BASES] Tab activated, calling loadBases");
+      loadBases();
+    }
   });
   
   // Display toggle

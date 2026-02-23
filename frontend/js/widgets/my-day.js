@@ -102,7 +102,7 @@
             if (allTasks.length === 0 && calEvents.length === 0) {
                 container.innerHTML = `
                     <div class="widget-empty">
-                        <p>No tasks or events today 🎉</p>
+                        <p>No tasks or events today</p>
                         <p class="widget-empty-sub">Enjoy your day or add something new</p>
                         <button class="widget-action-btn" onclick="if(window.QuickAdd) QuickAdd.open('task')">+ Add Task</button>
                     </div>`;

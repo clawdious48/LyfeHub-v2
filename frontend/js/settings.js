@@ -174,11 +174,8 @@
         var btn = document.getElementById('settings-back-btn');
         if (btn) {
             btn.addEventListener('click', function() {
-                if (window.kanban && window.kanban.switchTab) {
-                    window.kanban.switchTab('dashboard');
-                } else {
-                    var dashTab = document.querySelector('.tab[data-tab="dashboard"]');
-                    if (dashTab) dashTab.click();
+                if (window.switchTab) {
+                    window.switchTab('dashboard');
                 }
             });
         }
@@ -241,9 +238,8 @@
                 container.querySelectorAll('.settings-base-item').forEach(function(item) {
                     item.addEventListener('click', function() {
                         const baseId = item.dataset.baseId;
-                        const basesTab = document.querySelector('.tab[data-tab="bases"]');
-                        if (basesTab) {
-                            basesTab.click();
+                        if (window.switchTab) {
+                            window.switchTab('bases');
                             setTimeout(function() {
                                 if (window.openBase) window.openBase(baseId);
                             }, 200);

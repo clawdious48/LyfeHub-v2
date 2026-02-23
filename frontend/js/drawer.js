@@ -109,8 +109,8 @@
      * Get the currently active tab
      */
     function getActiveTab() {
-        const activeTab = document.querySelector('.tab.active');
-        return activeTab ? activeTab.dataset.tab : 'projects';
+        const activeTab = document.querySelector('.nav-link[data-tab].active');
+        return activeTab ? activeTab.dataset.tab : 'dashboard';
     }
 
     /**
@@ -256,12 +256,9 @@
      * Switch to a tab
      */
     function switchToTab(tabId) {
-        // Use kanban.switchTab which handles all tab types (including tasks, people, calendar)
-        if (window.kanban && window.kanban.switchTab) {
-            window.kanban.switchTab(tabId);
-        } else {
-            const tabButton = document.querySelector(`.tab[data-tab="${tabId}"]`);
-            if (tabButton) tabButton.click();
+        // Use global switchTab from app-init.js
+        if (window.switchTab) {
+            window.switchTab(tabId);
         }
         
         // Update drawer active state
@@ -295,17 +292,13 @@
     /**
      * Handle logout button click
      */
-    function handleLogout() {
-        // Use the existing logout button if available
-        const logoutBtn = document.getElementById('logout-btn');
-        if (logoutBtn) {
-            logoutBtn.click();
-        } else {
-            // Fallback: clear storage and redirect
-            localStorage.removeItem('lyfehub_token');
-            localStorage.removeItem('lyfehub_user');
-            window.location.href = '/login.html';
-        }
+    async function handleLogout() {
+        try {
+            if (window.api && api.logout) {
+                await api.logout();
+            }
+        } catch (e) {}
+        window.location.href = '/login.html';
     }
 
     /**
@@ -383,10 +376,10 @@
         document.addEventListener('keydown', handleKeydown);
         
         // Listen for tab changes (update active state)
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
+        document.addEventListener('tab:activated', (e) => {
+            if (e.detail && e.detail.tab) {
                 setTimeout(updateActiveTab, 0);
-            });
+            }
         });
         
         // Prevent scroll behind drawer on touch devices

@@ -96,8 +96,7 @@
                     if (window.ContextSheet && typeof ContextSheet.showRecord === 'function') {
                         ContextSheet.showRecord(baseId, recordId);
                     } else {
-                        var tabBtn = document.querySelector('.tab[data-tab="bases"]');
-                        if (tabBtn) tabBtn.click();
+                        if (window.switchTab) window.switchTab('bases');
                     }
                 });
             });
@@ -107,8 +106,7 @@
             if (moreLink) {
                 moreLink.addEventListener('click', function(e) {
                     e.preventDefault();
-                    var tabBtn = document.querySelector('.tab[data-tab="bases"]');
-                    if (tabBtn) tabBtn.click();
+                    if (window.switchTab) window.switchTab('bases');
                 });
             }
         })
@@ -270,8 +268,7 @@
         // Click title/link to navigate to the base
         function navigateToBase() {
             if (config && config.base_id) {
-                var basesTab = document.querySelector('.tabs .tab[data-tab="bases"]');
-                if (basesTab) basesTab.click();
+                if (window.switchTab) window.switchTab('bases');
                 setTimeout(function() {
                     if (typeof window.openBase === 'function') {
                         window.openBase(config.base_id, config.view_id);

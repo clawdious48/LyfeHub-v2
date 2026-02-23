@@ -2,9 +2,9 @@
     'use strict';
 
     const TYPE_ICONS = {
-        task: '✓',
-        note: '📝',
-        person: '👤'
+        task: '&#10003;',
+        note: 'N',
+        person: 'P'
     };
 
     const TYPE_CLASSES = {
@@ -30,16 +30,16 @@
         return `
             <div class="inbox-item-wrapper" data-id="${item.id}" data-type="${item.type}">
                 <div class="inbox-swipe-bg inbox-swipe-archive">
-                    <span class="inbox-swipe-icon">📦</span>
+                    <span class="inbox-swipe-icon">Archive</span>
                     <span class="inbox-swipe-label">Archive</span>
                 </div>
                 <div class="inbox-swipe-bg inbox-swipe-process">
-                    <span class="inbox-swipe-icon">✅</span>
+                    <span class="inbox-swipe-icon">Process</span>
                     <span class="inbox-swipe-label">Process</span>
                 </div>
                 <div class="inbox-item">
                     <div class="inbox-item-icon ${TYPE_CLASSES[item.type] || ''}">
-                        ${TYPE_ICONS[item.type] || '📥'}
+                        ${TYPE_ICONS[item.type] || 'In'}
                     </div>
                     <div class="inbox-item-info">
                         <div class="inbox-item-title">${escapeHtml(item.title)}</div>
@@ -52,7 +52,7 @@
     function renderEmpty() {
         return `
             <div class="inbox-empty">
-                <div class="inbox-empty-icon">🧘</div>
+                <div class="inbox-empty-icon"></div>
                 <p class="inbox-empty-text">All clear — nothing to process</p>
                 <p class="inbox-empty-sub">Items will appear here when captured</p>
             </div>`;

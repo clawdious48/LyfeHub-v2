@@ -16,7 +16,7 @@
             this._types[type] = {
                 type,
                 label: definition.label || type,
-                icon: definition.icon || '📦',
+                icon: definition.icon || '',
                 render: definition.render,       // fn(container, config, widgetId)
                 refresh: definition.refresh,     // fn(container, config, widgetId) — optional
                 defaultSize: definition.defaultSize || { w: 6, h: 4 },
@@ -78,7 +78,7 @@
     // --- My Day ---
     WidgetRegistry.register('my-day', {
         label: 'My Day',
-        icon: '☀️',
+        icon: '',
         defaultSize: { w: 6, h: 4 },
         minSize: { w: 4, h: 3 },
         render(container) {
@@ -98,7 +98,7 @@
     // --- Inbox ---
     WidgetRegistry.register('inbox', {
         label: 'Inbox',
-        icon: '📥',
+        icon: '',
         defaultSize: { w: 6, h: 4 },
         minSize: { w: 4, h: 3 },
         render(container) {
@@ -117,7 +117,7 @@
     // --- Week Calendar ---
     WidgetRegistry.register('week-cal', {
         label: 'This Week',
-        icon: '📅',
+        icon: '',
         defaultSize: { w: 6, h: 3 },
         minSize: { w: 4, h: 3 },
         render(container) {
@@ -136,7 +136,7 @@
     // --- Quick Notes ---
     WidgetRegistry.register('quick-notes', {
         label: 'Quick Notes',
-        icon: '📝',
+        icon: '',
         defaultSize: { w: 6, h: 3 },
         minSize: { w: 4, h: 3 },
         render(container) {
@@ -155,7 +155,7 @@
     // --- Base View (configurable) ---
     WidgetRegistry.register('base-view', {
         label: 'Table View',
-        icon: '📊',
+        icon: '',
         defaultSize: { w: 6, h: 4 },
         minSize: { w: 4, h: 3 },
         configurable: true,
@@ -176,8 +176,8 @@
 
     // --- Areas ---
     WidgetRegistry.register('areas', {
-        label: 'Areas',
-        icon: '🎯',
+        label: 'Areas of Focus',
+        icon: '',
         defaultSize: { w: 6, h: 3 },
         minSize: { w: 4, h: 2 },
         render(container) {

@@ -39,11 +39,8 @@
             container.querySelectorAll('.area-card').forEach(card => {
                 card.addEventListener('click', () => {
                     const areaId = card.dataset.areaId;
-                    if (window.kanban && window.kanban.switchTab) {
-                        window.kanban.switchTab('tasks');
-                    } else {
-                        const tabBtn = document.querySelector('.tab[data-tab="tasks"]');
-                        if (tabBtn) tabBtn.click();
+                    if (window.switchTab) {
+                        window.switchTab('tasks');
                     }
                     setTimeout(() => {
                         document.dispatchEvent(new CustomEvent('area:filter', { detail: { areaId } }));

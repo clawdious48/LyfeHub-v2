@@ -37,12 +37,8 @@ const dashboard = {
             window.location.href = '/login.html';
         });
 
-        // Tab switching
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                this.switchTab(tab.dataset.tab);
-            });
-        });
+        // Tab switching — handled by app-init.js via .nav-link[data-tab]
+        // Legacy .tab selectors no longer exist; switchTab delegates to window.switchTab
 
         // View switching
         document.querySelectorAll('.view-btn').forEach(btn => {
@@ -91,46 +87,9 @@ const dashboard = {
 
     switchTab(tabName) {
         this.currentTab = tabName;
-        
-        // Update tab buttons
-        document.querySelectorAll('.tab').forEach(t => {
-            t.classList.toggle('active', t.dataset.tab === tabName);
-        });
-        
-        // Update tab content
-        document.querySelectorAll('.tab-content').forEach(c => {
-            c.classList.toggle('active', c.dataset.tab === tabName);
-        });
-        
-        // Dispatch tab:activated event for lazy-init modules
-        document.dispatchEvent(new CustomEvent('tab:activated', { detail: { tab: tabName } }));
-        
-        // Toggle apex-tab-active on body for Apex FAB visibility
-        document.body.classList.toggle('apex-tab-active', tabName === 'apex');
-        
-        // Hide header add button on Tasks tab (has inline button)
-        const addItemBtn = document.getElementById('add-item-btn');
-        if (addItemBtn) {
-            addItemBtn.style.display = tabName === 'tasks' ? 'none' : '';
-        }
-        
-        // Load tasks when switching to Tasks tab
-        if (tabName === 'tasks' && typeof taskModal !== 'undefined') {
-            taskModal.loadTasks();
-            taskModal.loadCounts();
-            taskModal.loadLists();
-        }
-
-        // Load calendar when switching to Calendar tab
-        if (tabName === 'calendar' && typeof calendar !== 'undefined') {
-            calendar.load();
-        }
-
-        // Load Apex jobs when switching to Apex tab
-        if (tabName === "apex" && typeof apexJobs !== "undefined") {
-            if (!apexJobs.jobs || !apexJobs.jobs.length) {
-                apexJobs.loadJobs();
-            }
+        // Delegate to the global switchTab from app-init.js
+        if (window.switchTab) {
+            window.switchTab(tabName);
         }
     },
 

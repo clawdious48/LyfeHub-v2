@@ -67,9 +67,8 @@
                     const baseId = item.dataset.baseId;
                     if (window.ContextSheet && typeof ContextSheet.showRecord === 'function') {
                         ContextSheet.showRecord(baseId, noteId);
-                    } else {
-                        const tabBtn = document.querySelector('.tab[data-tab="bases"]');
-                        if (tabBtn) tabBtn.click();
+                    } else if (window.switchTab) {
+                        window.switchTab('bases');
                     }
                 });
             });
