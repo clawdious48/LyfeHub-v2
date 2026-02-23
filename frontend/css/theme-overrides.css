@@ -228,3 +228,37 @@ a {
     background: var(--bg-app) !important;
     color: var(--text-muted) !important;
 }
+
+/* ---- Bases: No sidebar, full-width card layout ---- */
+.bases-layout.bases-no-sidebar {
+    display: block !important;
+}
+
+.bases-sidebar {
+    display: none !important;
+}
+
+.bases-no-sidebar .bases-main-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    padding: var(--space-lg);
+}
+
+.bases-view-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    flex-wrap: wrap;
+}
+
+.bases-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-md);
+}
+
+.sidebar-pull-tab {
+    display: none !important;
+}

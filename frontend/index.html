@@ -506,34 +506,14 @@
 
     <!-- Bases Tab Content -->
 <main class="tab-content" data-tab="bases">
-        <!-- Bases Layout with Sidebar -->
-        <div id="bases-layout" class="bases-layout">
-            <!-- Sidebar -->
-            <aside id="bases-sidebar" class="bases-sidebar">
-                <button id="sidebar-new-base-btn" class="sidebar-new-base-btn">+ Create Base</button>
-                <div class="sidebar-header">
-                    <button id="add-group-btn" class="btn btn-primary sidebar-add-group-btn">+ New Group</button>
-                    <button id="toggle-all-groups-btn" class="sidebar-btn toggle-groups-btn" title="Expand/Collapse All">
-                        <svg class="toggle-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="6 9 12 4 18 9"/>
-                            <polyline points="6 15 12 20 18 15"/>
-                        </svg>
-                    </button>
-                </div>
-                <div id="sidebar-content" class="sidebar-content">
-                    <!-- Groups and bases populated by JS -->
-                </div>
-                <!-- Core Bases section - fixed at bottom, expands upward -->
-                <div id="sidebar-core-bases-container" class="sidebar-core-bases-container">
-                    <!-- Core bases populated by JS -->
-                </div>
-            </aside>
-            
+        <!-- Bases Layout (no sidebar — cards/list only) -->
+        <div id="bases-layout" class="bases-layout bases-no-sidebar">
             <!-- Main Content -->
             <div class="bases-main-content">
                 <!-- List View (shows all bases) -->
                 <div id="bases-list-view" class="bases-list-view">
                     <div class="bases-view-controls">
+                        <button id="sidebar-new-base-btn" class="btn btn-primary" style="margin-right: auto;">+ Create Base</button>
                         <div class="bases-display-toggle">
                             <button class="bases-display-btn active" data-display="cards">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
