@@ -143,8 +143,8 @@ const dashboard = {
 
     async loadTasks() {
         const indicator = document.getElementById('refresh-indicator');
-        indicator.classList.add('spinning');
-        
+        if (indicator) indicator.classList.add('spinning');
+
         try {
             const response = await api.getTasks();
             this.tasks = response.tasks || [];
@@ -152,7 +152,7 @@ const dashboard = {
         } catch (err) {
             console.error('Failed to load tasks:', err);
         } finally {
-            indicator.classList.remove('spinning');
+            if (indicator) indicator.classList.remove('spinning');
         }
     },
 
