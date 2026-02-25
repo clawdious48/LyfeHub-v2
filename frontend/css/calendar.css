@@ -928,6 +928,7 @@
 .hour-grid {
     flex: 1;
     position: relative;
+    user-select: none;
 }
 
 .hour-row {
@@ -1058,9 +1059,11 @@
     box-shadow: 0 0 4px var(--accent-glow);
 }
 
-/* Day view - indicator spans the hour-content area */
-.hour-grid .current-time-indicator {
-    left: 60px; /* After hour labels */
+/* Day view - elements span the hour-content area, offset past 60px hour labels */
+.hour-grid .current-time-indicator,
+.hour-grid .time-block,
+.hour-grid .time-selection {
+    left: 60px;
 }
 
 /* Week/3-Day view - indicator spans all columns */
