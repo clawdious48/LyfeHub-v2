@@ -10,10 +10,10 @@
         container.innerHTML = '<div class="widget-skeleton"></div>';
 
         try {
-            const res = await fetch('/api/areas', { credentials: 'include' });
+            const res = await fetch('/api/tags?type=area', { credentials: 'include' });
             if (!res.ok) throw new Error('Failed to load areas');
             const data = await res.json();
-            const areas = data.areas || [];
+            const areas = data.tags || [];
 
             if (areas.length === 0) {
                 container.innerHTML = `

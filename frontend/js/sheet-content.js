@@ -182,7 +182,7 @@
       renderCalendarTasks(section, cache['cal-tasks'].data);
       return;
     }
-    fetch('/api/task-items?view=scheduled', { credentials: 'include' })
+    fetch('/api/tasks?view=scheduled', { credentials: 'include' })
       .then(function(r) { return r.json(); })
       .then(function(data) {
         var tasks = data.items || data.tasks || data || [];

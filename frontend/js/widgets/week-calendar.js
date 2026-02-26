@@ -45,7 +45,7 @@
             let calEvents = [];
 
             const [tasksRes, eventsRes] = await Promise.allSettled([
-                fetch(`/api/task-items/calendar?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, { credentials: 'include' }),
+                fetch(`/api/tasks/calendar?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, { credentials: 'include' }),
                 fetch(`/api/calendar-events?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, { credentials: 'include' })
             ]);
 

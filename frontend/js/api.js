@@ -298,7 +298,7 @@ const api = {
      * Task Items: Create new task item
      */
     async createTaskItem(data) {
-        return this.request('/task-items', {
+        return this.request('/tasks', {
             method: 'POST',
             body: data,
         });
@@ -310,7 +310,7 @@ const api = {
      * @param {string} end - End date (YYYY-MM-DD)
      */
     async getTaskItemsForCalendar(start, end) {
-        return this.request(`/task-items/calendar?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
+        return this.request(`/tasks/calendar?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
     },
 
     /**
@@ -321,7 +321,7 @@ const api = {
         const query = calendarIds && calendarIds.length > 0
             ? `?calendars=${encodeURIComponent(calendarIds.join(','))}`
             : '';
-        return this.request(`/task-items/calendar/scheduled${query}`);
+        return this.request(`/tasks/calendar/scheduled${query}`);
     },
 
     /**
@@ -332,7 +332,7 @@ const api = {
         const query = calendarIds && calendarIds.length > 0
             ? `?calendars=${encodeURIComponent(calendarIds.join(','))}`
             : '';
-        return this.request(`/task-items/calendar/unscheduled${query}`);
+        return this.request(`/tasks/calendar/unscheduled${query}`);
     },
 
     /**
@@ -341,7 +341,7 @@ const api = {
      * @param {object} scheduleData - { due_date, due_time?, due_time_end? }
      */
     async scheduleTaskItem(id, scheduleData) {
-        return this.request(`/task-items/${id}/schedule`, {
+        return this.request(`/tasks/${id}/schedule`, {
             method: 'PATCH',
             body: scheduleData,
         });
@@ -352,7 +352,7 @@ const api = {
      * @param {string} id - Task Item ID
      */
     async unscheduleTaskItem(id) {
-        return this.request(`/task-items/${id}/unschedule`, {
+        return this.request(`/tasks/${id}/unschedule`, {
             method: 'PATCH',
         });
     },

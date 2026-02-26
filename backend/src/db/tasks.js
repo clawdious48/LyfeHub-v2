@@ -4,28 +4,28 @@ const { v4: uuidv4 } = require('uuid');
 /**
  * Compute smart_list value based on task data.
  * A task leaves inbox when it has a due date OR is assigned to a list.
- * 
+ *
  * Values: inbox, calendar, organized
  */
 function computeSmartList(data, existingSmartList = null) {
   const dueDate = data.due_date;
   const listId = data.list_id;
-  
+
   // Has a due date → calendar
   if (dueDate && dueDate !== '') return 'calendar';
-  
+
   // Assigned to a list → organized (it has a home)
   if (listId && listId !== '') return 'organized';
-  
+
   // Nothing set → stays in inbox
   return 'inbox';
 }
 
 /**
- * Get all task items for a user
+ * Get all tasks for a user
  */
-async function getAllTaskItems(userId, view = 'all', userDate = null) {
-  let sql = `SELECT * FROM task_items WHERE user_id = $1`;
+async function getAllTasks(userId, view = 'all', userDate = null) {
+  let sql = `SELECT * FROM tasks WHERE user_id = $1`;
   const params = [userId];
   let paramIdx = 2;
 
@@ -38,7 +38,7 @@ async function getAllTaskItems(userId, view = 'all', userDate = null) {
     today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   }
 
-  console.log(`[getAllTaskItems] view=${view}, userDate=${userDate}, today=${today}, userId=${userId}`);
+  console.log(`[getAllTasks] view=${view}, userDate=${userDate}, today=${today}, userId=${userId}`);
 
   // Get today's day of week (0=Sun, 1=Mon, ... 6=Sat) for recurring check
   const todayDate = new Date(today + 'T00:00:00');
@@ -88,10 +88,10 @@ async function getAllTaskItems(userId, view = 'all', userDate = null) {
     due_date ASC,
     created_at DESC`;
 
-  console.log(`[getAllTaskItems] SQL: ${sql}`);
-  console.log(`[getAllTaskItems] Params: ${JSON.stringify(params)}`);
+  console.log(`[getAllTasks] SQL: ${sql}`);
+  console.log(`[getAllTasks] Params: ${JSON.stringify(params)}`);
   const items = await db.getAll(sql, params);
-  console.log(`[getAllTaskItems] Found ${items.length} items`);
+  console.log(`[getAllTasks] Found ${items.length} items`);
 
   // Parse JSON fields and add calendar_ids
   const results = [];
@@ -105,38 +105,38 @@ async function getAllTaskItems(userId, view = 'all', userDate = null) {
       my_day: !!item.my_day,
       people_ids: JSON.parse(item.people_ids || '[]'),
       note_ids: JSON.parse(item.note_ids || '[]'),
-      calendar_ids: await getTaskItemCalendarIds(item.id)
+      calendar_ids: await getTaskCalendarIds(item.id)
     });
   }
   return results;
 }
 
 /**
- * Get calendar IDs associated with a task item
+ * Get calendar IDs associated with a task
  */
-async function getTaskItemCalendarIds(taskItemId) {
-  const rows = await db.getAll(`SELECT calendar_id FROM task_item_calendars WHERE task_item_id = $1`, [taskItemId]);
+async function getTaskCalendarIds(taskId) {
+  const rows = await db.getAll(`SELECT calendar_id FROM task_calendars WHERE task_id = $1`, [taskId]);
   return rows.map(r => r.calendar_id);
 }
 
 /**
- * Set calendar associations for a task item
+ * Set calendar associations for a task
  */
-async function setTaskItemCalendars(taskItemId, calendarIds, userId) {
+async function setTaskCalendars(taskId, calendarIds, userId) {
   // First verify the task belongs to the user
-  const task = await db.getOne(`SELECT id FROM task_items WHERE id = $1 AND user_id = $2`, [taskItemId, userId]);
+  const task = await db.getOne(`SELECT id FROM tasks WHERE id = $1 AND user_id = $2`, [taskId, userId]);
   if (!task) return false;
 
   // Delete existing associations
-  await db.run(`DELETE FROM task_item_calendars WHERE task_item_id = $1`, [taskItemId]);
+  await db.run(`DELETE FROM task_calendars WHERE task_id = $1`, [taskId]);
 
   // Insert new associations (only for calendars belonging to this user)
   if (calendarIds && calendarIds.length > 0) {
     for (const calendarId of calendarIds) {
       await db.run(`
-        INSERT INTO task_item_calendars (task_item_id, calendar_id)
+        INSERT INTO task_calendars (task_id, calendar_id)
         SELECT $1, id FROM calendars WHERE id = $2 AND user_id = $3
-      `, [taskItemId, calendarId, userId]);
+      `, [taskId, calendarId, userId]);
     }
   }
 
@@ -144,10 +144,10 @@ async function setTaskItemCalendars(taskItemId, calendarIds, userId) {
 }
 
 /**
- * Get a single task item by ID
+ * Get a single task by ID
  */
-async function getTaskItemById(id, userId) {
-  const item = await db.getOne(`SELECT * FROM task_items WHERE id = $1 AND user_id = $2`, [id, userId]);
+async function getTaskById(id, userId) {
+  const item = await db.getOne(`SELECT * FROM tasks WHERE id = $1 AND user_id = $2`, [id, userId]);
 
   if (!item) return null;
 
@@ -160,20 +160,20 @@ async function getTaskItemById(id, userId) {
     my_day: !!item.my_day,
     people_ids: JSON.parse(item.people_ids || '[]'),
     note_ids: JSON.parse(item.note_ids || '[]'),
-    calendar_ids: await getTaskItemCalendarIds(id)
+    calendar_ids: await getTaskCalendarIds(id)
   };
 }
 
 /**
- * Create a new task item
+ * Create a new task
  */
-async function createTaskItem(data, userId) {
+async function createTask(data, userId) {
   const id = uuidv4();
   const now = new Date().toISOString();
   const smartList = computeSmartList(data);
 
   await db.run(`
-    INSERT INTO task_items (id, title, description, status, my_day, due_date, due_time, due_time_end, snooze_date, priority, energy, location, important, recurring, recurring_days, project_id, list_id, people_ids, note_ids, subtasks, user_id, area_id, smart_list, created_at, updated_at)
+    INSERT INTO tasks (id, title, description, status, my_day, due_date, due_time, due_time_end, snooze_date, priority, energy, location, important, recurring, recurring_days, project_id, list_id, people_ids, note_ids, subtasks, user_id, tag_id, smart_list, created_at, updated_at)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)
   `, [
     id,
@@ -197,7 +197,7 @@ async function createTaskItem(data, userId) {
     JSON.stringify(data.note_ids || []),
     JSON.stringify(data.subtasks || []),
     userId,
-    data.area_id || null,
+    data.tag_id || null,
     smartList,
     now,
     now
@@ -205,17 +205,17 @@ async function createTaskItem(data, userId) {
 
   // Set calendar associations if provided
   if (data.calendar_ids && data.calendar_ids.length > 0) {
-    await setTaskItemCalendars(id, data.calendar_ids, userId);
+    await setTaskCalendars(id, data.calendar_ids, userId);
   }
 
-  return await getTaskItemById(id, userId);
+  return await getTaskById(id, userId);
 }
 
 /**
- * Update a task item
+ * Update a task
  */
-async function updateTaskItem(id, data, userId) {
-  const existing = await getTaskItemById(id, userId);
+async function updateTask(id, data, userId) {
+  const existing = await getTaskById(id, userId);
   if (!existing) return null;
 
   const now = new Date().toISOString();
@@ -230,7 +230,7 @@ async function updateTaskItem(id, data, userId) {
   const smartList = computeSmartList(mergedForSmartList, existing.smart_list);
 
   await db.run(`
-    UPDATE task_items SET
+    UPDATE tasks SET
       title = $1,
       description = $2,
       status = $3,
@@ -252,7 +252,7 @@ async function updateTaskItem(id, data, userId) {
       people_ids = $19,
       note_ids = $20,
       subtasks = $21,
-      area_id = $22,
+      tag_id = $22,
       smart_list = $23,
       updated_at = $24
     WHERE id = $25 AND user_id = $26
@@ -278,7 +278,7 @@ async function updateTaskItem(id, data, userId) {
     JSON.stringify(data.people_ids ?? existing.people_ids ?? []),
     JSON.stringify(data.note_ids ?? existing.note_ids ?? []),
     JSON.stringify(data.subtasks ?? existing.subtasks),
-    data.area_id !== undefined ? data.area_id : (existing.area_id || null),
+    data.tag_id !== undefined ? data.tag_id : (existing.tag_id || null),
     smartList,
     now,
     id,
@@ -287,32 +287,32 @@ async function updateTaskItem(id, data, userId) {
 
   // Update calendar associations if provided
   if (data.calendar_ids !== undefined) {
-    await setTaskItemCalendars(id, data.calendar_ids || [], userId);
+    await setTaskCalendars(id, data.calendar_ids || [], userId);
   }
 
-  return await getTaskItemById(id, userId);
+  return await getTaskById(id, userId);
 }
 
 /**
- * Delete a task item
+ * Delete a task
  */
-async function deleteTaskItem(id, userId) {
-  const result = await db.run(`DELETE FROM task_items WHERE id = $1 AND user_id = $2`, [id, userId]);
+async function deleteTask(id, userId) {
+  const result = await db.run(`DELETE FROM tasks WHERE id = $1 AND user_id = $2`, [id, userId]);
   return result.rowCount > 0;
 }
 
 /**
  * Toggle task completion
  */
-async function toggleTaskItemComplete(id, userId) {
-  const existing = await getTaskItemById(id, userId);
+async function toggleTaskComplete(id, userId) {
+  const existing = await getTaskById(id, userId);
   if (!existing) return null;
 
   const now = new Date().toISOString();
   const newCompleted = !existing.completed;
 
   await db.run(`
-    UPDATE task_items SET
+    UPDATE tasks SET
       completed = $1,
       completed_at = $2,
       updated_at = $3
@@ -325,13 +325,13 @@ async function toggleTaskItemComplete(id, userId) {
     userId
   ]);
 
-  return await getTaskItemById(id, userId);
+  return await getTaskById(id, userId);
 }
 
 /**
  * Get task counts for sidebar
  */
-async function getTaskItemCounts(userId, userDate = null) {
+async function getTaskCounts(userId, userDate = null) {
   let today;
   if (userDate && /^\d{4}-\d{2}-\d{2}$/.test(userDate)) {
     today = userDate;
@@ -362,7 +362,7 @@ async function getTaskItemCounts(userId, userDate = null) {
       SUM(CASE WHEN important = 1 THEN 1 ELSE 0 END) as important,
       SUM(CASE WHEN due_date IS NOT NULL THEN 1 ELSE 0 END) as scheduled,
       SUM(CASE WHEN recurring IS NOT NULL AND recurring != '' THEN 1 ELSE 0 END) as recurring
-    FROM task_items
+    FROM tasks
     WHERE user_id = $2 AND completed = 0
   `, [today, userId, JSON.stringify([todayDow])]);
 
@@ -378,16 +378,16 @@ async function getTaskItemCounts(userId, userDate = null) {
 }
 
 /**
- * Get task items for calendar view (within a date range)
+ * Get tasks for calendar view (within a date range)
  */
-async function getTaskItemsForCalendar(userId, startDate, endDate, calendarIds = null) {
-  let sql = `SELECT DISTINCT t.* FROM task_items t`;
+async function getTasksForCalendar(userId, startDate, endDate, calendarIds = null) {
+  let sql = `SELECT DISTINCT t.* FROM tasks t`;
   const params = [userId, startDate, endDate];
   let paramIdx = 4;
 
   if (calendarIds && calendarIds.length > 0) {
     const placeholders = calendarIds.map(() => `$${paramIdx++}`).join(',');
-    sql += ` INNER JOIN task_item_calendars tc ON t.id = tc.task_item_id
+    sql += ` INNER JOIN task_calendars tc ON t.id = tc.task_id
              WHERE t.user_id = $1
              AND t.due_date IS NOT NULL
              AND t.due_date >= $2
@@ -416,23 +416,23 @@ async function getTaskItemsForCalendar(userId, startDate, endDate, calendarIds =
       my_day: !!item.my_day,
       people_ids: JSON.parse(item.people_ids || '[]'),
       note_ids: JSON.parse(item.note_ids || '[]'),
-      calendar_ids: await getTaskItemCalendarIds(item.id)
+      calendar_ids: await getTaskCalendarIds(item.id)
     });
   }
   return results;
 }
 
 /**
- * Get scheduled task items (have due_date)
+ * Get scheduled tasks (have due_date)
  */
-async function getScheduledTaskItems(userId, calendarIds = null) {
-  let sql = `SELECT DISTINCT t.* FROM task_items t`;
+async function getScheduledTasks(userId, calendarIds = null) {
+  let sql = `SELECT DISTINCT t.* FROM tasks t`;
   const params = [userId];
   let paramIdx = 2;
 
   if (calendarIds && calendarIds.length > 0) {
     const placeholders = calendarIds.map(() => `$${paramIdx++}`).join(',');
-    sql += ` INNER JOIN task_item_calendars tc ON t.id = tc.task_item_id
+    sql += ` INNER JOIN task_calendars tc ON t.id = tc.task_id
              WHERE t.user_id = $1
              AND t.due_date IS NOT NULL
              AND t.completed = 0
@@ -459,23 +459,23 @@ async function getScheduledTaskItems(userId, calendarIds = null) {
       my_day: !!item.my_day,
       people_ids: JSON.parse(item.people_ids || '[]'),
       note_ids: JSON.parse(item.note_ids || '[]'),
-      calendar_ids: await getTaskItemCalendarIds(item.id)
+      calendar_ids: await getTaskCalendarIds(item.id)
     });
   }
   return results;
 }
 
 /**
- * Get unscheduled task items (no due_date)
+ * Get unscheduled tasks (no due_date)
  */
-async function getUnscheduledTaskItems(userId, calendarIds = null) {
-  let sql = `SELECT DISTINCT t.* FROM task_items t`;
+async function getUnscheduledTasks(userId, calendarIds = null) {
+  let sql = `SELECT DISTINCT t.* FROM tasks t`;
   const params = [userId];
   let paramIdx = 2;
 
   if (calendarIds && calendarIds.length > 0) {
     const placeholders = calendarIds.map(() => `$${paramIdx++}`).join(',');
-    sql += ` INNER JOIN task_item_calendars tc ON t.id = tc.task_item_id
+    sql += ` INNER JOIN task_calendars tc ON t.id = tc.task_id
              WHERE t.user_id = $1
              AND t.due_date IS NULL
              AND t.completed = 0
@@ -502,23 +502,23 @@ async function getUnscheduledTaskItems(userId, calendarIds = null) {
       my_day: !!item.my_day,
       people_ids: JSON.parse(item.people_ids || '[]'),
       note_ids: JSON.parse(item.note_ids || '[]'),
-      calendar_ids: await getTaskItemCalendarIds(item.id)
+      calendar_ids: await getTaskCalendarIds(item.id)
     });
   }
   return results;
 }
 
 /**
- * Schedule a task item (set due_date/due_time/due_time_end)
+ * Schedule a task (set due_date/due_time/due_time_end)
  */
-async function scheduleTaskItem(id, scheduleData, userId) {
-  const existing = await getTaskItemById(id, userId);
+async function scheduleTask(id, scheduleData, userId) {
+  const existing = await getTaskById(id, userId);
   if (!existing) return null;
 
   const now = new Date().toISOString();
 
   await db.run(`
-    UPDATE task_items SET
+    UPDATE tasks SET
       due_date = $1,
       due_time = $2,
       due_time_end = $3,
@@ -533,27 +533,27 @@ async function scheduleTaskItem(id, scheduleData, userId) {
     userId
   ]);
 
-  return await getTaskItemById(id, userId);
+  return await getTaskById(id, userId);
 }
 
 /**
- * Unschedule a task item (clear due_date/due_time)
+ * Unschedule a task (clear due_date/due_time)
  */
-async function unscheduleTaskItem(id, userId) {
-  const existing = await getTaskItemById(id, userId);
+async function unscheduleTask(id, userId) {
+  const existing = await getTaskById(id, userId);
   if (!existing) return null;
 
   const now = new Date().toISOString();
 
   await db.run(`
-    UPDATE task_items SET
+    UPDATE tasks SET
       due_date = NULL,
       due_time = NULL,
       updated_at = $1
     WHERE id = $2 AND user_id = $3
   `, [now, id, userId]);
 
-  return await getTaskItemById(id, userId);
+  return await getTaskById(id, userId);
 }
 
 /**
@@ -561,7 +561,7 @@ async function unscheduleTaskItem(id, userId) {
  */
 async function getInboxTasks(userId, limit = 50) {
   const items = await db.getAll(
-    `SELECT * FROM task_items WHERE user_id = $1 AND smart_list = 'inbox' AND completed = 0 ORDER BY created_at ASC LIMIT $2`,
+    `SELECT * FROM tasks WHERE user_id = $1 AND smart_list = 'inbox' AND completed = 0 ORDER BY created_at ASC LIMIT $2`,
     [userId, limit]
   );
 
@@ -582,30 +582,30 @@ async function getInboxTasks(userId, limit = 50) {
  */
 async function getInboxTaskCount(userId) {
   const result = await db.getOne(
-    `SELECT COUNT(*) as cnt FROM task_items WHERE user_id = $1 AND smart_list = 'inbox' AND completed = 0`,
+    `SELECT COUNT(*) as cnt FROM tasks WHERE user_id = $1 AND smart_list = 'inbox' AND completed = 0`,
     [userId]
   );
   return parseInt(result?.cnt || 0);
 }
 
 module.exports = {
-  getAllTaskItems,
-  getTaskItemById,
-  createTaskItem,
-  updateTaskItem,
-  deleteTaskItem,
-  toggleTaskItemComplete,
-  getTaskItemCounts,
+  getAllTasks,
+  getTaskById,
+  createTask,
+  updateTask,
+  deleteTask,
+  toggleTaskComplete,
+  getTaskCounts,
   getInboxTasks,
   getInboxTaskCount,
   computeSmartList,
   // Calendar functions
-  getTaskItemsForCalendar,
-  getScheduledTaskItems,
-  getUnscheduledTaskItems,
-  scheduleTaskItem,
-  unscheduleTaskItem,
+  getTasksForCalendar,
+  getScheduledTasks,
+  getUnscheduledTasks,
+  scheduleTask,
+  unscheduleTask,
   // Calendar association functions
-  getTaskItemCalendarIds,
-  setTaskItemCalendars
+  getTaskCalendarIds,
+  setTaskCalendars
 };

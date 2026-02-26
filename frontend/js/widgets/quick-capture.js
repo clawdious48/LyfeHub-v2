@@ -22,7 +22,7 @@
         const listId = await getDefaultList();
         
         const today = new Date().toISOString().split('T')[0];
-        const res = await fetch('/api/task-items', {
+        const res = await fetch('/api/tasks', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',

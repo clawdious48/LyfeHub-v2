@@ -460,7 +460,7 @@ const taskModal = {
                     if (svg) {
                         svg.setAttribute('fill', myday.classList.contains('active') ? 'currentColor' : 'none');
                     }
-                    fetch(`/api/task-items/${taskId}/toggle-my-day`, {
+                    fetch(`/api/tasks/${taskId}/toggle-my-day`, {
                         method: 'POST',
                         credentials: 'include'
                     }).then(() => {
@@ -554,7 +554,7 @@ const taskModal = {
             const now = new Date();
             const userToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
             
-            const response = await fetch(`/api/task-items?view=${this.currentView}&today=${userToday}`, {
+            const response = await fetch(`/api/tasks?view=${this.currentView}&today=${userToday}`, {
                 credentials: 'include'
             });
             
@@ -575,7 +575,7 @@ const taskModal = {
             const now = new Date();
             const userToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
             
-            const response = await fetch(`/api/task-items/counts?today=${userToday}`, {
+            const response = await fetch(`/api/tasks/counts?today=${userToday}`, {
                 credentials: 'include'
             });
             
@@ -1068,7 +1068,7 @@ const taskModal = {
 
     async toggleComplete(id) {
         try {
-            const response = await fetch(`/api/task-items/${id}/toggle`, {
+            const response = await fetch(`/api/tasks/${id}/toggle`, {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -1087,7 +1087,7 @@ const taskModal = {
             const task = this.tasks.find(t => t.id === id);
             if (!task) return;
             
-            const response = await fetch(`/api/task-items/${id}`, {
+            const response = await fetch(`/api/tasks/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -1112,7 +1112,7 @@ const taskModal = {
             const subtasks = [...task.subtasks];
             subtasks[subtaskIndex].completed = !subtasks[subtaskIndex].completed;
             
-            const response = await fetch(`/api/task-items/${taskId}`, {
+            const response = await fetch(`/api/tasks/${taskId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -1620,7 +1620,7 @@ const taskModal = {
         subtasks[index].completed = !subtasks[index].completed;
         
         try {
-            const response = await fetch(`/api/task-items/${this.currentTask.id}`, {
+            const response = await fetch(`/api/tasks/${this.currentTask.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -1982,7 +1982,7 @@ const taskModal = {
             let response;
             if (this.currentTask) {
                 // Update existing
-                response = await fetch(`/api/task-items/${this.currentTask.id}`, {
+                response = await fetch(`/api/tasks/${this.currentTask.id}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -1990,7 +1990,7 @@ const taskModal = {
                 });
             } else {
                 // Create new
-                response = await fetch('/api/task-items', {
+                response = await fetch('/api/tasks', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -2019,7 +2019,7 @@ const taskModal = {
         
         if (confirm('Delete this task?')) {
             try {
-                const response = await fetch(`/api/task-items/${this.currentTask.id}`, {
+                const response = await fetch(`/api/tasks/${this.currentTask.id}`, {
                     method: 'DELETE',
                     credentials: 'include'
                 });

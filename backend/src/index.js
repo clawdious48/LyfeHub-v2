@@ -5,7 +5,7 @@ const path = require('path');
 
 // Import routes
 const authRoutes = require('./routes/auth');
-const taskItemsRoutes = require('./routes/taskItems');
+const tasksRoutes = require('./routes/tasks');
 const taskListsRoutes = require('./routes/taskLists');
 const usersRoutes = require('./routes/users');
 const basesRoutes = require('./routes/bases');
@@ -41,7 +41,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 // API Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/task-items', taskItemsRoutes);
+app.use('/api/tasks', tasksRoutes);
 app.use('/api/task-lists', taskListsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/bases', basesRoutes);
@@ -61,7 +61,10 @@ app.use('/api/api-keys', apiKeysRoutes);
 app.use('/api/roles', require('./routes/roles'));
 app.use('/api/audit', require('./routes/audit'));
 app.use('/api/apex-docs', require('./routes/apexDocuments'));
-app.use('/api/areas', require('./routes/areas'));
+app.use('/api/tags', require('./routes/tags'));
+app.use('/api/goals', require('./routes/goals'));
+app.use('/api/milestones', require('./routes/milestones'));
+app.use('/api/work-sessions', require('./routes/workSessions'));
 app.use('/api/inbox', inboxRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/system', require('./routes/system'));

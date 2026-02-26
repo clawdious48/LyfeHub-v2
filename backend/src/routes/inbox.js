@@ -41,7 +41,7 @@ router.get('/', requireScope('tasks', 'read'), async (req, res) => {
     const [tasks, notes, people] = await Promise.all([
       // Tasks: smart_list = 'inbox' and not completed
       db.getAll(
-        `SELECT id, title, 'task' as type, created_at FROM task_items
+        `SELECT id, title, 'task' as type, created_at FROM tasks
          WHERE user_id = $1 AND smart_list = 'inbox' AND completed = 0
          ORDER BY created_at ASC`,
         [userId]
@@ -105,7 +105,7 @@ router.get('/count', requireScope('tasks', 'read'), async (req, res) => {
 
     const [taskCount, noteCount, personCount] = await Promise.all([
       db.getOne(
-        `SELECT COUNT(*) as cnt FROM task_items WHERE user_id = $1 AND smart_list = 'inbox' AND completed = 0`,
+        `SELECT COUNT(*) as cnt FROM tasks WHERE user_id = $1 AND smart_list = 'inbox' AND completed = 0`,
         [userId]
       ),
       db.getOne(
@@ -159,7 +159,7 @@ router.post('/:id/archive', requireScope('tasks', 'write'), async (req, res) => 
     let result;
     if (type === 'task') {
       result = await db.run(
-        `UPDATE task_items SET smart_list = 'organized', updated_at = datetime('now') WHERE id = $1 AND user_id = $2`,
+        `UPDATE tasks SET smart_list = 'organized', updated_at = datetime('now') WHERE id = $1 AND user_id = $2`,
         [id, userId]
       );
     } else if (type === 'note') {

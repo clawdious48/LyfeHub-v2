@@ -167,7 +167,7 @@
         if (type === 'task' && window.taskModal) {
             // Open the REAL task modal — same one used in the Tasks section
             try {
-                const res = await fetch(`/api/task-items/${id}`, { credentials: 'include' });
+                const res = await fetch(`/api/tasks/${id}`, { credentials: 'include' });
                 if (!res.ok) throw new Error('Failed to fetch task');
                 const data = await res.json();
                 const task = data.item || data;

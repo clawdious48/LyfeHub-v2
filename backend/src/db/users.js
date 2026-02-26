@@ -176,9 +176,9 @@ async function resetUserPassword(id, newPassword) {
 async function deleteUser(id) {
   return await db.transaction(async (client) => {
     // Nullify ownership references so data isn't lost
-    const tables = ['tasks', 'task_items', 'calendars', 'people', 'people_groups',
+    const tables = ['tasks', 'calendars', 'people', 'people_groups',
       'organizations', 'notes', 'projects', 'tags', 'apex_jobs',
-      'bases', 'base_records', 'task_lists'];
+      'bases', 'base_records', 'task_lists', 'goals', 'milestones', 'work_sessions'];
     for (const table of tables) {
       try { await client.run(`UPDATE ${table} SET user_id = NULL WHERE user_id = $1`, [id]); } catch (_) {}
     }

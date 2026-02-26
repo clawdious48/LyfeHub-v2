@@ -3,7 +3,7 @@
 // ============================================
 
 const db = require('./schema');
-const taskItemsDb = require('./taskItems');
+const tasksDb = require('./tasks');
 const peopleDb = require('./people');
 const organizationsDb = require('./organizations');
 const notesDb = require('./notes');
@@ -354,7 +354,7 @@ Track notable people you admire - authors, thought leaders, etc. Note what you c
     description: 'Personal tasks synced with the Tasks dashboard',
     icon: '✅',
     is_core: true,
-    table_name: 'task_items',
+    table_name: 'tasks',
     properties: [
       { id: 'title', name: 'Title', type: 'text', position: 0, width: 250 },
       { id: 'description', name: 'Description', type: 'text', position: 1, width: 300 },
@@ -600,7 +600,7 @@ function getCoreBase(baseId) {
  */
 async function getRecordCount(baseId, userId) {
   if (baseId === 'core-tasks') {
-    const result = await db.getOne('SELECT COUNT(*) as count FROM task_items WHERE user_id = $1', [userId]);
+    const result = await db.getOne('SELECT COUNT(*) as count FROM tasks WHERE user_id = $1', [userId]);
     return result ? result.count : 0;
   }
   if (baseId === 'core-people') {
@@ -630,7 +630,7 @@ async function getCoreBaseRecords(baseId, userId) {
       SELECT id, title, description, status, my_day, due_date, due_time, due_time_end,
              snooze_date, priority, energy, location, important, completed, completed_at,
              recurring, recurring_days, project_id, list_id, people_ids, note_ids, subtasks, user_id, created_at, updated_at
-      FROM task_items
+      FROM tasks
       WHERE user_id = $1
       ORDER BY created_at DESC
     `, [userId]);
@@ -961,7 +961,7 @@ function mapPersonToValues(person) {
  */
 async function createCoreBaseRecord(baseId, values, userId) {
   if (baseId === 'core-tasks') {
-    const task = await taskItemsDb.createTaskItem({
+    const task = await tasksDb.createTask({
       title: values.title || 'Untitled Task',
       description: values.description || '',
       status: values.status || 'todo',
@@ -1209,7 +1209,7 @@ async function createCoreBaseRecord(baseId, values, userId) {
  */
 async function updateCoreBaseRecord(baseId, recordId, values, userId) {
   if (baseId === 'core-tasks') {
-    const task = await taskItemsDb.updateTaskItem(recordId, {
+    const task = await tasksDb.updateTask(recordId, {
       title: values.title,
       description: values.description,
       status: values.status,
@@ -1367,7 +1367,7 @@ async function updateCoreBaseRecord(baseId, recordId, values, userId) {
  */
 async function deleteCoreBaseRecord(baseId, recordId, userId) {
   if (baseId === 'core-tasks') {
-    return await taskItemsDb.deleteTaskItem(recordId, userId);
+    return await tasksDb.deleteTask(recordId, userId);
   }
   if (baseId === 'core-people') {
     return await peopleDb.deletePerson(recordId, userId);

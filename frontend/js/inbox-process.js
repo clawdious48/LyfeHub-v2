@@ -85,7 +85,7 @@ const InboxProcessor = {
         // Fetch full item data
         try {
             let url;
-            if (type === 'task') url = `/api/task-items/${id}`;
+            if (type === 'task') url = `/api/tasks/${id}`;
             else if (type === 'note') url = `/api/bases/core/core-notes/records/${id}`;
             else if (type === 'person') url = `/api/people/${id}`;
 
@@ -276,7 +276,7 @@ const InboxProcessor = {
                         break;
                 }
 
-                await fetch(`/api/task-items/${id}`, {
+                await fetch(`/api/tasks/${id}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -320,7 +320,7 @@ const InboxProcessor = {
 
                 // smart_list is auto-computed on backend based on due_date and list_id
 
-                await fetch(`/api/task-items/${id}`, {
+                await fetch(`/api/tasks/${id}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -369,7 +369,7 @@ const InboxProcessor = {
 
         try {
             let url;
-            if (this.currentType === 'task') url = `/api/task-items/${id}`;
+            if (this.currentType === 'task') url = `/api/tasks/${id}`;
             else if (this.currentType === 'note') url = `/api/bases/core/core-notes/records/${id}`;
             else if (this.currentType === 'person') url = `/api/people/${id}`;
 

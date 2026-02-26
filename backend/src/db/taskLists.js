@@ -7,7 +7,7 @@ function generateId() {
 async function getAllLists(userId) {
   return await db.getAll(`
     SELECT l.*,
-           (SELECT COUNT(*) FROM task_items WHERE list_id = l.id AND completed = 0) as task_count
+           (SELECT COUNT(*) FROM tasks WHERE list_id = l.id AND completed = 0) as task_count
     FROM task_lists l
     WHERE l.user_id = $1
     ORDER BY l.name ASC
@@ -64,7 +64,7 @@ async function deleteList(id, userId) {
   if (!existing) return false;
 
   // Remove list_id from tasks in this list (don't delete tasks)
-  await db.run('UPDATE task_items SET list_id = NULL WHERE list_id = $1 AND user_id = $2', [id, userId]);
+  await db.run('UPDATE tasks SET list_id = NULL WHERE list_id = $1 AND user_id = $2', [id, userId]);
 
   const result = await db.run('DELETE FROM task_lists WHERE id = $1 AND user_id = $2', [id, userId]);
   return result.rowCount > 0;

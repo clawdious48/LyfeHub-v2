@@ -19,9 +19,9 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email);
 
 -- ============================================
--- TASK ITEMS (Personal tasks / My Day)
+-- TASKS (Personal tasks / My Day)
 -- ============================================
-CREATE TABLE IF NOT EXISTS task_items (
+CREATE TABLE IF NOT EXISTS tasks (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
   description TEXT DEFAULT '',
@@ -46,19 +46,21 @@ CREATE TABLE IF NOT EXISTS task_items (
   people_ids TEXT DEFAULT '[]',
   note_ids TEXT DEFAULT '[]',
   smart_list TEXT DEFAULT 'inbox',
+  tag_id TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-CREATE INDEX IF NOT EXISTS idx_task_items_user_id ON task_items(user_id);
-CREATE INDEX IF NOT EXISTS idx_task_items_due_date ON task_items(due_date);
-CREATE INDEX IF NOT EXISTS idx_task_items_important ON task_items(important);
-CREATE INDEX IF NOT EXISTS idx_task_items_completed ON task_items(completed);
-CREATE INDEX IF NOT EXISTS idx_task_items_my_day ON task_items(my_day);
-CREATE INDEX IF NOT EXISTS idx_task_items_status ON task_items(status);
-CREATE INDEX IF NOT EXISTS idx_task_items_priority ON task_items(priority);
-CREATE INDEX IF NOT EXISTS idx_task_items_snooze_date ON task_items(snooze_date);
-CREATE INDEX IF NOT EXISTS idx_task_items_project_id ON task_items(project_id);
-CREATE INDEX IF NOT EXISTS idx_task_items_smart_list ON task_items(smart_list);
+CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date);
+CREATE INDEX IF NOT EXISTS idx_tasks_important ON tasks(important);
+CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(completed);
+CREATE INDEX IF NOT EXISTS idx_tasks_my_day ON tasks(my_day);
+CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
+CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority);
+CREATE INDEX IF NOT EXISTS idx_tasks_snooze_date ON tasks(snooze_date);
+CREATE INDEX IF NOT EXISTS idx_tasks_project_id ON tasks(project_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_smart_list ON tasks(smart_list);
+CREATE INDEX IF NOT EXISTS idx_tasks_tag_id ON tasks(tag_id);
 
 -- ============================================
 -- TASK LISTS
@@ -73,6 +75,25 @@ CREATE TABLE IF NOT EXISTS task_lists (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- ============================================
+-- WORK SESSIONS
+-- ============================================
+CREATE TABLE IF NOT EXISTS work_sessions (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  task_id TEXT REFERENCES tasks(id) ON DELETE SET NULL,
+  name TEXT NOT NULL DEFAULT '',
+  start_time TIMESTAMPTZ NOT NULL,
+  end_time TIMESTAMPTZ,
+  duration_seconds INTEGER,
+  notes TEXT DEFAULT '',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_work_sessions_user_id ON work_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_work_sessions_task_id ON work_sessions(task_id);
+CREATE INDEX IF NOT EXISTS idx_work_sessions_start_time ON work_sessions(start_time);
 
 -- ============================================
 -- CALENDARS
@@ -91,15 +112,15 @@ CREATE TABLE IF NOT EXISTS calendars (
 CREATE INDEX IF NOT EXISTS idx_calendars_user_id ON calendars(user_id);
 
 -- ============================================
--- TASK_ITEM_CALENDARS (junction)
+-- TASK_CALENDARS (junction)
 -- ============================================
-CREATE TABLE IF NOT EXISTS task_item_calendars (
-  task_item_id TEXT REFERENCES task_items(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS task_calendars (
+  task_id TEXT REFERENCES tasks(id) ON DELETE CASCADE,
   calendar_id TEXT REFERENCES calendars(id) ON DELETE CASCADE,
-  PRIMARY KEY (task_item_id, calendar_id)
+  PRIMARY KEY (task_id, calendar_id)
 );
-CREATE INDEX IF NOT EXISTS idx_task_item_calendars_task ON task_item_calendars(task_item_id);
-CREATE INDEX IF NOT EXISTS idx_task_item_calendars_calendar ON task_item_calendars(calendar_id);
+CREATE INDEX IF NOT EXISTS idx_task_calendars_task ON task_calendars(task_id);
+CREATE INDEX IF NOT EXISTS idx_task_calendars_calendar ON task_calendars(calendar_id);
 
 -- ============================================
 -- PEOPLE (Core Base)
@@ -293,6 +314,45 @@ CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status);
 CREATE INDEX IF NOT EXISTS idx_projects_archived ON projects(archived);
 
 -- ============================================
+-- GOALS
+-- ============================================
+CREATE TABLE IF NOT EXISTS goals (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  status TEXT DEFAULT 'dream' CHECK(status IN ('dream', 'active', 'achieved')),
+  target_deadline TEXT,
+  goal_set TEXT,
+  achieved_date TEXT,
+  tag_id TEXT,
+  archived INTEGER DEFAULT 0,
+  review_notes TEXT DEFAULT '',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_goals_user_id ON goals(user_id);
+CREATE INDEX IF NOT EXISTS idx_goals_status ON goals(status);
+CREATE INDEX IF NOT EXISTS idx_goals_tag_id ON goals(tag_id);
+CREATE INDEX IF NOT EXISTS idx_goals_archived ON goals(archived);
+
+-- ============================================
+-- MILESTONES
+-- ============================================
+CREATE TABLE IF NOT EXISTS milestones (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  goal_id TEXT REFERENCES goals(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  target_deadline TEXT,
+  completed_date TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_milestones_user_id ON milestones(user_id);
+CREATE INDEX IF NOT EXISTS idx_milestones_goal_id ON milestones(goal_id);
+CREATE INDEX IF NOT EXISTS idx_milestones_target_deadline ON milestones(target_deadline);
+
+-- ============================================
 -- TAGS
 -- ============================================
 CREATE TABLE IF NOT EXISTS tags (
@@ -305,6 +365,9 @@ CREATE TABLE IF NOT EXISTS tags (
   parent_tag_id TEXT REFERENCES tags(id),
   url TEXT DEFAULT '',
   description TEXT DEFAULT '',
+  color TEXT DEFAULT '',
+  icon TEXT DEFAULT '',
+  sort_order INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -1292,23 +1355,30 @@ CREATE TABLE IF NOT EXISTS drying_visit_notes (
 CREATE INDEX IF NOT EXISTS idx_drying_visit_notes_visit_id ON drying_visit_notes(visit_id);
 
 -- ============================================
--- AREAS (Life Areas for task tagging)
+-- MIGRATION: Merge areas into tags
 -- ============================================
+ALTER TABLE tags ADD COLUMN IF NOT EXISTS color TEXT DEFAULT '';
+ALTER TABLE tags ADD COLUMN IF NOT EXISTS icon TEXT DEFAULT '';
+ALTER TABLE tags ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0;
+DO $$ BEGIN
+  INSERT INTO tags (id, user_id, name, type, color, icon, sort_order, created_at, updated_at)
+    SELECT id, user_id, name, 'area', color, icon, sort_order, created_at, updated_at FROM areas
+    ON CONFLICT (id) DO NOTHING;
+EXCEPTION WHEN undefined_table THEN NULL; END $$;
+DROP TABLE IF EXISTS areas CASCADE;
 
-CREATE TABLE IF NOT EXISTS areas (
-    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    name VARCHAR(100) NOT NULL,
-    color VARCHAR(7) NOT NULL DEFAULT '#FF8C00',
-    icon VARCHAR(10) DEFAULT '📁',
-    sort_order INTEGER DEFAULT 0,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_areas_user ON areas(user_id);
+-- Add FK: goals.tag_id -> tags(id)
+DO $$ BEGIN
+  ALTER TABLE goals ADD CONSTRAINT fk_goals_tag
+    FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
--- Add area_id to task_items
-ALTER TABLE task_items ADD COLUMN IF NOT EXISTS area_id TEXT REFERENCES areas(id) ON DELETE SET NULL;
+-- Add FK: projects.goal_id -> goals(id)
+DO $$ BEGIN
+  ALTER TABLE projects ADD CONSTRAINT fk_projects_goal
+    FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+CREATE INDEX IF NOT EXISTS idx_projects_goal_id ON projects(goal_id);
 
 -- ============================================
 -- ROLES (RBAC)
@@ -1428,13 +1498,37 @@ CREATE INDEX IF NOT EXISTS idx_calendar_events_external ON calendar_events(exter
 CREATE TABLE IF NOT EXISTS event_reminders (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id TEXT REFERENCES calendar_events(id) ON DELETE CASCADE,
-  task_item_id TEXT REFERENCES task_items(id) ON DELETE CASCADE,
+  task_id TEXT REFERENCES tasks(id) ON DELETE CASCADE,
   minutes_before INTEGER NOT NULL DEFAULT 15,
   reminder_type TEXT DEFAULT 'notification',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-ALTER TABLE task_items ADD COLUMN IF NOT EXISTS calendar_id TEXT REFERENCES calendars(id) ON DELETE SET NULL;
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS calendar_id TEXT REFERENCES calendars(id) ON DELETE SET NULL;
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS tag_id TEXT;
+
+-- ============================================
+-- MIGRATION: Rename task_items -> tasks
+-- ============================================
+DO $$ BEGIN
+  ALTER TABLE task_items RENAME TO tasks;
+EXCEPTION WHEN undefined_table THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE task_item_calendars RENAME TO task_calendars;
+EXCEPTION WHEN undefined_table THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE task_calendars RENAME COLUMN task_item_id TO task_id;
+EXCEPTION WHEN undefined_column THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE event_reminders RENAME COLUMN task_item_id TO task_id;
+EXCEPTION WHEN undefined_column THEN NULL; END $$;
+-- Migrate area_id -> tag_id
+DO $$ BEGIN
+  UPDATE tasks SET tag_id = area_id WHERE area_id IS NOT NULL AND tag_id IS NULL;
+EXCEPTION WHEN undefined_column THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE tasks DROP COLUMN area_id;
+EXCEPTION WHEN undefined_column THEN NULL; END $$;
 
 -- ============================================
 -- MIGRATION: Fix base_records schema

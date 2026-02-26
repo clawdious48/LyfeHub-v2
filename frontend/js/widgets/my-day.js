@@ -83,7 +83,7 @@
 
             // Fetch tasks and calendar events in parallel
             const [tasksRes, eventsRes] = await Promise.allSettled([
-                fetch(`/api/task-items?view=my-day&today=${today}`, { credentials: 'include' }),
+                fetch(`/api/tasks?view=my-day&today=${today}`, { credentials: 'include' }),
                 fetch(`/api/calendar-events?start=${today}&end=${today}`, { credentials: 'include' })
             ]);
 
@@ -146,7 +146,7 @@
                     e.stopPropagation();
                     const taskId = e.target.dataset.taskId;
                     try {
-                        await fetch(`/api/task-items/${taskId}/toggle`, {
+                        await fetch(`/api/tasks/${taskId}/toggle`, {
                             method: 'POST',
                             credentials: 'include'
                         });
@@ -164,7 +164,7 @@
                     const taskId = item.dataset.id;
                     if (!taskId || typeof taskModal === 'undefined') return;
                     try {
-                        const res = await fetch(`/api/task-items/${taskId}`, { credentials: 'include' });
+                        const res = await fetch(`/api/tasks/${taskId}`, { credentials: 'include' });
                         if (!res.ok) return;
                         const data = await res.json();
                         taskModal.openEdit(data.item || data);

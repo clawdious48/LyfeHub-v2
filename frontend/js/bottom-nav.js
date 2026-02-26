@@ -487,7 +487,7 @@
             var listId = await getDefaultList();
             var today = new Date().toISOString().split('T')[0];
             
-            var res = await fetch('/api/task-items', {
+            var res = await fetch('/api/tasks', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
