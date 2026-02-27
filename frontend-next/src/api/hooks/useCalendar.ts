@@ -60,10 +60,12 @@ export function useDeleteCalendar() {
 export function useCalendarEvents(start: string, end: string) {
   return useQuery({
     queryKey: calendarKeys.eventRange(start, end),
-    queryFn: () =>
-      apiClient.get<CalendarEvent[]>(
+    queryFn: async () => {
+      const res = await apiClient.get<CalendarEvent[] | { events: CalendarEvent[] }>(
         `/calendar-events?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`,
-      ),
+      )
+      return Array.isArray(res) ? res : res.events
+    },
     enabled: !!start && !!end,
   })
 }

@@ -14,7 +14,10 @@ export function useTasks(status?: string) {
   const query = status ? `?status=${encodeURIComponent(status)}` : ''
   return useQuery({
     queryKey: taskKeys.list(status),
-    queryFn: () => apiClient.get<Task[]>(`/tasks${query}`),
+    queryFn: async () => {
+      const res = await apiClient.get<Task[] | { items: Task[] }>(`/tasks${query}`)
+      return Array.isArray(res) ? res : res.items
+    },
   })
 }
 
