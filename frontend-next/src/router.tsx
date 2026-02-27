@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth'
 import AppLayout from '@/layouts/AppLayout'
 import LoginPage from '@/pages/LoginPage'
 import DashboardPage from '@/pages/DashboardPage'
-import ApexPage from '@/pages/ApexPage'
+import JobsPage from '@/pages/JobsPage'
 import TasksPage from '@/pages/TasksPage'
 import CalendarPage from '@/pages/CalendarPage'
 import PeoplePage from '@/pages/PeoplePage'
@@ -41,7 +41,7 @@ export const routes: RouteObject[] = [
     ),
     children: [
       { index: true, element: <DashboardPage /> },
-      { path: 'apex', element: <ApexPage /> },
+      { path: 'jobs', element: <JobsPage /> },
       { path: 'tasks', element: <TasksPage /> },
       { path: 'calendar', element: <CalendarPage /> },
       { path: 'people', element: <PeoplePage /> },
