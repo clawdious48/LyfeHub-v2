@@ -1,18 +1,7 @@
 {
-  "name": "lyfehub-mobile-responsive",
-  "version": "1.0.0",
-  "description": "A collaborative kanban board for managing tasks between humans and AI assistants.",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "puppeteer": "^24.37.2"
-  }
+  "name": "lyfehub",
+  "version": "2.0.0",
+  "description": "Personal productivity platform — Projects, Tasks, Calendar, People/CRM, Bases, and Apex job management.",
+  "private": true,
+  "license": "MIT"
 }

@@ -1,19 +1,47 @@
-version: '3.8'
 services:
-  lyfehub-apex-preview:
-    build: .
-    container_name: lyfehub-apex-preview
-    ports:
-      - "4003:3000"
-    volumes:
-      - /root/lyfehub-apex-preview-data:/data
-    environment:
-      - NODE_ENV=production
-      - PORT=3000
+  db:
+    image: postgres:16-alpine
+    container_name: lyfehub-dev-db
     restart: unless-stopped
+    environment:
+      POSTGRES_DB: lyfehub
+      POSTGRES_USER: lyfehub
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-lyfehub_dev}
+    volumes:
+      - lyfehub-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD-SHELL", "pg_isready -U lyfehub"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  lyfehub:
+    build: .
+    container_name: lyfehub-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - lyfehub-uploads:/data/uploads
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=lyfehub
+      - DB_USER=lyfehub
+      - DB_PASSWORD=${DB_PASSWORD:-lyfehub_dev}
+      - JWT_SECRET=${JWT_SECRET}
+      - NODE_ENV=development
+      - PORT=3000
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
-      start_period: 40s
+      start_period: 15s
+
+volumes:
+  lyfehub-db-data:
+  lyfehub-uploads:

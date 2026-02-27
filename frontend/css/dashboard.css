@@ -3,8 +3,8 @@
    ======================================== */
 
 .dashboard-container {
-    max-width: 1200px;
-    margin: 0 auto;
+    flex: 1;
+    min-width: 0;
     padding: var(--space-xl) var(--space-lg);
     background: transparent;
     min-height: calc(100vh - var(--nav-height));

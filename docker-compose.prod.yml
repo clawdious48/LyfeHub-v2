@@ -18,7 +18,7 @@ services:
   lyfehub-v2:
     build:
       context: .
-      dockerfile: Dockerfile.postgres
+      dockerfile: Dockerfile
     container_name: lyfehub-v2-production
     restart: unless-stopped
     ports:

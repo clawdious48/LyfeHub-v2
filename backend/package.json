@@ -1,7 +1,7 @@
 {
-  "name": "kanban-backend",
-  "version": "1.0.0",
-  "description": "Kanban board backend API",
+  "name": "lyfehub-backend",
+  "version": "2.0.0",
+  "description": "LyfeHub backend API",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",

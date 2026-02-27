@@ -279,6 +279,83 @@
     margin-top: 1.5rem;
 }
 
+/* Profile Completion Indicator */
+.profile-completion {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 20px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    display: inline-block;
+    width: auto;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
+
+.profile-completion.complete {
+    color: var(--neon-green, #22c55e);
+    border-color: rgba(34,197,94,0.3);
+}
+
+/* Role Badge */
+.role-badge {
+    display: inline-block;
+    padding: 0.2rem 0.65rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: var(--accent-light);
+    color: var(--accent);
+    border: 1px solid var(--accent-glow);
+    margin-top: 0.25rem;
+}
+
+/* Gravatar Avatar */
+.avatar-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+.gravatar-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--accent-glow);
+}
+
+.avatar-wrapper .profile-avatar {
+    width: 100px;
+    height: 100px;
+    font-size: 2.5rem;
+}
+
+/* Emergency Contact Card */
+.emergency-card {
+    border-color: var(--neon-orange, var(--accent));
+    border-width: 1px;
+    border-left-width: 3px;
+}
+
+.emergency-card h2 {
+    color: var(--neon-orange, var(--accent));
+}
+
+/* Form helper text */
+.form-group small {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
 /* Settings Page */
 .settings-title {
     font-size: 1.25rem;
@@ -330,9 +407,24 @@
     .login-container {
         padding: 1.5rem;
     }
-    
-    .profile-container {
+
+    .profile-page {
         padding: 1rem;
+    }
+
+    .profile-container {
+        padding: 0;
+    }
+
+    .avatar-wrapper,
+    .avatar-wrapper .profile-avatar,
+    .gravatar-avatar {
+        width: 72px;
+        height: 72px;
+    }
+
+    .avatar-wrapper .profile-avatar {
+        font-size: 2rem;
     }
 }
 

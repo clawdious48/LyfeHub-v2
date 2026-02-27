@@ -211,6 +211,15 @@
             scheduleSave();
         });
 
+        // Re-layout grid when sidebar collapses/expands
+        const dashContainer = document.querySelector('.dashboard-container');
+        if (dashContainer) {
+            const ro = new ResizeObserver(() => {
+                if (grid) grid.onParentResize();
+            });
+            ro.observe(dashContainer);
+        }
+
         // Setup edit mode toggle
         setupEditMode();
 

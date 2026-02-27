@@ -819,10 +819,6 @@ router.delete('/:id/fuel-mileage/:fmId', requireScope('jobs', 'write'), async (r
   }
 });
 
-// Drying log sub-routes
-const dryingRoutes = require('./drying');
-router.use('/:id/drying', dryingRoutes);
-
 // ============================================
 // JOB WORKFLOW ROUTES
 // ============================================

@@ -1433,6 +1433,9 @@ ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS scopes JSONB DEFAULT '["*:*"]';
 -- USERS: status column
 -- ============================================
 ALTER TABLE users ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS emergency_contact_name TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS emergency_contact_phone TEXT;
 
 -- ============================================
 -- AUDIT LOG

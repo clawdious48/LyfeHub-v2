@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/pool');
+const tasksDb = require('../db/tasks');
+const notesDb = require('../db/notes');
+const peopleDb = require('../db/people');
 const { authMiddleware } = require('../middleware/auth');
 const { requireScope } = require('../middleware/scopeAuth');
 
@@ -180,6 +183,50 @@ router.post('/:id/archive', requireScope('tasks', 'write'), async (req, res) => 
   } catch (err) {
     console.error('Inbox archive error:', err);
     res.status(500).json({ error: 'Failed to archive item' });
+  }
+});
+
+/**
+ * POST /api/inbox/capture
+ * Quick-capture a new item directly into the inbox.
+ * Body: { type: 'note'|'task'|'contact', title: string, due_date?: string }
+ */
+router.post('/capture', requireScope('tasks', 'write'), async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { type, title, due_date } = req.body;
+
+    if (!type || !title || !title.trim()) {
+      return res.status(400).json({ error: 'type and title are required' });
+    }
+
+    const trimmedTitle = title.trim();
+    let id;
+
+    if (type === 'task') {
+      const item = await tasksDb.createTask({
+        title: trimmedTitle,
+        due_date: due_date || null
+      }, userId);
+      id = item.id;
+    } else if (type === 'note') {
+      const item = await notesDb.createNote({
+        name: trimmedTitle
+      }, userId);
+      id = item.id;
+    } else if (type === 'contact') {
+      const item = await peopleDb.createPerson({
+        name: trimmedTitle
+      }, userId);
+      id = item.id;
+    } else {
+      return res.status(400).json({ error: 'Invalid type. Use: note, task, or contact' });
+    }
+
+    res.status(201).json({ success: true, id, type });
+  } catch (err) {
+    console.error('Inbox capture error:', err);
+    res.status(500).json({ error: 'Failed to capture item' });
   }
 });
 

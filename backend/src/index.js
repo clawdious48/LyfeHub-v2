@@ -112,7 +112,7 @@ async function start() {
     await initDatabase();
     console.log('Database initialized successfully');
     app.listen(PORT, () => {
-      console.log(`Kanban API server running on port ${PORT}`);
+      console.log(`LyfeHub API server running on port ${PORT}`);
       console.log(`Frontend served from: ${frontendPath}`);
     });
   } catch (err) {

@@ -84,6 +84,21 @@ async function updateUser(id, data) {
     values.push(JSON.stringify(data.settings));
   }
 
+  if (data.phone !== undefined) {
+    updates.push(`phone = $${paramIdx++}`);
+    values.push(data.phone);
+  }
+
+  if (data.emergency_contact_name !== undefined) {
+    updates.push(`emergency_contact_name = $${paramIdx++}`);
+    values.push(data.emergency_contact_name);
+  }
+
+  if (data.emergency_contact_phone !== undefined) {
+    updates.push(`emergency_contact_phone = $${paramIdx++}`);
+    values.push(data.emergency_contact_phone);
+  }
+
   if (updates.length === 0) return await findUserById(id);
 
   updates.push(`updated_at = $${paramIdx++}`);

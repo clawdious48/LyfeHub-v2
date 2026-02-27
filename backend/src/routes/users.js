@@ -100,8 +100,8 @@ router.patch('/me', async (req, res) => {
       });
     }
     
-    const { name, settings } = req.body;
-    
+    const { name, settings, phone, emergency_contact_name, emergency_contact_phone } = req.body;
+
     // Validate name if provided
     if (name !== undefined && (typeof name !== 'string' || name.trim().length < 1)) {
       return res.status(400).json({
@@ -109,10 +109,32 @@ router.patch('/me', async (req, res) => {
         code: 'INVALID_NAME'
       });
     }
-    
+
+    // Validate phone if provided
+    if (phone !== undefined && phone !== null && phone !== '') {
+      if (typeof phone !== 'string' || phone.length > 30) {
+        return res.status(400).json({ error: 'Invalid phone number', code: 'INVALID_PHONE' });
+      }
+    }
+
+    // Validate emergency contact fields
+    if (emergency_contact_name !== undefined && emergency_contact_name !== null && emergency_contact_name !== '') {
+      if (typeof emergency_contact_name !== 'string' || emergency_contact_name.length > 100) {
+        return res.status(400).json({ error: 'Emergency contact name too long', code: 'INVALID_EMERGENCY_NAME' });
+      }
+    }
+    if (emergency_contact_phone !== undefined && emergency_contact_phone !== null && emergency_contact_phone !== '') {
+      if (typeof emergency_contact_phone !== 'string' || emergency_contact_phone.length > 30) {
+        return res.status(400).json({ error: 'Invalid emergency contact phone', code: 'INVALID_EMERGENCY_PHONE' });
+      }
+    }
+
     const user = await updateUser(req.user.id, {
       name: name?.trim(),
-      settings
+      settings,
+      phone: phone?.trim(),
+      emergency_contact_name: emergency_contact_name?.trim(),
+      emergency_contact_phone: emergency_contact_phone?.trim()
     });
     
     if (!user) {
