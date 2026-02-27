@@ -1,40 +1,39 @@
-const express = require('express');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
-const path = require('path');
+import express, { type Request, type Response, type NextFunction } from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import path from 'path';
+import logger from './lib/logger';
+import { errorHandler } from './middleware/errorHandler';
 
-// Import routes
+// Import routes (remain as .js — TypeScript resolves them with allowJs)
 const authRoutes = require('./routes/auth');
 const tasksRoutes = require('./routes/tasks');
 const taskListsRoutes = require('./routes/taskLists');
 const usersRoutes = require('./routes/users');
 const basesRoutes = require('./routes/bases');
 const calendarsRoutes = require('./routes/calendars');
-
 const peopleRoutes = require('./routes/people');
 const uploadsRoutes = require('./routes/uploads');
-
 const apexJobsRoutes = require('./routes/apexJobs');
 const apiKeysRoutes = require('./routes/apiKeys');
 const inboxRoutes = require('./routes/inbox');
 const dashboardRoutes = require('./routes/dashboard');
-
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || true, // Allow all in dev, set specific origin in prod
-  credentials: true // Allow cookies
+  origin: process.env.CORS_ORIGIN || true,
+  credentials: true,
 }));
 app.use(express.json());
 app.use(cookieParser());
 
-// Request logging in development
+// Request logging
 if (process.env.NODE_ENV !== 'production') {
-  app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} ${req.method} ${req.path}`);
+  app.use((req: Request, _res: Response, next: NextFunction) => {
+    logger.info({ method: req.method, path: req.path }, 'request');
     next();
   });
 }
@@ -48,10 +47,8 @@ app.use('/api/bases', basesRoutes);
 app.use('/api/bases/:baseId/views', require('./routes/base-views'));
 app.use('/api/calendars', calendarsRoutes);
 app.use('/api/calendar-events', require('./routes/calendarEvents'));
-
 app.use('/api/people', peopleRoutes);
 app.use('/api/uploads', uploadsRoutes);
-
 app.use('/api/apex-jobs', apexJobsRoutes);
 app.use('/api/apex-orgs', require('./routes/apexOrgs'));
 app.use('/api/apex-crm', require('./routes/apexCrm'));
@@ -70,57 +67,57 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/system', require('./routes/system'));
 app.use('/api/admin', require('./routes/admin'));
 
-
 // Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ 
+app.get('/api/health', (_req: Request, res: Response) => {
+  res.json({
     status: 'ok',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
 // Serve static frontend files
 const frontendPath = path.join(__dirname, '../../frontend');
-app.use(express.static(frontendPath, { etag: false, lastModified: false, setHeaders: (res) => { res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate"); res.setHeader("Pragma", "no-cache"); res.setHeader("Expires", "0"); } }));
+app.use(express.static(frontendPath, {
+  etag: false,
+  lastModified: false,
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  },
+}));
 
 // SPA fallback - serve index.html for all non-API routes
-app.get('*', (req, res) => {
-  // Don't serve index.html for API routes
+app.get('*', (req: Request, res: Response) => {
   if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ 
+    res.status(404).json({
       error: 'Endpoint not found',
-      code: 'NOT_FOUND'
+      code: 'NOT_FOUND',
     });
+    return;
   }
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ 
-    error: 'Internal server error',
-    code: 'INTERNAL_ERROR'
-  });
-});
+// Error handler (must be after all routes)
+app.use(errorHandler);
 
 // Initialize database then start server
 const { initDatabase } = require('./db/schema');
 
-async function start() {
+async function start(): Promise<void> {
   try {
     await initDatabase();
-    console.log('Database initialized successfully');
+    logger.info('Database initialized successfully');
     app.listen(PORT, () => {
-      console.log(`Kanban API server running on port ${PORT}`);
-      console.log(`Frontend served from: ${frontendPath}`);
+      logger.info({ port: PORT, frontendPath }, 'LyfeHub API server running');
     });
   } catch (err) {
-    console.error('Failed to initialize database:', err);
+    logger.fatal({ err }, 'Failed to initialize database');
     process.exit(1);
   }
 }
 
 start();
 
-module.exports = app;
+export default app;
