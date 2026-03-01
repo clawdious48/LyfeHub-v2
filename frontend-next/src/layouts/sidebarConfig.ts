@@ -4,6 +4,7 @@ import {
   Briefcase, Calendar, CheckSquare,
   FileText, Users, Database,
   Wrench, BookOpen,
+  HardHat, Contact, Package, FolderOpen, GitBranch, DollarSign, BarChart3,
 } from 'lucide-react'
 import { BaseSidebarContent } from '@/pages/bases/components/BaseSidebarContent.js'
 
@@ -22,14 +23,28 @@ export interface SidebarSection {
   component?: ComponentType
 }
 
-export const sidebarSections: Record<string, SidebarSection[]> = {
+const apexSection: SidebarSection = {
+  key: 'apex',
+  header: 'Apex Restoration',
+  icon: HardHat,
+  items: [
+    { label: 'Jobs', icon: Briefcase, to: '/jobs' },
+    { label: 'CRM', icon: Contact, to: '/apex/crm' },
+    { label: 'Inventory', icon: Package, to: '/apex/inventory' },
+    { label: 'Documents', icon: FolderOpen, to: '/apex/documents' },
+    { label: 'Workflows', icon: GitBranch, to: '/apex/workflows' },
+    { label: 'Accounting', icon: DollarSign, to: '/apex/accounting' },
+    { label: 'Reports', icon: BarChart3, to: '/apex/reports' },
+  ],
+}
+
+const contextualSections: Record<string, SidebarSection[]> = {
   '/': [
     {
       key: 'productivity',
       header: 'Productivity',
       icon: Briefcase,
       items: [
-        { label: 'Jobs', icon: Briefcase, to: '/jobs' },
         { label: 'Calendar', icon: Calendar, to: '/calendar' },
         { label: 'Tasks', icon: CheckSquare, to: '/tasks' },
       ],
@@ -64,7 +79,6 @@ export const sidebarSections: Record<string, SidebarSection[]> = {
       header: 'Productivity',
       icon: Briefcase,
       items: [
-        { label: 'Jobs', icon: Briefcase, to: '/jobs' },
         { label: 'Calendar', icon: Calendar, to: '/calendar' },
         { label: 'Tasks', icon: CheckSquare, to: '/tasks' },
       ],
@@ -83,11 +97,8 @@ export const sidebarSections: Record<string, SidebarSection[]> = {
 }
 
 export function getSectionsForRoute(pathname: string): SidebarSection[] {
-  // Exact match first
-  if (sidebarSections[pathname]) return sidebarSections[pathname]
-  // Prefix match (e.g., /bases/123 should match /bases config)
+  if (contextualSections[pathname]) return [apexSection, ...contextualSections[pathname]]
   const prefix = '/' + pathname.split('/')[1]
-  if (sidebarSections[prefix]) return sidebarSections[prefix]
-  // Fallback to dashboard
-  return sidebarSections['/']
+  if (contextualSections[prefix]) return [apexSection, ...contextualSections[prefix]]
+  return [apexSection, ...contextualSections['/']]
 }
