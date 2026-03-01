@@ -42,7 +42,25 @@ export interface ApexJob {
   referral_source: string
   how_heard: string
   internal_notes: string
+  referred_by: string
   source: string
+  // Boolean flags (stored as 0/1 integers in DB)
+  extraction_required: number
+  ongoing_intrusion: number
+  drywall_debris: number
+  content_manipulation: number
+  // Team assignment (JSON string arrays of user IDs)
+  mitigation_pm: string
+  reconstruction_pm: string
+  estimator: string
+  project_coordinator: string
+  mitigation_techs: string
+  // Multi-contact arrays (JSON string arrays)
+  additional_clients: string
+  additional_adjusters: string
+  site_contacts: string
+  // Property
+  year_built: string
   contacted_date: string
   inspection_date: string
   work_auth_date: string
@@ -155,6 +173,113 @@ export interface ApexJobWorkOrder {
   file_path: string
   author_id: string | null
   created_at: string
+}
+
+export interface JobAccountingData {
+  total_estimates: number
+  total_approved_estimates: number
+  total_payments: number
+  total_labor_cost: number
+  total_receipts: number
+  total_work_orders: number
+  total_costs: number
+  gross_profit: number
+  gp_margin: number
+  estimates: ApexJobEstimate[]
+  payments: ApexJobPayment[]
+}
+
+export interface JobActivityEvent {
+  id: string
+  job_id: string
+  event_type: string
+  description: string
+  amount: number | null
+  metadata: string | null
+  created_by: string | null
+  created_at: string
+}
+
+export interface JobContactWithDetails {
+  id: string
+  job_id: string
+  contact_id: string
+  crm_organization_id: string | null
+  job_role: string
+  notes: string
+  created_at: string
+  first_name: string
+  last_name: string
+  phone: string
+  email: string
+  org_name: string | null
+}
+
+export interface ApexDocument {
+  id: string
+  job_id: string
+  phase_id: string | null
+  file_name: string
+  file_path: string
+  file_size: number
+  mime_type: string
+  document_type: string
+  description: string
+  uploaded_by: string | null
+  created_at: string
+}
+
+export interface AdditionalContact {
+  name: string
+  phone: string
+  email: string
+}
+
+export interface SiteContact {
+  name: string
+  phone: string
+  email: string
+  relation: string
+}
+
+export interface CrmContact {
+  id: string
+  first_name: string
+  last_name: string
+  phone: string
+  ext: string
+  alt_phone: string
+  alt_ext: string
+  email: string
+  crm_organization_id: string | null
+  org_name: string | null
+}
+
+export interface OrgMember {
+  user_id: string
+  name: string
+  email: string
+  role: string
+  job_count?: number
+}
+
+export interface CreateCrmContactData {
+  first_name: string
+  last_name: string
+  phone: string
+  ext: string
+  alt_phone: string
+  alt_ext: string
+  email: string
+  crm_organization_id: string | null
+}
+
+export interface JobContactAssignment {
+  contact_id: string
+  job_role: string
+  display_name: string
+  org_name: string | null
+  phone: string
 }
 
 export type CreateApexJobData = Partial<Omit<ApexJob, 'id' | 'user_id' | 'created_at' | 'updated_at'>> & {
