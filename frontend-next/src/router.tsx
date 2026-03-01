@@ -8,6 +8,12 @@ import TasksPage from '@/pages/TasksPage'
 import CalendarPage from '@/pages/CalendarPage'
 import PeoplePage from '@/pages/PeoplePage'
 import BasesPage from '@/pages/BasesPage'
+import ApexCrmPage from '@/pages/ApexCrmPage'
+import ApexInventoryPage from '@/pages/ApexInventoryPage'
+import ApexDocumentsPage from '@/pages/ApexDocumentsPage'
+import ApexWorkflowsPage from '@/pages/ApexWorkflowsPage'
+import ApexAccountingPage from '@/pages/ApexAccountingPage'
+import ApexReportsPage from '@/pages/ApexReportsPage'
 import type { ReactNode } from 'react'
 
 function AuthGuard({ children }: { children: ReactNode }) {
@@ -46,6 +52,12 @@ export const routes: RouteObject[] = [
       { path: 'calendar', element: <CalendarPage /> },
       { path: 'people', element: <PeoplePage /> },
       { path: 'bases', element: <BasesPage /> },
+      { path: 'apex/crm', element: <ApexCrmPage /> },
+      { path: 'apex/inventory', element: <ApexInventoryPage /> },
+      { path: 'apex/documents', element: <ApexDocumentsPage /> },
+      { path: 'apex/workflows', element: <ApexWorkflowsPage /> },
+      { path: 'apex/accounting', element: <ApexAccountingPage /> },
+      { path: 'apex/reports', element: <ApexReportsPage /> },
     ],
   },
 ]
