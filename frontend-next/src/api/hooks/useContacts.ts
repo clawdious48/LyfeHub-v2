@@ -58,3 +58,18 @@ export function useDeleteCrmContact() {
     },
   })
 }
+
+export function useSearchCrmContacts(search: string) {
+  return useQuery({
+    queryKey: [...contactKeys.all, 'search', search] as const,
+    queryFn: () => apiClient.get<{ id: string; first_name: string; last_name: string; phone: string; email: string; org_name: string | null }[]>(`/apex-crm/contacts?search=${encodeURIComponent(search)}&limit=10`),
+    enabled: search.length >= 2,
+  })
+}
+
+export function useLinkJobContact() {
+  return useMutation({
+    mutationFn: ({ jobId, contactId, jobRole }: { jobId: string; contactId: string; jobRole: string }) =>
+      apiClient.post(`/apex-crm/jobs/${jobId}/contacts`, { contact_id: contactId, job_role: jobRole }),
+  })
+}
