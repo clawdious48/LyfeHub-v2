@@ -114,7 +114,7 @@ A living document tracking feature status across the entire LyfeHub platform. Up
 |---------|---------|----------|--------|
 | Organizations CRUD | Done | Not started | Backend Only |
 | Org members + invitations | Done | Not started | Backend Only |
-| 5 roles (owner, office_coordinator, project_manager, estimator, field_tech) | Done | Not started | Backend Only |
+| 5 roles (management, office_coordinator, project_manager, estimator, field_tech) | Done | Not started | Backend Only |
 | Role-based middleware (`requireOrgRole`) | Done | -- | Done |
 | Phase assignments per role | Done | Not started | Backend Only |
 | API scope middleware (`requireScope`) | Done | -- | Done |
