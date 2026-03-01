@@ -66,7 +66,7 @@ async function createJob(data, userId, orgId) {
         areas_affected, hazards, loss_description, scope_notes, urgent,
         extraction_required, ongoing_intrusion, drywall_debris, content_manipulation,
         mitigation_pm, reconstruction_pm, estimator, project_coordinator, mitigation_techs,
-        referral_source, how_heard, internal_notes,
+        referral_source, referred_by, how_heard, internal_notes,
         source, zoho_id,
         additional_clients, additional_adjusters, site_contacts
       ) VALUES (
@@ -82,9 +82,9 @@ async function createJob(data, userId, orgId) {
         $38, $39, $40, $41, $42,
         $43, $44, $45, $46,
         $47, $48, $49, $50, $51,
-        $52, $53, $54,
-        $55, $56,
-        $57, $58, $59
+        $52, $53, $54, $55,
+        $56, $57,
+        $58, $59, $60
       )
     `, [
       id, userId, orgId, name, data.status || 'active',
@@ -101,7 +101,7 @@ async function createJob(data, userId, orgId) {
       ensureJsonString(data.mitigation_pm), ensureJsonString(data.reconstruction_pm),
       ensureJsonString(data.estimator), ensureJsonString(data.project_coordinator),
       ensureJsonString(data.mitigation_techs),
-      data.referral_source || '', data.how_heard || '', data.internal_notes || '',
+      data.referral_source || '', data.referred_by || '', data.how_heard || '', data.internal_notes || '',
       data.source || 'local', data.zoho_id || '',
       ensureJsonString(data.additional_clients), ensureJsonString(data.additional_adjusters), ensureJsonString(data.site_contacts)
     ]);
@@ -194,7 +194,7 @@ async function updateJob(id, data, orgId) {
     'areas_affected', 'hazards', 'loss_description', 'scope_notes', 'urgent',
     'extraction_required', 'ongoing_intrusion', 'drywall_debris', 'content_manipulation',
     'mitigation_pm', 'reconstruction_pm', 'estimator', 'project_coordinator', 'mitigation_techs',
-    'referral_source', 'how_heard', 'internal_notes',
+    'referral_source', 'referred_by', 'how_heard', 'internal_notes',
     'source', 'zoho_id',
     'additional_clients', 'additional_adjusters', 'site_contacts'
   ];

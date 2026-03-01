@@ -567,6 +567,7 @@ CREATE TABLE IF NOT EXISTS apex_jobs (
   project_coordinator TEXT DEFAULT '[]',
   mitigation_techs TEXT DEFAULT '[]',
   referral_source TEXT DEFAULT '',
+  referred_by TEXT DEFAULT '',
   how_heard TEXT DEFAULT '',
   internal_notes TEXT DEFAULT '',
   source TEXT DEFAULT 'local',
@@ -1540,3 +1541,12 @@ ALTER TABLE base_records ADD COLUMN IF NOT EXISTS global_id INTEGER;
 ALTER TABLE base_records ADD COLUMN IF NOT EXISTS position INTEGER DEFAULT 0;
 ALTER TABLE bases ADD COLUMN IF NOT EXISTS group_id TEXT;
 ALTER TABLE bases ADD COLUMN IF NOT EXISTS position INTEGER DEFAULT 0;
+
+-- ============================================
+-- MIGRATION: Add referred_by to apex_jobs
+-- ============================================
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'apex_jobs' AND column_name = 'referred_by') THEN
+  ALTER TABLE apex_jobs ADD COLUMN referred_by TEXT DEFAULT '';
+END IF;
+END $$;
