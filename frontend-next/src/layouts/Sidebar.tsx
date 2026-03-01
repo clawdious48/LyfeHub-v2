@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
-  Briefcase,
   FileText,
   CheckSquare,
   UserPlus,
@@ -74,7 +73,7 @@ export default function Sidebar() {
           collapsed ? 'w-12' : 'w-56',
         ].join(' ')}
       >
-        {/* Top section: Dashboard + Jobs */}
+        {/* Top section: Dashboard */}
         <div className="px-2 pt-3 pb-2 space-y-0.5">
           <NavLink
             to="/"
@@ -91,21 +90,6 @@ export default function Sidebar() {
           >
             <LayoutDashboard className="size-4 shrink-0" />
             {!collapsed && <span>Dashboard</span>}
-          </NavLink>
-          <NavLink
-            to="/jobs"
-            title={collapsed ? 'Jobs' : undefined}
-            className={({ isActive }) =>
-              [
-                'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-accent-light text-accent'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover',
-              ].join(' ')
-            }
-          >
-            <Briefcase className="size-4 shrink-0" />
-            {!collapsed && <span>Jobs</span>}
           </NavLink>
         </div>
 
