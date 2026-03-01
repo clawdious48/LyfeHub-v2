@@ -1,9 +1,11 @@
+import type { ComponentType } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import {
   Briefcase, Calendar, CheckSquare,
   FileText, Users, Database,
   Wrench, BookOpen,
 } from 'lucide-react'
+import { BaseSidebarContent } from '@/pages/bases/components/BaseSidebarContent.js'
 
 export interface SidebarItem {
   label: string
@@ -17,6 +19,7 @@ export interface SidebarSection {
   header: string
   icon: LucideIcon
   items: SidebarItem[]
+  component?: ComponentType
 }
 
 export const sidebarSections: Record<string, SidebarSection[]> = {
@@ -48,8 +51,43 @@ export const sidebarSections: Record<string, SidebarSection[]> = {
       ],
     },
   ],
+  '/bases': [
+    {
+      key: 'bases-browser',
+      header: 'Bases',
+      icon: Database,
+      items: [],
+      component: BaseSidebarContent,
+    },
+    {
+      key: 'productivity',
+      header: 'Productivity',
+      icon: Briefcase,
+      items: [
+        { label: 'Jobs', icon: Briefcase, to: '/jobs' },
+        { label: 'Calendar', icon: Calendar, to: '/calendar' },
+        { label: 'Tasks', icon: CheckSquare, to: '/tasks' },
+      ],
+    },
+    {
+      key: 'resources',
+      header: 'Resources',
+      icon: BookOpen,
+      items: [
+        { label: 'Notes', icon: FileText, to: '/notes' },
+        { label: 'People', icon: Users, to: '/people' },
+        { label: 'Bases', icon: Database, to: '/bases' },
+      ],
+    },
+  ],
 }
 
 export function getSectionsForRoute(pathname: string): SidebarSection[] {
-  return sidebarSections[pathname] || sidebarSections['/']
+  // Exact match first
+  if (sidebarSections[pathname]) return sidebarSections[pathname]
+  // Prefix match (e.g., /bases/123 should match /bases config)
+  const prefix = '/' + pathname.split('/')[1]
+  if (sidebarSections[prefix]) return sidebarSections[prefix]
+  // Fallback to dashboard
+  return sidebarSections['/']
 }

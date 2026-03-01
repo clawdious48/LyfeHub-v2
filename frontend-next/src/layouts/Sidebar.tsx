@@ -142,8 +142,10 @@ export default function Sidebar() {
         {/* Contextual sections */}
         <nav className="flex-1 py-2 px-2 space-y-3 overflow-y-auto">
           {sections.map((section) => {
-            if (section.items.length === 0) return null
+            const hasComponent = !!section.component
+            if (!hasComponent && section.items.length === 0) return null
             const sectionCollapsed = isSectionCollapsed(section.key)
+            const SectionComponent = section.component
             return (
               <div key={section.key}>
                 {!collapsed && (
@@ -155,25 +157,31 @@ export default function Sidebar() {
                   </button>
                 )}
                 {(!sectionCollapsed || collapsed) && (
-                  <div className="space-y-0.5 mt-0.5">
-                    {section.items.map(({ label, icon: Icon, to }) => (
-                      <NavLink
-                        key={to}
-                        to={to}
-                        title={collapsed ? label : undefined}
-                        className={({ isActive }) =>
-                          [
-                            'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                            isActive
-                              ? 'bg-accent-light text-accent'
-                              : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover',
-                          ].join(' ')
-                        }
-                      >
-                        <Icon className="size-4 shrink-0" />
-                        {!collapsed && <span>{label}</span>}
-                      </NavLink>
-                    ))}
+                  <div className="mt-0.5">
+                    {SectionComponent ? (
+                      !collapsed && <SectionComponent />
+                    ) : (
+                      <div className="space-y-0.5">
+                        {section.items.map(({ label, icon: Icon, to }) => (
+                          <NavLink
+                            key={to}
+                            to={to}
+                            title={collapsed ? label : undefined}
+                            className={({ isActive }) =>
+                              [
+                                'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                                isActive
+                                  ? 'bg-accent-light text-accent'
+                                  : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover',
+                              ].join(' ')
+                            }
+                          >
+                            <Icon className="size-4 shrink-0" />
+                            {!collapsed && <span>{label}</span>}
+                          </NavLink>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -209,7 +217,7 @@ export default function Sidebar() {
           <button
             onClick={toggleCollapsed}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            className="flex items-center justify-center w-full px-3 py-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-bg-hover transition-colors"
+            className="flex items-center justify-center w-full py-2 rounded-md text-text-muted hover:text-text-primary hover:bg-bg-hover transition-colors cursor-pointer"
           >
             {collapsed ? (
               <ChevronRight className="size-4" />
