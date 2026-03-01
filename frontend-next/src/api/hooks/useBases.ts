@@ -26,7 +26,6 @@ export const baseKeys = {
   list: () => [...baseKeys.lists()] as const,
   details: () => [...baseKeys.all, 'detail'] as const,
   detail: (id: string) => [...baseKeys.details(), id] as const,
-  properties: (baseId: string) => [...baseKeys.all, 'properties', baseId] as const,
   views: (baseId: string) => [...baseKeys.all, 'views', baseId] as const,
   groups: () => [...baseKeys.all, 'groups'] as const,
   relationOptions: (baseId: string) => [...baseKeys.all, 'relation-options', baseId] as const,
