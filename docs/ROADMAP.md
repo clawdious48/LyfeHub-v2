@@ -103,6 +103,9 @@ A living document tracking feature status across the entire LyfeHub platform. Up
 | File/image attachments | Done | Done | Done |
 | Sidebar browser (bases + groups tree) | Done | Done | Done |
 | Column reorder (drag-and-drop) | Done | Done | Done |
+| Record pages (open record as full page) | Not started | Not started | Not Started |
+| View-scoped page templates (different layouts per view) | Not started | Not started | Not Started |
+| Custom page layouts (drag-and-drop sections, widgets) | Not started | Not started | Not Started |
 
 ---
 
@@ -145,17 +148,27 @@ A living document tracking feature status across the entire LyfeHub platform. Up
 | Fuel / mileage | Done | Not started | Backend Only |
 | Drying logs | Done | Not started | Backend Only |
 
-### CRM
+### Team (Employee Management)
 
 | Feature | Backend | Frontend | Status |
 |---------|---------|----------|--------|
-| CRM organizations CRUD | Done | Stub | Stub |
-| CRM contacts CRUD | Done | Not started | Backend Only |
+| Org members roster | Done | Not started | Backend Only |
+| Role management | Done | Not started | Backend Only |
+| Employee profiles / workload view | Not started | Not started | Not Started |
+
+### Contacts (formerly CRM)
+
+| Feature | Backend | Frontend | Status |
+|---------|---------|----------|--------|
+| Contact organizations CRUD | Done | Stub | Stub |
+| Contacts CRUD | Done | Not started | Backend Only |
 | Organization tags | Done | Not started | Backend Only |
 | Contact tags | Done | Not started | Backend Only |
 | Memberships (contact-to-org) | Done | Not started | Backend Only |
 | Job linking | Done | Not started | Backend Only |
 | Search + filters | Done | Not started | Backend Only |
+| Saved views (Adjusters, Vendors, Subs, etc.) | Not started | Not started | Not Started |
+| Inline contact creation from job form | Not started | Not started | Not Started |
 
 ### Inventory
 
