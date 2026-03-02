@@ -2,8 +2,7 @@ import { Navigate, type RouteObject } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import AppLayout from '@/layouts/AppLayout'
 import LoginPage from '@/pages/LoginPage'
-import DashboardPage from '@/pages/DashboardPage'
-import ApexDashboardPage from '@/pages/ApexDashboardPage'
+import DashboardSpringboard from '@/layouts/DashboardSpringboard.js'
 import JobsPage from '@/pages/JobsPage'
 import TasksPage from '@/pages/TasksPage'
 import CalendarPage from '@/pages/CalendarPage'
@@ -48,8 +47,8 @@ export const routes: RouteObject[] = [
       </AuthGuard>
     ),
     children: [
-      { index: true, element: <DashboardPage /> },
-      { path: 'apex', element: <ApexDashboardPage /> },
+      { index: true, element: <DashboardSpringboard /> },
+      { path: 'apex', element: <DashboardSpringboard /> },
       { path: 'jobs', element: <JobsPage /> },
       { path: 'tasks', element: <TasksPage /> },
       { path: 'calendar', element: <CalendarPage /> },
