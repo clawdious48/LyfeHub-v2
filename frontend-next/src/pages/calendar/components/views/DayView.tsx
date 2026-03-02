@@ -9,10 +9,11 @@ interface DayViewProps {
   onSlotClick?: (date: string, time: string) => void
   onItemClick?: (item: CalendarItem) => void
   onDragCreate?: (date: string, startTime: string, endTime: string) => void
+  onTaskDrop?: (taskId: string, date: string, startTime: string, endTime: string) => void
 }
 
-export function DayView({ selectedDate, items, onSlotClick, onItemClick, onDragCreate }: DayViewProps) {
+export function DayView({ selectedDate, items, onSlotClick, onItemClick, onDragCreate, onTaskDrop }: DayViewProps) {
   const dates = useMemo(() => [new Date(selectedDate + 'T00:00:00')], [selectedDate])
 
-  return <TimeGrid dates={dates} items={items} onSlotClick={onSlotClick} onItemClick={onItemClick} onDragCreate={onDragCreate} />
+  return <TimeGrid dates={dates} items={items} onSlotClick={onSlotClick} onItemClick={onItemClick} onDragCreate={onDragCreate} onTaskDrop={onTaskDrop} />
 }

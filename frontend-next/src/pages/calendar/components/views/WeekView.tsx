@@ -10,13 +10,14 @@ interface WeekViewProps {
   onSlotClick?: (date: string, time: string) => void
   onItemClick?: (item: CalendarItem) => void
   onDragCreate?: (date: string, startTime: string, endTime: string) => void
+  onTaskDrop?: (taskId: string, date: string, startTime: string, endTime: string) => void
 }
 
-export function WeekView({ selectedDate, items, onSlotClick, onItemClick, onDragCreate }: WeekViewProps) {
+export function WeekView({ selectedDate, items, onSlotClick, onItemClick, onDragCreate, onTaskDrop }: WeekViewProps) {
   const dates = useMemo(() => {
     const start = startOfWeek(new Date(selectedDate + 'T00:00:00'))
     return getWeekDates(start)
   }, [selectedDate])
 
-  return <TimeGrid dates={dates} items={items} onSlotClick={onSlotClick} onItemClick={onItemClick} onDragCreate={onDragCreate} />
+  return <TimeGrid dates={dates} items={items} onSlotClick={onSlotClick} onItemClick={onItemClick} onDragCreate={onDragCreate} onTaskDrop={onTaskDrop} />
 }
