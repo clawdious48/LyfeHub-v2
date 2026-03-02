@@ -1,8 +1,13 @@
 import { useMailStatus } from '@/api/hooks/index.js'
+import { useMailUiStore } from '@/stores/mailUiStore.js'
 import { ConnectGmailPrompt } from '@/pages/mail/components/ConnectGmailPrompt.js'
+import { MailList } from '@/pages/mail/components/list/MailList.js'
+import { MailDetail } from '@/pages/mail/components/detail/MailDetail.js'
+import { ComposeModal } from '@/pages/mail/components/compose/ComposeModal.js'
 
 export default function MailPage() {
   const { data: status, isLoading } = useMailStatus()
+  const { composeOpen } = useMailUiStore()
 
   if (isLoading) {
     return (
@@ -17,10 +22,12 @@ export default function MailPage() {
   }
 
   return (
-    <div className="flex h-full">
-      <div className="flex-1 flex items-center justify-center text-text-secondary text-sm">
-        Mail connected as {status.email}. UI loading...
+    <>
+      <div className="flex h-full">
+        <MailList />
+        <MailDetail />
       </div>
-    </div>
+      {composeOpen && <ComposeModal />}
+    </>
   )
 }
