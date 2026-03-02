@@ -1,13 +1,13 @@
 import type { ComponentType } from 'react'
 import type { LucideIcon } from 'lucide-react'
-import { Sun, Calendar, FileText, Inbox, Target, Clock, StickyNote, ExternalLink, Quote, CloudSun, Rss, Timer, CheckSquare, Database } from 'lucide-react'
+import { Sun, Calendar, FileText, Inbox, Target, Clock, StickyNote, ExternalLink, Quote, CloudSun, Rss, Timer, CheckSquare, Database, PlusCircle, Navigation2 } from 'lucide-react'
 
 export type WidgetCategory = 'productivity' | 'external' | 'data' | 'utility'
 
 export interface ConfigField {
   key: string
   label: string
-  type: 'text' | 'number' | 'select' | 'toggle' | 'color' | 'url' | 'base-picker' | 'view-picker' | 'links-editor' | 'feeds-editor'
+  type: 'text' | 'number' | 'select' | 'toggle' | 'color' | 'url' | 'base-picker' | 'view-picker' | 'links-editor' | 'feeds-editor' | 'nav-editor'
   default?: unknown
   options?: { label: string; value: string }[]
   placeholder?: string
@@ -49,6 +49,7 @@ import NewsFeedWidget from './NewsFeedWidget.js'
 import PomodoroWidget from './PomodoroWidget.js'
 import HabitTrackerWidget from './HabitTrackerWidget.js'
 import BaseViewWidget from './BaseViewWidget.js'
+import QuickCaptureWidget from './QuickCaptureWidget.js'
 
 export const widgetRegistry: Record<string, WidgetDefinition> = {
   'my-day': {
@@ -239,5 +240,20 @@ export const widgetRegistry: Record<string, WidgetDefinition> = {
       { key: 'viewId', label: 'View', type: 'view-picker', dependsOn: 'baseId' },
     ],
     minW: 6, minH: 4, defaultW: 12, defaultH: 8,
+  },
+  'quick-capture': {
+    component: QuickCaptureWidget,
+    label: 'Quick Capture',
+    description: 'Fast-access buttons for creating notes, tasks, and contacts',
+    icon: PlusCircle,
+    category: 'productivity',
+    singleton: false,
+    configurable: true,
+    configSchema: [
+      { key: 'showNote', label: 'Note', type: 'toggle', default: true },
+      { key: 'showTask', label: 'Task', type: 'toggle', default: true },
+      { key: 'showPerson', label: 'Person', type: 'toggle', default: true },
+    ],
+    minW: 3, minH: 2, defaultW: 6, defaultH: 3,
   },
 }
