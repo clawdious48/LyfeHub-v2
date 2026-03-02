@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useMailStatus } from '@/api/hooks/index.js'
 import { useMailUiStore } from '@/stores/mailUiStore.js'
 import { ConnectGmailPrompt } from '@/pages/mail/components/ConnectGmailPrompt.js'
@@ -7,7 +9,24 @@ import { ComposeModal } from '@/pages/mail/components/compose/ComposeModal.js'
 
 export default function MailPage() {
   const { data: status, isLoading } = useMailStatus()
-  const { composeOpen, selectedMessageId } = useMailUiStore()
+  const { composeOpen, selectedMessageId, activeLabel, searchQuery, setActiveLabel, setSearchQuery } = useMailUiStore()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // Sync URL -> store on mount
+  useEffect(() => {
+    const urlLabel = searchParams.get('label')
+    const urlQ = searchParams.get('q')
+    if (urlLabel && urlLabel !== activeLabel) setActiveLabel(urlLabel)
+    if (urlQ && urlQ !== searchQuery) setSearchQuery(urlQ)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sync store -> URL
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (activeLabel && activeLabel !== 'INBOX') params.set('label', activeLabel)
+    if (searchQuery) params.set('q', searchQuery)
+    setSearchParams(params, { replace: true })
+  }, [activeLabel, searchQuery, setSearchParams])
 
   if (isLoading) {
     return (

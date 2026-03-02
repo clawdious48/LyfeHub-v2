@@ -51,6 +51,7 @@ export function useMailMessages(label: string, q: string) {
     initialPageParam: '' as string,
     getNextPageParam: (lastPage) => lastPage.nextPageToken || undefined,
     enabled: true,
+    refetchInterval: 60000,
   })
 }
 
