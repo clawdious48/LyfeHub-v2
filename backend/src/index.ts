@@ -18,6 +18,7 @@ const apexJobsRoutes = require('./routes/apexJobs');
 const apiKeysRoutes = require('./routes/apiKeys');
 const inboxRoutes = require('./routes/inbox');
 const dashboardRoutes = require('./routes/dashboard');
+const mailRoutes = require('./routes/mail');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -64,6 +65,7 @@ app.use('/api/milestones', require('./routes/milestones'));
 app.use('/api/work-sessions', require('./routes/workSessions'));
 app.use('/api/inbox', inboxRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/mail', mailRoutes);
 app.use('/api/system', require('./routes/system'));
 app.use('/api/admin', require('./routes/admin'));
 
