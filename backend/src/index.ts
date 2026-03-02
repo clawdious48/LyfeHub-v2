@@ -68,6 +68,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/mail', mailRoutes);
 app.use('/api/system', require('./routes/system'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api', require('./routes/googleCalendar'));
 
 // Health check endpoint
 app.get('/api/health', (_req: Request, res: Response) => {
