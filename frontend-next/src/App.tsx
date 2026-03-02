@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useRoutes } from 'react-router-dom'
 import { routes } from '@/router'
 import { useAuth } from '@/hooks/useAuth'
+import { ErrorBoundary } from '@/components/ErrorBoundary.js'
 
 export default function App() {
   const checkAuth = useAuth((s) => s.checkAuth)
@@ -10,5 +11,9 @@ export default function App() {
     checkAuth()
   }, [checkAuth])
 
-  return useRoutes(routes)
+  return (
+    <ErrorBoundary>
+      {useRoutes(routes)}
+    </ErrorBoundary>
+  )
 }
