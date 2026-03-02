@@ -11,10 +11,10 @@ import { Button } from '@/components/ui/button.js'
 import { Input } from '@/components/ui/input.js'
 import { Label } from '@/components/ui/label.js'
 import { useUpdateProperty, useDeleteProperty } from '@/api/hooks/index.js'
-import { getPropertyTypeIcon, getPropertyTypeLabel } from '@/pages/bases/utils/baseConstants.js'
 import { parsePropertyOptions } from '@/pages/bases/utils/baseHelpers.js'
+import { PropertyTypeSelect } from './PropertyTypeSelect.js'
 import { SelectOptionsEditor } from './SelectOptionsEditor.js'
-import type { BaseProperty, SelectOption } from '@/types/index.js'
+import type { BaseProperty, BasePropertyType, SelectOption } from '@/types/index.js'
 
 interface EditPropertyModalProps {
   open: boolean
@@ -25,6 +25,7 @@ interface EditPropertyModalProps {
 
 export function EditPropertyModal({ open, onOpenChange, property, baseId }: EditPropertyModalProps) {
   const [name, setName] = useState('')
+  const [selectedType, setSelectedType] = useState<BasePropertyType>('text')
   const [width, setWidth] = useState(200)
   const [selectOptions, setSelectOptions] = useState<SelectOption[]>([])
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -35,6 +36,7 @@ export function EditPropertyModal({ open, onOpenChange, property, baseId }: Edit
   useEffect(() => {
     if (property) {
       setName(property.name)
+      setSelectedType(property.type)
       setWidth(property.width ?? 200)
       if (property.type === 'select' || property.type === 'multi_select' || property.type === 'status') {
         const parsed = parsePropertyOptions(property.options)
@@ -54,13 +56,14 @@ export function EditPropertyModal({ open, onOpenChange, property, baseId }: Edit
   function handleSave() {
     if (!property || !name.trim()) return
 
-    const data: { propId: string; name?: string; width?: number; options?: unknown } = {
+    const data: { propId: string; name?: string; type?: BasePropertyType; width?: number; options?: unknown } = {
       propId: property.id,
       name: name.trim(),
+      type: selectedType,
       width,
     }
 
-    if (property.type === 'select' || property.type === 'multi_select' || property.type === 'status') {
+    if (selectedType === 'select' || selectedType === 'multi_select' || selectedType === 'status') {
       data.options = selectOptions.filter(o => o.label.trim())
     }
 
@@ -82,7 +85,6 @@ export function EditPropertyModal({ open, onOpenChange, property, baseId }: Edit
 
   if (!property) return null
 
-  const Icon = getPropertyTypeIcon(property.type)
   const isValid = name.trim() !== ''
 
   return (
@@ -105,10 +107,7 @@ export function EditPropertyModal({ open, onOpenChange, property, baseId }: Edit
 
           <div className="space-y-1">
             <Label>Type</Label>
-            <div className="flex items-center gap-2 px-3 py-2 bg-bg-elevated rounded-md border border-border text-sm text-text-secondary">
-              <Icon className="h-4 w-4" />
-              {getPropertyTypeLabel(property.type)}
-            </div>
+            <PropertyTypeSelect selectedType={selectedType} onSelect={setSelectedType} />
           </div>
 
           <div className="space-y-1">
@@ -123,10 +122,10 @@ export function EditPropertyModal({ open, onOpenChange, property, baseId }: Edit
             />
           </div>
 
-          {(property.type === 'select' || property.type === 'multi_select' || property.type === 'status') && (
+          {(selectedType === 'select' || selectedType === 'multi_select' || selectedType === 'status') && (
             <div className="space-y-1">
               <Label>Options</Label>
-              <SelectOptionsEditor options={selectOptions} onChange={setSelectOptions} isStatus={property.type === 'status'} />
+              <SelectOptionsEditor options={selectOptions} onChange={setSelectOptions} isStatus={selectedType === 'status'} />
             </div>
           )}
         </div>
