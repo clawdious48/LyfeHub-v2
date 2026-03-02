@@ -151,7 +151,7 @@ Do NOT merge events into tasks or vice versa. A dentist appointment is not a tas
 - **Values, not data** — `BaseRecord.values` is the field data object (not `.data`). When mutating records, send `{ values: { ... } }`.
 - **Import extensions** — All imports use `.js` extensions: `import { Button } from '@/components/ui/button.js'`
 - **Query key patterns** — Follow the factory pattern in each hooks file (e.g., `baseKeys.detail(id)`, `dashboardKeys.layout()`)
-- **Auth** — Email + password, JWT in httpOnly cookie. API keys (`lh_live_*` prefix) for programmatic access. No OAuth, no magic links.
+- **Auth** — Google OAuth via `@react-oauth/google` (frontend) + `google-auth-library` (backend). Domain-restricted to `@apexrestoration.pro`. JWT in httpOnly `kanban_session` cookie. API keys (`lh_live_*` prefix) for programmatic access. User settings persisted server-side in `users.settings` JSON column.
 
 ### 5. Module File Organization
 
