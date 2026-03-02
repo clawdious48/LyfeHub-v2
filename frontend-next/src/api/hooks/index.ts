@@ -2,11 +2,26 @@ export { useCheckAuth, useLogin, useLogout, authKeys } from './useAuth.js'
 export {
   useTasks,
   useTask,
+  useTaskCounts,
   useCreateTask,
   useUpdateTask,
   useDeleteTask,
+  useToggleTask,
+  useToggleMyDay,
+  useToggleImportant,
+  useCalendarTasks,
+  useUnscheduledTasks,
+  useScheduleTask,
+  useUnscheduleTask,
   taskKeys,
 } from './useTasks.js'
+export {
+  useTaskLists,
+  useCreateTaskList,
+  useUpdateTaskList,
+  useDeleteTaskList,
+  taskListKeys,
+} from './useTaskLists.js'
 export {
   useJobs,
   useJob,
