@@ -1596,3 +1596,33 @@ CREATE TABLE IF NOT EXISTS mail_accounts (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_mail_accounts_user_id ON mail_accounts(user_id);
+
+-- ============================================
+-- GOOGLE CALENDAR INTEGRATION
+-- ============================================
+CREATE TABLE IF NOT EXISTS google_calendar_connections (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  google_email TEXT NOT NULL,
+  access_token TEXT NOT NULL,
+  refresh_token TEXT NOT NULL,
+  token_expires_at TIMESTAMPTZ,
+  sync_enabled BOOLEAN DEFAULT true,
+  sync_token TEXT,
+  last_synced_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_gcal_conn_user ON google_calendar_connections(user_id);
+
+CREATE TABLE IF NOT EXISTS google_calendar_mappings (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  google_calendar_id TEXT NOT NULL,
+  local_calendar_id TEXT REFERENCES calendars(id) ON DELETE CASCADE,
+  sync_direction TEXT DEFAULT 'both',
+  is_visible BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_gcal_map_user ON google_calendar_mappings(user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_gcal_map_unique ON google_calendar_mappings(user_id, google_calendar_id);
