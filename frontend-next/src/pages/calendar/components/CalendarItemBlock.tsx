@@ -1,5 +1,6 @@
 // frontend-next/src/pages/calendar/components/CalendarItemBlock.tsx
 import { motion } from 'framer-motion'
+import { Cloud } from 'lucide-react'
 import type { CalendarItem, OverlapLayout } from '../utils/calendarHelpers.js'
 import { timeToY, itemHeight, formatTime } from '../utils/calendarHelpers.js'
 import { SLOT_HEIGHT_PX } from '../utils/calendarConstants.js'
@@ -68,6 +69,9 @@ export function CalendarItemBlock({ item, layout, onClick }: CalendarItemBlockPr
             </div>
           )}
         </div>
+        {item.externalSource === 'google' && (
+          <Cloud className="size-2.5 shrink-0 opacity-40" style={{ color }} />
+        )}
       </div>
     </motion.button>
   )
