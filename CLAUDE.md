@@ -61,6 +61,34 @@ These apply to every module, not just calendar:
 
 ## Architecture Rules (Non-Negotiable)
 
+### 0. Bases Are the Data Layer — Module Pages Are Polished Views (MOST IMPORTANT)
+
+**The Bases system IS the database for all personal data.** Every personal module page (Tasks, People, Notes, etc.) is a specialized, polished UI that reads and writes records from its corresponding default base. There are NO separate tables for these entities.
+
+| Module Page | Reads/Writes From | Default Base |
+|-------------|-------------------|--------------|
+| Tasks (`/tasks`) | `base_records` via Bases API | "Tasks" base (21 properties) |
+| People (`/people`) | `base_records` via Bases API | "People" base (25 properties) |
+| Notes (`/notes`) | `base_records` via Bases API | "Notes" base (14 properties) |
+| Projects | `base_records` via Bases API | "Projects" base (12 properties) |
+
+**What this means in practice:**
+- If you add a task in the Tasks page → it creates a record in the Tasks base → it immediately appears in the Bases view of that base
+- If you add a record to the Tasks base in the Bases page → it immediately appears in the Tasks page
+- **ONE source of truth** — the `base_records` table, accessed via `/api/bases/:id/records` (or `/api/bases/core/:id/records` for default bases)
+- Module pages use `useBase(id)` / `useDefaultBase('Tasks')` and base record mutation hooks — NOT separate `/api/tasks` or `/api/people` endpoints
+- Smart views (My Day, Important, Scheduled, etc.) are **client-side filters** on the base's records, not separate backend queries
+- Task properties (priority, due_date, my_day, etc.) are **base properties** (columns), not hardcoded fields
+
+**The Bases page** is the raw, flexible database view (like Notion). **Module pages** are opinionated, purpose-built UIs for the same data — with features like smart views, focus mode, kanban boards, inline quick-add, and ADHD-friendly design.
+
+**WRONG:** TasksPage calls `/api/tasks` with a separate `tasks` table
+**RIGHT:** TasksPage calls `/api/bases/core/tasks/records` via `useDefaultBase('Tasks')` hooks
+
+**Exception:** Calendar events are NOT base records. Events live in their own `calendar_events` table because they represent time-based commitments with recurrence rules, not user-created data items. Tasks that appear on the calendar are still base records — they just have `due_date`/`due_time` properties that the calendar reads.
+
+**Exception:** Jobs/Apex data is org-scoped and uses its own `apex_*` tables. The bases system is for personal (`user_id`-scoped) data only.
+
 ### 1. ONE Sidebar — App-Level, Persistent, Contextual
 
 There is ONE sidebar for the entire app. It lives in `layouts/Sidebar.tsx` and is rendered by `layouts/AppLayout.tsx`. It is persistent across all pages.
@@ -107,11 +135,11 @@ AppLayout
 Calendar events and tasks are fundamentally different things:
 
 - **Events** = things that HAPPEN at a time (meetings, appointments, birthdays). Separate `calendar_events` table with location, RRULE recurrence, external sync IDs.
-- **Tasks** = things you DO (have completion state). Live in `tasks` / `task_items` table.
+- **Tasks** = things you DO (have completion state). Live in the **Tasks default base** as `base_records` (see Rule 0).
 
 The calendar is a **unified time view** that renders both:
 - Events as solid colored blocks (fixed commitments)
-- Scheduled tasks as dashed/striped blocks (flexible, can be rescheduled)
+- Scheduled tasks (base records with `due_date`/`due_time` values) as dashed/striped blocks (flexible, can be rescheduled)
 
 Do NOT merge events into tasks or vice versa. A dentist appointment is not a task. Your daughter's birthday is not a task. Keep the data models clean.
 
@@ -119,6 +147,7 @@ Do NOT merge events into tasks or vice versa. A dentist appointment is not a tas
 
 - **PUT, not PATCH** — The backend uses `router.put()` for all updates. Always use `apiClient.put()`.
 - **Records are embedded** — `GET /api/bases/:id` returns `{ ...base, properties: [...], records: [...] }`. There is no separate records endpoint. Use `useBase(id)` and extract `.records` from the response.
+- **Core bases API** — Default bases (Tasks, People, Notes, Projects, Tags) have dedicated routes: `GET /api/bases/core/:id`, `POST /api/bases/core/:id/records`, `PUT /api/bases/core/:id/records/:recId`, `DELETE /api/bases/core/:id/records/:recId`. Also `GET /api/bases/default/:name` to look up by name.
 - **Values, not data** — `BaseRecord.values` is the field data object (not `.data`). When mutating records, send `{ values: { ... } }`.
 - **Import extensions** — All imports use `.js` extensions: `import { Button } from '@/components/ui/button.js'`
 - **Query key patterns** — Follow the factory pattern in each hooks file (e.g., `baseKeys.detail(id)`, `dashboardKeys.layout()`)
