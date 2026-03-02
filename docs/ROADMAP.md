@@ -59,17 +59,20 @@ A living document tracking feature status across the entire LyfeHub platform. Up
 
 | Feature | Backend | Frontend | Status |
 |---------|---------|----------|--------|
-| Calendar CRUD | Done | Stub | Stub |
-| Calendar events CRUD | Done | Not started | Backend Only |
-| Month view | Not started | Not started | Not Started |
-| Week view | Not started | Not started | Not Started |
-| Day view | Not started | Not started | Not Started |
-| Agenda view | Not started | Not started | Not Started |
-| Unified view (events + scheduled tasks) | Not started | Not started | Not Started |
-| Click-drag to create time blocks | Not started | Not started | Not Started |
+| Calendar CRUD | Done | Done | Done |
+| Calendar events CRUD | Done | Done | Done |
+| Month view | -- | Done | Done |
+| Week view | -- | Done | Done |
+| 3-Day view | -- | Done | Done |
+| Day view | -- | Done | Done |
+| Agenda view | -- | Done | Done |
+| Unified view (events + scheduled tasks) | Done | Done | Done |
+| Click-drag to create time blocks | -- | Done | Done |
+| Google Calendar sync | Done | Done | Done |
+| Drag to move/resize events | Not started | Not started | Not Started |
 | Recurring events (RRULE) | Not started | Not started | Not Started |
-| Google Calendar sync | Not started | Not started | Not Started |
 | Reminders / notifications | Not started | Not started | Not Started |
+| Task drag from sidebar to grid | Not started | Not started | Not Started |
 
 ### Mail (Gmail Integration)
 
@@ -277,6 +280,7 @@ A living document tracking feature status across the entire LyfeHub platform. Up
 
 | Date | Change | Section |
 |------|--------|---------|
+| 2026-03-01 | Calendar feature complete — 5 views (Month/Week/3-Day/Day/Agenda), event CRUD, unified events+tasks rendering, click-drag time block creation, Google Calendar two-way sync, quick-create popover, framer-motion animations | Calendar |
 | 2026-03-01 | Mail (Gmail Integration) module complete — OAuth, threads, compose, labels, filters, hotkeys, responsive layout, auto-refresh | LyfeHub Personal |
 | 2026-03-01 | Default bases seeded (Tasks, Projects, Notes, Tags, People) with 15 property types, is_default protection, auto-timestamps | Bases |
 | 2026-02-28 | Created roadmap document | All |

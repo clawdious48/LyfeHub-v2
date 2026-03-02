@@ -241,32 +241,55 @@ Default widgets:
 
 ## Calendar Design
 
-### Architecture
+### Architecture (Implemented)
 
 - Separate `calendar_events` table for standalone events (meetings, appointments, birthdays)
-- Events have: title, description, location, start/end date+time, all-day flag, timezone, RRULE recurrence, external sync fields
+- Events have: title, description, location, start/end date+time, all-day flag, timezone, RRULE recurrence, external sync fields (`external_id`, `external_source`, `external_etag`)
 - Tasks have scheduling fields: `scheduled_date`, `scheduled_start`, `scheduled_end`, `is_all_day`
-- Calendar renders BOTH as a unified time view
+- Calendar renders BOTH as a unified `CalendarItem` type via normalization helpers
+- Zustand store (`calendarUiStore`) for view state, selected date, visible calendars
+
+### Views (All Implemented)
+
+- **Month view** — CSS grid, chips for timed items, overflow "+N more" badges, day click navigates to Day view
+- **Week view** — 7-column TimeGrid with shared time gutter, hour/half-hour lines, current time indicator
+- **3-Day view** — 3-column TimeGrid, same shared engine as Week
+- **Day view** — Single-column TimeGrid
+- **Agenda view** — Scrollable date-grouped list of upcoming items (30-day window)
+- View switching via CalendarToolbar with keyboard nav (Today, prev/next arrows, view picker)
 
 ### Visual Distinction
 
 - Events = solid colored blocks (fixed commitments, use their calendar's color)
-- Scheduled tasks = dashed/striped blocks (flexible time blocks)
-- Current time indicator: red line showing "now" on week/day views
-
-### Interaction
-
-- "Create Event" button must be obvious and discoverable (not hidden behind click-drag)
-- Click-drag on empty time slots creates new time blocks
-- Month view click on date cell creates event
+- Scheduled tasks = dashed border blocks (flexible time blocks, checkbox indicator)
+- Current time indicator: accent-colored line with dot on today's column
+- Google-synced events show a subtle cloud icon (Lucide `Cloud`, opacity-40) in top-right corner
 - Overlapping events use column-splitting layout (like Google Calendar)
-- Touch support required for all drag operations
+
+### Interaction (Implemented)
+
+- "Create Event" button in toolbar opens EventModal
+- Click on empty time slot opens QuickCreatePopover with 1-hour default duration
+- Click-drag on empty time slots creates ghost block (accent-colored, 15-min snap), opens QuickCreatePopover with dragged range
+- QuickCreatePopover allows quick title entry + expand to full EventModal
+- Month view click on date navigates to Day view
+- EventModal: full event CRUD with calendar picker, date/time fields, all-day toggle, location, description
+
+### Google Calendar Sync (Implemented)
+
+- OAuth2 flow via backend (`/api/google/auth/url`, `/api/google/auth/callback`)
+- Two-way sync: pull events from Google, push local events to Google
+- Manual sync trigger via toolbar button
+- Auto-creates "Google Calendar" with sync metadata
+- External events tracked via `external_id`, `external_source`, `external_etag`
+- Settings page integration for connecting/disconnecting Google account
 
 ### Future Phases (Not Now)
 
 - RRULE recurring events (daily, weekly, monthly, yearly + custom)
-- Google Calendar OAuth sync (read + write)
+- Drag to move/resize existing events
 - Reminders/notifications
+- Task drag from sidebar to calendar grid
 - Natural language event creation ("Dentist tomorrow 3pm")
 
 ---
@@ -278,7 +301,7 @@ LyfeHub v2
 ├── Core Platform (auth, profiles, API keys, design system)
 ├── LyfeHub Personal (user_id-scoped)
 │   ├── Tasks (lists, smart views, subtasks, My Day, Important, Scheduled)
-│   ├── Calendar (unified events + scheduled tasks, 4 views, drag-and-drop)
+│   ├── Calendar (unified events + scheduled tasks, 5 views, click-drag, Google sync)
 │   ├── Bases/PKM (custom databases, typed columns, views, relations, groups)
 │   ├── Notes (markdown, archive)
 │   └── People & Organizations (contacts, CRM-lite)
@@ -422,8 +445,21 @@ The backend is unchanged. All endpoints require auth. Backend uses PUT for updat
 - `pages/bases/utils/` — baseConstants.ts, baseHelpers.ts
 - **TODO:** Wire bases group/nav content into `sidebarConfig.ts` as `/bases` route key
 
+### Calendar Module (Done)
+- `pages/CalendarPage.tsx` — 5 views (Month/Week/3-Day/Day/Agenda), view switching, date navigation
+- `pages/calendar/components/` — TimeGrid (shared CSS Grid engine), CalendarItemBlock, CurrentTimeIndicator, CalendarToolbar
+- `pages/calendar/components/views/` — MonthView, WeekView, ThreeDayView, DayView, AgendaView
+- `pages/calendar/components/modals/` — QuickCreatePopover, EventModal, CalendarSettingsModal
+- `pages/calendar/components/sidebar/` — CalendarSidebar (mini-calendar, calendar list, Google sync)
+- `pages/calendar/hooks/` — useCalendarItems (unified events + tasks query)
+- `pages/calendar/utils/` — calendarHelpers.ts (CalendarItem type, normalization, time/date math), calendarConstants.ts
+- `stores/calendarUiStore.ts` — view state, selected date, visible calendars
+- `api/hooks/useCalendars.ts`, `api/hooks/useGoogleCalendar.ts` — API hooks
+- Click-drag time block creation with ghost block, 15-min snap
+- Google Calendar two-way sync (OAuth, pull/push, auto-calendar creation)
+
 ### Placeholder Pages
-- CalendarPage, TasksPage, PeoplePage — stub components
+- TasksPage, PeoplePage — stub components
 
 ---
 
