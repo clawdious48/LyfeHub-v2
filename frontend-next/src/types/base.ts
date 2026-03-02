@@ -130,6 +130,9 @@ export interface Base {
   updated_at: string
   properties?: BaseProperty[]
   records?: BaseRecord[]
+  // List-view enrichment fields (from GET /api/bases)
+  column_count?: number
+  record_count?: number
 }
 
 // --- Mutation types ---
