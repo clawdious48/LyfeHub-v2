@@ -43,7 +43,7 @@ export function MailList({ onOpenSettings }: Props) {
   }, [handleScroll])
 
   return (
-    <div className="flex flex-col h-full border-r border-border w-[400px] shrink-0">
+    <div className="flex flex-col h-full border-r border-border w-full lg:w-[400px] md:w-[300px] shrink-0">
       <MailListToolbar
         onRefresh={() => refetch()}
         isRefreshing={isRefetching}

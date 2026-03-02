@@ -7,7 +7,7 @@ import { ComposeModal } from '@/pages/mail/components/compose/ComposeModal.js'
 
 export default function MailPage() {
   const { data: status, isLoading } = useMailStatus()
-  const { composeOpen } = useMailUiStore()
+  const { composeOpen, selectedMessageId } = useMailUiStore()
 
   if (isLoading) {
     return (
@@ -24,8 +24,12 @@ export default function MailPage() {
   return (
     <>
       <div className="flex h-full">
-        <MailList />
-        <MailDetail />
+        <div className={`${selectedMessageId ? 'hidden lg:flex' : 'flex'} lg:flex`}>
+          <MailList />
+        </div>
+        <div className={`${selectedMessageId ? 'flex' : 'hidden lg:flex'} flex-1`}>
+          <MailDetail />
+        </div>
       </div>
       {composeOpen && <ComposeModal />}
     </>
