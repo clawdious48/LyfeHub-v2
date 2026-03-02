@@ -93,6 +93,7 @@ export {
   useDeleteGroup,
   useAssignBaseGroup,
   useRelationOptions,
+  useDefaultBase,
   baseKeys,
 } from './useBases.js'
 export {

@@ -305,6 +305,19 @@ export function useAssignBaseGroup() {
   })
 }
 
+// ── Default Bases ────────────────────────────────────────────
+
+export function useDefaultBase(name: string) {
+  return useQuery({
+    queryKey: [...baseKeys.all, 'default', name],
+    queryFn: async () => {
+      const res = await apiClient.get(`/bases/default/${encodeURIComponent(name)}`)
+      return res as Base & { properties: BaseProperty[]; records: BaseRecord[] }
+    },
+    enabled: !!name,
+  })
+}
+
 // ── Relations ─────────────────────────────────────────────────
 
 export function useRelationOptions(baseId: string) {
