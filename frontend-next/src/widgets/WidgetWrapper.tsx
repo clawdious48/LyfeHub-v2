@@ -1,8 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { GripVertical, X } from 'lucide-react'
-import { widgetRegistry } from './registry'
-import type { WidgetStyle } from './registry'
+import { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.js'
+import { Button } from '@/components/ui/button.js'
+import { GripVertical, X, Settings } from 'lucide-react'
+import { cn } from '@/lib/utils.js'
+import { widgetRegistry } from './registry.js'
+import WidgetConfigDialog from './WidgetConfigDialog.js'
+import type { WidgetStyle } from './registry.js'
 
 interface WidgetWrapperProps {
   type: string
@@ -14,16 +17,39 @@ interface WidgetWrapperProps {
   onStyleChange?: (style: WidgetStyle) => void
 }
 
+const DEFAULT_STYLE: WidgetStyle = {
+  preset: 'default',
+  accent: null,
+  headerVisible: true,
+}
+
+const PRESET_CLASSES: Record<WidgetStyle['preset'], string> = {
+  default: 'bg-bg-surface border-border',
+  borderless: 'bg-bg-surface border-transparent shadow-md',
+  transparent: 'bg-transparent border-transparent',
+}
+
+const ACCENT_BORDER_CLASSES: Record<string, string> = {
+  purple: 'border-t-2 border-t-purple-500',
+  blue: 'border-t-2 border-t-blue-500',
+  cyan: 'border-t-2 border-t-cyan-500',
+  pink: 'border-t-2 border-t-pink-500',
+  orange: 'border-t-2 border-t-orange-500',
+  green: 'border-t-2 border-t-green-500',
+}
+
 export default function WidgetWrapper({
   type,
   config,
-  style: _style,
+  style,
   isEditing,
   onRemove,
-  onConfigChange: _onConfigChange,
-  onStyleChange: _onStyleChange,
+  onConfigChange,
+  onStyleChange,
 }: WidgetWrapperProps) {
+  const [configOpen, setConfigOpen] = useState(false)
   const definition = widgetRegistry[type]
+  const resolvedStyle = style ?? DEFAULT_STYLE
 
   if (!definition) {
     return (
@@ -35,32 +61,93 @@ export default function WidgetWrapper({
     )
   }
 
-  const { component: WidgetComponent, label, icon: Icon } = definition
+  const { component: WidgetComponent, label, icon: Icon, configurable, configSchema } = definition
+  const presetClass = PRESET_CLASSES[resolvedStyle.preset]
+  const accentClass = resolvedStyle.accent ? ACCENT_BORDER_CLASSES[resolvedStyle.accent] ?? '' : ''
+  const showHeader = resolvedStyle.headerVisible
+
+  const handleSaveConfig = (newConfig: Record<string, unknown>, newStyle: WidgetStyle) => {
+    onConfigChange?.(newConfig)
+    onStyleChange?.(newStyle)
+  }
 
   return (
-    <Card className="bg-bg-surface border-border h-full flex flex-col">
-      <CardHeader className="flex flex-row items-center gap-2 py-3 px-4">
-        {isEditing && (
-          <div className="cursor-grab active:cursor-grabbing widget-drag-handle">
-            <GripVertical className="size-4 text-text-secondary" />
+    <>
+      <Card className={cn('h-full flex flex-col', presetClass, accentClass)}>
+        {showHeader ? (
+          <CardHeader className="flex flex-row items-center gap-2 py-3 px-4">
+            {isEditing && (
+              <div className="cursor-grab active:cursor-grabbing widget-drag-handle">
+                <GripVertical className="size-4 text-text-secondary" />
+              </div>
+            )}
+            <Icon className="size-4 text-text-secondary" />
+            <CardTitle className="text-sm text-text-primary flex-1">{label}</CardTitle>
+            {isEditing && configurable && (
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                onClick={() => setConfigOpen(true)}
+                className="text-text-secondary hover:text-text-primary"
+              >
+                <Settings className="size-3" />
+              </Button>
+            )}
+            {isEditing && (
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                onClick={onRemove}
+                className="text-text-secondary hover:text-red-400"
+              >
+                <X className="size-3" />
+              </Button>
+            )}
+          </CardHeader>
+        ) : isEditing ? (
+          <div className="absolute top-1 right-1 z-10 flex items-center gap-0.5 rounded-md bg-bg-surface/80 backdrop-blur-sm border border-border px-1 py-0.5">
+            <div className="cursor-grab active:cursor-grabbing widget-drag-handle p-0.5">
+              <GripVertical className="size-3 text-text-secondary" />
+            </div>
+            {configurable && (
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                onClick={() => setConfigOpen(true)}
+                className="text-text-secondary hover:text-text-primary"
+              >
+                <Settings className="size-3" />
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={onRemove}
+              className="text-text-secondary hover:text-red-400"
+            >
+              <X className="size-3" />
+            </Button>
           </div>
-        )}
-        <Icon className="size-4 text-text-secondary" />
-        <CardTitle className="text-sm text-text-primary flex-1">{label}</CardTitle>
-        {isEditing && (
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            onClick={onRemove}
-            className="text-text-secondary hover:text-red-400"
-          >
-            <X className="size-3" />
-          </Button>
-        )}
-      </CardHeader>
-      <CardContent className="flex-1 overflow-auto pt-0">
-        <WidgetComponent config={config} />
-      </CardContent>
-    </Card>
+        ) : null}
+        <CardContent className={cn('flex-1 overflow-auto', showHeader ? 'pt-0' : 'pt-4')}>
+          <WidgetComponent
+            config={config}
+            {...(onConfigChange ? { onConfigChange } : {})}
+          />
+        </CardContent>
+      </Card>
+
+      {configurable && configSchema && (
+        <WidgetConfigDialog
+          open={configOpen}
+          onOpenChange={setConfigOpen}
+          title={label}
+          configSchema={configSchema}
+          config={config ?? {}}
+          style={resolvedStyle}
+          onSave={handleSaveConfig}
+        />
+      )}
+    </>
   )
 }
