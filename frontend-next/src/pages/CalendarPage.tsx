@@ -11,10 +11,30 @@ import { WeekView } from '@/pages/calendar/components/views/WeekView.js'
 import { ThreeDayView } from '@/pages/calendar/components/views/ThreeDayView.js'
 import { DayView } from '@/pages/calendar/components/views/DayView.js'
 import { AgendaView } from '@/pages/calendar/components/views/AgendaView.js'
+import { QuickCreatePopover } from '@/pages/calendar/components/modals/QuickCreatePopover.js'
+import { EventModal } from '@/pages/calendar/components/modals/EventModal.js'
+import type { CalendarEvent } from '@/types/calendar.js'
 
 export default function CalendarPage() {
   const { currentView, selectedDate, setSelectedDate, setCurrentView } = useCalendarUiStore()
-  const [createModalOpen, setCreateModalOpen] = useState(false)
+
+  // Quick-create popover state
+  const [quickCreateOpen, setQuickCreateOpen] = useState(false)
+  const [quickCreateDate, setQuickCreateDate] = useState('')
+  const [quickCreateStartTime, setQuickCreateStartTime] = useState<string | undefined>()
+  const [quickCreateEndTime, setQuickCreateEndTime] = useState<string | undefined>()
+  const [quickCreateAnchor, setQuickCreateAnchor] = useState<{ top: number; left: number } | undefined>()
+
+  // Event modal state
+  const [eventModalOpen, setEventModalOpen] = useState(false)
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
+  const [eventModalPrefill, setEventModalPrefill] = useState<{
+    title?: string
+    date?: string
+    startTime?: string
+    endTime?: string
+    calendarId?: string
+  } | undefined>()
 
   // Compute the date range for the current view
   const { startDate, endDate } = useMemo(() => {
@@ -40,18 +60,47 @@ export default function CalendarPage() {
   const { items, isLoading } = useCalendarItems(startDate, endDate)
 
   function handleSlotClick(date: string, time: string) {
-    // TODO: Open quick-create popover at this date/time (Task 14)
-    console.log('Slot clicked:', date, time)
+    // Calculate default end time (1 hour later)
+    const [h, m] = time.split(':').map(Number)
+    const endMinutes = h * 60 + m + 60
+    const endH = Math.floor(endMinutes / 60) % 24
+    const endM = endMinutes % 60
+    const computedEndTime = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`
+
+    setQuickCreateDate(date)
+    setQuickCreateStartTime(time)
+    setQuickCreateEndTime(computedEndTime)
+    setQuickCreateAnchor(undefined)
+    setQuickCreateOpen(true)
   }
 
   function handleItemClick(item: CalendarItem) {
-    // TODO: Open event/task detail modal (Task 15)
-    console.log('Item clicked:', item.id, item.type)
+    if (item.type === 'task') {
+      // TODO: Open task detail in future
+      console.log('Task clicked:', item.id)
+      return
+    }
+    // For events, open edit modal with prefilled data
+    setEventModalPrefill({
+      title: item.title,
+      date: item.startDate,
+      startTime: item.startTime || undefined,
+      endTime: item.endTime || undefined,
+      calendarId: item.calendarId,
+    })
+    setEditingEvent(null) // TODO: fetch full CalendarEvent for edit mode
+    setEventModalOpen(true)
+  }
+
+  function handleCreateEvent() {
+    setEditingEvent(null)
+    setEventModalPrefill(undefined)
+    setEventModalOpen(true)
   }
 
   return (
     <div className="flex flex-col h-full">
-      <CalendarToolbar onCreateEvent={() => setCreateModalOpen(true)} />
+      <CalendarToolbar onCreateEvent={handleCreateEvent} />
       <div className="flex-1 overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
@@ -106,6 +155,29 @@ export default function CalendarPage() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Quick-create popover for slot clicks */}
+      <QuickCreatePopover
+        open={quickCreateOpen}
+        onClose={() => setQuickCreateOpen(false)}
+        onExpandToFull={(data) => {
+          setQuickCreateOpen(false)
+          setEventModalPrefill(data)
+          setEventModalOpen(true)
+        }}
+        date={quickCreateDate}
+        startTime={quickCreateStartTime}
+        endTime={quickCreateEndTime}
+        anchorPosition={quickCreateAnchor}
+      />
+
+      {/* Full event create/edit modal */}
+      <EventModal
+        open={eventModalOpen}
+        onOpenChange={setEventModalOpen}
+        event={editingEvent}
+        prefill={eventModalPrefill}
+      />
     </div>
   )
 }
