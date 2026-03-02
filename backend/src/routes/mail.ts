@@ -9,8 +9,6 @@ const mailDb = require('../db/mail')
 const router = express.Router()
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } })
 
-router.use(authMiddleware)
-
 // Helper to get tokens + build refresh callback
 async function getTokensAndRefresh(req: Request): Promise<{ tokens: StoredTokens; onRefresh: (t: string, e: Date) => Promise<void> } | null> {
   const account = await mailDb.getMailAccount(req.user!.id)
@@ -30,9 +28,9 @@ async function getTokensAndRefresh(req: Request): Promise<{ tokens: StoredTokens
   return { tokens, onRefresh }
 }
 
-// ── OAuth ──
+// ── OAuth (before auth middleware — callback has no cookie) ──
 
-router.get('/oauth/authorize', (req: Request, res: Response) => {
+router.get('/oauth/authorize', authMiddleware, (req: Request, res: Response) => {
   const state = req.user!.id // Use userId as state for verification
   const url = gmail.getAuthUrl(state)
   res.json({ url })
@@ -40,6 +38,12 @@ router.get('/oauth/authorize', (req: Request, res: Response) => {
 
 router.get('/oauth/callback', async (req: Request, res: Response) => {
   try {
+    const userId = req.query.state as string
+    if (!userId) {
+      res.status(400).json({ error: 'Missing state parameter' })
+      return
+    }
+
     const code = req.query.code as string
     if (!code) {
       res.status(400).json({ error: 'Missing authorization code' })
@@ -49,10 +53,10 @@ router.get('/oauth/callback', async (req: Request, res: Response) => {
     const result = await gmail.exchangeCode(code)
 
     // Delete existing account if any (reconnect scenario)
-    await mailDb.deleteMailAccount(req.user!.id)
+    await mailDb.deleteMailAccount(userId)
 
     await mailDb.createMailAccount(
-      req.user!.id,
+      userId,
       result.email,
       result.accessToken,
       result.refreshToken,
@@ -66,6 +70,9 @@ router.get('/oauth/callback', async (req: Request, res: Response) => {
     res.redirect('/mail?error=oauth_failed')
   }
 })
+
+// All remaining routes require auth
+router.use(authMiddleware)
 
 router.delete('/oauth/disconnect', async (req: Request, res: Response) => {
   await mailDb.deleteMailAccount(req.user!.id)

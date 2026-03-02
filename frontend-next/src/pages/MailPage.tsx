@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useMailStatus } from '@/api/hooks/index.js'
 import { useMailUiStore } from '@/stores/mailUiStore.js'
+import { useMailHotkeys } from '@/pages/mail/hooks/useMailHotkeys.js'
 import { ConnectGmailPrompt } from '@/pages/mail/components/ConnectGmailPrompt.js'
 import { MailList } from '@/pages/mail/components/list/MailList.js'
 import { MailDetail } from '@/pages/mail/components/detail/MailDetail.js'
@@ -10,6 +11,7 @@ import { ComposeModal } from '@/pages/mail/components/compose/ComposeModal.js'
 export default function MailPage() {
   const { data: status, isLoading } = useMailStatus()
   const { composeOpen, selectedMessageId, activeLabel, searchQuery, setActiveLabel, setSearchQuery } = useMailUiStore()
+  useMailHotkeys()
   const [searchParams, setSearchParams] = useSearchParams()
 
   // Sync URL -> store on mount

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   useMailStatus,
   useMailMessages,
@@ -7,12 +8,15 @@ import {
   useTrashMail,
   useToggleStar,
   useToggleRead,
+  mailKeys,
 } from '@/api/hooks/index.js'
 import { useMailUiStore } from '@/stores/mailUiStore.js'
 import { DEFAULT_HOTKEYS } from '@/pages/mail/utils/mailConstants.js'
+import type { MailMessageFull } from '@/types/index.js'
 
 export function useMailHotkeys() {
   const { pathname } = useLocation()
+  const queryClient = useQueryClient()
   const {
     activeLabel,
     searchQuery,
@@ -115,15 +119,63 @@ export function useMailHotkeys() {
       case 'markUnread':
         if (currentSelected) toggleRead.mutate({ messageId: currentSelected, markAs: 'unread' })
         break
-      case 'reply':
-        openCompose('reply')
+      case 'reply': {
+        const replyMsg = currentSelected
+          ? queryClient.getQueryData<MailMessageFull>(mailKeys.messageDetail(currentSelected))
+          : undefined
+        if (replyMsg) {
+          openCompose('reply', {
+            messageId: replyMsg.id,
+            threadId: replyMsg.threadId,
+            to: replyMsg.from,
+            cc: '',
+            subject: replyMsg.subject.startsWith('Re:') ? replyMsg.subject : `Re: ${replyMsg.subject}`,
+            body: replyMsg.body,
+            inReplyTo: replyMsg.messageId,
+          })
+        } else {
+          openCompose('reply')
+        }
         break
-      case 'replyAll':
-        openCompose('replyAll')
+      }
+      case 'replyAll': {
+        const replyAllMsg = currentSelected
+          ? queryClient.getQueryData<MailMessageFull>(mailKeys.messageDetail(currentSelected))
+          : undefined
+        if (replyAllMsg) {
+          openCompose('replyAll', {
+            messageId: replyAllMsg.id,
+            threadId: replyAllMsg.threadId,
+            to: replyAllMsg.from,
+            cc: replyAllMsg.cc || '',
+            subject: replyAllMsg.subject.startsWith('Re:') ? replyAllMsg.subject : `Re: ${replyAllMsg.subject}`,
+            body: replyAllMsg.body,
+            inReplyTo: replyAllMsg.messageId,
+          })
+        } else {
+          openCompose('replyAll')
+        }
         break
-      case 'forward':
-        openCompose('forward')
+      }
+      case 'forward': {
+        const fwdMsg = currentSelected
+          ? queryClient.getQueryData<MailMessageFull>(mailKeys.messageDetail(currentSelected))
+          : undefined
+        if (fwdMsg) {
+          openCompose('forward', {
+            messageId: fwdMsg.id,
+            threadId: fwdMsg.threadId,
+            to: '',
+            cc: '',
+            subject: fwdMsg.subject.startsWith('Fwd:') ? fwdMsg.subject : `Fwd: ${fwdMsg.subject}`,
+            body: fwdMsg.body,
+            inReplyTo: '',
+          })
+        } else {
+          openCompose('forward')
+        }
         break
+      }
       case 'compose':
         openCompose('new')
         break
@@ -146,7 +198,7 @@ export function useMailHotkeys() {
         setActiveLabel('SENT')
         break
     }
-  }, [setSelectedMessage, openCompose, setActiveLabel, archiveMail, trashMail, toggleStar, toggleRead])
+  }, [setSelectedMessage, openCompose, setActiveLabel, archiveMail, trashMail, toggleStar, toggleRead, queryClient])
 
   useEffect(() => {
     if (!pathname.startsWith('/mail')) return
