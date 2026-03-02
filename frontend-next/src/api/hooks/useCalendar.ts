@@ -20,7 +20,10 @@ export const calendarKeys = {
 export function useCalendars() {
   return useQuery({
     queryKey: calendarKeys.lists(),
-    queryFn: () => apiClient.get<Calendar[]>('/calendars'),
+    queryFn: async () => {
+      const res = await apiClient.get<Calendar[] | { calendars: Calendar[] }>('/calendars')
+      return Array.isArray(res) ? res : res.calendars
+    },
   })
 }
 

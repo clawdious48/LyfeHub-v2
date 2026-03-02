@@ -37,9 +37,9 @@ export function eventToCalendarItem(event: CalendarEvent): CalendarItem {
     title: event.title,
     description: event.description || '',
     color: event.color,
-    startDate: event.start_date,
+    startDate: normalizeDateStr(event.start_date),
     startTime: event.start_time,
-    endDate: event.end_date || event.start_date,
+    endDate: normalizeDateStr(event.end_date || event.start_date),
     endTime: event.end_time,
     isAllDay: Boolean(event.is_all_day),
     calendarId: event.calendar_id,
@@ -59,9 +59,9 @@ export function taskToCalendarItem(task: Task): CalendarItem {
     title: task.title,
     description: task.description || '',
     color: null,
-    startDate: task.due_date!,
+    startDate: normalizeDateStr(task.due_date!),
     startTime: task.due_time,
-    endDate: task.due_date!,
+    endDate: normalizeDateStr(task.due_date!),
     endTime: task.due_time_end,
     isAllDay: !task.due_time,
     calendarId: '',
@@ -119,9 +119,15 @@ export function formatTime(time: string): string {
   return m === 0 ? `${hour12} ${period}` : `${hour12}:${String(m).padStart(2, '0')} ${period}`
 }
 
+/** Normalize a date string to YYYY-MM-DD (handles ISO timestamps from Postgres) */
+export function normalizeDateStr(dateStr: string): string {
+  return dateStr.slice(0, 10)
+}
+
 /** Format a date to display (e.g., "2026-03-01" -> "March 1, 2026") */
 export function formatDate(dateStr: string): string {
-  const date = new Date(dateStr + 'T00:00:00')
+  const normalized = normalizeDateStr(dateStr)
+  const date = new Date(normalized + 'T00:00:00')
   return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 }
 
