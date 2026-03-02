@@ -1,22 +1,87 @@
 // frontend-next/src/pages/calendar/components/TimeGrid.tsx
-import { useRef, useEffect, useMemo } from 'react'
+import { useRef, useEffect, useMemo, useState, useCallback } from 'react'
 import type { CalendarItem } from '../utils/calendarHelpers.js'
 import { toDateString, isToday, computeOverlapLayout, formatTime, minutesToTime } from '../utils/calendarHelpers.js'
-import { HOUR_HEIGHT_PX, SLOT_HEIGHT_PX, SLOTS_PER_DAY, DEFAULT_VISIBLE_START_HOUR } from '../utils/calendarConstants.js'
+import { HOUR_HEIGHT_PX, SLOT_HEIGHT_PX, SLOTS_PER_DAY, DEFAULT_VISIBLE_START_HOUR, MINUTES_PER_SLOT } from '../utils/calendarConstants.js'
 import { CalendarItemBlock } from './CalendarItemBlock.js'
 import { CurrentTimeIndicator } from './CurrentTimeIndicator.js'
+
+interface DragState {
+  active: boolean
+  dateStr: string
+  startY: number
+  currentY: number
+}
 
 interface TimeGridProps {
   dates: Date[]
   items: CalendarItem[]
   onSlotClick?: (date: string, time: string) => void
   onItemClick?: (item: CalendarItem) => void
+  onDragCreate?: (date: string, startTime: string, endTime: string) => void
 }
 
 const TOTAL_HEIGHT = SLOTS_PER_DAY * SLOT_HEIGHT_PX
 
-export function TimeGrid({ dates, items, onSlotClick, onItemClick }: TimeGridProps) {
+export function TimeGrid({ dates, items, onSlotClick, onItemClick, onDragCreate }: TimeGridProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const dragRef = useRef<DragState>({ active: false, dateStr: '', startY: 0, currentY: 0 })
+  const [ghostBlock, setGhostBlock] = useState<{ dateStr: string; top: number; height: number } | null>(null)
+
+  const snapToSlot = useCallback((y: number) => Math.round(y / SLOT_HEIGHT_PX) * SLOT_HEIGHT_PX, [])
+
+  const yToTime = useCallback((y: number) => {
+    const snapped = snapToSlot(y)
+    const totalMinutes = Math.max(0, Math.min((snapped / SLOT_HEIGHT_PX) * MINUTES_PER_SLOT, 24 * 60 - MINUTES_PER_SLOT))
+    return minutesToTime(totalMinutes)
+  }, [snapToSlot])
+
+  const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>, dateStr: string) => {
+    // Only start drag on the column background, not on items
+    if (e.target !== e.currentTarget) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const y = e.clientY - rect.top + (scrollRef.current?.scrollTop || 0)
+    const snappedY = snapToSlot(y)
+
+    dragRef.current = { active: true, dateStr, startY: snappedY, currentY: snappedY }
+    e.currentTarget.setPointerCapture(e.pointerId)
+    // Don't show ghost yet — wait for move to distinguish click from drag
+  }, [snapToSlot])
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>, dateStr: string) => {
+    if (!dragRef.current.active || dragRef.current.dateStr !== dateStr) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const y = e.clientY - rect.top + (scrollRef.current?.scrollTop || 0)
+    const snappedY = snapToSlot(y)
+    dragRef.current.currentY = snappedY
+
+    const minY = Math.min(dragRef.current.startY, snappedY)
+    const maxY = Math.max(dragRef.current.startY, snappedY)
+    const height = maxY - minY
+
+    // Only show ghost if dragged at least one slot
+    if (height >= SLOT_HEIGHT_PX) {
+      setGhostBlock({ dateStr, top: minY, height })
+    }
+  }, [snapToSlot])
+
+  const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>, dateStr: string) => {
+    if (!dragRef.current.active || dragRef.current.dateStr !== dateStr) return
+    const { startY, currentY } = dragRef.current
+    dragRef.current = { active: false, dateStr: '', startY: 0, currentY: 0 }
+    setGhostBlock(null)
+
+    const minY = Math.min(startY, currentY)
+    const maxY = Math.max(startY, currentY)
+    const height = maxY - minY
+
+    // If the drag was less than one slot, treat it as a click (handled by onClick)
+    if (height < SLOT_HEIGHT_PX) return
+
+    const startTime = yToTime(minY)
+    const endTime = yToTime(maxY)
+    onDragCreate?.(dateStr, startTime, endTime)
+  }, [yToTime, onDragCreate])
 
   // Auto-scroll to current time or DEFAULT_VISIBLE_START_HOUR on mount
   useEffect(() => {
@@ -110,7 +175,7 @@ export function TimeGrid({ dates, items, onSlotClick, onItemClick }: TimeGridPro
               <div
                 key={dateStr}
                 className={[
-                  'flex-1 relative border-l border-border',
+                  'flex-1 relative border-l border-border touch-none',
                   today && 'bg-accent/[0.02]',
                 ].filter(Boolean).join(' ')}
                 onClick={(e) => {
@@ -121,6 +186,9 @@ export function TimeGrid({ dates, items, onSlotClick, onItemClick }: TimeGridPro
                   const time = minutesToTime(Math.max(0, Math.min(minutes, 23 * 60 + 45)))
                   onSlotClick?.(dateStr, time)
                 }}
+                onPointerDown={(e) => handlePointerDown(e, dateStr)}
+                onPointerMove={(e) => handlePointerMove(e, dateStr)}
+                onPointerUp={(e) => handlePointerUp(e, dateStr)}
               >
                 {/* Hour lines */}
                 {hours.map((hour) => (
@@ -153,6 +221,17 @@ export function TimeGrid({ dates, items, onSlotClick, onItemClick }: TimeGridPro
                       onClick={onItemClick}
                     />
                   ))}
+
+                {/* Drag-create ghost block */}
+                {ghostBlock && ghostBlock.dateStr === dateStr && (
+                  <div
+                    className="absolute left-1 right-1 bg-accent/20 border-2 border-accent/60 rounded-md pointer-events-none animate-pulse"
+                    style={{
+                      top: ghostBlock.top,
+                      height: ghostBlock.height,
+                    }}
+                  />
+                )}
               </div>
             )
           })}
