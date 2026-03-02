@@ -1,31 +1,28 @@
-import { type FormEvent, useState } from 'react'
+import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { useAuth } from '@/hooks/useAuth'
-import { useTheme } from '@/contexts/ThemeContext'
+import { GoogleLogin, type CredentialResponse } from '@react-oauth/google'
+import { useAuth } from '@/hooks/useAuth.js'
+import { useTheme } from '@/contexts/ThemeContext.js'
 import { Moon, Sun } from 'lucide-react'
+import { Button } from '@/components/ui/button.js'
 
 export default function LoginPage() {
-  const { isAuthenticated, login } = useAuth()
+  const { isAuthenticated, loginWithGoogle } = useAuth()
   const { theme, toggleTheme } = useTheme()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
   if (isAuthenticated) return <Navigate to="/" replace />
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
+  async function handleSuccess(response: CredentialResponse) {
     setError('')
-    setIsSubmitting(true)
+    if (!response.credential) {
+      setError('No credential received from Google')
+      return
+    }
     try {
-      await login(email, password)
+      await loginWithGoogle(response.credential)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -43,58 +40,32 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <h1 className="font-heading text-3xl text-text-primary">LyfeHub</h1>
-          <p className="text-text-secondary text-sm mt-1">Sign in to continue</p>
+          <p className="text-text-secondary text-sm mt-1">Apex Restoration</p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-bg-surface border border-border rounded-lg p-6 shadow-md space-y-4"
-        >
+        <div className="bg-bg-surface border border-border rounded-lg p-6 shadow-md space-y-4">
           {error && (
             <div className="text-danger text-sm bg-danger/10 border border-danger/20 rounded-md px-3 py-2">
               {error}
             </div>
           )}
 
-          <div className="space-y-1.5">
-            <label htmlFor="email" className="text-sm font-medium text-text-primary">
-              Email
-            </label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-              autoFocus
-              className="bg-bg-app border-border text-text-primary"
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleSuccess}
+              onError={() => setError('Google sign-in was cancelled or failed')}
+              theme={theme === 'dark' ? 'filled_black' : 'outline'}
+              size="large"
+              width="320"
+              text="signin_with"
+              shape="rectangular"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label htmlFor="password" className="text-sm font-medium text-text-primary">
-              Password
-            </label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              required
-              className="bg-bg-app border-border text-text-primary"
-            />
-          </div>
-
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-accent text-white hover:bg-accent-hover"
-          >
-            {isSubmitting ? 'Signing in...' : 'Sign In'}
-          </Button>
-        </form>
+          <p className="text-text-muted text-xs text-center">
+            Restricted to @apexrestoration.pro accounts
+          </p>
+        </div>
       </div>
     </div>
   )
