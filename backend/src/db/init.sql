@@ -1580,3 +1580,19 @@ IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'apex
   ALTER TABLE apex_jobs ADD COLUMN referred_by TEXT DEFAULT '';
 END IF;
 END $$;
+
+-- ============================================
+-- MAIL ACCOUNTS (Gmail OAuth tokens)
+-- ============================================
+CREATE TABLE IF NOT EXISTS mail_accounts (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  email TEXT NOT NULL,
+  access_token TEXT NOT NULL,
+  refresh_token TEXT NOT NULL,
+  token_expiry TIMESTAMPTZ NOT NULL,
+  hotkeys TEXT DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_mail_accounts_user_id ON mail_accounts(user_id);
