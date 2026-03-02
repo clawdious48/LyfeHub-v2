@@ -30,7 +30,9 @@ export function CellStatus({ value, options }: CellStatusProps) {
         'px-2 py-0.5 rounded-md text-xs border inline-flex items-center gap-1.5'
       )}
     >
-      <span className={cn('w-1.5 h-1.5 rounded-full', tagColor.dot)} />
+      <span
+        className={cn(tagColor.dot, 'w-1.5 h-1.5 rounded-full shrink-0')}
+      />
       {option.label}
     </span>
   )

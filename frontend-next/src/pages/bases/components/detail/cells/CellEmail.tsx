@@ -17,8 +17,8 @@ export function CellEmail({ value }: CellEmailProps) {
       className="text-sm text-accent hover:underline inline-flex items-center gap-1 max-w-full"
       onClick={(e) => e.stopPropagation()}
     >
-      <Mail className="w-3 h-3 shrink-0" />
       <span className="truncate">{email}</span>
+      <Mail className="w-3 h-3 shrink-0" />
     </a>
   )
 }

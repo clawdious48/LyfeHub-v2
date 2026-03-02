@@ -5,17 +5,21 @@ interface CellCreatedTimeProps {
 }
 
 export function CellCreatedTime({ value }: CellCreatedTimeProps) {
-  if (value == null || value === '') {
+  const str = value != null ? String(value) : ''
+
+  if (!str) {
     return <span className="text-sm text-text-muted">&mdash;</span>
   }
 
-  const dateStr = String(value)
-  const formatted = formatRelativeDate(dateStr)
-  const full = new Date(dateStr).toLocaleString()
+  const date = new Date(str)
+  const fullDate = isNaN(date.getTime()) ? str : date.toLocaleString()
 
   return (
-    <span className="text-sm text-text-secondary" title={full}>
-      {formatted}
+    <span
+      className="text-sm text-text-secondary"
+      title={fullDate}
+    >
+      {formatRelativeDate(str)}
     </span>
   )
 }

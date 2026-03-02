@@ -9,9 +9,14 @@ export function CellRichText({ value }: CellRichTextProps) {
     return <span className="text-sm text-text-muted">&mdash;</span>
   }
 
+  const truncated = str.length > 80 ? str.slice(0, 80) + '\u2026' : str
+
   return (
-    <span className="text-sm text-text-primary truncate max-w-full block" title={str}>
-      {str.length > 80 ? str.slice(0, 80) + '\u2026' : str}
+    <span
+      className="text-sm text-text-primary truncate max-w-full block"
+      title={str}
+    >
+      {truncated}
     </span>
   )
 }

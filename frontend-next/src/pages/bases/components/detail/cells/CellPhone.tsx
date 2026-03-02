@@ -17,8 +17,8 @@ export function CellPhone({ value }: CellPhoneProps) {
       className="text-sm text-accent hover:underline inline-flex items-center gap-1 max-w-full"
       onClick={(e) => e.stopPropagation()}
     >
-      <Phone className="w-3 h-3 shrink-0" />
       <span className="truncate">{phone}</span>
+      <Phone className="w-3 h-3 shrink-0" />
     </a>
   )
 }
