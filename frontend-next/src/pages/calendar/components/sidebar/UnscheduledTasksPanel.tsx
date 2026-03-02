@@ -4,12 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight, GripVertical } from 'lucide-react'
 import { useUnscheduledTasks } from '@/api/hooks/useTasks.js'
 
-interface UnscheduledTasksPanelProps {
-  onDragStart?: (taskId: string) => void
-}
-
-export function UnscheduledTasksPanel({ onDragStart }: UnscheduledTasksPanelProps) {
+export function UnscheduledTasksPanel() {
   const [expanded, setExpanded] = useState(true)
+  const [draggingId, setDraggingId] = useState<string | null>(null)
   const { data: tasks = [], isLoading } = useUnscheduledTasks()
 
   return (
@@ -48,7 +45,14 @@ export function UnscheduledTasksPanel({ onDragStart }: UnscheduledTasksPanelProp
                     transition={{ delay: Math.min(idx * 0.05, 0.25) }}
                     className="flex items-center gap-2 px-2 py-1.5 rounded-md text-xs cursor-grab hover:bg-bg-hover transition-colors group"
                     draggable
-                    onDragStart={() => onDragStart?.(task.id)}
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('application/x-task-id', task.id)
+                      e.dataTransfer.setData('text/plain', task.title)
+                      e.dataTransfer.effectAllowed = 'move'
+                      setDraggingId(task.id)
+                    }}
+                    onDragEnd={() => setDraggingId(null)}
+                    style={{ opacity: draggingId === task.id ? 0.4 : 1 }}
                   >
                     <GripVertical className="size-3 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                     <div className="size-2.5 rounded-sm border border-purple-500/60 shrink-0" />
