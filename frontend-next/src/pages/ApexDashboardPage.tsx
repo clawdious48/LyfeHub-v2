@@ -10,6 +10,7 @@ import AddWidgetDialog from '@/widgets/AddWidgetDialog.js'
 import DashboardSettingsDialog from '@/widgets/DashboardSettingsDialog.js'
 import { widgetRegistry } from '@/widgets/registry.js'
 import { detectDockEdge } from '@/widgets/nav/NavDockDetector.js'
+import { useDashboardUiStore } from '@/stores/dashboardUiStore.js'
 import type { WidgetStyle } from '@/widgets/registry.js'
 import type { DashboardSettings } from '@/api/hooks/index.js'
 
@@ -40,6 +41,7 @@ export default function ApexDashboardPage() {
   const initialWidgets = layoutData?.layout?.widgets ?? DEFAULT_APEX_WIDGETS
   const [widgets, setWidgets] = useState<WidgetItem[]>(initialWidgets)
   const [isEditing, setIsEditing] = useState(false)
+  const setGlobalEditing = useDashboardUiStore((s) => s.setEditing)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settings, setSettings] = useState<DashboardSettings>({
@@ -89,8 +91,9 @@ export default function ApexDashboardPage() {
 
   const handleDone = useCallback(() => {
     setIsEditing(false)
+    setGlobalEditing(false)
     saveLayout.mutate({ widgets, settings })
-  }, [widgets, settings, saveLayout])
+  }, [widgets, settings, saveLayout, setGlobalEditing])
 
   const handleRemoveWidget = useCallback((id: string) => {
     setWidgets((prev) => prev.filter((w) => w.id !== id))
@@ -183,7 +186,7 @@ export default function ApexDashboardPage() {
               </Button>
             </>
           ) : (
-            <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+            <Button variant="outline" size="sm" onClick={() => { setIsEditing(true); setGlobalEditing(true) }}>
               <Pencil className="size-4" />
               Edit
             </Button>

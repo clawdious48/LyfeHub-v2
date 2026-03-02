@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth.js'
 import { useHeaderStore } from '@/stores/headerStore.js'
 import { getAreaForRoute, getAreaConfig, areas } from '@/layouts/headerConfig.js'
 import { useCaptureStore } from '@/stores/captureStore.js'
-import type { HeaderTab } from '@/layouts/headerConfig.js'
+import { HeaderTabBar } from '@/layouts/HeaderTabBar.js'
 
 export default function Header() {
   const { theme, toggleTheme } = useTheme()
@@ -62,22 +62,7 @@ export default function Header() {
           transition={{ duration: 0.2 }}
           className="flex-1 flex items-center justify-center gap-1"
         >
-          {sortedTabs.map((tab: HeaderTab) => (
-            <NavLink
-              key={tab.id}
-              to={tab.to}
-              className={({ isActive }) =>
-                `flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-accent-light text-accent'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
-                }`
-              }
-            >
-              {tabDisplayMode !== 'label-only' && <tab.icon className="size-4" />}
-              {tabDisplayMode !== 'icon-only' && <span>{tab.label}</span>}
-            </NavLink>
-          ))}
+          <HeaderTabBar tabs={sortedTabs} tabDisplayMode={tabDisplayMode} activeAreaId={activeAreaId} />
         </motion.div>
       </AnimatePresence>
 
