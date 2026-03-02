@@ -11,6 +11,7 @@ import {
   Plus,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { TaskQuickCaptureModal } from '@/pages/tasks/components/modals/TaskQuickCaptureModal.js'
 import { useSidebarStore } from '@/stores/sidebarStore'
 import { getSectionsForRoute } from '@/layouts/sidebarConfig'
 import { apiClient } from '@/api/client'
@@ -43,8 +44,13 @@ export default function Sidebar() {
   const [captureType, setCaptureType] = useState<CaptureType>('note')
   const [captureTitle, setCaptureTitle] = useState('')
   const [captureSaving, setCaptureSaving] = useState(false)
+  const [taskCaptureOpen, setTaskCaptureOpen] = useState(false)
 
   function openCapture(type: CaptureType) {
+    if (type === 'task') {
+      setTaskCaptureOpen(true)
+      return
+    }
     setCaptureType(type)
     setCaptureTitle('')
     setCaptureOpen(true)
@@ -246,6 +252,9 @@ export default function Sidebar() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Task quick capture modal */}
+      <TaskQuickCaptureModal open={taskCaptureOpen} onOpenChange={setTaskCaptureOpen} />
     </>
   )
 }
