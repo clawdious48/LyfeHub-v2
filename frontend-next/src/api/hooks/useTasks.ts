@@ -36,7 +36,10 @@ export function useTasks(view: string) {
 export function useTask(id: string) {
   return useQuery({
     queryKey: taskKeys.detail(id),
-    queryFn: () => apiClient.get<Task>(`/tasks/${id}`),
+    queryFn: async () => {
+      const res = await apiClient.get<{ item: Task }>(`/tasks/${id}`)
+      return res.item
+    },
     enabled: !!id,
   })
 }
@@ -44,9 +47,10 @@ export function useTask(id: string) {
 export function useTaskCounts() {
   return useQuery({
     queryKey: taskKeys.counts(),
-    queryFn: () => {
+    queryFn: async () => {
       const today = getToday()
-      return apiClient.get<Record<string, number>>(`/tasks/counts?today=${today}`)
+      const res = await apiClient.get<{ counts: Record<string, number> }>(`/tasks/counts?today=${today}`)
+      return res.counts
     },
   })
 }

@@ -12,7 +12,10 @@ export const taskListKeys = {
 export function useTaskLists() {
   return useQuery({
     queryKey: taskListKeys.list(),
-    queryFn: () => apiClient.get<TaskList[]>('/task-lists'),
+    queryFn: async () => {
+      const res = await apiClient.get<{ lists: TaskList[] }>('/task-lists')
+      return res.lists
+    },
   })
 }
 
