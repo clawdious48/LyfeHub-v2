@@ -2,7 +2,7 @@
 
 A living document tracking feature status across the entire LyfeHub platform. Update this file whenever features are started, completed, or re-scoped.
 
-**Last updated:** 2026-02-28
+**Last updated:** 2026-03-01
 
 ---
 
@@ -70,6 +70,29 @@ A living document tracking feature status across the entire LyfeHub platform. Up
 | Recurring events (RRULE) | Not started | Not started | Not Started |
 | Google Calendar sync | Not started | Not started | Not Started |
 | Reminders / notifications | Not started | Not started | Not Started |
+
+### Mail (Gmail Integration)
+
+| Feature | Backend | Frontend | Status |
+|---------|---------|----------|--------|
+| Gmail OAuth connection | Done | Done | Done |
+| Token encryption (AES-256-GCM) | Done | -- | Done |
+| Message list (inbox, labels, search) | Done | Done | Done |
+| Message reading pane | Done | Done | Done |
+| Thread view (collapsible accordion) | Done | Done | Done |
+| Compose with Tiptap rich text | Done | Done | Done |
+| Reply / Reply All / Forward | Done | Done | Done |
+| File attachments (send + download) | Done | Done | Done |
+| Contact autocomplete (People API) | Done | Done | Done |
+| Labels (list, create, delete, apply) | Done | Done | Done |
+| Gmail filters (list, create, delete) | Done | Done | Done |
+| Keyboard shortcuts (customizable) | Done | Done | Done |
+| Sidebar integration (contextual labels) | -- | Done | Done |
+| Responsive layout (desktop/tablet/mobile) | -- | Done | Done |
+| Auto-refresh (60s interval) | -- | Done | Done |
+| Batch operations (multi-select) | Not started | Not started | Not Started |
+| Email signatures | Not started | Not started | Not Started |
+| Snooze | Not started | Not started | Not Started |
 
 ### Notes
 
@@ -254,6 +277,7 @@ A living document tracking feature status across the entire LyfeHub platform. Up
 
 | Date | Change | Section |
 |------|--------|---------|
+| 2026-03-01 | Mail (Gmail Integration) module complete — OAuth, threads, compose, labels, filters, hotkeys, responsive layout, auto-refresh | LyfeHub Personal |
 | 2026-03-01 | Default bases seeded (Tasks, Projects, Notes, Tags, People) with 15 property types, is_default protection, auto-timestamps | Bases |
 | 2026-02-28 | Created roadmap document | All |
 | 2026-02-28 | Added Apex sidebar section with CRM, Inventory, Documents, Workflows, Accounting, Reports stubs | Apex Restoration |
