@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react'
 import type { LucideIcon } from 'lucide-react'
-import { Sun, Calendar, FileText, Inbox, Target } from 'lucide-react'
+import { Sun, Calendar, FileText, Inbox, Target, Clock, StickyNote, ExternalLink, Quote } from 'lucide-react'
 
 export type WidgetCategory = 'productivity' | 'external' | 'data' | 'utility'
 
@@ -40,6 +40,10 @@ import WeekCalWidget from './WeekCalWidget.js'
 import QuickNotesWidget from './QuickNotesWidget.js'
 import InboxWidget from './InboxWidget.js'
 import AreasWidget from './AreasWidget.js'
+import ClockWidget from './ClockWidget.js'
+import StickyNoteWidget from './StickyNoteWidget.js'
+import QuickLinksWidget from './QuickLinksWidget.js'
+import QuoteWidget from './QuoteWidget.js'
 
 export const widgetRegistry: Record<string, WidgetDefinition> = {
   'my-day': {
@@ -91,5 +95,67 @@ export const widgetRegistry: Record<string, WidgetDefinition> = {
     singleton: true,
     configurable: false,
     minW: 8, minH: 4, defaultW: 24, defaultH: 6,
+  },
+  'clock': {
+    component: ClockWidget,
+    label: 'Clock',
+    description: 'Digital clock with date and greeting',
+    icon: Clock,
+    category: 'utility',
+    singleton: false,
+    configurable: true,
+    configSchema: [
+      { key: 'format24h', label: '24-hour format', type: 'toggle', default: false },
+      { key: 'showSeconds', label: 'Show seconds', type: 'toggle', default: false },
+      { key: 'showDate', label: 'Show date', type: 'toggle', default: true },
+      { key: 'showGreeting', label: 'Show greeting', type: 'toggle', default: true },
+    ],
+    minW: 4, minH: 3, defaultW: 6, defaultH: 4,
+  },
+  'sticky-note': {
+    component: StickyNoteWidget,
+    label: 'Sticky Note',
+    description: 'Quick scratchpad note',
+    icon: StickyNote,
+    category: 'utility',
+    singleton: false,
+    configurable: true,
+    configSchema: [
+      {
+        key: 'color', label: 'Color', type: 'select', default: 'default',
+        options: [
+          { label: 'Default', value: 'default' },
+          { label: 'Yellow', value: 'yellow' },
+          { label: 'Green', value: 'green' },
+          { label: 'Blue', value: 'blue' },
+          { label: 'Pink', value: 'pink' },
+          { label: 'Orange', value: 'orange' },
+        ],
+      },
+    ],
+    minW: 4, minH: 3, defaultW: 6, defaultH: 5,
+  },
+  'quick-links': {
+    component: QuickLinksWidget,
+    label: 'Quick Links',
+    description: 'Bookmarks grid with favicons',
+    icon: ExternalLink,
+    category: 'utility',
+    singleton: false,
+    configurable: true,
+    configSchema: [
+      { key: 'links', label: 'Links', type: 'links-editor', default: [] },
+    ],
+    minW: 4, minH: 3, defaultW: 6, defaultH: 5,
+  },
+  'quote': {
+    component: QuoteWidget,
+    label: 'Focus Quote',
+    description: 'Random quote from your Notes',
+    icon: Quote,
+    category: 'productivity',
+    singleton: true,
+    configurable: false,
+    minW: 6, minH: 3, defaultW: 8, defaultH: 4,
   },
 }

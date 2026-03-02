@@ -69,6 +69,8 @@ app.use('/api/mail', mailRoutes);
 app.use('/api/system', require('./routes/system'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api', require('./routes/googleCalendar'));
+app.use('/api/weather', require('./routes/weather'));
+app.use('/api/feeds', require('./routes/feeds'));
 
 // Health check endpoint
 app.get('/api/health', (_req: Request, res: Response) => {
@@ -107,10 +109,12 @@ app.use(errorHandler);
 
 // Initialize database then start server
 const { initDatabase } = require('./db/schema');
+const { initFeeds } = require('./db/feeds');
 
 async function start(): Promise<void> {
   try {
     await initDatabase();
+    await initFeeds();
     logger.info('Database initialized successfully');
     app.listen(PORT, () => {
       logger.info({ port: PORT, frontendPath }, 'LyfeHub API server running');
