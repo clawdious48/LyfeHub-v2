@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { BaseSidebarContent } from '@/pages/bases/components/BaseSidebarContent.js'
 import { MailSidebarContent } from '@/pages/mail/components/MailSidebarContent.js'
+import { CalendarSidebarContent } from '@/pages/calendar/components/sidebar/CalendarSidebarContent.js'
 
 export interface SidebarItem {
   label: string
@@ -105,6 +106,35 @@ const contextualSections: Record<string, SidebarSection[]> = {
       icon: Database,
       items: [],
       component: BaseSidebarContent,
+    },
+    {
+      key: 'productivity',
+      header: 'Productivity',
+      icon: Briefcase,
+      items: [
+        { label: 'Calendar', icon: Calendar, to: '/calendar' },
+        { label: 'Tasks', icon: CheckSquare, to: '/tasks' },
+        { label: 'Mail', icon: Mail, to: '/mail' },
+      ],
+    },
+    {
+      key: 'resources',
+      header: 'Resources',
+      icon: BookOpen,
+      items: [
+        { label: 'Notes', icon: FileText, to: '/notes' },
+        { label: 'People', icon: Users, to: '/people' },
+        { label: 'Bases', icon: Database, to: '/bases' },
+      ],
+    },
+  ],
+  '/calendar': [
+    {
+      key: 'calendar-nav',
+      header: 'Calendar',
+      icon: Calendar,
+      items: [],
+      component: CalendarSidebarContent,
     },
     {
       key: 'productivity',
