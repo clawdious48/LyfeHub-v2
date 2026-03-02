@@ -3,11 +3,11 @@ import { sortTasks } from '@/pages/tasks/utils/taskHelpers.js'
 import { TaskInlineAdd } from './TaskInlineAdd.js'
 import { TaskRow } from './TaskRow.js'
 import { TaskCompletedSection } from './TaskCompletedSection.js'
-import type { Task } from '@/types/index.js'
+import type { TaskRecord } from '@/api/hooks/useTasksAdapter.js'
 
 interface TaskListViewProps {
-  tasks: Task[]
-  completedTasks: Task[]
+  tasks: TaskRecord[]
+  completedTasks: TaskRecord[]
   activeView: string
   activeListId: string | null
   onSelectTask: (id: string) => void

@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Plus, MoreHorizontal } from 'lucide-react'
-import { useTaskCounts } from '@/api/hooks/index.js'
-import { useTaskLists } from '@/api/hooks/useTaskLists.js'
+import { useTaskCounts, useTaskListOptions } from '@/api/hooks/useTasksAdapter.js'
 import { SMART_VIEWS } from '@/pages/tasks/utils/taskConstants.js'
 import { CreateListModal } from '@/pages/tasks/components/modals/CreateListModal.js'
 
@@ -10,7 +9,7 @@ export function TasksSidebarContent() {
   const [searchParams, setSearchParams] = useSearchParams()
   const activeView = searchParams.get('view') ?? 'my-day'
   const { data: counts = {} } = useTaskCounts()
-  const { data: lists = [] } = useTaskLists()
+  const listOptions = useTaskListOptions()
   const [createListOpen, setCreateListOpen] = useState(false)
 
   function setView(view: string) {
@@ -62,12 +61,13 @@ export function TasksSidebarContent() {
           </button>
         </div>
         <div className="space-y-0.5 mt-1">
-          {lists.map((list) => {
-            const isActive = activeView === `list:${list.id}`
+          {listOptions.map((option) => {
+            const optionValue = option.value || option.label
+            const isActive = activeView === `list:${optionValue}`
             return (
               <button
-                key={list.id}
-                onClick={() => setView(`list:${list.id}`)}
+                key={optionValue}
+                onClick={() => setView(`list:${optionValue}`)}
                 className={[
                   'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors w-full group',
                   isActive
@@ -77,9 +77,9 @@ export function TasksSidebarContent() {
               >
                 <span
                   className="size-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: list.color || '#3b82f6' }}
+                  style={{ backgroundColor: option.color || '#3b82f6' }}
                 />
-                <span className="flex-1 text-left truncate">{list.name}</span>
+                <span className="flex-1 text-left truncate">{option.label}</span>
                 <button
                   onClick={(e) => {
                     e.stopPropagation()

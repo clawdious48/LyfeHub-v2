@@ -4,7 +4,9 @@ import {
 } from '@/components/ui/dialog.js'
 import { Button } from '@/components/ui/button.js'
 import { Input } from '@/components/ui/input.js'
-import { useCreateTaskList } from '@/api/hooks/useTaskLists.js'
+import { useTaskBase, useTaskListOptions } from '@/api/hooks/useTasksAdapter.js'
+import { useUpdateProperty } from '@/api/hooks/useBases.js'
+import type { SelectOption } from '@/types/index.js'
 
 const LIST_COLORS = [
   { value: '#ef4444', label: 'Red' },
@@ -25,14 +27,30 @@ interface CreateListModalProps {
 export function CreateListModal({ open, onOpenChange }: CreateListModalProps) {
   const [name, setName] = useState('')
   const [color, setColor] = useState(LIST_COLORS[5].value) // Default blue
-  const createList = useCreateTaskList()
+  const { base } = useTaskBase()
+  const listOptions = useTaskListOptions()
+  const updateProperty = useUpdateProperty(base?.id ?? '')
 
   function handleSave() {
-    if (!name.trim()) return
-    createList.mutate({ name: name.trim(), color })
-    setName('')
-    setColor(LIST_COLORS[5].value)
-    onOpenChange(false)
+    if (!name.trim() || !base) return
+    const listProp = base.properties?.find((p: any) => p.id === 'list_id')
+    if (!listProp) return
+    const newOption: SelectOption = {
+      label: name.trim(),
+      value: name.trim().toLowerCase().replace(/\s+/g, '-'),
+      color,
+    }
+    const currentOptions = Array.isArray(listProp.options) ? listProp.options : []
+    updateProperty.mutate({
+      propId: 'list_id',
+      options: [...currentOptions, newOption],
+    }, {
+      onSuccess: () => {
+        setName('')
+        setColor(LIST_COLORS[5].value)
+        onOpenChange(false)
+      },
+    })
   }
 
   function handleOpenChange(open: boolean) {

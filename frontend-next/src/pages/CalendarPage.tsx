@@ -1,5 +1,5 @@
 // frontend-next/src/pages/CalendarPage.tsx
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCalendarUiStore } from '@/stores/calendarUiStore.js'
 import { CalendarToolbar } from '@/pages/calendar/components/CalendarToolbar.js'
@@ -14,7 +14,9 @@ import { AgendaView } from '@/pages/calendar/components/views/AgendaView.js'
 import { QuickCreatePopover } from '@/pages/calendar/components/modals/QuickCreatePopover.js'
 import { EventModal } from '@/pages/calendar/components/modals/EventModal.js'
 import type { CalendarEvent } from '@/types/calendar.js'
-import { useScheduleTask } from '@/api/hooks/useTasks.js'
+import { useUpdateTaskRecord } from '@/api/hooks/useTasksAdapter.js'
+import { useSearchParams } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 
 export default function CalendarPage() {
   const { currentView, selectedDate, setSelectedDate, setCurrentView } = useCalendarUiStore()
@@ -59,14 +61,28 @@ export default function CalendarPage() {
   }, [currentView, selectedDate])
 
   const { items, isLoading } = useCalendarItems(startDate, endDate)
-  const scheduleTask = useScheduleTask()
+  const updateTaskRecord = useUpdateTaskRecord()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const queryClient = useQueryClient()
+
+  // Handle post-OAuth redirect
+  useEffect(() => {
+    if (searchParams.get('google_connected') === 'true') {
+      queryClient.invalidateQueries({ queryKey: ['calendar-events'] })
+      queryClient.invalidateQueries({ queryKey: ['google-calendar'] })
+      queryClient.invalidateQueries({ queryKey: ['calendars'] })
+      // Clean up the URL
+      searchParams.delete('google_connected')
+      setSearchParams(searchParams, { replace: true })
+    }
+  }, [])
 
   function handleTaskDrop(taskId: string, date: string, startTime?: string, endTime?: string) {
-    scheduleTask.mutate({
+    updateTaskRecord.mutate({
       id: taskId,
       due_date: date,
-      due_time: startTime,
-      due_time_end: endTime,
+      due_time: startTime || null,
+      due_time_end: endTime || null,
     })
   }
 

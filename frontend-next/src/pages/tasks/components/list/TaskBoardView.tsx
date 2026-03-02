@@ -1,21 +1,22 @@
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import type { DragEndEvent } from '@dnd-kit/core'
 import { useTasksUiStore } from '@/stores/tasksUiStore.js'
-import { useUpdateTask } from '@/api/hooks/index.js'
+import { useUpdateTaskRecord } from '@/api/hooks/useTasksAdapter.js'
 import { groupTasksBy } from '@/pages/tasks/utils/taskHelpers.js'
 import { TaskBoardColumn } from './TaskBoardColumn.js'
-import type { Task, TaskList } from '@/types/index.js'
+import type { TaskRecord } from '@/api/hooks/useTasksAdapter.js'
+import type { SelectOption } from '@/types/index.js'
 
 interface TaskBoardViewProps {
-  tasks: Task[]
-  lists: TaskList[]
+  tasks: TaskRecord[]
+  listOptions: SelectOption[]
   onSelectTask: (id: string) => void
 }
 
-export function TaskBoardView({ tasks, lists, onSelectTask }: TaskBoardViewProps) {
+export function TaskBoardView({ tasks, listOptions, onSelectTask }: TaskBoardViewProps) {
   const { boardGroupBy } = useTasksUiStore()
-  const updateTask = useUpdateTask()
-  const groups = groupTasksBy(tasks, boardGroupBy, lists)
+  const updateTask = useUpdateTaskRecord()
+  const groups = groupTasksBy(tasks, boardGroupBy, listOptions)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),

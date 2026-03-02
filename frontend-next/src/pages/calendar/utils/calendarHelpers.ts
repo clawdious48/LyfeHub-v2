@@ -2,6 +2,7 @@
 
 import type { CalendarEvent } from '@/types/calendar.js'
 import type { Task } from '@/types/task.js'
+import type { TaskRecord } from '@/api/hooks/useTasksAdapter.js'
 import { MINUTES_PER_SLOT, DEFAULT_EVENT_DURATION_MINUTES, SLOT_HEIGHT_PX } from './calendarConstants.js'
 
 export interface CalendarItem {
@@ -71,6 +72,28 @@ export function taskToCalendarItem(task: Task): CalendarItem {
     priority: task.priority,
     listId: task.list_id,
     completed: Boolean(task.completed),
+  }
+}
+
+export function taskRecordToCalendarItem(task: TaskRecord): CalendarItem {
+  return {
+    id: task.id,
+    type: 'task',
+    title: task.title,
+    description: task.description || '',
+    color: null,
+    startDate: normalizeDateStr(task.due_date!),
+    startTime: task.due_time,
+    endDate: normalizeDateStr(task.due_date!),
+    endTime: task.due_time_end,
+    isAllDay: !task.due_time,
+    calendarId: '',
+    calendarName: 'Tasks',
+    calendarColor: '#a855f7',
+    status: task.status,
+    priority: task.priority,
+    listId: task.list_id,
+    completed: task.completed,
   }
 }
 

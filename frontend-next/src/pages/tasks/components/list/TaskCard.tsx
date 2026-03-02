@@ -1,25 +1,24 @@
 import { Check, Star } from 'lucide-react'
-import { useToggleTask, useToggleImportant } from '@/api/hooks/index.js'
+import { useToggleTaskComplete, useToggleTaskImportant, useTaskListOptions } from '@/api/hooks/useTasksAdapter.js'
 import { formatDueDate, isOverdue, getPriorityColor, getSubtaskProgress } from '@/pages/tasks/utils/taskHelpers.js'
-import { useTaskLists } from '@/api/hooks/useTaskLists.js'
-import type { Task } from '@/types/index.js'
+import type { TaskRecord } from '@/api/hooks/useTasksAdapter.js'
 
 interface TaskCardProps {
-  task: Task
+  task: TaskRecord
   size: 'S' | 'M' | 'L'
   onSelect: (id: string) => void
 }
 
 export function TaskCard({ task, size, onSelect }: TaskCardProps) {
-  const toggleTask = useToggleTask()
-  const toggleImportant = useToggleImportant()
-  const { data: lists = [] } = useTaskLists()
+  const toggleTask = useToggleTaskComplete()
+  const toggleImportant = useToggleTaskImportant()
+  const listOptions = useTaskListOptions()
 
   const dueDateText = formatDueDate(task.due_date)
   const overdue = isOverdue(task)
   const priorityColor = getPriorityColor(task.priority)
   const subtaskProgress = getSubtaskProgress(task)
-  const listName = task.list_id ? lists.find(l => l.id === task.list_id)?.name : null
+  const listName = task.list_id ? listOptions.find(o => (o.value || o.label) === task.list_id)?.label : null
 
   return (
     <div
@@ -33,7 +32,7 @@ export function TaskCard({ task, size, onSelect }: TaskCardProps) {
       <button
         onClick={(e) => {
           e.stopPropagation()
-          toggleImportant.mutate({ id: task.id, currentValue: task.important })
+          toggleImportant.mutate({ id: task.id, currentValue: !!task.important })
         }}
         className={[
           'absolute top-2 right-2 transition-colors',
@@ -48,7 +47,7 @@ export function TaskCard({ task, size, onSelect }: TaskCardProps) {
         <button
           onClick={(e) => {
             e.stopPropagation()
-            toggleTask.mutate(task.id)
+            toggleTask.mutate({ id: task.id, currentValue: task.completed })
           }}
           className={[
             'size-4 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors',

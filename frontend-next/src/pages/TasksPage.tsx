@@ -1,6 +1,5 @@
 import { useSearchParams } from 'react-router-dom'
-import { useTasks } from '@/api/hooks/index.js'
-import { useTaskLists } from '@/api/hooks/useTaskLists.js'
+import { useTaskRecords, useTaskListOptions } from '@/api/hooks/useTasksAdapter.js'
 import { useTasksUiStore } from '@/stores/tasksUiStore.js'
 import { TaskToolbar } from './tasks/components/list/TaskToolbar.js'
 import { TaskListView } from './tasks/components/list/TaskListView.js'
@@ -14,8 +13,8 @@ export default function TasksPage() {
   const view = searchParams.get('view') ?? 'my-day'
   const listId = view.startsWith('list:') ? view.slice(5) : null
 
-  const { data: tasks = [], isLoading } = useTasks(view)
-  const { data: lists = [] } = useTaskLists()
+  const { data: tasks = [], isLoading } = useTaskRecords(view)
+  const listOptions = useTaskListOptions()
   const {
     displayMode,
     selectedTaskId, setSelectedTaskId,
@@ -53,7 +52,7 @@ export default function TasksPage() {
       {displayMode === 'board' && (
         <TaskBoardView
           tasks={activeTasks}
-          lists={lists}
+          listOptions={listOptions}
           onSelectTask={setSelectedTaskId}
         />
       )}

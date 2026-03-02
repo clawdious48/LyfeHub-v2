@@ -2,13 +2,12 @@ import { useState, useEffect, useCallback } from 'react'
 import { ChevronLeft, ChevronRight, Check, SkipForward, CalendarDays } from 'lucide-react'
 import { Button } from '@/components/ui/button.js'
 import { Input } from '@/components/ui/input.js'
-import { useToggleTask, useUpdateTask, useScheduleTask } from '@/api/hooks/index.js'
-import { useTaskLists } from '@/api/hooks/useTaskLists.js'
+import { useToggleTaskComplete, useUpdateTaskRecord, useTaskListOptions } from '@/api/hooks/useTasksAdapter.js'
 import { formatDueDate, getPriorityColor, getSubtaskProgress } from '@/pages/tasks/utils/taskHelpers.js'
-import type { Task } from '@/types/index.js'
+import type { TaskRecord } from '@/api/hooks/useTasksAdapter.js'
 
 interface TaskFocusViewProps {
-  tasks: Task[]
+  tasks: TaskRecord[]
   onSelectTask: (id: string) => void
 }
 
@@ -16,10 +15,9 @@ export function TaskFocusView({ tasks, onSelectTask }: TaskFocusViewProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showReschedule, setShowReschedule] = useState(false)
   const [rescheduleDate, setRescheduleDate] = useState('')
-  const toggleTask = useToggleTask()
-  const updateTask = useUpdateTask()
-  const scheduleTask = useScheduleTask()
-  const { data: lists = [] } = useTaskLists()
+  const toggleTask = useToggleTaskComplete()
+  const updateTask = useUpdateTaskRecord()
+  const listOptions = useTaskListOptions()
 
   // Keep index in bounds
   useEffect(() => {
@@ -64,17 +62,16 @@ export function TaskFocusView({ tasks, onSelectTask }: TaskFocusViewProps) {
   const dueDateText = formatDueDate(task.due_date)
   const priorityColor = getPriorityColor(task.priority)
   const subtaskProgress = getSubtaskProgress(task)
-  const listName = task.list_id ? lists.find(l => l.id === task.list_id)?.name : null
+  const listName = task.list_id ? listOptions.find(o => (o.value || o.label) === task.list_id)?.label : null
 
   function handleDone() {
-    toggleTask.mutate(task.id)
-    // After completing, the tasks list will change, so advance if possible
+    toggleTask.mutate({ id: task.id, currentValue: task.completed })
     goNext()
   }
 
   function handleReschedule() {
     if (!rescheduleDate) return
-    scheduleTask.mutate({ id: task.id, due_date: rescheduleDate })
+    updateTask.mutate({ id: task.id, due_date: rescheduleDate })
     setShowReschedule(false)
     setRescheduleDate('')
     goNext()

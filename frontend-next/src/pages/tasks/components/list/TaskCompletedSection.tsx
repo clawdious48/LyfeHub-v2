@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronRight, Check } from 'lucide-react'
-import { useToggleTask } from '@/api/hooks/index.js'
-import type { Task } from '@/types/index.js'
+import { useToggleTaskComplete } from '@/api/hooks/useTasksAdapter.js'
+import type { TaskRecord } from '@/api/hooks/useTasksAdapter.js'
 
 interface TaskCompletedSectionProps {
-  tasks: Task[]
+  tasks: TaskRecord[]
   onSelectTask: (id: string) => void
 }
 
 export function TaskCompletedSection({ tasks, onSelectTask }: TaskCompletedSectionProps) {
   const [expanded, setExpanded] = useState(false)
-  const toggleTask = useToggleTask()
+  const toggleTask = useToggleTaskComplete()
 
   if (tasks.length === 0) return null
 
@@ -34,7 +34,7 @@ export function TaskCompletedSection({ tasks, onSelectTask }: TaskCompletedSecti
               <button
                 onClick={(e) => {
                   e.stopPropagation()
-                  toggleTask.mutate(task.id)
+                  toggleTask.mutate({ id: task.id, currentValue: true })
                 }}
                 className="size-5 rounded-full border-2 border-accent bg-accent flex items-center justify-center shrink-0"
               >

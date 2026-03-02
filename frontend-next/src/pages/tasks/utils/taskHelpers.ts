@@ -1,10 +1,11 @@
-import type { Task, TaskList } from '@/types/index.js'
+import type { TaskRecord } from '@/api/hooks/useTasksAdapter.js'
+import type { SelectOption } from '@/types/index.js'
 
 export function getToday(): string {
   return new Date().toISOString().split('T')[0]
 }
 
-export function sortTasks(tasks: Task[], sortBy: 'due' | 'created' | 'custom'): Task[] {
+export function sortTasks(tasks: TaskRecord[], sortBy: 'due' | 'created' | 'custom'): TaskRecord[] {
   const sorted = [...tasks]
   switch (sortBy) {
     case 'due':
@@ -15,7 +16,7 @@ export function sortTasks(tasks: Task[], sortBy: 'due' | 'created' | 'custom'): 
         return a.due_date.localeCompare(b.due_date)
       })
     case 'created':
-      return sorted.sort((a, b) => b.created_at.localeCompare(a.created_at))
+      return sorted.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     case 'custom':
     default:
       return sorted
@@ -23,11 +24,11 @@ export function sortTasks(tasks: Task[], sortBy: 'due' | 'created' | 'custom'): 
 }
 
 export function groupTasksBy(
-  tasks: Task[],
+  tasks: TaskRecord[],
   groupBy: 'priority' | 'energy' | 'list' | 'location',
-  lists: TaskList[] = [],
-): { key: string; label: string; tasks: Task[] }[] {
-  const groups = new Map<string, Task[]>()
+  listOptions: SelectOption[] = [],
+): { key: string; label: string; tasks: TaskRecord[] }[] {
+  const groups = new Map<string, TaskRecord[]>()
 
   for (const task of tasks) {
     let value: string | null
@@ -48,8 +49,8 @@ export function groupTasksBy(
   }
 
   if (groupBy === 'list') {
-    const listMap = Object.fromEntries(lists.map(l => [l.id, l.name]))
-    const result: { key: string; label: string; tasks: Task[] }[] = []
+    const listMap = Object.fromEntries(listOptions.map(o => [o.value || o.label, o.label]))
+    const result: { key: string; label: string; tasks: TaskRecord[] }[] = []
     for (const [key, groupTasks] of groups) {
       result.push({
         key,
@@ -86,12 +87,12 @@ export function formatDueDate(dateStr: string | null): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-export function isOverdue(task: Task): boolean {
+export function isOverdue(task: TaskRecord): boolean {
   if (!task.due_date || task.completed) return false
   return task.due_date < getToday()
 }
 
-export function getSubtaskProgress(task: Task): { done: number; total: number } | null {
+export function getSubtaskProgress(task: TaskRecord): { done: number; total: number } | null {
   if (!task.subtasks || task.subtasks.length === 0) return null
   const done = task.subtasks.filter(s => s.completed).length
   return { done, total: task.subtasks.length }

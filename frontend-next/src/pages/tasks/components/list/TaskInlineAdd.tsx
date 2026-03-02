@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
-import { useCreateTask } from '@/api/hooks/index.js'
+import { useCreateTaskRecord } from '@/api/hooks/useTasksAdapter.js'
 
 interface TaskInlineAddProps {
   activeView: string
@@ -10,7 +10,7 @@ interface TaskInlineAddProps {
 export function TaskInlineAdd({ activeView, activeListId }: TaskInlineAddProps) {
   const [title, setTitle] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
-  const createTask = useCreateTask()
+  const createTask = useCreateTaskRecord()
 
   function handleSubmit() {
     const trimmed = title.trim()

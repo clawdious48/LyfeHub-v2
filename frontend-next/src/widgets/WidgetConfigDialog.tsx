@@ -20,6 +20,8 @@ import {
 import { Separator } from '@/components/ui/separator.js'
 import { useBases, useBase } from '@/api/hooks/useBases.js'
 import WidgetStylePanel from './WidgetStylePanel.js'
+import NavConfigEditor from './nav/NavConfigEditor.js'
+import type { NavWidgetConfig } from './nav/navTypes.js'
 import type { ConfigField, WidgetStyle } from './registry.js'
 
 interface WidgetConfigDialogProps {
@@ -69,28 +71,39 @@ export default function WidgetConfigDialog({
     onOpenChange(false)
   }
 
+  const hasNavEditor = configSchema.some((f) => f.type === 'nav-editor')
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className={hasNavEditor ? 'sm:max-w-2xl' : 'sm:max-w-md'}>
         <DialogHeader>
           <DialogTitle className="text-text-primary">Configure {title}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
-          {configSchema.map((field) => (
-            <ConfigFieldRenderer
-              key={field.key}
-              field={field}
-              value={localConfig[field.key] ?? field.default}
-              allValues={localConfig}
-              onChange={(val) => updateField(field.key, val)}
+        {hasNavEditor ? (
+          <div className="py-2">
+            <NavConfigEditor
+              config={localConfig as unknown as NavWidgetConfig}
+              onChange={(newConfig) => setLocalConfig(newConfig as unknown as Record<string, unknown>)}
             />
-          ))}
+          </div>
+        ) : (
+          <div className="space-y-4 py-2">
+            {configSchema.map((field) => (
+              <ConfigFieldRenderer
+                key={field.key}
+                field={field}
+                value={localConfig[field.key] ?? field.default}
+                allValues={localConfig}
+                onChange={(val) => updateField(field.key, val)}
+              />
+            ))}
 
-          {configSchema.length > 0 && <Separator />}
+            {configSchema.length > 0 && <Separator />}
 
-          <WidgetStylePanel style={localStyle} onChange={setLocalStyle} />
-        </div>
+            <WidgetStylePanel style={localStyle} onChange={setLocalStyle} />
+          </div>
+        )}
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

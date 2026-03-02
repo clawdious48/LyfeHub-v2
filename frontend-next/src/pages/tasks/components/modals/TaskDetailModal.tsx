@@ -8,11 +8,17 @@ import { Textarea } from '@/components/ui/textarea.js'
 import {
   Star, ChevronDown, ChevronRight, Plus, Trash2,
 } from 'lucide-react'
-import { useTask, useCreateTask, useUpdateTask, useDeleteTask, useToggleTask } from '@/api/hooks/index.js'
-import { useTaskLists } from '@/api/hooks/useTaskLists.js'
+import {
+  useTaskRecord,
+  useCreateTaskRecord,
+  useUpdateTaskRecord,
+  useDeleteTaskRecord,
+  useToggleTaskComplete,
+  useTaskListOptions,
+} from '@/api/hooks/useTasksAdapter.js'
 import { useTasksUiStore } from '@/stores/tasksUiStore.js'
 import { PRIORITY_OPTIONS, ENERGY_OPTIONS, LOCATION_OPTIONS, RECURRING_OPTIONS } from '@/pages/tasks/utils/taskConstants.js'
-import type { Subtask, CreateTaskData, UpdateTaskData } from '@/types/index.js'
+import type { Subtask } from '@/api/hooks/useTasksAdapter.js'
 
 interface TaskDetailModalProps {
   taskId?: string
@@ -22,12 +28,12 @@ interface TaskDetailModalProps {
 
 export function TaskDetailModal({ taskId, open, onOpenChange }: TaskDetailModalProps) {
   const isEditing = !!taskId
-  const { data: existingTask } = useTask(taskId ?? '')
-  const { data: lists = [] } = useTaskLists()
-  const createTask = useCreateTask()
-  const updateTask = useUpdateTask()
-  const deleteTask = useDeleteTask()
-  const toggleTask = useToggleTask()
+  const existingTask = useTaskRecord(taskId ?? '')
+  const listOptions = useTaskListOptions()
+  const createTask = useCreateTaskRecord()
+  const updateTask = useUpdateTaskRecord()
+  const deleteTask = useDeleteTaskRecord()
+  const toggleTask = useToggleTaskComplete()
   const { moreOptionsExpanded, setMoreOptionsExpanded } = useTasksUiStore()
 
   // Form state
@@ -97,8 +103,8 @@ export function TaskDetailModal({ taskId, open, onOpenChange }: TaskDetailModalP
       due_time_end: dueTimeEnd || null,
       priority,
       list_id: listId,
-      my_day: myDay ? 1 : 0,
-      important: important ? 1 : 0,
+      my_day: myDay,
+      important: important,
       recurring,
       recurring_days: recurringDays,
       energy,
@@ -107,9 +113,9 @@ export function TaskDetailModal({ taskId, open, onOpenChange }: TaskDetailModalP
     }
 
     if (isEditing && taskId) {
-      updateTask.mutate({ id: taskId, ...data } as UpdateTaskData & { id: string })
+      updateTask.mutate({ id: taskId, ...data })
     } else {
-      createTask.mutate(data as CreateTaskData)
+      createTask.mutate({ ...data, title: title.trim() })
     }
     onOpenChange(false)
   }
@@ -152,7 +158,7 @@ export function TaskDetailModal({ taskId, open, onOpenChange }: TaskDetailModalP
         <div className="flex items-center gap-3 px-6 pt-6 pb-3">
           {isEditing && (
             <button
-              onClick={() => toggleTask.mutate(taskId!)}
+              onClick={() => toggleTask.mutate({ id: taskId!, currentValue: !!existingTask?.completed })}
               className={[
                 'size-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors',
                 existingTask?.completed ? 'border-accent bg-accent' : 'border-border hover:border-accent',
@@ -286,8 +292,8 @@ export function TaskDetailModal({ taskId, open, onOpenChange }: TaskDetailModalP
                 className="mt-1 w-full text-sm bg-bg-surface border border-border rounded-md px-2 py-1.5 text-text-primary"
               >
                 <option value="">None</option>
-                {lists.map((list) => (
-                  <option key={list.id} value={list.id}>{list.name}</option>
+                {listOptions.map((opt) => (
+                  <option key={opt.value || opt.label} value={opt.value || opt.label}>{opt.label}</option>
                 ))}
               </select>
             </div>
@@ -449,7 +455,7 @@ export function TaskDetailModal({ taskId, open, onOpenChange }: TaskDetailModalP
           <div className="flex items-center gap-3">
             {isEditing && existingTask && (
               <span className="text-xs text-text-muted">
-                Created {new Date(existingTask.created_at).toLocaleDateString()}
+                Created {new Date(existingTask.createdAt).toLocaleDateString()}
               </span>
             )}
             <Button onClick={handleSave} disabled={!title.trim()} size="sm">

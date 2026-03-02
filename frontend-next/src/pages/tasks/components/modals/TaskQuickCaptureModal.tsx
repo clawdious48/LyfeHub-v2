@@ -5,7 +5,7 @@ import {
 import { Button } from '@/components/ui/button.js'
 import { Input } from '@/components/ui/input.js'
 import { Textarea } from '@/components/ui/textarea.js'
-import { useCreateTask } from '@/api/hooks/index.js'
+import { useCreateTaskRecord } from '@/api/hooks/useTasksAdapter.js'
 
 interface TaskQuickCaptureModalProps {
   open: boolean
@@ -15,7 +15,7 @@ interface TaskQuickCaptureModalProps {
 export function TaskQuickCaptureModal({ open, onOpenChange }: TaskQuickCaptureModalProps) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const createTask = useCreateTask()
+  const createTask = useCreateTaskRecord()
 
   function handleSave() {
     if (!title.trim()) return

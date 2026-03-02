@@ -1,13 +1,18 @@
 // frontend-next/src/pages/calendar/components/sidebar/UnscheduledTasksPanel.tsx
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight, GripVertical } from 'lucide-react'
-import { useUnscheduledTasks } from '@/api/hooks/useTasks.js'
+import { useTaskBase } from '@/api/hooks/useTasksAdapter.js'
 
 export function UnscheduledTasksPanel() {
   const [expanded, setExpanded] = useState(true)
   const [draggingId, setDraggingId] = useState<string | null>(null)
-  const { data: tasks = [], isLoading } = useUnscheduledTasks()
+  const { records, isLoading } = useTaskBase()
+
+  const tasks = useMemo(
+    () => records.filter(t => !t.completed && !t.due_date),
+    [records],
+  )
 
   return (
     <div>

@@ -1,16 +1,16 @@
 import { Check, Star } from 'lucide-react'
-import { useToggleTask, useToggleImportant } from '@/api/hooks/index.js'
+import { useToggleTaskComplete, useToggleTaskImportant } from '@/api/hooks/useTasksAdapter.js'
 import { formatDueDate, isOverdue, getPriorityColor } from '@/pages/tasks/utils/taskHelpers.js'
-import type { Task } from '@/types/index.js'
+import type { TaskRecord } from '@/api/hooks/useTasksAdapter.js'
 
 interface TaskRowProps {
-  task: Task
+  task: TaskRecord
   onSelect: (id: string) => void
 }
 
 export function TaskRow({ task, onSelect }: TaskRowProps) {
-  const toggleTask = useToggleTask()
-  const toggleImportant = useToggleImportant()
+  const toggleTask = useToggleTaskComplete()
+  const toggleImportant = useToggleTaskImportant()
 
   const dueDateText = formatDueDate(task.due_date)
   const overdue = isOverdue(task)
@@ -25,7 +25,7 @@ export function TaskRow({ task, onSelect }: TaskRowProps) {
       <button
         onClick={(e) => {
           e.stopPropagation()
-          toggleTask.mutate(task.id)
+          toggleTask.mutate({ id: task.id, currentValue: task.completed })
         }}
         className={[
           'size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors',

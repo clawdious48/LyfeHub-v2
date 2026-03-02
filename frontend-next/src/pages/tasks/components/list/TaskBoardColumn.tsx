@@ -1,11 +1,11 @@
 import { useDroppable, useDraggable } from '@dnd-kit/core'
 import { formatDueDate, getPriorityColor } from '@/pages/tasks/utils/taskHelpers.js'
-import type { Task } from '@/types/index.js'
+import type { TaskRecord } from '@/api/hooks/useTasksAdapter.js'
 
 interface TaskBoardColumnProps {
   groupKey: string
   label: string
-  tasks: Task[]
+  tasks: TaskRecord[]
   onSelectTask: (id: string) => void
 }
 
@@ -13,7 +13,7 @@ function DraggableCard({
   task,
   onSelect,
 }: {
-  task: Task
+  task: TaskRecord
   onSelect: (id: string) => void
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({

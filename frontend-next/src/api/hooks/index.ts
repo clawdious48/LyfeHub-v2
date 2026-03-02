@@ -1,27 +1,18 @@
 export { useCheckAuth, useLogin, useLogout, authKeys } from './useAuth.js'
 export {
-  useTasks,
-  useTask,
+  useTaskBase,
+  useTaskRecords,
+  useTaskRecord,
   useTaskCounts,
-  useCreateTask,
-  useUpdateTask,
-  useDeleteTask,
-  useToggleTask,
-  useToggleMyDay,
-  useToggleImportant,
-  useCalendarTasks,
-  useUnscheduledTasks,
-  useScheduleTask,
-  useUnscheduleTask,
-  taskKeys,
-} from './useTasks.js'
-export {
-  useTaskLists,
-  useCreateTaskList,
-  useUpdateTaskList,
-  useDeleteTaskList,
-  taskListKeys,
-} from './useTaskLists.js'
+  useCreateTaskRecord,
+  useUpdateTaskRecord,
+  useDeleteTaskRecord,
+  useToggleTaskComplete,
+  useToggleTaskMyDay,
+  useToggleTaskImportant,
+  useTaskListOptions,
+} from './useTasksAdapter.js'
+export type { TaskRecord, Subtask } from './useTasksAdapter.js'
 export {
   useJobs,
   useJob,
