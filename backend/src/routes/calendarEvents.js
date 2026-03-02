@@ -78,6 +78,12 @@ router.post('/', requireScope('calendar', 'write'), async (req, res) => {
     const event = await createEvent(userId, req.body);
 
     res.status(201).json({ event });
+
+    // Fire-and-forget Google sync (don't block the response)
+    try {
+      const googleCalendar = require('../services/googleCalendar');
+      googleCalendar.pushEventToGoogle(userId, event).catch(() => {});
+    } catch (_) { /* Google sync not configured */ }
   } catch (err) {
     console.error('Error creating calendar event:', err);
     res.status(500).json({ error: 'Failed to create calendar event' });
@@ -98,6 +104,12 @@ router.patch('/:id', requireScope('calendar', 'write'), async (req, res) => {
     }
 
     res.json({ event });
+
+    // Fire-and-forget Google sync (don't block the response)
+    try {
+      const googleCalendar = require('../services/googleCalendar');
+      googleCalendar.pushEventToGoogle(userId, event).catch(() => {});
+    } catch (_) { /* Google sync not configured */ }
   } catch (err) {
     console.error('Error updating calendar event:', err);
     res.status(500).json({ error: 'Failed to update calendar event' });
@@ -111,6 +123,11 @@ router.patch('/:id', requireScope('calendar', 'write'), async (req, res) => {
 router.delete('/:id', requireScope('calendar', 'delete'), async (req, res) => {
   try {
     const userId = req.user.id;
+
+    // Capture external_id before deleting so we can push to Google
+    const existing = await getEvent(req.params.id, userId);
+    const externalId = existing ? existing.external_id : null;
+
     const deleted = await deleteEvent(req.params.id, userId);
 
     if (!deleted) {
@@ -118,6 +135,14 @@ router.delete('/:id', requireScope('calendar', 'delete'), async (req, res) => {
     }
 
     res.status(204).send();
+
+    // Fire-and-forget Google sync (don't block the response)
+    if (externalId) {
+      try {
+        const googleCalendar = require('../services/googleCalendar');
+        googleCalendar.deleteEventFromGoogle(userId, req.params.id, externalId).catch(() => {});
+      } catch (_) { /* Google sync not configured */ }
+    }
   } catch (err) {
     console.error('Error deleting calendar event:', err);
     res.status(500).json({ error: 'Failed to delete calendar event' });
