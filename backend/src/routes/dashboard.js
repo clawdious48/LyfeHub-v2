@@ -11,11 +11,11 @@ router.use(authMiddleware);
  */
 const DEFAULT_LAYOUT = {
   widgets: [
-    { id: 'default-my-day',   type: 'my-day',      x: 0, y: 0, w: 6, h: 4 },
-    { id: 'default-calendar', type: 'week-cal',     x: 6, y: 0, w: 6, h: 3 },
-    { id: 'default-notes',    type: 'quick-notes',  x: 0, y: 4, w: 6, h: 3 },
-    { id: 'default-inbox',    type: 'inbox',         x: 6, y: 3, w: 6, h: 4 },
-    { id: 'default-areas',    type: 'areas',         x: 0, y: 7, w: 6, h: 3 }
+    { id: 'default-my-day',   type: 'my-day',      x: 0,  y: 0,  w: 12, h: 8 },
+    { id: 'default-calendar', type: 'week-cal',     x: 12, y: 0,  w: 12, h: 6 },
+    { id: 'default-notes',    type: 'quick-notes',  x: 0,  y: 8,  w: 12, h: 6 },
+    { id: 'default-inbox',    type: 'inbox',         x: 12, y: 6,  w: 12, h: 8 },
+    { id: 'default-areas',    type: 'areas',         x: 0,  y: 14, w: 24, h: 6 }
   ]
 };
 

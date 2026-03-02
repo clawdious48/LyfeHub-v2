@@ -2,14 +2,27 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { GripVertical, X } from 'lucide-react'
 import { widgetRegistry } from './registry'
+import type { WidgetStyle } from './registry'
 
 interface WidgetWrapperProps {
   type: string
+  config?: Record<string, unknown>
+  style?: WidgetStyle
   isEditing: boolean
   onRemove: () => void
+  onConfigChange?: (config: Record<string, unknown>) => void
+  onStyleChange?: (style: WidgetStyle) => void
 }
 
-export default function WidgetWrapper({ type, isEditing, onRemove }: WidgetWrapperProps) {
+export default function WidgetWrapper({
+  type,
+  config,
+  style: _style,
+  isEditing,
+  onRemove,
+  onConfigChange: _onConfigChange,
+  onStyleChange: _onStyleChange,
+}: WidgetWrapperProps) {
   const definition = widgetRegistry[type]
 
   if (!definition) {
@@ -46,7 +59,7 @@ export default function WidgetWrapper({ type, isEditing, onRemove }: WidgetWrapp
         )}
       </CardHeader>
       <CardContent className="flex-1 overflow-auto pt-0">
-        <WidgetComponent />
+        <WidgetComponent config={config} />
       </CardContent>
     </Card>
   )

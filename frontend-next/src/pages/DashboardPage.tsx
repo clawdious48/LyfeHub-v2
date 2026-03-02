@@ -8,6 +8,7 @@ import { useDashboardLayout, useSaveDashboardLayout } from '@/api/hooks'
 import WidgetWrapper from '@/widgets/WidgetWrapper.js'
 import AddWidgetDialog from '@/widgets/AddWidgetDialog.js'
 import { widgetRegistry } from '@/widgets/registry.js'
+import type { WidgetStyle } from '@/widgets/registry.js'
 
 interface WidgetItem {
   id: string
@@ -16,19 +17,21 @@ interface WidgetItem {
   y: number
   w: number
   h: number
+  config?: Record<string, unknown>
+  style?: WidgetStyle
 }
 
 const DEFAULT_WIDGETS: WidgetItem[] = [
-  { id: 'default-my-day',   type: 'my-day',      x: 0, y: 0, w: 6, h: 4 },
-  { id: 'default-calendar', type: 'week-cal',     x: 6, y: 0, w: 6, h: 3 },
-  { id: 'default-notes',    type: 'quick-notes',  x: 0, y: 4, w: 6, h: 3 },
-  { id: 'default-inbox',    type: 'inbox',         x: 6, y: 3, w: 6, h: 4 },
-  { id: 'default-areas',    type: 'areas',         x: 0, y: 7, w: 12, h: 3 },
+  { id: 'default-my-day',   type: 'my-day',      x: 0,  y: 0,  w: 12, h: 8 },
+  { id: 'default-calendar', type: 'week-cal',     x: 12, y: 0,  w: 12, h: 6 },
+  { id: 'default-notes',    type: 'quick-notes',  x: 0,  y: 8,  w: 12, h: 6 },
+  { id: 'default-inbox',    type: 'inbox',         x: 12, y: 6,  w: 12, h: 8 },
+  { id: 'default-areas',    type: 'areas',         x: 0,  y: 14, w: 24, h: 6 },
 ]
 
 const BREAKPOINTS = { lg: 1200, md: 996, sm: 768, xs: 480 }
-const COLS = { lg: 12, md: 12, sm: 6, xs: 1 }
-const ROW_HEIGHT = 80
+const COLS = { lg: 24, md: 24, sm: 12, xs: 2 }
+const ROW_HEIGHT = 40
 
 export default function DashboardPage() {
   const { width, containerRef } = useContainerWidth()
@@ -100,6 +103,18 @@ export default function DashboardPage() {
     setWidgets((prev) => [...prev, newWidget])
   }, [])
 
+  const handleConfigChange = useCallback((id: string, newConfig: Record<string, unknown>) => {
+    setWidgets((prev) =>
+      prev.map((w) => (w.id === id ? { ...w, config: newConfig } : w))
+    )
+  }, [])
+
+  const handleStyleChange = useCallback((id: string, newStyle: WidgetStyle) => {
+    setWidgets((prev) =>
+      prev.map((w) => (w.id === id ? { ...w, style: newStyle } : w))
+    )
+  }, [])
+
   const existingTypes = useMemo(() => widgets.map((w) => w.type), [widgets])
 
   return (
@@ -140,7 +155,7 @@ export default function DashboardPage() {
           rowHeight={ROW_HEIGHT}
           width={width}
           dragConfig={{ enabled: isEditing, bounded: false, handle: '.widget-drag-handle', threshold: 3 }}
-          resizeConfig={{ enabled: isEditing, handles: ['se'] }}
+          resizeConfig={{ enabled: isEditing, handles: ['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne'] }}
           onLayoutChange={handleLayoutChange}
           compactor={verticalCompactor}
           margin={[16, 16] as [number, number]}
@@ -149,8 +164,12 @@ export default function DashboardPage() {
             <div key={widget.id}>
               <WidgetWrapper
                 type={widget.type}
+                config={widget.config}
+                style={widget.style}
                 isEditing={isEditing}
                 onRemove={() => handleRemoveWidget(widget.id)}
+                onConfigChange={(newConfig) => handleConfigChange(widget.id, newConfig)}
+                onStyleChange={(newStyle) => handleStyleChange(widget.id, newStyle)}
               />
             </div>
           ))}

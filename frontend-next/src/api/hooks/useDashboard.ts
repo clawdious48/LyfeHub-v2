@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '../client.js'
+import type { WidgetStyle } from '@/widgets/registry.js'
 
 // Types
 interface WidgetLayout {
@@ -9,10 +10,18 @@ interface WidgetLayout {
   y: number
   w: number
   h: number
+  config?: Record<string, unknown>
+  style?: WidgetStyle
+}
+
+interface DashboardSettings {
+  gap: 8 | 16 | 24
+  background: string
 }
 
 interface DashboardLayout {
   widgets: WidgetLayout[]
+  settings?: DashboardSettings
 }
 
 interface DashboardLayoutResponse {
