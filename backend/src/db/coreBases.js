@@ -406,7 +406,7 @@ Track notable people you admire - authors, thought leaders, etc. Note what you c
         relatedBaseId: 'core-projects',
         displayProperty: 'name'
       }},
-      { id: 'list_id', name: 'List', type: 'text', position: 17, width: 150 },
+      { id: 'list_id', name: 'List', type: 'select', position: 17, width: 150, options: [] },
       { id: 'subtasks', name: 'Subtasks', type: 'text', position: 18, width: 200 },
       { id: 'people_ids', name: 'People', type: 'relation', position: 19, width: 200, options: {
         relatedBaseId: 'core-people',
