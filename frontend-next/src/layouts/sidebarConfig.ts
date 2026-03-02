@@ -5,9 +5,10 @@ import {
   FileText, Users, Database,
   Wrench, BookOpen,
   HardHat, Contact, Package, FolderOpen, GitBranch, DollarSign, BarChart3,
-  Mail, Inbox, Star, Send, Trash2,
+  Mail,
 } from 'lucide-react'
 import { BaseSidebarContent } from '@/pages/bases/components/BaseSidebarContent.js'
+import { MailSidebarContent } from '@/pages/mail/components/MailSidebarContent.js'
 
 export interface SidebarItem {
   label: string
@@ -73,13 +74,8 @@ const contextualSections: Record<string, SidebarSection[]> = {
       key: 'mail-nav',
       header: 'Mail',
       icon: Mail,
-      items: [
-        { label: 'Inbox', icon: Inbox, to: '/mail?label=INBOX' },
-        { label: 'Starred', icon: Star, to: '/mail?label=STARRED' },
-        { label: 'Sent', icon: Send, to: '/mail?label=SENT' },
-        { label: 'Drafts', icon: FileText, to: '/mail?label=DRAFT' },
-        { label: 'Trash', icon: Trash2, to: '/mail?label=TRASH' },
-      ],
+      items: [],
+      component: MailSidebarContent,
     },
     {
       key: 'productivity',
