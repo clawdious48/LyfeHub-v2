@@ -33,10 +33,12 @@ const DEFAULT_APEX_LAYOUT = {
  * Returns the user's saved dashboard layout, or the default.
  * Accepts ?dashboard=personal|apex query param (default: 'personal').
  */
+const VALID_DASHBOARDS = ['personal', 'apex'];
+
 router.get('/layout', async (req, res) => {
   try {
     const userId = req.user.id;
-    const dashboardId = req.query.dashboard || 'personal';
+    const dashboardId = VALID_DASHBOARDS.includes(req.query.dashboard) ? req.query.dashboard : 'personal';
     const row = await db.getOne(
       'SELECT layout_json FROM dashboard_layouts WHERE user_id = $1 AND dashboard_id = $2',
       [userId, dashboardId]
@@ -66,7 +68,7 @@ router.get('/layout', async (req, res) => {
 router.put('/layout', async (req, res) => {
   try {
     const userId = req.user.id;
-    const dashboardId = req.query.dashboard || 'personal';
+    const dashboardId = VALID_DASHBOARDS.includes(req.query.dashboard) ? req.query.dashboard : 'personal';
     const { layout } = req.body;
 
     if (!layout || !layout.widgets || !Array.isArray(layout.widgets)) {

@@ -64,7 +64,7 @@ export const areas: AreaConfig[] = [personalArea, apexArea]
 // ---------------------------------------------------------------------------
 
 /** Routes (exact or prefix) that belong to the personal area. */
-const personalRoutes = ['/', '/calendar', '/tasks', '/mail', '/notes', '/people', '/bases']
+const personalRoutes = ['/', '/calendar', '/tasks', '/mail', '/notes', '/people', '/bases', '/settings']
 
 /**
  * Determine which area a given route belongs to.
@@ -80,7 +80,8 @@ export function getAreaForRoute(pathname: string): AreaId {
       return 'personal'
     }
   }
-  return 'apex'
+  // Default to personal for unknown routes (settings, profile, 404, etc.)
+  return 'personal'
 }
 
 /** Return the full AreaConfig for a given area id. */

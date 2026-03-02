@@ -65,9 +65,16 @@ export default function DashboardSpringboard() {
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      // Don't capture arrow keys when user is in an input/textarea
-      const tag = (e.target as HTMLElement)?.tagName
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable) {
+      // Only capture arrow keys when no interactive element has focus
+      // (i.e. focus is on body, the springboard container, or the dot indicators)
+      const target = e.target as HTMLElement
+      const tag = target?.tagName
+      if (
+        tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' ||
+        tag === 'BUTTON' || tag === 'A' ||
+        target?.isContentEditable ||
+        target?.closest?.('[role="listbox"], [role="menu"], [role="dialog"], [role="grid"]')
+      ) {
         return
       }
 
@@ -118,14 +125,9 @@ export default function DashboardSpringboard() {
         className="springboard-scroll flex-1 flex overflow-x-auto overflow-y-hidden"
         style={{
           scrollSnapType: 'x mandatory',
-          WebkitOverflowScrolling: 'touch',
           scrollbarWidth: 'none',
         }}
       >
-        {/* Hide scrollbar for Chrome/Safari */}
-        <style>{`
-          .springboard-scroll::-webkit-scrollbar { display: none; }
-        `}</style>
 
         <div
           className="min-w-full h-full overflow-y-auto"
