@@ -1,6 +1,15 @@
 import { useAuth } from '@/hooks/useAuth.js'
 import { apiClient } from '@/api/client.js'
 
+export interface TabStyleConfig {
+  bgColor?: string
+  borderColor?: string
+  borderWidth?: number
+  opacity?: number
+  selectedBgColor?: string
+  hoverBgColor?: string
+}
+
 export interface UserSettings {
   sidebar?: {
     collapsed?: boolean
@@ -23,6 +32,13 @@ export interface UserSettings {
   }
   mail?: {
     readingPanePosition?: 'right' | 'bottom'
+  }
+  header?: {
+    tabDisplayMode?: 'icon-label' | 'icon-only' | 'label-only'
+    personalTabOrder?: string[]
+    apexTabOrder?: string[]
+    tabStyles?: Record<string, TabStyleConfig>
+    homeDashboard?: 'personal' | 'apex'
   }
   theme?: 'light' | 'dark'
 }
