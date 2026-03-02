@@ -1,6 +1,7 @@
 import {
   Type, Hash, ChevronDown, Tags, Calendar, CheckSquare, Link,
-  ArrowLeftRight,
+  ArrowLeftRight, Mail, Phone, Paperclip, FileText, CircleDot,
+  Clock, History,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { BasePropertyType } from '@/types/index.js'
@@ -20,6 +21,13 @@ export const PROPERTY_TYPES: PropertyTypeDefinition[] = [
   { value: 'checkbox', label: 'Checkbox', icon: CheckSquare },
   { value: 'url', label: 'URL', icon: Link },
   { value: 'relation', label: 'Relation', icon: ArrowLeftRight },
+  { value: 'email', label: 'Email', icon: Mail },
+  { value: 'phone', label: 'Phone', icon: Phone },
+  { value: 'files', label: 'Files', icon: Paperclip },
+  { value: 'rich_text', label: 'Rich Text', icon: FileText },
+  { value: 'status', label: 'Status', icon: CircleDot },
+  { value: 'created_time', label: 'Created Time', icon: Clock },
+  { value: 'last_edited_time', label: 'Last Edited', icon: History },
 ]
 
 export function getPropertyTypeIcon(type: BasePropertyType): LucideIcon {
@@ -78,6 +86,43 @@ export const FILTER_OPERATORS: Record<string, { value: string; label: string }[]
     { value: 'is_empty', label: 'Is empty' },
     { value: 'is_not_empty', label: 'Is not empty' },
   ],
+  email: [
+    { value: 'contains', label: 'Contains' },
+    { value: 'is', label: 'Is' },
+    { value: 'is_empty', label: 'Is empty' },
+    { value: 'is_not_empty', label: 'Is not empty' },
+  ],
+  phone: [
+    { value: 'contains', label: 'Contains' },
+    { value: 'is', label: 'Is' },
+    { value: 'is_empty', label: 'Is empty' },
+    { value: 'is_not_empty', label: 'Is not empty' },
+  ],
+  files: [
+    { value: 'is_empty', label: 'Is empty' },
+    { value: 'is_not_empty', label: 'Is not empty' },
+  ],
+  rich_text: [
+    { value: 'contains', label: 'Contains' },
+    { value: 'not_contains', label: 'Does not contain' },
+    { value: 'is_empty', label: 'Is empty' },
+    { value: 'is_not_empty', label: 'Is not empty' },
+  ],
+  status: [
+    { value: 'is', label: 'Is' },
+    { value: 'is_not', label: 'Is not' },
+    { value: 'is_empty', label: 'Is empty' },
+  ],
+  created_time: [
+    { value: 'is', label: 'Is' },
+    { value: 'before', label: 'Before' },
+    { value: 'after', label: 'After' },
+  ],
+  last_edited_time: [
+    { value: 'is', label: 'Is' },
+    { value: 'before', label: 'Before' },
+    { value: 'after', label: 'After' },
+  ],
 }
 
 // Tag colors for select/multi_select options (Tailwind classes)
@@ -94,6 +139,16 @@ export const TAG_COLORS = [
 ] as const
 
 export type TagColor = (typeof TAG_COLORS)[number]
+
+export const STATUS_GROUPS = [
+  { value: 'todo', label: 'To-do', color: 'gray' },
+  { value: 'in_progress', label: 'In Progress', color: 'blue' },
+  { value: 'complete', label: 'Complete', color: 'green' },
+] as const
+
+export type StatusGroup = (typeof STATUS_GROUPS)[number]['value']
+
+export const READ_ONLY_TYPES: BasePropertyType[] = ['created_time', 'last_edited_time']
 
 export function getTagColor(colorName: string): TagColor {
   return TAG_COLORS.find(c => c.name === colorName) ?? TAG_COLORS[0]
