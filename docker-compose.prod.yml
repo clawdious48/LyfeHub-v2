@@ -34,6 +34,10 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - NODE_ENV=production
       - PORT=3000
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
+      - MAIL_ENCRYPTION_KEY=${MAIL_ENCRYPTION_KEY}
     depends_on:
       db:
         condition: service_healthy
