@@ -12,13 +12,25 @@ import {
   CellDate,
   CellUrl,
   CellRelation,
+  CellEmail,
+  CellPhone,
+  CellRichText,
+  CellStatus,
+  CellCreatedTime,
+  CellLastEditedTime,
+  CellFiles,
 } from '@/pages/bases/components/detail/cells/index.js'
 import { CellTextEditor } from './cells/CellTextEditor.js'
 import { CellNumberEditor } from './cells/CellNumberEditor.js'
 import { CellDateEditor } from './cells/CellDateEditor.js'
 import { CellSelectEditor } from './cells/CellSelectEditor.js'
 import { CellMultiSelectEditor } from './cells/CellMultiSelectEditor.js'
-import type { BaseRecord, BaseProperty, SelectOption } from '@/types/index.js'
+import { CellEmailEditor } from './cells/CellEmailEditor.js'
+import { CellPhoneEditor } from './cells/CellPhoneEditor.js'
+import { CellRichTextEditor } from './cells/CellRichTextEditor.js'
+import { CellStatusEditor } from './cells/CellStatusEditor.js'
+import { READ_ONLY_TYPES } from '@/pages/bases/utils/baseConstants.js'
+import type { BaseRecord, BaseProperty, SelectOption, StatusOption } from '@/types/index.js'
 
 interface BaseCellProps {
   record: BaseRecord
@@ -61,7 +73,7 @@ export function BaseCell({ record, property, baseId }: BaseCellProps) {
   }
 
   function handleClick() {
-    if (property.type !== 'checkbox' && property.type !== 'relation') {
+    if (property.type !== 'checkbox' && property.type !== 'relation' && property.type !== 'files' && !READ_ONLY_TYPES.includes(property.type)) {
       setEditingCell({ recordId: record.id, propertyId: property.id })
     }
   }
@@ -110,6 +122,21 @@ export function BaseCell({ record, property, baseId }: BaseCellProps) {
             onCancel={handleCancel}
           />
         )
+      case 'email':
+        return <CellEmailEditor value={String(value ?? '')} onSave={handleSave} onCancel={handleCancel} />
+      case 'phone':
+        return <CellPhoneEditor value={String(value ?? '')} onSave={handleSave} onCancel={handleCancel} />
+      case 'rich_text':
+        return <CellRichTextEditor value={String(value ?? '')} onSave={handleSave} onCancel={handleCancel} />
+      case 'status':
+        return (
+          <CellStatusEditor
+            value={String(value ?? '')}
+            options={(property.options as StatusOption[]) ?? []}
+            onSave={handleSave}
+            onCancel={handleCancel}
+          />
+        )
       default:
         return <CellTextEditor value={String(value ?? '')} onSave={handleSave} onCancel={handleCancel} />
     }
@@ -133,6 +160,20 @@ export function BaseCell({ record, property, baseId }: BaseCellProps) {
         return <CellUrl value={value} />
       case 'relation':
         return <CellRelation value={value} baseId={baseId} property={property} recordId={record.id} />
+      case 'email':
+        return <CellEmail value={value} />
+      case 'phone':
+        return <CellPhone value={value} />
+      case 'rich_text':
+        return <CellRichText value={value} />
+      case 'status':
+        return <CellStatus value={value} options={property.options as StatusOption[]} />
+      case 'created_time':
+        return <CellCreatedTime value={record.created_at} />
+      case 'last_edited_time':
+        return <CellLastEditedTime value={record.updated_at} />
+      case 'files':
+        return <CellFiles value={value} baseId={baseId} property={property} recordId={record.id} />
       default:
         return <CellText value={value} />
     }
