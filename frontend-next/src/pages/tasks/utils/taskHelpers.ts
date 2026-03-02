@@ -92,10 +92,8 @@ export function isOverdue(task: TaskRecord): boolean {
   return task.due_date < getToday()
 }
 
-export function getSubtaskProgress(task: TaskRecord): { done: number; total: number } | null {
-  if (!task.subtasks || task.subtasks.length === 0) return null
-  const done = task.subtasks.filter(s => s.completed).length
-  return { done, total: task.subtasks.length }
+export function getSubtaskProgress(_task: TaskRecord): { done: number; total: number } | null {
+  return null
 }
 
 export function getPriorityColor(priority: string | null): string {

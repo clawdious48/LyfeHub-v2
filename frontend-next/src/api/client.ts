@@ -41,7 +41,7 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
 
   if (response.status === 401) {
     if (!AUTH_PAGES.some((p) => window.location.pathname.endsWith(p))) {
-      window.location.href = '/login.html'
+      window.location.href = '/login'
     }
     throw new ApiError('Unauthorized', 401)
   }

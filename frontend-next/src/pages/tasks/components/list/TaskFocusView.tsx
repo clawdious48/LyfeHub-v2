@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, Check, SkipForward, CalendarDays } from 'luc
 import { Button } from '@/components/ui/button.js'
 import { Input } from '@/components/ui/input.js'
 import { useToggleTaskComplete, useUpdateTaskRecord, useTaskListOptions } from '@/api/hooks/useTasksAdapter.js'
-import { formatDueDate, getPriorityColor, getSubtaskProgress } from '@/pages/tasks/utils/taskHelpers.js'
+import { formatDueDate, getPriorityColor } from '@/pages/tasks/utils/taskHelpers.js'
 import type { TaskRecord } from '@/api/hooks/useTasksAdapter.js'
 
 interface TaskFocusViewProps {
@@ -61,7 +61,6 @@ export function TaskFocusView({ tasks, onSelectTask }: TaskFocusViewProps) {
 
   const dueDateText = formatDueDate(task.due_date)
   const priorityColor = getPriorityColor(task.priority)
-  const subtaskProgress = getSubtaskProgress(task)
   const listName = task.list_id ? listOptions.find(o => (o.value || o.label) === task.list_id)?.label : null
 
   function handleDone() {
@@ -75,13 +74,6 @@ export function TaskFocusView({ tasks, onSelectTask }: TaskFocusViewProps) {
     setShowReschedule(false)
     setRescheduleDate('')
     goNext()
-  }
-
-  function handleSubtaskToggle(subtaskId: string) {
-    const updatedSubtasks = task.subtasks.map(s =>
-      s.id === subtaskId ? { ...s, completed: !s.completed } : s
-    )
-    updateTask.mutate({ id: task.id, subtasks: updatedSubtasks })
   }
 
   return (
@@ -128,36 +120,6 @@ export function TaskFocusView({ tasks, onSelectTask }: TaskFocusViewProps) {
             <p className="text-sm text-text-secondary">{task.description}</p>
           )}
 
-          {/* Subtasks */}
-          {task.subtasks && task.subtasks.length > 0 && (
-            <div className="space-y-1">
-              <div className="text-xs text-text-muted font-medium">
-                Subtasks ({subtaskProgress?.done ?? 0}/{subtaskProgress?.total ?? 0})
-              </div>
-              {task.subtasks.map((subtask) => (
-                <div key={subtask.id} className="flex items-center gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleSubtaskToggle(subtask.id)
-                    }}
-                    className={[
-                      'size-4 rounded border flex items-center justify-center shrink-0 transition-colors',
-                      subtask.completed ? 'border-accent bg-accent' : 'border-border hover:border-accent',
-                    ].join(' ')}
-                  >
-                    {subtask.completed && <Check className="size-2.5 text-white" />}
-                  </button>
-                  <span className={[
-                    'text-sm',
-                    subtask.completed ? 'text-text-muted line-through' : 'text-text-primary',
-                  ].join(' ')}>
-                    {subtask.text}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
 
         <button

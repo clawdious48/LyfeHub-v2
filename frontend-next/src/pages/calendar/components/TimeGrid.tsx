@@ -25,9 +25,11 @@ interface TimeGridProps {
 const TOTAL_HEIGHT = SLOTS_PER_DAY * SLOT_HEIGHT_PX
 
 export function TimeGrid({ dates, items, onSlotClick, onItemClick, onDragCreate, onTaskDrop }: TimeGridProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<DragState>({ active: false, dateStr: '', startY: 0, currentY: 0 })
-  const [ghostBlock, setGhostBlock] = useState<{ dateStr: string; top: number; height: number } | null>(null)
+  const didDragCreateRef = useRef(false)
+  const [ghostBlock, setGhostBlock] = useState<{ dateStr: string; top: number; height: number; startTime: string; endTime: string } | null>(null)
   const [dropIndicator, setDropIndicator] = useState<{ dateStr: string; top: number; height: number } | null>(null)
 
   const snapToSlot = useCallback((y: number) => Math.round(y / SLOT_HEIGHT_PX) * SLOT_HEIGHT_PX, [])
@@ -47,8 +49,11 @@ export function TimeGrid({ dates, items, onSlotClick, onItemClick, onDragCreate,
 
     dragRef.current = { active: true, dateStr, startY: snappedY, currentY: snappedY }
     e.currentTarget.setPointerCapture(e.pointerId)
-    // Don't show ghost yet — wait for move to distinguish click from drag
-  }, [snapToSlot])
+
+    // Show ghost immediately at click position with start time
+    const time = formatTime(yToTime(snappedY))
+    setGhostBlock({ dateStr, top: snappedY, height: SLOT_HEIGHT_PX, startTime: time, endTime: time })
+  }, [snapToSlot, yToTime])
 
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>, dateStr: string) => {
     if (!dragRef.current.active || dragRef.current.dateStr !== dateStr) return
@@ -59,13 +64,16 @@ export function TimeGrid({ dates, items, onSlotClick, onItemClick, onDragCreate,
 
     const minY = Math.min(dragRef.current.startY, snappedY)
     const maxY = Math.max(dragRef.current.startY, snappedY)
-    const height = maxY - minY
+    const height = Math.max(maxY - minY, SLOT_HEIGHT_PX)
 
-    // Only show ghost if dragged at least one slot
-    if (height >= SLOT_HEIGHT_PX) {
-      setGhostBlock({ dateStr, top: minY, height })
-    }
-  }, [snapToSlot])
+    setGhostBlock({
+      dateStr,
+      top: minY,
+      height,
+      startTime: formatTime(yToTime(minY)),
+      endTime: formatTime(yToTime(minY + height)),
+    })
+  }, [snapToSlot, yToTime])
 
   const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>, dateStr: string) => {
     if (!dragRef.current.active || dragRef.current.dateStr !== dateStr) return
@@ -82,6 +90,7 @@ export function TimeGrid({ dates, items, onSlotClick, onItemClick, onDragCreate,
 
     const startTime = yToTime(minY)
     const endTime = yToTime(maxY)
+    didDragCreateRef.current = true
     onDragCreate?.(dateStr, startTime, endTime)
   }, [yToTime, onDragCreate])
 
@@ -115,6 +124,14 @@ export function TimeGrid({ dates, items, onSlotClick, onItemClick, onDragCreate,
     const endTime = minutesToTime(Math.min(startMin + DEFAULT_EVENT_DURATION_MINUTES, 24 * 60 - MINUTES_PER_SLOT))
     onTaskDrop?.(taskId, dateStr, startTime, endTime)
   }, [yToTime, snapToSlot, onTaskDrop])
+
+  // Measure scrollbar width so header columns align with grid columns
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el || !containerRef.current) return
+    const w = el.offsetWidth - el.clientWidth
+    containerRef.current.style.setProperty('--scrollbar-w', `${w}px`)
+  }, [dates])
 
   // Auto-scroll to current time or DEFAULT_VISIBLE_START_HOUR on mount
   useEffect(() => {
@@ -153,9 +170,9 @@ export function TimeGrid({ dates, items, onSlotClick, onItemClick, onDragCreate,
   const hours = Array.from({ length: 24 }, (_, i) => i)
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Day headers */}
-      <div className="flex border-b border-border shrink-0">
+    <div ref={containerRef} className="flex flex-col h-full">
+      {/* Day headers — pr matches scrollbar width so columns align with grid */}
+      <div className="flex border-b border-border shrink-0 pr-[var(--scrollbar-w,0px)]">
         <div className="w-16 shrink-0" /> {/* time gutter spacer */}
         {dates.map((date) => {
           const today = isToday(date)
@@ -212,6 +229,8 @@ export function TimeGrid({ dates, items, onSlotClick, onItemClick, onDragCreate,
                   today && 'bg-accent/[0.02]',
                 ].filter(Boolean).join(' ')}
                 onClick={(e) => {
+                  // Skip click if a drag-create just fired (pointerUp → click sequence)
+                  if (didDragCreateRef.current) { didDragCreateRef.current = false; return }
                   if (e.target !== e.currentTarget) return
                   const rect = e.currentTarget.getBoundingClientRect()
                   const y = e.clientY - rect.top + (scrollRef.current?.scrollTop || 0)
@@ -261,12 +280,23 @@ export function TimeGrid({ dates, items, onSlotClick, onItemClick, onDragCreate,
                 {/* Drag-create ghost block */}
                 {ghostBlock && ghostBlock.dateStr === dateStr && (
                   <div
-                    className="absolute left-1 right-1 bg-accent/20 border-2 border-accent/60 rounded-md pointer-events-none animate-pulse"
+                    className="absolute left-1 right-1 bg-accent/20 border-2 border-accent/60 rounded-md pointer-events-none"
                     style={{
                       top: ghostBlock.top,
                       height: ghostBlock.height,
                     }}
-                  />
+                  >
+                    {/* Start time label */}
+                    <span className="absolute -top-5 left-0 text-[10px] font-semibold text-accent bg-bg-surface/95 px-1.5 py-0.5 rounded shadow-sm whitespace-nowrap z-10">
+                      {ghostBlock.startTime}
+                    </span>
+                    {/* End time label — only when dragged beyond initial slot */}
+                    {ghostBlock.height > SLOT_HEIGHT_PX && (
+                      <span className="absolute -bottom-5 left-0 text-[10px] font-semibold text-accent bg-bg-surface/95 px-1.5 py-0.5 rounded shadow-sm whitespace-nowrap z-10">
+                        {ghostBlock.endTime}
+                      </span>
+                    )}
+                  </div>
                 )}
 
                 {/* Task drop indicator */}

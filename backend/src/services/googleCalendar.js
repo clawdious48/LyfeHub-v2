@@ -2,7 +2,10 @@ const { google } = require('googleapis');
 const db = require('../db/pool');
 const { v4: uuidv4 } = require('uuid');
 
-const SCOPES = ['https://www.googleapis.com/auth/calendar'];
+const SCOPES = [
+  'https://www.googleapis.com/auth/calendar',
+  'https://www.googleapis.com/auth/userinfo.email',
+];
 
 /**
  * Create a new OAuth2 client from env vars
@@ -11,7 +14,7 @@ function createOAuth2Client() {
   return new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_REDIRECT_URI
+    process.env.GOOGLE_CALENDAR_REDIRECT_URI || process.env.GOOGLE_REDIRECT_URI
   );
 }
 
@@ -19,6 +22,10 @@ function createOAuth2Client() {
  * Generate Google OAuth consent URL
  */
 async function getAuthUrl(userId) {
+  const redirectUri = process.env.GOOGLE_CALENDAR_REDIRECT_URI || process.env.GOOGLE_REDIRECT_URI;
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || !redirectUri) {
+    throw new Error('Google Calendar OAuth not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_CALENDAR_REDIRECT_URI environment variables.');
+  }
   const oauth2Client = createOAuth2Client();
   const url = oauth2Client.generateAuthUrl({
     access_type: 'offline',
@@ -81,6 +88,13 @@ async function handleCallback(code, userId) {
 
   // Sync the user's calendar list
   await syncCalendars(userId);
+
+  // Also sync events so they're available immediately
+  try {
+    await syncEvents(userId);
+  } catch (err) {
+    console.error('Initial event sync failed (non-fatal):', err.message);
+  }
 }
 
 /**
@@ -219,7 +233,7 @@ async function syncEvents(userId) {
     `SELECT m.*, c.name AS calendar_name
      FROM google_calendar_mappings m
      LEFT JOIN calendars c ON c.id = m.local_calendar_id
-     WHERE m.user_id = $1 AND m.is_visible = true`,
+     WHERE m.user_id = $1 AND m.is_visible = true AND m.sync_direction IN ('both', 'pull')`,
     [userId]
   );
 

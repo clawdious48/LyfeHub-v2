@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Target } from 'lucide-react'
-import { useBases, useBaseRecords } from '@/api/hooks'
+import { useBases, useBase } from '@/api/hooks'
 
 export default function AreasWidget({ config: _config }: { config?: Record<string, unknown> }) {
   const { data: bases, isLoading: basesLoading } = useBases()
@@ -13,12 +13,13 @@ export default function AreasWidget({ config: _config }: { config?: Record<strin
   }, [bases])
 
   const tagsBaseId = tagsBase?.id ?? ''
-  const { data: records, isLoading: recordsLoading } = useBaseRecords(tagsBaseId)
+  const { data: tagsBaseDetail, isLoading: recordsLoading } = useBase(tagsBaseId)
+  const records = tagsBaseDetail?.records
 
   const areas = useMemo(() => {
     if (!records) return []
     return records.filter((r) => {
-      const typeValue = r.data?.Type ?? r.data?.type
+      const typeValue = r.values?.Type ?? r.values?.type
       return typeValue === 'Area'
     })
   }, [records])
@@ -44,8 +45,8 @@ export default function AreasWidget({ config: _config }: { config?: Record<strin
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
       {areas.map((area) => {
         const name =
-          (area.data?.Name as string) ??
-          (area.data?.name as string) ??
+          (area.values?.Name as string) ??
+          (area.values?.name as string) ??
           'Untitled'
 
         return (

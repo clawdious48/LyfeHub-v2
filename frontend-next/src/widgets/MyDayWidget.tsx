@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Plus, Circle } from 'lucide-react'
 import { Button } from '@/components/ui/button.js'
-import { useTasks, useUpdateTask, useCalendarEvents, useCalendars } from '@/api/hooks/index.js'
+import { useTaskBase, useToggleTaskComplete, useCalendarEvents, useCalendars } from '@/api/hooks/index.js'
 
 const MAX_VISIBLE = 10
 
@@ -47,8 +47,8 @@ const sectionLabels: Record<string, string> = {
 }
 
 export default function MyDayWidget({ config: _config }: { config?: Record<string, unknown> }) {
-  const { data: tasks, isLoading: tasksLoading } = useTasks()
-  const updateTask = useUpdateTask()
+  const { records: tasks, isLoading: tasksLoading } = useTaskBase()
+  const toggleComplete = useToggleTaskComplete()
   const { data: calendars } = useCalendars()
 
   const today = useMemo(() => new Date().toISOString().split('T')[0], [])
@@ -69,13 +69,13 @@ export default function MyDayWidget({ config: _config }: { config?: Record<strin
 
     if (tasks) {
       for (const t of tasks) {
-        if (t.due_date?.startsWith(today) || t.my_day === 1) {
+        if (t.due_date?.startsWith(today) || t.my_day) {
           items.push({
             kind: 'task',
             id: t.id,
             title: t.title,
             time: t.due_time ?? undefined,
-            completed: t.completed === 1,
+            completed: !!t.completed,
           })
         }
       }
@@ -162,7 +162,7 @@ export default function MyDayWidget({ config: _config }: { config?: Record<strin
                 >
                   <button
                     type="button"
-                    onClick={() => updateTask.mutate({ id: item.id, completed: item.completed ? 0 : 1 })}
+                    onClick={() => toggleComplete.mutate({ id: item.id, currentValue: item.completed })}
                     className={`size-4 shrink-0 rounded border flex items-center justify-center transition-colors ${
                       item.completed
                         ? 'bg-accent border-accent text-white'

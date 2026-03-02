@@ -6,6 +6,7 @@ import {
   useConnectGoogleCalendar,
   useDisconnectGoogleCalendar,
   useSyncGoogleCalendar,
+  useUpdateGoogleCalendarMapping,
 } from '@/api/hooks/useGoogleCalendar.js'
 import { Button } from '@/components/ui/button.js'
 
@@ -15,6 +16,7 @@ export function GoogleCalendarSection() {
   const connect = useConnectGoogleCalendar()
   const disconnect = useDisconnectGoogleCalendar()
   const sync = useSyncGoogleCalendar()
+  const updateMapping = useUpdateGoogleCalendarMapping()
 
   if (!status?.connected) {
     return (
@@ -71,10 +73,25 @@ export function GoogleCalendarSection() {
 
       <div className="space-y-0.5">
         {calendars.map((cal) => (
-          <div key={cal.id} className="flex items-center gap-2 px-2 py-1 text-xs text-text-secondary">
-            <span className="size-2.5 rounded-sm shrink-0" style={{ backgroundColor: cal.color }} />
-            <span className="truncate">{cal.name}</span>
-          </div>
+          <button
+            key={cal.id}
+            onClick={() => updateMapping.mutate({ id: cal.id, is_visible: !cal.is_visible })}
+            className="flex items-center gap-2 w-full px-2 py-1 rounded-md text-xs hover:bg-bg-hover transition-colors group"
+          >
+            <span
+              className={[
+                'size-2.5 rounded-sm shrink-0 transition-opacity duration-150',
+                !cal.is_visible && 'opacity-30',
+              ].filter(Boolean).join(' ')}
+              style={{ backgroundColor: cal.color }}
+            />
+            <span className={[
+              'text-text-secondary truncate flex-1 text-left transition-opacity duration-150',
+              !cal.is_visible && 'opacity-50 line-through',
+            ].filter(Boolean).join(' ')}>
+              {cal.name}
+            </span>
+          </button>
         ))}
       </div>
     </div>

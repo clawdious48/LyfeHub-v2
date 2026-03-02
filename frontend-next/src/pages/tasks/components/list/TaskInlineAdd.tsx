@@ -18,8 +18,8 @@ export function TaskInlineAdd({ activeView, activeListId }: TaskInlineAddProps) 
 
     // Context-aware defaults
     const defaults: Record<string, unknown> = {}
-    if (activeView === 'my-day') defaults.my_day = 1
-    if (activeView === 'important') defaults.important = 1
+    if (activeView === 'my-day') defaults.my_day = true
+    if (activeView === 'important') defaults.important = true
     if (activeListId) defaults.list_id = activeListId
 
     createTask.mutate({ title: trimmed, ...defaults })

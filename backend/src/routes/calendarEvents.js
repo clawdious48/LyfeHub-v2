@@ -82,7 +82,7 @@ router.post('/', requireScope('calendar', 'write'), async (req, res) => {
     // Fire-and-forget Google sync (don't block the response)
     try {
       const googleCalendar = require('../services/googleCalendar');
-      googleCalendar.pushEventToGoogle(userId, event).catch(() => {});
+      googleCalendar.pushEventToGoogle(userId, event).catch(err => console.error('Google Calendar push failed (create):', err.message));
     } catch (_) { /* Google sync not configured */ }
   } catch (err) {
     console.error('Error creating calendar event:', err);
@@ -108,7 +108,7 @@ router.patch('/:id', requireScope('calendar', 'write'), async (req, res) => {
     // Fire-and-forget Google sync (don't block the response)
     try {
       const googleCalendar = require('../services/googleCalendar');
-      googleCalendar.pushEventToGoogle(userId, event).catch(() => {});
+      googleCalendar.pushEventToGoogle(userId, event).catch(err => console.error('Google Calendar push failed (update):', err.message));
     } catch (_) { /* Google sync not configured */ }
   } catch (err) {
     console.error('Error updating calendar event:', err);
@@ -140,7 +140,7 @@ router.delete('/:id', requireScope('calendar', 'delete'), async (req, res) => {
     if (externalId) {
       try {
         const googleCalendar = require('../services/googleCalendar');
-        googleCalendar.deleteEventFromGoogle(userId, req.params.id, externalId).catch(() => {});
+        googleCalendar.deleteEventFromGoogle(userId, req.params.id, externalId).catch(err => console.error('Google Calendar push failed (delete):', err.message));
       } catch (_) { /* Google sync not configured */ }
     }
   } catch (err) {

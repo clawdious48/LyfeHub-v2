@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   Dialog, DialogContent,
 } from '@/components/ui/dialog.js'
@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button.js'
 import { Input } from '@/components/ui/input.js'
 import { Textarea } from '@/components/ui/textarea.js'
 import {
-  Star, ChevronDown, ChevronRight, Plus, Trash2,
+  Star, ChevronDown, ChevronRight, Trash2, Plus, Check,
 } from 'lucide-react'
 import {
   useTaskRecord,
+  useTaskBase,
   useCreateTaskRecord,
   useUpdateTaskRecord,
   useDeleteTaskRecord,
@@ -18,7 +19,6 @@ import {
 } from '@/api/hooks/useTasksAdapter.js'
 import { useTasksUiStore } from '@/stores/tasksUiStore.js'
 import { PRIORITY_OPTIONS, ENERGY_OPTIONS, LOCATION_OPTIONS, RECURRING_OPTIONS } from '@/pages/tasks/utils/taskConstants.js'
-import type { Subtask } from '@/api/hooks/useTasksAdapter.js'
 
 interface TaskDetailModalProps {
   taskId?: string
@@ -29,12 +29,24 @@ interface TaskDetailModalProps {
 export function TaskDetailModal({ taskId, open, onOpenChange }: TaskDetailModalProps) {
   const isEditing = !!taskId
   const existingTask = useTaskRecord(taskId ?? '')
+  const { records: allTasks } = useTaskBase()
   const listOptions = useTaskListOptions()
   const createTask = useCreateTaskRecord()
   const updateTask = useUpdateTaskRecord()
   const deleteTask = useDeleteTaskRecord()
   const toggleTask = useToggleTaskComplete()
   const { moreOptionsExpanded, setMoreOptionsExpanded } = useTasksUiStore()
+
+  // Subtask state
+  const [newSubtask, setNewSubtask] = useState('')
+  const [pendingSubtasks, setPendingSubtasks] = useState<string[]>([]) // create mode only
+
+  // Resolve subtasks from the parent's subtask_ids (edit mode)
+  const subtasks = useMemo(() => {
+    if (!existingTask?.subtask_ids?.length || !allTasks.length) return []
+    const idSet = new Set(existingTask.subtask_ids)
+    return allTasks.filter(t => idSet.has(t.id))
+  }, [existingTask?.subtask_ids, allTasks])
 
   // Form state
   const [title, setTitle] = useState('')
@@ -50,8 +62,6 @@ export function TaskDetailModal({ taskId, open, onOpenChange }: TaskDetailModalP
   const [recurringDays, setRecurringDays] = useState<string[]>([])
   const [energy, setEnergy] = useState<string | null>(null)
   const [location, setLocation] = useState<string | null>(null)
-  const [subtasks, setSubtasks] = useState<Subtask[]>([])
-  const [newSubtaskText, setNewSubtaskText] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState(false)
 
   // Populate form from existing task
@@ -70,7 +80,6 @@ export function TaskDetailModal({ taskId, open, onOpenChange }: TaskDetailModalP
       setRecurringDays(existingTask.recurring_days || [])
       setEnergy(existingTask.energy)
       setLocation(existingTask.location)
-      setSubtasks(existingTask.subtasks || [])
     } else if (!isEditing) {
       // Reset form for create mode
       setTitle('')
@@ -86,9 +95,9 @@ export function TaskDetailModal({ taskId, open, onOpenChange }: TaskDetailModalP
       setRecurringDays([])
       setEnergy(null)
       setLocation(null)
-      setSubtasks([])
-      setNewSubtaskText('')
       setDeleteConfirm(false)
+      setNewSubtask('')
+      setPendingSubtasks([])
     }
   }, [existingTask, isEditing, open])
 
@@ -109,13 +118,22 @@ export function TaskDetailModal({ taskId, open, onOpenChange }: TaskDetailModalP
       recurring_days: recurringDays,
       energy,
       location,
-      subtasks,
     }
 
     if (isEditing && taskId) {
       updateTask.mutate({ id: taskId, ...data })
     } else {
-      createTask.mutate({ ...data, title: title.trim() })
+      createTask.mutate({ ...data, title: title.trim() }, {
+        onSuccess: (newRecord) => {
+          // Create pending subtasks after parent is saved
+          for (const sub of pendingSubtasks) {
+            createTask.mutate({
+              title: sub,
+              parent_task_id: [newRecord.id],
+            })
+          }
+        },
+      })
     }
     onOpenChange(false)
   }
@@ -130,23 +148,19 @@ export function TaskDetailModal({ taskId, open, onOpenChange }: TaskDetailModalP
     onOpenChange(false)
   }
 
-  function addSubtask() {
-    const text = newSubtaskText.trim()
-    if (!text) return
-    setSubtasks(prev => [...prev, { id: crypto.randomUUID(), text, completed: false }])
-    setNewSubtaskText('')
-  }
-
-  function toggleSubtask(id: string) {
-    setSubtasks(prev => prev.map(s => s.id === id ? { ...s, completed: !s.completed } : s))
-  }
-
-  function removeSubtask(id: string) {
-    setSubtasks(prev => prev.filter(s => s.id !== id))
-  }
-
-  function updateSubtaskText(id: string, text: string) {
-    setSubtasks(prev => prev.map(s => s.id === id ? { ...s, text } : s))
+  function handleAddSubtask() {
+    if (!newSubtask.trim()) return
+    if (isEditing && taskId) {
+      // Edit mode: create subtask record immediately
+      createTask.mutate({
+        title: newSubtask.trim(),
+        parent_task_id: [taskId],
+      })
+    } else {
+      // Create mode: queue subtask for after parent is saved
+      setPendingSubtasks(prev => [...prev, newSubtask.trim()])
+    }
+    setNewSubtask('')
   }
 
   const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -198,54 +212,93 @@ export function TaskDetailModal({ taskId, open, onOpenChange }: TaskDetailModalP
               />
             </div>
 
-            {/* Subtasks */}
+            {/* Subtasks — works in both create and edit modes */}
             <div>
-              <label className="text-xs font-medium text-text-muted uppercase tracking-wider">Subtasks</label>
-              <div className="mt-1 space-y-1">
-                {subtasks.map((subtask) => (
-                  <div key={subtask.id} className="flex items-center gap-2 group">
-                    <button
-                      onClick={() => toggleSubtask(subtask.id)}
-                      className={[
-                        'size-4 rounded border flex items-center justify-center shrink-0 transition-colors',
-                        subtask.completed ? 'border-accent bg-accent' : 'border-border hover:border-accent',
-                      ].join(' ')}
-                    >
-                      {subtask.completed && <span className="text-white text-[10px]">&#10003;</span>}
-                    </button>
-                    <input
-                      value={subtask.text}
-                      onChange={(e) => updateSubtaskText(subtask.id, e.target.value)}
-                      className={[
-                        'flex-1 text-sm bg-transparent border-none outline-none',
-                        subtask.completed ? 'text-text-muted line-through' : 'text-text-primary',
-                      ].join(' ')}
-                    />
-                    <button
-                      onClick={() => removeSubtask(subtask.id)}
-                      className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-red-400 transition-opacity"
-                    >
-                      <Trash2 className="size-3.5" />
-                    </button>
-                  </div>
-                ))}
-                <div className="flex items-center gap-2">
-                  <Plus className="size-4 text-text-muted shrink-0" />
-                  <input
-                    value={newSubtaskText}
-                    onChange={(e) => setNewSubtaskText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault()
-                        addSubtask()
-                      }
-                    }}
-                    placeholder="Add subtask..."
-                    className="flex-1 text-sm bg-transparent border-none outline-none text-text-primary placeholder:text-text-muted"
+              <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
+                Sub-tasks{isEditing && subtasks.length > 0 && ` (${subtasks.filter(s => s.completed).length}/${subtasks.length})`}
+                {!isEditing && pendingSubtasks.length > 0 && ` (${pendingSubtasks.length})`}
+              </label>
+
+              {/* Subtask progress bar (edit mode only) */}
+              {isEditing && subtasks.length > 0 && (
+                <div className="h-1 bg-bg-hover rounded-full overflow-hidden mt-2 mb-1">
+                  <div
+                    className="h-full bg-accent rounded-full transition-all"
+                    style={{ width: `${(subtasks.filter(s => s.completed).length / subtasks.length) * 100}%` }}
                   />
                 </div>
+              )}
+
+              {/* Subtask list (edit mode — saved subtasks from DB) */}
+              {isEditing && subtasks.length > 0 && (
+                <div className="space-y-0.5 mt-1">
+                  {subtasks.map((sub) => (
+                    <div
+                      key={sub.id}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-bg-hover transition-colors"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => toggleTask.mutate({ id: sub.id, currentValue: sub.completed })}
+                        className={[
+                          'size-4 shrink-0 rounded border flex items-center justify-center transition-colors',
+                          sub.completed
+                            ? 'bg-accent border-accent text-white'
+                            : 'border-text-muted hover:border-accent',
+                        ].join(' ')}
+                      >
+                        {sub.completed && <Check className="size-2.5" />}
+                      </button>
+                      <span
+                        className={[
+                          'text-sm truncate flex-1',
+                          sub.completed ? 'text-text-muted line-through' : 'text-text-primary',
+                        ].join(' ')}
+                      >
+                        {sub.title}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Pending subtask list (create mode — queued, not yet saved) */}
+              {!isEditing && pendingSubtasks.length > 0 && (
+                <div className="space-y-0.5 mt-1">
+                  {pendingSubtasks.map((sub, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-bg-hover transition-colors"
+                    >
+                      <div className="size-4 shrink-0 rounded border border-text-muted" />
+                      <span className="text-sm truncate flex-1 text-text-primary">{sub}</span>
+                      <button
+                        type="button"
+                        onClick={() => setPendingSubtasks(prev => prev.filter((_, idx) => idx !== i))}
+                        className="text-text-muted hover:text-red-400 text-xs"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Rapid-entry subtask input — always visible */}
+              <div className="flex items-center gap-2 px-2 py-1.5 mt-0.5">
+                <Plus className="size-4 shrink-0 text-text-muted" />
+                <input
+                  value={newSubtask}
+                  onChange={(e) => setNewSubtask(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); handleAddSubtask() }
+                  }}
+                  placeholder="Add a subtask..."
+                  className="flex-1 text-sm bg-transparent border-none outline-none text-text-primary placeholder:text-text-muted"
+                />
               </div>
             </div>
+
           </div>
 
           {/* Right Column — Metadata (45%) */}
