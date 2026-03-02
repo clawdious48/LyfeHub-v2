@@ -14,6 +14,7 @@ import { AgendaView } from '@/pages/calendar/components/views/AgendaView.js'
 import { QuickCreatePopover } from '@/pages/calendar/components/modals/QuickCreatePopover.js'
 import { EventModal } from '@/pages/calendar/components/modals/EventModal.js'
 import type { CalendarEvent } from '@/types/calendar.js'
+import { useScheduleTask } from '@/api/hooks/useTasks.js'
 
 export default function CalendarPage() {
   const { currentView, selectedDate, setSelectedDate, setCurrentView } = useCalendarUiStore()
@@ -58,6 +59,16 @@ export default function CalendarPage() {
   }, [currentView, selectedDate])
 
   const { items, isLoading } = useCalendarItems(startDate, endDate)
+  const scheduleTask = useScheduleTask()
+
+  function handleTaskDrop(taskId: string, date: string, startTime?: string, endTime?: string) {
+    scheduleTask.mutate({
+      id: taskId,
+      due_date: date,
+      due_time: startTime,
+      due_time_end: endTime,
+    })
+  }
 
   function handleSlotClick(date: string, time: string) {
     // Calculate default end time (1 hour later)
@@ -128,6 +139,7 @@ export default function CalendarPage() {
                   setCurrentView('day')
                 }}
                 onItemClick={handleItemClick}
+                onTaskDrop={(taskId, date) => handleTaskDrop(taskId, date)}
               />
             )}
             {currentView === 'week' && (
@@ -137,6 +149,7 @@ export default function CalendarPage() {
                 onSlotClick={handleSlotClick}
                 onItemClick={handleItemClick}
                 onDragCreate={handleDragCreate}
+                onTaskDrop={handleTaskDrop}
               />
             )}
             {currentView === '3day' && (
@@ -146,6 +159,7 @@ export default function CalendarPage() {
                 onSlotClick={handleSlotClick}
                 onItemClick={handleItemClick}
                 onDragCreate={handleDragCreate}
+                onTaskDrop={handleTaskDrop}
               />
             )}
             {currentView === 'day' && (
@@ -155,6 +169,7 @@ export default function CalendarPage() {
                 onSlotClick={handleSlotClick}
                 onItemClick={handleItemClick}
                 onDragCreate={handleDragCreate}
+                onTaskDrop={handleTaskDrop}
               />
             )}
             {currentView === 'agenda' && (
