@@ -74,10 +74,10 @@ export default function InboxWidget({ config: _config }: { config?: Record<strin
   }
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 min-w-0">
       {/* Filter tabs + count badge */}
-      <div className="flex items-center gap-2 px-2 pb-2">
-        <div className="flex items-center gap-1 flex-1">
+      <div className="flex items-center gap-2 px-2 pb-2 min-w-0">
+        <div className="flex items-center gap-1 flex-1 min-w-0 flex-wrap">
           {FILTER_TABS.map((tab) => (
             <button
               key={tab.key}

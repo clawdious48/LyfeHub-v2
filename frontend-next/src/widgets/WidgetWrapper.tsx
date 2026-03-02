@@ -129,7 +129,7 @@ export default function WidgetWrapper({
             </Button>
           </div>
         ) : null}
-        <CardContent className={cn('flex-1 overflow-auto', showHeader ? 'pt-0' : 'pt-4')}>
+        <CardContent className={cn('flex-1 overflow-y-auto overflow-x-hidden', showHeader ? 'pt-0' : 'pt-4')}>
           <WidgetComponent
             config={config}
             {...(onConfigChange ? { onConfigChange } : {})}
