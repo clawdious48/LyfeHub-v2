@@ -1,5 +1,6 @@
 import { useLocation, useNavigate, NavLink } from 'react-router-dom'
 import { Moon, Sun, LogOut, FileText, CheckSquare, UserPlus, Settings } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Button } from '@/components/ui/button.js'
 import { useTheme } from '@/contexts/ThemeContext.js'
 import { useAuth } from '@/hooks/useAuth.js'
@@ -51,25 +52,34 @@ export default function Header() {
         })}
       </div>
 
-      {/* Center zone -- Module tabs */}
-      <div className="flex-1 flex items-center justify-center gap-1">
-        {sortedTabs.map((tab: HeaderTab) => (
-          <NavLink
-            key={tab.id}
-            to={tab.to}
-            className={({ isActive }) =>
-              `flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-accent-light text-accent'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
-              }`
-            }
-          >
-            {tabDisplayMode !== 'label-only' && <tab.icon className="size-4" />}
-            {tabDisplayMode !== 'icon-only' && <span>{tab.label}</span>}
-          </NavLink>
-        ))}
-      </div>
+      {/* Center zone -- Module tabs (crossfade on area switch) */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeAreaId}
+          initial={{ opacity: 0, x: activeAreaId === 'apex' ? 20 : -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: activeAreaId === 'apex' ? -20 : 20 }}
+          transition={{ duration: 0.2 }}
+          className="flex-1 flex items-center justify-center gap-1"
+        >
+          {sortedTabs.map((tab: HeaderTab) => (
+            <NavLink
+              key={tab.id}
+              to={tab.to}
+              className={({ isActive }) =>
+                `flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-accent-light text-accent'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
+                }`
+              }
+            >
+              {tabDisplayMode !== 'label-only' && <tab.icon className="size-4" />}
+              {tabDisplayMode !== 'icon-only' && <span>{tab.label}</span>}
+            </NavLink>
+          ))}
+        </motion.div>
+      </AnimatePresence>
 
       {/* Right zone -- Actions */}
       <div className="flex items-center gap-1">
