@@ -23,6 +23,8 @@ export type {
   AdditionalContact,
   SiteContact,
   JobContactAssignment,
+  JobStats,
+  JobsListResponse,
   CreateApexJobData,
   UpdateApexJobData,
 } from './job.js'

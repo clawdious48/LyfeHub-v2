@@ -282,6 +282,20 @@ export interface JobContactAssignment {
   phone: string
 }
 
+export interface JobStats {
+  active: number
+  pending_insurance: number
+  complete: number
+  archived: number
+  total: number
+}
+
+export interface JobsListResponse {
+  projects: ApexJob[]
+  stats: JobStats
+  syncedAt: string
+}
+
 export type CreateApexJobData = Partial<Omit<ApexJob, 'id' | 'user_id' | 'created_at' | 'updated_at'>> & {
   name: string
   client_name: string
