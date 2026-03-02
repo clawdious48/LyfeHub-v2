@@ -1,4 +1,4 @@
-import type { BaseRecord, BaseProperty, FilterConfig, SelectOption, BasePropertyType } from '@/types/index.js'
+import type { BaseRecord, BaseProperty, FilterConfig, SelectOption, StatusOption, BasePropertyType } from '@/types/index.js'
 import { TAG_COLORS, SYSTEM_COLUMNS, type TagColor } from './baseConstants.js'
 
 // --- Filter evaluation ---
@@ -90,6 +90,41 @@ export function evaluateFilter(
       }
     }
 
+    case 'email':
+    case 'phone':
+    case 'rich_text': {
+      switch (operator) {
+        case 'contains': return strValue.includes(filterLower)
+        case 'not_contains': return !strValue.includes(filterLower)
+        case 'is': return strValue === filterLower
+        case 'is_not': return strValue !== filterLower
+        default: return true
+      }
+    }
+
+    case 'status': {
+      switch (operator) {
+        case 'is': return strValue === filterLower
+        case 'is_not': return strValue !== filterLower
+        default: return true
+      }
+    }
+
+    case 'created_time':
+    case 'last_edited_time': {
+      switch (operator) {
+        case 'is': return strValue.startsWith(filterLower)
+        case 'before': return strValue < filterLower
+        case 'after': return strValue > filterLower
+        default: return true
+      }
+    }
+
+    case 'files': {
+      // Files can only be filtered by empty/not_empty (handled above)
+      return true
+    }
+
     default:
       return true
   }
@@ -131,6 +166,16 @@ export function getCellValueForSort(
     case 'multi_select':
       return Array.isArray(raw) ? raw.join(', ') : String(raw)
     case 'relation':
+      return Array.isArray(raw) ? raw.length : 0
+    case 'email':
+    case 'phone':
+    case 'rich_text':
+    case 'status':
+      return String(raw)
+    case 'created_time':
+    case 'last_edited_time':
+      return String(raw) // ISO timestamps sort lexicographically
+    case 'files':
       return Array.isArray(raw) ? raw.length : 0
     default:
       return String(raw)
@@ -278,6 +323,29 @@ export function getDisplayValue(record: BaseRecord, property: BaseProperty): str
       const relValues = Array.isArray(raw) ? raw : []
       const count = relValues.length
       return count === 0 ? '' : `${count} item${count === 1 ? '' : 's'}`
+    }
+
+    case 'email':
+    case 'phone':
+    case 'rich_text':
+      return String(raw)
+
+    case 'status': {
+      const statusOptions = parsePropertyOptions(property.options) as StatusOption[]
+      if (Array.isArray(statusOptions)) {
+        const opt = statusOptions.find(o => o.label === raw)
+        return opt?.label ?? String(raw)
+      }
+      return String(raw)
+    }
+
+    case 'created_time':
+    case 'last_edited_time':
+      return formatSystemDate(String(raw))
+
+    case 'files': {
+      const filesArr = Array.isArray(raw) ? raw : []
+      return filesArr.length === 0 ? '' : `${filesArr.length} file${filesArr.length === 1 ? '' : 's'}`
     }
 
     default:
