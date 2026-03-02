@@ -1,5 +1,5 @@
 import { useLocation, useNavigate, NavLink } from 'react-router-dom'
-import { Moon, Sun, LogOut, FileText, CheckSquare, UserPlus, Settings } from 'lucide-react'
+import { Moon, Sun, LogOut, FileText, CheckSquare, UserPlus, Settings, SlidersHorizontal } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Button } from '@/components/ui/button.js'
 import { useTheme } from '@/contexts/ThemeContext.js'
@@ -8,6 +8,8 @@ import { useHeaderStore } from '@/stores/headerStore.js'
 import { getAreaForRoute, getAreaConfig, areas } from '@/layouts/headerConfig.js'
 import { useCaptureStore } from '@/stores/captureStore.js'
 import { HeaderTabBar } from '@/layouts/HeaderTabBar.js'
+
+const DISPLAY_MODES = ['icon-label', 'icon-only', 'label-only'] as const
 
 export default function Header() {
   const { theme, toggleTheme } = useTheme()
@@ -95,6 +97,22 @@ export default function Header() {
           className="text-green-500 hover:text-green-400 hover:bg-green-500/10"
         >
           <UserPlus className="size-4" />
+        </Button>
+
+        {/* Tab display mode toggle */}
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => {
+            const modes = DISPLAY_MODES
+            const currentIndex = modes.indexOf(tabDisplayMode)
+            const nextMode = modes[(currentIndex + 1) % modes.length]
+            useHeaderStore.getState().setTabDisplayMode(nextMode)
+          }}
+          title={`Tab display: ${tabDisplayMode}`}
+          className="text-text-secondary hover:text-text-primary"
+        >
+          <SlidersHorizontal className="size-4" />
         </Button>
 
         {/* Divider */}

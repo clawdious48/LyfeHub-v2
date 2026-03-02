@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from '@/layouts/Sidebar.js'
 import Header from '@/layouts/Header.js'
 import { routeHasSidebar } from '@/layouts/headerConfig.js'
 import { useCaptureStore } from '@/stores/captureStore.js'
+import { useHeaderStore } from '@/stores/headerStore.js'
 import { TaskQuickCaptureModal } from '@/pages/tasks/components/modals/TaskQuickCaptureModal.js'
 import { apiClient } from '@/api/client.js'
 import {
@@ -15,6 +16,11 @@ import { Input } from '@/components/ui/input.js'
 export default function AppLayout() {
   const { pathname } = useLocation()
   const showSidebar = routeHasSidebar(pathname)
+
+  // Hydrate header store with user's saved tab preferences on mount
+  useEffect(() => {
+    useHeaderStore.getState().hydrate()
+  }, [])
 
   const { open: captureOpen, type: captureType, close: captureClose } = useCaptureStore()
   const isTaskCapture = captureOpen && captureType === 'task'
