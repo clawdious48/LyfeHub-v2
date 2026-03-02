@@ -2,13 +2,15 @@ import { useState, useCallback, useMemo } from 'react'
 import { ResponsiveGridLayout, useContainerWidth, verticalCompactor } from 'react-grid-layout'
 import type { Layout } from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
-import { Pencil, Check, Plus } from 'lucide-react'
+import { Pencil, Check, Plus, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useDashboardLayout, useSaveDashboardLayout } from '@/api/hooks'
 import WidgetWrapper from '@/widgets/WidgetWrapper.js'
 import AddWidgetDialog from '@/widgets/AddWidgetDialog.js'
+import DashboardSettingsDialog from '@/widgets/DashboardSettingsDialog.js'
 import { widgetRegistry } from '@/widgets/registry.js'
 import type { WidgetStyle } from '@/widgets/registry.js'
+import type { DashboardSettings } from '@/api/hooks/index.js'
 
 interface WidgetItem {
   id: string
@@ -42,11 +44,19 @@ export default function DashboardPage() {
   const [widgets, setWidgets] = useState<WidgetItem[]>(initialWidgets)
   const [isEditing, setIsEditing] = useState(false)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settings, setSettings] = useState<DashboardSettings>({
+    gap: 16,
+    background: 'default',
+  })
 
   // Sync from server when data loads (only if we haven't started editing)
   const [hasLoadedServer, setHasLoadedServer] = useState(false)
   if (layoutData?.layout?.widgets && !hasLoadedServer && !isEditing) {
     setWidgets(layoutData.layout.widgets)
+    if (layoutData.layout.settings) {
+      setSettings(layoutData.layout.settings)
+    }
     setHasLoadedServer(true)
   }
 
@@ -82,8 +92,8 @@ export default function DashboardPage() {
 
   const handleDone = useCallback(() => {
     setIsEditing(false)
-    saveLayout.mutate({ widgets })
-  }, [widgets, saveLayout])
+    saveLayout.mutate({ widgets, settings })
+  }, [widgets, settings, saveLayout])
 
   const handleRemoveWidget = useCallback((id: string) => {
     setWidgets((prev) => prev.filter((w) => w.id !== id))
@@ -117,13 +127,28 @@ export default function DashboardPage() {
 
   const existingTypes = useMemo(() => widgets.map((w) => w.type), [widgets])
 
+  const BG_CLASSES: Record<string, string> = {
+    'default': '',
+    'gradient-purple': 'bg-gradient-to-br from-transparent to-purple-950/20',
+    'gradient-space': 'bg-gradient-to-b from-slate-950/50 to-transparent',
+    'gradient-warm': 'bg-gradient-to-br from-transparent to-orange-950/10',
+  }
+
   return (
-    <div className="p-6" ref={containerRef}>
+    <div className={`p-6 min-h-full ${BG_CLASSES[settings.background] ?? ''}`} ref={containerRef}>
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-heading text-2xl text-text-primary">Dashboard</h1>
         <div className="flex items-center gap-2">
           {isEditing ? (
             <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSettingsOpen(true)}
+              >
+                <Settings className="size-4" />
+                Customize
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -158,7 +183,7 @@ export default function DashboardPage() {
           resizeConfig={{ enabled: isEditing, handles: ['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne'] }}
           onLayoutChange={handleLayoutChange}
           compactor={verticalCompactor}
-          margin={[16, 16] as [number, number]}
+          margin={[settings.gap, settings.gap] as [number, number]}
         >
           {widgets.map((widget) => (
             <div key={widget.id}>
@@ -181,6 +206,13 @@ export default function DashboardPage() {
         onOpenChange={setAddDialogOpen}
         existingTypes={existingTypes}
         onAdd={handleAddWidget}
+      />
+
+      <DashboardSettingsDialog
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        settings={settings}
+        onSettingsChange={setSettings}
       />
     </div>
   )

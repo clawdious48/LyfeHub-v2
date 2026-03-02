@@ -104,6 +104,7 @@ export {
   useArchiveInboxItem,
   dashboardKeys,
 } from './useDashboard.js'
+export type { DashboardSettings } from './useDashboard.js'
 export {
   useMailStatus,
   useMailMessages,

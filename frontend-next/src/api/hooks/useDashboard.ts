@@ -14,7 +14,7 @@ interface WidgetLayout {
   style?: WidgetStyle
 }
 
-interface DashboardSettings {
+export interface DashboardSettings {
   gap: 8 | 16 | 24
   background: string
 }
