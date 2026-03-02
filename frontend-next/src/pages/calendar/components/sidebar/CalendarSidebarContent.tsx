@@ -11,6 +11,7 @@ import {
 } from '@/pages/calendar/utils/calendarHelpers.js'
 import { DAYS_OF_WEEK } from '@/pages/calendar/utils/calendarConstants.js'
 import { UnscheduledTasksPanel } from './UnscheduledTasksPanel.js'
+import { GoogleCalendarSection } from './GoogleCalendarSection.js'
 
 export function CalendarSidebarContent() {
   const { selectedDate, setSelectedDate, hiddenCalendarIds, toggleCalendarVisibility } = useCalendarUiStore()
@@ -121,6 +122,9 @@ export function CalendarSidebarContent() {
           })}
         </div>
       </div>
+
+      {/* Google Calendar */}
+      <GoogleCalendarSection />
 
       {/* Unscheduled tasks */}
       <UnscheduledTasksPanel />
