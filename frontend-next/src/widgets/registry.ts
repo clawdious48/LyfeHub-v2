@@ -50,6 +50,7 @@ import PomodoroWidget from './PomodoroWidget.js'
 import HabitTrackerWidget from './HabitTrackerWidget.js'
 import BaseViewWidget from './BaseViewWidget.js'
 import QuickCaptureWidget from './QuickCaptureWidget.js'
+import NavigationWidget from './NavigationWidget.js'
 
 export const widgetRegistry: Record<string, WidgetDefinition> = {
   'my-day': {
@@ -255,5 +256,18 @@ export const widgetRegistry: Record<string, WidgetDefinition> = {
       { key: 'showPerson', label: 'Person', type: 'toggle', default: true },
     ],
     minW: 3, minH: 2, defaultW: 6, defaultH: 3,
+  },
+  'navigation': {
+    component: NavigationWidget,
+    label: 'Navigation',
+    description: 'Customizable app navigation with dockable collapse',
+    icon: Navigation2,
+    category: 'utility',
+    singleton: false,
+    configurable: true,
+    configSchema: [
+      { key: 'items', label: 'Nav Items', type: 'nav-editor' },
+    ],
+    minW: 2, minH: 2, defaultW: 4, defaultH: 12,
   },
 }
