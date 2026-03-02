@@ -13,13 +13,11 @@ export function CellRichTextEditor({ value, onSave, onCancel }: CellRichTextEdit
 
   useEffect(() => {
     textareaRef.current?.focus()
-    // Move cursor to end
-    const len = textareaRef.current?.value.length ?? 0
-    textareaRef.current?.setSelectionRange(len, len)
+    textareaRef.current?.select()
   }, [])
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault()
       onSave(editValue)
     } else if (e.key === 'Escape') {
@@ -35,8 +33,8 @@ export function CellRichTextEditor({ value, onSave, onCancel }: CellRichTextEdit
       onChange={(e) => setEditValue(e.target.value)}
       onKeyDown={handleKeyDown}
       onBlur={() => onSave(editValue)}
-      className="w-full border-accent text-sm min-h-[80px] resize-y"
-      placeholder="Enter text..."
+      placeholder="Enter text... (Ctrl+Enter to save)"
+      className="w-full border-accent min-h-[80px] resize-y text-sm"
     />
   )
 }

@@ -30,11 +30,11 @@ export function CellPhoneEditor({ value, onSave, onCancel }: CellPhoneEditorProp
     <Input
       ref={inputRef}
       type="tel"
-      placeholder="(555) 123-4567"
       value={editValue}
       onChange={(e) => setEditValue(e.target.value)}
       onKeyDown={handleKeyDown}
       onBlur={() => onSave(editValue)}
+      placeholder="(555) 123-4567"
       className="w-full border-accent h-8 text-sm"
     />
   )

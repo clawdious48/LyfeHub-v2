@@ -30,11 +30,11 @@ export function CellEmailEditor({ value, onSave, onCancel }: CellEmailEditorProp
     <Input
       ref={inputRef}
       type="email"
-      placeholder="email@example.com"
       value={editValue}
       onChange={(e) => setEditValue(e.target.value)}
       onKeyDown={handleKeyDown}
       onBlur={() => onSave(editValue)}
+      placeholder="email@example.com"
       className="w-full border-accent h-8 text-sm"
     />
   )
