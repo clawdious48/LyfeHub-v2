@@ -103,6 +103,9 @@ A living document tracking feature status across the entire LyfeHub platform. Up
 | File/image attachments | Done | Done | Done |
 | Sidebar browser (bases + groups tree) | Done | Done | Done |
 | Column reorder (drag-and-drop) | Done | Done | Done |
+| Default bases (Tasks, Projects, Notes, Tags, People) | Done | Done | Done |
+| Default base seeding (idempotent, first-login) | Done | -- | Done |
+| Default base protection (no delete on is_default) | Done | Done | Done |
 | Record pages (open record as full page) | Not started | Not started | Not Started |
 | View-scoped page templates (different layouts per view) | Not started | Not started | Not Started |
 | Custom page layouts (drag-and-drop sections, widgets) | Not started | Not started | Not Started |
@@ -251,6 +254,7 @@ A living document tracking feature status across the entire LyfeHub platform. Up
 
 | Date | Change | Section |
 |------|--------|---------|
+| 2026-03-01 | Default bases seeded (Tasks, Projects, Notes, Tags, People) with 15 property types, is_default protection, auto-timestamps | Bases |
 | 2026-02-28 | Created roadmap document | All |
 | 2026-02-28 | Added Apex sidebar section with CRM, Inventory, Documents, Workflows, Accounting, Reports stubs | Apex Restoration |
 | 2026-02-27 | Bases module complete (CRUD, 15 cell types, inline editing, views, groups, relations, sidebar browser) | Bases |
