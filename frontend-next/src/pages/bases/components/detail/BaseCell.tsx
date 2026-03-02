@@ -169,9 +169,9 @@ export function BaseCell({ record, property, baseId }: BaseCellProps) {
       case 'status':
         return <CellStatus value={value} options={property.options as StatusOption[]} />
       case 'created_time':
-        return <CellCreatedTime value={record.created_at} />
+        return <CellCreatedTime value={value ?? record.created_at} />
       case 'last_edited_time':
-        return <CellLastEditedTime value={record.updated_at} />
+        return <CellLastEditedTime value={value ?? record.updated_at} />
       case 'files':
         return <CellFiles value={value} baseId={baseId} property={property} recordId={record.id} />
       default:

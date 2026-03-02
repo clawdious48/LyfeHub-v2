@@ -116,7 +116,7 @@ export function AddPropertyModal({ open, onOpenChange, baseId }: AddPropertyModa
             {(selectedType === 'select' || selectedType === 'multi_select' || selectedType === 'status') && (
               <div className="space-y-1">
                 <Label>Options</Label>
-                <SelectOptionsEditor options={selectOptions} onChange={setSelectOptions} />
+                <SelectOptionsEditor options={selectOptions} onChange={setSelectOptions} isStatus={selectedType === 'status'} />
               </div>
             )}
 

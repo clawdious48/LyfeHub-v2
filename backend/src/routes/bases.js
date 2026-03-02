@@ -78,6 +78,11 @@ router.get('/', requireScope('bases', 'read'), async (req, res) => {
 // GET /api/bases/list - Alias for GET /api/bases (used by mobile context sheet)
 router.get('/list', requireScope('bases', 'read'), async (req, res) => {
   try {
+    // Seed default bases on first access
+    const hasDefaults = await hasDefaultBases(req.user.id);
+    if (!hasDefaults) {
+      await seedDefaultBases(req.user.id);
+    }
     const bases = await basesDb.getAllBases(req.user.id);
     const enrichedBases = await Promise.all(bases.map(async (base) => {
       const records = await basesDb.getRecordsByBase(base.id);

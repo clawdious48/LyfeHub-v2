@@ -126,7 +126,7 @@ export function EditPropertyModal({ open, onOpenChange, property, baseId }: Edit
           {(property.type === 'select' || property.type === 'multi_select' || property.type === 'status') && (
             <div className="space-y-1">
               <Label>Options</Label>
-              <SelectOptionsEditor options={selectOptions} onChange={setSelectOptions} />
+              <SelectOptionsEditor options={selectOptions} onChange={setSelectOptions} isStatus={property.type === 'status'} />
             </div>
           )}
         </div>
@@ -137,20 +137,22 @@ export function EditPropertyModal({ open, onOpenChange, property, baseId }: Edit
           </p>
         )}
 
-        <div className="border-t border-border pt-4">
-          <Button
-            variant="ghost"
-            className={confirmDelete ? 'text-red-400 bg-red-500/10' : 'text-red-400'}
-            onClick={handleDelete}
-            disabled={deleteProperty.isPending}
-          >
-            {deleteProperty.isPending
-              ? 'Deleting...'
-              : confirmDelete
-                ? 'Click again to confirm delete'
-                : 'Delete Property'}
-          </Button>
-        </div>
+        {!property.is_default && (
+          <div className="border-t border-border pt-4">
+            <Button
+              variant="ghost"
+              className={confirmDelete ? 'text-red-400 bg-red-500/10' : 'text-red-400'}
+              onClick={handleDelete}
+              disabled={deleteProperty.isPending}
+            >
+              {deleteProperty.isPending
+                ? 'Deleting...'
+                : confirmDelete
+                  ? 'Click again to confirm delete'
+                  : 'Delete Property'}
+            </Button>
+          </div>
+        )}
 
         <DialogFooter>
           <DialogClose asChild>
