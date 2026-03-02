@@ -53,26 +53,26 @@ interface InboxCountResponse {
 // Query keys
 export const dashboardKeys = {
   all: ['dashboard'] as const,
-  layout: () => [...dashboardKeys.all, 'layout'] as const,
+  layout: (dashboardId?: string) => [...dashboardKeys.all, 'layout', dashboardId ?? 'personal'] as const,
   inbox: (limit?: number) => [...dashboardKeys.all, 'inbox', limit] as const,
   inboxCount: () => [...dashboardKeys.all, 'inbox-count'] as const,
 }
 
 // Hooks
-export function useDashboardLayout() {
+export function useDashboardLayout(dashboardId: string = 'personal') {
   return useQuery({
-    queryKey: dashboardKeys.layout(),
-    queryFn: () => apiClient.get<DashboardLayoutResponse>('/dashboard/layout'),
+    queryKey: dashboardKeys.layout(dashboardId),
+    queryFn: () => apiClient.get<DashboardLayoutResponse>(`/dashboard/layout?dashboard=${dashboardId}`),
   })
 }
 
-export function useSaveDashboardLayout() {
+export function useSaveDashboardLayout(dashboardId: string = 'personal') {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (layout: DashboardLayout) =>
-      apiClient.put<{ success: boolean }>('/dashboard/layout', { layout }),
+      apiClient.put<{ success: boolean }>(`/dashboard/layout?dashboard=${dashboardId}`, { layout }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: dashboardKeys.layout() })
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.layout(dashboardId) })
     },
   })
 }

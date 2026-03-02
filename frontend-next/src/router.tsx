@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth'
 import AppLayout from '@/layouts/AppLayout'
 import LoginPage from '@/pages/LoginPage'
 import DashboardPage from '@/pages/DashboardPage'
+import ApexDashboardPage from '@/pages/ApexDashboardPage'
 import JobsPage from '@/pages/JobsPage'
 import TasksPage from '@/pages/TasksPage'
 import CalendarPage from '@/pages/CalendarPage'
@@ -48,6 +49,7 @@ export const routes: RouteObject[] = [
     ),
     children: [
       { index: true, element: <DashboardPage /> },
+      { path: 'apex', element: <ApexDashboardPage /> },
       { path: 'jobs', element: <JobsPage /> },
       { path: 'tasks', element: <TasksPage /> },
       { path: 'calendar', element: <CalendarPage /> },

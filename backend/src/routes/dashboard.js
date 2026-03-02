@@ -20,15 +20,26 @@ const DEFAULT_LAYOUT = {
 };
 
 /**
+ * Default layout for the Apex Restoration dashboard
+ */
+const DEFAULT_APEX_LAYOUT = {
+  widgets: [
+    { id: 'default-apex-nav', type: 'navigation', x: 0, y: 0, w: 4, h: 12 },
+  ]
+};
+
+/**
  * GET /api/dashboard/layout
- * Returns the user's saved dashboard layout, or the default
+ * Returns the user's saved dashboard layout, or the default.
+ * Accepts ?dashboard=personal|apex query param (default: 'personal').
  */
 router.get('/layout', async (req, res) => {
   try {
     const userId = req.user.id;
+    const dashboardId = req.query.dashboard || 'personal';
     const row = await db.getOne(
-      'SELECT layout_json FROM dashboard_layouts WHERE user_id = $1',
-      [userId]
+      'SELECT layout_json FROM dashboard_layouts WHERE user_id = $1 AND dashboard_id = $2',
+      [userId, dashboardId]
     );
 
     if (row && row.layout_json) {
@@ -38,7 +49,8 @@ router.get('/layout', async (req, res) => {
         : row.layout_json;
       res.json({ layout, isDefault: false });
     } else {
-      res.json({ layout: DEFAULT_LAYOUT, isDefault: true });
+      const defaultLayout = dashboardId === 'apex' ? DEFAULT_APEX_LAYOUT : DEFAULT_LAYOUT;
+      res.json({ layout: defaultLayout, isDefault: true });
     }
   } catch (err) {
     console.error('Dashboard layout GET error:', err);
@@ -48,11 +60,13 @@ router.get('/layout', async (req, res) => {
 
 /**
  * PUT /api/dashboard/layout
- * Saves the user's dashboard layout
+ * Saves the user's dashboard layout.
+ * Accepts ?dashboard=personal|apex query param (default: 'personal').
  */
 router.put('/layout', async (req, res) => {
   try {
     const userId = req.user.id;
+    const dashboardId = req.query.dashboard || 'personal';
     const { layout } = req.body;
 
     if (!layout || !layout.widgets || !Array.isArray(layout.widgets)) {
@@ -69,14 +83,14 @@ router.put('/layout', async (req, res) => {
     const now = new Date().toISOString();
     const id = uuidv4();
 
-    // Upsert: insert or update on conflict
+    // Upsert: insert or update on conflict (compound unique on user_id + dashboard_id)
     await db.run(`
-      INSERT INTO dashboard_layouts (id, user_id, layout_json, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5)
-      ON CONFLICT (user_id) DO UPDATE SET
-        layout_json = $3,
-        updated_at = $5
-    `, [id, userId, JSON.stringify(layout), now, now]);
+      INSERT INTO dashboard_layouts (id, user_id, dashboard_id, layout_json, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      ON CONFLICT (user_id, dashboard_id) DO UPDATE SET
+        layout_json = $4,
+        updated_at = $6
+    `, [id, userId, dashboardId, JSON.stringify(layout), now, now]);
 
     res.json({ success: true });
   } catch (err) {

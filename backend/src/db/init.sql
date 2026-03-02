@@ -1499,6 +1499,32 @@ CREATE TABLE IF NOT EXISTS dashboard_layouts (
 );
 CREATE INDEX IF NOT EXISTS idx_dashboard_layouts_user_id ON dashboard_layouts(user_id);
 
+-- Multi-dashboard support: add dashboard_id column
+ALTER TABLE dashboard_layouts ADD COLUMN IF NOT EXISTS dashboard_id VARCHAR(50) DEFAULT 'personal';
+
+-- Replace old unique constraint with compound unique on (user_id, dashboard_id)
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'dashboard_layouts_user_unique'
+    AND conrelid = 'dashboard_layouts'::regclass
+  ) THEN
+    ALTER TABLE dashboard_layouts DROP CONSTRAINT dashboard_layouts_user_unique;
+  END IF;
+END $$;
+
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'dashboard_layouts_user_id_key'
+    AND conrelid = 'dashboard_layouts'::regclass
+  ) THEN
+    ALTER TABLE dashboard_layouts DROP CONSTRAINT dashboard_layouts_user_id_key;
+  END IF;
+END $$;
+
+CREATE UNIQUE INDEX IF NOT EXISTS dashboard_layouts_user_dash_idx ON dashboard_layouts(user_id, dashboard_id);
+
 -- ============================================
 -- DONE
 -- ============================================
