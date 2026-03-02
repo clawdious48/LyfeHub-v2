@@ -5,9 +5,15 @@ import { useCalendarUiStore } from '@/stores/calendarUiStore.js'
 import { CalendarToolbar } from '@/pages/calendar/components/CalendarToolbar.js'
 import { useCalendarItems } from '@/pages/calendar/hooks/useCalendarItems.js'
 import { toDateString, startOfWeek, addDays, getMonthGridDates } from '@/pages/calendar/utils/calendarHelpers.js'
+import type { CalendarItem } from '@/pages/calendar/utils/calendarHelpers.js'
+import { MonthView } from '@/pages/calendar/components/views/MonthView.js'
+import { WeekView } from '@/pages/calendar/components/views/WeekView.js'
+import { ThreeDayView } from '@/pages/calendar/components/views/ThreeDayView.js'
+import { DayView } from '@/pages/calendar/components/views/DayView.js'
+import { AgendaView } from '@/pages/calendar/components/views/AgendaView.js'
 
 export default function CalendarPage() {
-  const { currentView, selectedDate } = useCalendarUiStore()
+  const { currentView, selectedDate, setSelectedDate, setCurrentView } = useCalendarUiStore()
   const [createModalOpen, setCreateModalOpen] = useState(false)
 
   // Compute the date range for the current view
@@ -33,6 +39,16 @@ export default function CalendarPage() {
 
   const { items, isLoading } = useCalendarItems(startDate, endDate)
 
+  function handleSlotClick(date: string, time: string) {
+    // TODO: Open quick-create popover at this date/time (Task 14)
+    console.log('Slot clicked:', date, time)
+  }
+
+  function handleItemClick(item: CalendarItem) {
+    // TODO: Open event/task detail modal (Task 15)
+    console.log('Item clicked:', item.id, item.type)
+  }
+
   return (
     <div className="flex flex-col h-full">
       <CalendarToolbar onCreateEvent={() => setCreateModalOpen(true)} />
@@ -46,11 +62,47 @@ export default function CalendarPage() {
             transition={{ duration: 0.15 }}
             className="h-full"
           >
-            {/* Views will be added in Phase 2 */}
-            <div className="p-6 text-text-secondary text-sm">
-              <p>{currentView} view — {items.length} items loaded for {startDate} to {endDate}</p>
-              {isLoading && <p>Loading...</p>}
-            </div>
+            {currentView === 'month' && (
+              <MonthView
+                selectedDate={selectedDate}
+                items={items}
+                onDayClick={(date) => {
+                  setSelectedDate(date)
+                  setCurrentView('day')
+                }}
+                onItemClick={handleItemClick}
+              />
+            )}
+            {currentView === 'week' && (
+              <WeekView
+                selectedDate={selectedDate}
+                items={items}
+                onSlotClick={handleSlotClick}
+                onItemClick={handleItemClick}
+              />
+            )}
+            {currentView === '3day' && (
+              <ThreeDayView
+                selectedDate={selectedDate}
+                items={items}
+                onSlotClick={handleSlotClick}
+                onItemClick={handleItemClick}
+              />
+            )}
+            {currentView === 'day' && (
+              <DayView
+                selectedDate={selectedDate}
+                items={items}
+                onSlotClick={handleSlotClick}
+                onItemClick={handleItemClick}
+              />
+            )}
+            {currentView === 'agenda' && (
+              <AgendaView
+                items={items}
+                onItemClick={handleItemClick}
+              />
+            )}
           </motion.div>
         </AnimatePresence>
       </div>
