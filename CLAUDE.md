@@ -18,8 +18,9 @@ A complete rewrite of the LyfeHub frontend from vanilla JS to React. The backend
 - TanStack Query (React Query) for data fetching
 - Zustand for client-side UI state
 - shadcn/ui component library
-- @dnd-kit for drag-and-drop (column reorder, group reorder, sidebar items — replaces old up/down arrow buttons)
+- @dnd-kit for drag-and-drop (column reorder, group reorder, tab reorder — replaces old up/down arrow buttons)
 - react-grid-layout for dashboard widget grid
+- framer-motion for header tab crossfade animations
 - Lucide React for icons
 - React Router for routing
 
@@ -52,7 +53,7 @@ These apply to every module, not just calendar:
 2. **Progressive disclosure** — Show simple forms first, expand for details. Don't front-load complexity.
 3. **Calm colors** — Blue/green/purple. Red ONLY for truly urgent. No anxiety-inducing design.
 4. **No guilt mechanics** — No streaks, no shame for missed tasks. Gentle "reschedule?" nudges instead.
-5. **Quick capture under 15 seconds** — Item creation must be fast. Quick Capture is always available in the sidebar.
+5. **Quick capture under 15 seconds** — Item creation must be fast. Quick Capture is always available in the header.
 6. **"Reschedule / Drop it" on overdue** — Two buttons, no judgment. Don't pile on guilt.
 7. **Celebration on completion** — Small animation/feedback for completing items.
 8. **Capacity awareness** — Don't let views get so full they cause overwhelm.
@@ -89,28 +90,50 @@ These apply to every module, not just calendar:
 
 **Exception:** Jobs/Apex data is org-scoped and uses its own `apex_*` tables. The bases system is for personal (`user_id`-scoped) data only.
 
-### 1. ONE Sidebar — App-Level, Persistent, Contextual
+### 1. Persistent Header — Area Buttons, Module Tabs, Actions
 
-There is ONE sidebar for the entire app. It lives in `layouts/Sidebar.tsx` and is rendered by `layouts/AppLayout.tsx`. It is persistent across all pages.
+The app has ONE persistent header (`layouts/Header.tsx`) rendered by `layouts/AppLayout.tsx`. It has three zones:
 
-**Pages MUST NOT render their own sidebars.** A page component renders content only — it fills the `<Outlet />` inside AppLayout. If a page needs sidebar content (filters, sub-navigation, groups), that content goes into the sidebar's contextual section system via `layouts/sidebarConfig.ts`.
+**Left zone — Area buttons:**
+- "Dashboard" (navigates to `/`, shows Personal tabs)
+- "Apex Restoration" (navigates to `/apex`, shows Apex tabs)
+- Active area auto-detected from route via `layouts/headerConfig.ts`
 
-The sidebar structure (top to bottom):
-1. **Dashboard button** — Always visible, pinned at top
-2. **Quick Capture** — Note, Task, Contact buttons (always visible, collapsible section)
-3. **Apex Restoration** — Global section: Jobs, CRM, Inventory, Documents, Workflows, Accounting, Reports (always visible on all routes, collapsible)
-4. **Contextual sections** — Change per route via `getSectionsForRoute(pathname)` in `sidebarConfig.ts`
-5. **Bottom bar** — Settings + user name + collapse toggle (always visible, pinned)
+**Center zone — Module tabs:**
+- Personal area: Calendar, Tasks, Mail, Notes, People, Bases
+- Apex area: Jobs, CRM, Inventory, Documents, Workflows, Accounting, Reports
+- Tab order customizable per-area via drag-and-drop in edit mode
+- Per-tab styling (color, border, opacity) via gear icon popover in edit mode
+- Display mode toggle: icon+label, icon-only, label-only
+- Animated crossfade on area switch (framer-motion)
 
-When a page needs its own sidebar content (e.g., Bases showing groups/base list, Jobs showing filters):
-- Add a new route key to `sidebarSections` in `layouts/sidebarConfig.ts`
-- The sidebar reads `useLocation().pathname` and renders the matching config
-- Fallback: if no config exists for a route, show the Dashboard sections
+**Right zone — Actions:**
+- Quick Capture buttons (Note, Task, Contact)
+- Tab display mode toggle
+- Settings link
+- Theme toggle
+- User name + logout
 
-**WRONG:** `<BasesPage>` renders `<BasesSidebar>` inside itself
-**RIGHT:** `sidebarConfig.ts` has a `/bases` key with bases-specific sections, rendered by the app-level Sidebar
+**Pages MUST NOT render their own headers or navigation.** All top-level navigation lives in the header. If a page needs sub-navigation, use the contextual sidebar.
 
-### Sidebar Collapse Behavior
+### 1b. Contextual Sidebar — Page-Specific Content Only
+
+The sidebar (`layouts/Sidebar.tsx`) is contextual-only. It renders only on routes that have page-specific content:
+
+| Route | Sidebar Content |
+|-------|----------------|
+| `/calendar` | Mini-calendar, calendar list, Google sync |
+| `/tasks` | Smart views, my lists, task counts |
+| `/mail` | Folders, labels |
+| `/bases` | Base groups, base browser |
+
+All other pages (dashboards, Jobs, People, Notes, Apex sub-pages) get full-width content with no sidebar.
+
+Sidebar config lives in `layouts/sidebarConfig.ts`. Pages do NOT render their own sidebars.
+
+### Sidebar Collapse Behavior (Contextual Sidebar)
+
+The following applies to the contextual sidebar on routes that render it:
 
 - Toggle button collapses to icon-only mode (48px wide, `w-12`)
 - Expanded width: 224px (`w-56`)
@@ -119,14 +142,31 @@ When a page needs its own sidebar content (e.g., Bases showing groups/base list,
 - Collapsed state shows only icons with `title` attribute tooltips on hover
 - Section collapse states persisted independently
 
+### 1c. Dashboard Springboard — Multi-Dashboard System
+
+Two default dashboards share the same react-grid-layout widget engine:
+- **Personal Productivity** (`/`) — personal widgets (My Day, Calendar, Notes, Inbox, etc.)
+- **Apex Restoration** (`/apex`) — Apex-specific widgets + all personal widgets
+
+Navigation between dashboards:
+- Trackpad 2-finger horizontal swipe
+- Left/Right arrow keys
+- Up/Down arrow = jump to Home dashboard
+- Area button clicks
+- Dot indicators (clickable)
+
+Dashboard layouts stored per-dashboard via `?dashboard=personal|apex` query param on `/api/dashboard/layout`.
+
+Future: users can create additional dashboards via Edit mode.
+
 ### 2. Page Components Are Content Only
 
-Every page component (`pages/*.tsx`) receives the full viewport minus the sidebar and header. Pages render their content into this space. They do not manage layout chrome (sidebar, header, nav).
+Every page component (`pages/*.tsx`) receives the full viewport minus the header (and sidebar, if present). Pages render their content into this space. They do not manage layout chrome (header, sidebar, nav).
 
 ```
 AppLayout
-├── Sidebar (app-level, persistent, contextual)
-├── Header (app-level, persistent)
+├── Header (app-level, persistent — area buttons, module tabs, actions)
+├── Sidebar (contextual, only on routes with page-specific content)
 └── <Outlet /> ← Pages render HERE and only here
 ```
 
@@ -171,7 +211,7 @@ pages/
       {module}Helpers.ts        ← Pure functions (formatting, filtering, sorting)
 ```
 
-There is NO `sidebar/` directory under a module. Module-specific sidebar content goes in `layouts/sidebarConfig.ts`.
+There is NO `sidebar/` directory under a module (except calendar which has its own sidebar components). Module-specific sidebar content is configured in `layouts/sidebarConfig.ts`.
 
 ### 6. Zustand Store Conventions
 
@@ -179,7 +219,10 @@ There is NO `sidebar/` directory under a module. Module-specific sidebar content
 - Persist only what survives page refresh (display preferences like cardSize, displayMode)
 - Ephemeral state (editingCellKey, filters, sort) resets on navigation
 - Use `persist` middleware with a `lyfehub-{module}-ui` localStorage key
-- Sidebar store (`stores/sidebarStore.ts`) manages collapse + section toggle state globally
+- Header store (`stores/headerStore.ts`) manages tab display mode, tab order, tab styles, home dashboard (persisted to user settings via API)
+- Sidebar store (`stores/sidebarStore.ts`) manages collapse + section toggle state for contextual sidebar
+- Dashboard UI store (`stores/dashboardUiStore.ts`) manages edit mode state shared between dashboard pages and header
+- Capture store (`stores/captureStore.ts`) manages quick capture modal state
 
 ### 7. Component Patterns
 
@@ -205,9 +248,8 @@ When the same action triggers from multiple places, extract the function and cal
 | Old | New | Notes |
 |-----|-----|-------|
 | Apex (as page name) | Jobs | The job management page is called "Jobs" |
-| Apex (as sidebar group) | Apex Restoration | Sidebar header for all org-scoped tools |
+| Apex (as area/group) | Apex Restoration | Area button + tab group for all org-scoped tools |
 | Areas of Focus | Areas | |
-| TOOLS (sidebar section) | Three sections: Productivity, Tools, Resources | |
 
 ---
 
@@ -440,12 +482,18 @@ The backend is unchanged. All endpoints require auth. Backend uses PUT for updat
 
 ### App Shell (Done)
 - `App.tsx`, `router.tsx` with auth guards
-- `layouts/AppLayout.tsx` — sidebar + header + outlet (correct architecture)
-- `layouts/Sidebar.tsx` — persistent app-level sidebar with Quick Capture modal, contextual sections, collapse toggle
-- `layouts/sidebarConfig.ts` — route-aware section config with global Apex Restoration section prepended to all routes
-- `stores/sidebarStore.ts` — collapse/section state with localStorage persistence
-- `layouts/Header.tsx` — theme toggle, user menu, logout
-- Apex Restoration sidebar section with global visibility across all routes
+- `layouts/AppLayout.tsx` — header + conditional sidebar + outlet + capture modals
+- `layouts/Header.tsx` — persistent header with area buttons, module tabs (animated crossfade), quick capture, display mode toggle, settings, theme toggle, user
+- `layouts/HeaderTabBar.tsx` — tab rendering with @dnd-kit drag reorder in edit mode
+- `layouts/TabStylePopover.tsx` — per-tab style customization dialog
+- `layouts/headerConfig.ts` — area definitions, route-to-area mapping, sidebar route detection
+- `layouts/sidebarConfig.ts` — contextual sidebar sections (calendar, tasks, mail, bases only)
+- `layouts/Sidebar.tsx` — contextual-only sidebar with collapse toggle
+- `layouts/DashboardSpringboard.tsx` — horizontal scroll-snap springboard with swipe, keyboard, dot indicators
+- `stores/headerStore.ts` — tab display mode, tab order, tab styles, home dashboard (persisted to user settings)
+- `stores/captureStore.ts` — quick capture modal state
+- `stores/dashboardUiStore.ts` — dashboard edit mode state (shared between dashboard + header)
+- `stores/sidebarStore.ts` — sidebar collapse/section state
 - Stub pages for Apex CRM, Inventory, Documents, Workflows, Accounting, Reports
 
 ### Dashboard (Done)
@@ -505,11 +553,10 @@ The backend is unchanged. All endpoints require auth. Backend uses PUT for updat
 
 ## Future Features (Do Not Build Yet)
 
-- **User Profile page** — Facebook-style social feed, linked from sidebar user name
+- **User Profile page** — Facebook-style social feed, linked from header user name
 - **Areas widget content** — Populate Tags base with Area records
-- **Per-page sidebar configs** — Define contextual sections for Jobs, People, Calendar, Bases (Tasks sidebar done)
-- **Resources section** — Show Base Views as quick-access links in sidebar
 - **Mobile bottom sheet** — Tap-again on active nav item opens context sheet with section-specific content (filters, views, etc.). iPad landscape renders as sidebar panel instead of sheet.
+- **Additional dashboards** — User-created dashboards beyond Personal and Apex via Edit mode
 - **Task-Calendar deep integration** — Drag unscheduled tasks onto calendar for time blocking
 - **Cross-linking infrastructure** — Generic `links` table for any-to-any entity references (Note→Task, Task→Project, etc.)
 - **Personal Bridge** — `apex_job_ref` on notes/tasks, "My Notes"/"My Tasks" widgets on job detail
