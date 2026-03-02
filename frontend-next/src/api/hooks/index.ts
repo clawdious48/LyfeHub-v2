@@ -1,4 +1,4 @@
-export { useCheckAuth, useLogin, useLogout, authKeys } from './useAuth.js'
+export { useCheckAuth, useGoogleLogin, useLogout, authKeys } from './useAuth.js'
 export {
   useTaskBase,
   useTaskRecords,
@@ -12,7 +12,7 @@ export {
   useToggleTaskImportant,
   useTaskListOptions,
 } from './useTasksAdapter.js'
-export type { TaskRecord, Subtask } from './useTasksAdapter.js'
+export type { TaskRecord } from './useTasksAdapter.js'
 export {
   useJobs,
   useJob,

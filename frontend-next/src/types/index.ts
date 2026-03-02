@@ -1,4 +1,4 @@
-export type { User, LoginCredentials, SignupData, AuthCheckResponse } from './user.js'
+export type { User, AuthCheckResponse } from './user.js'
 export type {
   Task,
   Subtask,

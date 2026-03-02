@@ -3,21 +3,11 @@ export interface User {
   email: string
   name: string
   role: string
-  settings: string
+  avatar_url: string | null
+  google_id: string | null
+  settings: Record<string, unknown>
   created_at: string
   updated_at: string
-}
-
-export interface LoginCredentials {
-  email: string
-  password: string
-  rememberMe?: boolean
-}
-
-export interface SignupData {
-  name: string
-  email: string
-  password: string
 }
 
 export interface AuthCheckResponse {

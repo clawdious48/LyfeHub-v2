@@ -1,17 +1,12 @@
 import { create } from 'zustand'
-
-interface User {
-  id: string
-  email: string
-  name: string
-}
+import type { User } from '@/types/user.js'
 
 interface AuthState {
   user: User | null
   isLoading: boolean
   isAuthenticated: boolean
   checkAuth: () => Promise<void>
-  login: (email: string, password: string) => Promise<void>
+  loginWithGoogle: (credential: string) => Promise<void>
   logout: () => Promise<void>
 }
 
@@ -25,21 +20,23 @@ export const useAuth = create<AuthState>((set) => ({
       const res = await fetch('/api/auth/check', { credentials: 'include' })
       if (res.ok) {
         const data = await res.json()
-        set({ user: data.user, isAuthenticated: true, isLoading: false })
-      } else {
-        set({ user: null, isAuthenticated: false, isLoading: false })
+        if (data.user) {
+          set({ user: data.user, isAuthenticated: true, isLoading: false })
+          return
+        }
       }
     } catch {
-      set({ user: null, isAuthenticated: false, isLoading: false })
+      // Auth check failed
     }
+    set({ user: null, isAuthenticated: false, isLoading: false })
   },
 
-  login: async (email: string, password: string) => {
-    const res = await fetch('/api/auth/login', {
+  loginWithGoogle: async (credential: string) => {
+    const res = await fetch('/api/auth/google', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ credential }),
     })
     if (!res.ok) {
       const data = await res.json().catch(() => ({ error: 'Login failed' }))
@@ -50,10 +47,7 @@ export const useAuth = create<AuthState>((set) => ({
   },
 
   logout: async () => {
-    await fetch('/api/auth/logout', {
-      method: 'POST',
-      credentials: 'include',
-    })
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
     set({ user: null, isAuthenticated: false })
   },
 }))

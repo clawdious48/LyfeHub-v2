@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '../client.js'
-import type { AuthCheckResponse, LoginCredentials } from '@/types/index.js'
+import type { AuthCheckResponse } from '@/types/index.js'
 
 export const authKeys = {
   check: ['auth', 'check'] as const,
@@ -15,11 +15,11 @@ export function useCheckAuth() {
   })
 }
 
-export function useLogin() {
+export function useGoogleLogin() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (credentials: LoginCredentials) =>
-      apiClient.post<AuthCheckResponse>('/auth/login', credentials),
+    mutationFn: (credential: string) =>
+      apiClient.post<AuthCheckResponse>('/auth/google', { credential }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: authKeys.check })
     },
