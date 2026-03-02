@@ -15,17 +15,6 @@ export function useCheckAuth() {
   })
 }
 
-export function useGoogleLogin() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (credential: string) =>
-      apiClient.post<AuthCheckResponse>('/auth/google', { credential }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: authKeys.check })
-    },
-  })
-}
-
 export function useLogout() {
   const queryClient = useQueryClient()
   return useMutation({

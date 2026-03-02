@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useRoutes } from 'react-router-dom'
 import { routes } from '@/router.js'
 import { useAuth } from '@/hooks/useAuth.js'
+import { useTheme } from '@/contexts/ThemeContext.js'
 import { useSidebarStore } from '@/stores/sidebarStore.js'
 import { useTasksUiStore } from '@/stores/tasksUiStore.js'
 import { useCalendarUiStore } from '@/stores/calendarUiStore.js'
@@ -12,6 +13,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary.js'
 export default function App() {
   const checkAuth = useAuth((s) => s.checkAuth)
   const isAuthenticated = useAuth((s) => s.isAuthenticated)
+  const { hydrateTheme } = useTheme()
 
   useEffect(() => {
     checkAuth()
@@ -24,6 +26,7 @@ export default function App() {
       useCalendarUiStore.getState().hydrate()
       useBasesUiStore.getState().hydrate()
       useMailUiStore.getState().hydrate()
+      hydrateTheme()
 
       // One-time cleanup of old localStorage keys
       const migrated = localStorage.getItem('lyfehub-settings-migrated')

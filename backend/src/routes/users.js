@@ -143,16 +143,25 @@ router.put('/me/password', async (req, res) => {
         code: 'SYSTEM_USER'
       });
     }
-    
+
+    // Google OAuth users don't have passwords
+    const currentUser = await findUserById(req.user.id);
+    if (currentUser && currentUser.google_id && !currentUser.password_hash) {
+      return res.status(400).json({
+        error: 'Password change not available for Google OAuth accounts',
+        code: 'OAUTH_USER'
+      });
+    }
+
     const { currentPassword, newPassword } = req.body;
-    
+
     if (!currentPassword || !newPassword) {
       return res.status(400).json({
         error: 'Current password and new password are required',
         code: 'MISSING_FIELDS'
       });
     }
-    
+
     // Validate new password strength
     if (newPassword.length < 8) {
       return res.status(400).json({
@@ -160,7 +169,7 @@ router.put('/me/password', async (req, res) => {
         code: 'WEAK_PASSWORD'
       });
     }
-    
+
     // Verify current password
     const user = await verifyPassword(req.user.email, currentPassword);
     if (!user) {
@@ -169,17 +178,17 @@ router.put('/me/password', async (req, res) => {
         code: 'INVALID_PASSWORD'
       });
     }
-    
+
     // Change password
     await changePassword(req.user.id, newPassword);
-    
-    res.json({ 
+
+    res.json({
       success: true,
       message: 'Password changed successfully'
     });
   } catch (err) {
     console.error('Error changing password:', err);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to change password',
       code: 'INTERNAL_ERROR'
     });

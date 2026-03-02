@@ -80,6 +80,7 @@ router.post('/logout', async (req, res) => {
 router.get('/check', async (req, res) => {
   const jwt = require('jsonwebtoken');
   const { COOKIE_NAME } = require('../middleware/auth');
+  const { findUserById } = require('../db/users');
   const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
 
   const token = req.cookies[COOKIE_NAME];
@@ -89,17 +90,14 @@ router.get('/check', async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    // Verify user still exists in DB
-    const db = require('../db/schema');
-    const user = await db.getOne('SELECT id FROM users WHERE id = $1', [decoded.userId]);
+    const user = await findUserById(decoded.userId);
     if (!user) {
       res.clearCookie(COOKIE_NAME);
       return res.json({ authenticated: false });
     }
     res.json({
       authenticated: true,
-      userId: decoded.userId,
-      email: decoded.email
+      user: getSafeUser(user),
     });
   } catch {
     res.json({ authenticated: false });

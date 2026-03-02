@@ -13,6 +13,7 @@ type Theme = 'light' | 'dark'
 interface ThemeContextValue {
   theme: Theme
   toggleTheme: () => void
+  hydrateTheme: () => void
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
@@ -46,8 +47,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  const hydrateTheme = useCallback(() => {
+    const settings = getUserSettings()
+    if (settings.theme === 'light' || settings.theme === 'dark') {
+      setTheme(settings.theme)
+    }
+  }, [])
+
   return (
-    <ThemeContext value={{ theme, toggleTheme }}>
+    <ThemeContext value={{ theme, toggleTheme, hydrateTheme }}>
       {children}
     </ThemeContext>
   )

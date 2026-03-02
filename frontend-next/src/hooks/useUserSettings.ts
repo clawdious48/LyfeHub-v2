@@ -37,9 +37,23 @@ function flushSettings() {
   if (Object.keys(pendingSettings).length === 0) return
   const toSave = { ...pendingSettings }
   pendingSettings = {}
-  apiClient.patch('/users/me', { settings: toSave }).catch((err) => {
-    console.error('Failed to save user settings:', err)
-  })
+  apiClient
+    .patch('/users/me', { settings: toSave })
+    .then(() => {
+      // Keep auth store's user.settings in sync
+      const { user } = useAuth.getState()
+      if (user) {
+        useAuth.setState({
+          user: {
+            ...user,
+            settings: { ...(user.settings as Record<string, unknown>), ...toSave },
+          },
+        })
+      }
+    })
+    .catch((err) => {
+      console.error('Failed to save user settings:', err)
+    })
 }
 
 export function saveSettingsKey<K extends keyof UserSettings>(
