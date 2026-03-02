@@ -92,6 +92,14 @@ export default function CalendarPage() {
     setEventModalOpen(true)
   }
 
+  function handleDragCreate(date: string, startTime: string, endTime: string) {
+    setQuickCreateDate(date)
+    setQuickCreateStartTime(startTime)
+    setQuickCreateEndTime(endTime)
+    setQuickCreateAnchor(undefined)
+    setQuickCreateOpen(true)
+  }
+
   function handleCreateEvent() {
     setEditingEvent(null)
     setEventModalPrefill(undefined)
@@ -128,6 +136,7 @@ export default function CalendarPage() {
                 items={items}
                 onSlotClick={handleSlotClick}
                 onItemClick={handleItemClick}
+                onDragCreate={handleDragCreate}
               />
             )}
             {currentView === '3day' && (
@@ -136,6 +145,7 @@ export default function CalendarPage() {
                 items={items}
                 onSlotClick={handleSlotClick}
                 onItemClick={handleItemClick}
+                onDragCreate={handleDragCreate}
               />
             )}
             {currentView === 'day' && (
@@ -144,6 +154,7 @@ export default function CalendarPage() {
                 items={items}
                 onSlotClick={handleSlotClick}
                 onItemClick={handleItemClick}
+                onDragCreate={handleDragCreate}
               />
             )}
             {currentView === 'agenda' && (

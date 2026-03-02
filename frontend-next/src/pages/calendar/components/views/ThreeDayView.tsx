@@ -8,9 +8,10 @@ interface ThreeDayViewProps {
   items: CalendarItem[]
   onSlotClick?: (date: string, time: string) => void
   onItemClick?: (item: CalendarItem) => void
+  onDragCreate?: (date: string, startTime: string, endTime: string) => void
 }
 
-export function ThreeDayView({ selectedDate, items, onSlotClick, onItemClick }: ThreeDayViewProps) {
+export function ThreeDayView({ selectedDate, items, onSlotClick, onItemClick, onDragCreate }: ThreeDayViewProps) {
   const dates = useMemo(() => {
     const d = new Date(selectedDate + 'T00:00:00')
     return Array.from({ length: 3 }, (_, i) => {
@@ -20,5 +21,5 @@ export function ThreeDayView({ selectedDate, items, onSlotClick, onItemClick }: 
     })
   }, [selectedDate])
 
-  return <TimeGrid dates={dates} items={items} onSlotClick={onSlotClick} onItemClick={onItemClick} />
+  return <TimeGrid dates={dates} items={items} onSlotClick={onSlotClick} onItemClick={onItemClick} onDragCreate={onDragCreate} />
 }
