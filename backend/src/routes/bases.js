@@ -5,6 +5,26 @@ const { authMiddleware } = require('../middleware/auth');
 const basesDb = require('../db/bases');
 const coreBasesDb = require('../db/coreBases');
 const { requireScope } = require('../middleware/scopeAuth');
+const { seedDefaultBases, hasDefaultBases, getDefaultBase } = require('../db/defaultBases');
+
+// Helper: inject created_time/last_edited_time values into records from row timestamps
+function injectTimestampValues(records, properties) {
+  const createdTimePropIds = properties.filter(p => p.type === 'created_time').map(p => p.id);
+  const editedTimePropIds = properties.filter(p => p.type === 'last_edited_time').map(p => p.id);
+
+  if (createdTimePropIds.length === 0 && editedTimePropIds.length === 0) return records;
+
+  return records.map(record => {
+    const values = { ...record.values };
+    for (const propId of createdTimePropIds) {
+      values[propId] = record.created_at;
+    }
+    for (const propId of editedTimePropIds) {
+      values[propId] = record.updated_at;
+    }
+    return { ...record, values };
+  });
+}
 
 // All routes require authentication
 router.use(authMiddleware);
@@ -24,6 +44,12 @@ router.use((req, res, next) => {
 // GET /api/bases - List all bases for user (with counts and column info)
 router.get('/', requireScope('bases', 'read'), async (req, res) => {
   try {
+    // Seed default bases on first access
+    const hasDefaults = await hasDefaultBases(req.user.id);
+    if (!hasDefaults) {
+      await seedDefaultBases(req.user.id);
+    }
+
     const bases = await basesDb.getAllBases(req.user.id);
     
     // Enrich with record count and column info
@@ -325,6 +351,37 @@ router.delete('/core/:id/views/:viewId', requireScope('bases', 'delete'), async 
   }
 });
 
+// GET /api/bases/default/:name - Get a default base by canonical name
+router.get('/default/:name', requireScope('bases', 'read'), async (req, res) => {
+  try {
+    const base = await getDefaultBase(req.user.id, req.params.name);
+    if (!base) {
+      return res.status(404).json({ error: 'Default base not found' });
+    }
+    const properties = await basesDb.getPropertiesByBase(base.id);
+    const records = await basesDb.getRecordsByBase(base.id);
+    const parsedProperties = properties.map(p => ({
+      ...p,
+      options: JSON.parse(p.options || '[]')
+    }));
+    const parsedRecords = records.map(r => ({
+      id: r.id,
+      base_id: r.base_id,
+      global_id: r.global_id,
+      position: r.position,
+      created_at: r.created_at,
+      updated_at: r.updated_at,
+      values: JSON.parse(r.data || '{}')
+    }));
+    // Inject created_time/last_edited_time values into records
+    const enrichedRecords = injectTimestampValues(parsedRecords, parsedProperties);
+    res.json({ ...base, properties: parsedProperties, records: enrichedRecords });
+  } catch (error) {
+    console.error('Error fetching default base:', error);
+    res.status(500).json({ error: 'Failed to fetch default base' });
+  }
+});
+
 // ============================================
 // USER BASES ROUTES
 // ============================================
@@ -365,10 +422,13 @@ router.get('/:id', requireScope('bases', 'read'), async (req, res) => {
       return record;
     }));
     
+    // Inject created_time/last_edited_time values into records
+    const enrichedRecords = injectTimestampValues(parsedRecords, parsedProperties);
+
     res.json({
       ...base,
       properties: parsedProperties,
-      records: parsedRecords
+      records: enrichedRecords
     });
   } catch (error) {
     console.error('Error fetching base:', error);
@@ -441,6 +501,10 @@ router.delete('/:id', requireScope('bases', 'delete'), async (req, res) => {
       return res.status(404).json({ error: 'Base not found' });
     }
 
+    if (existing.is_default) {
+      return res.status(403).json({ error: 'Default bases cannot be deleted' });
+    }
+
     await basesDb.deleteBaseWithCleanup(req.params.id, req.user.id);
     res.json({ success: true });
   } catch (error) {
@@ -467,7 +531,7 @@ router.post('/:id/properties', requireScope('bases', 'write'), async (req, res) 
       return res.status(400).json({ error: 'Name is required' });
     }
     
-    const validTypes = ['text', 'number', 'select', 'multi_select', 'date', 'checkbox', 'url', 'relation'];
+    const validTypes = ['text', 'number', 'select', 'multi_select', 'date', 'checkbox', 'url', 'relation', 'email', 'phone', 'files', 'rich_text', 'status', 'created_time', 'last_edited_time'];
     if (!validTypes.includes(type)) {
       return res.status(400).json({ error: 'Invalid property type' });
     }
@@ -569,12 +633,16 @@ router.delete('/:id/properties/:propId', requireScope('bases', 'delete'), async 
     if (!base) {
       return res.status(404).json({ error: 'Base not found' });
     }
-    
+
     const existing = await basesDb.getPropertyById(req.params.propId);
     if (!existing || existing.base_id !== req.params.id) {
       return res.status(404).json({ error: 'Property not found' });
     }
-    
+
+    if (existing.is_default) {
+      return res.status(403).json({ error: 'Default properties cannot be deleted' });
+    }
+
     // Unlink reverse property if this is a paired relation
     if (existing.type === 'relation') {
       await basesDb.unlinkReverseProperty(req.params.propId);
