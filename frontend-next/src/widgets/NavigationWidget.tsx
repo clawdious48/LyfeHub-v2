@@ -15,6 +15,7 @@ import { apiClient } from '@/api/client.js'
 import { TaskQuickCaptureModal } from '@/pages/tasks/components/modals/TaskQuickCaptureModal.js'
 import type { NavWidgetConfig, NavItem, NavToggleHeaderItem, NavCaptureItem } from './nav/navTypes.js'
 import { DEFAULT_NAV_CONFIG } from './nav/navTypes.js'
+import NavOverflowMenu from './nav/NavOverflowMenu.js'
 
 type Orientation = 'horizontal' | 'vertical'
 
@@ -393,6 +394,17 @@ function HorizontalNavItem({
   }
 }
 
+// ── Helpers ─────────────────────────────────────────────────────────────────
+
+function getConfiguredRoutes(items: NavItem[]): string[] {
+  const routes: string[] = []
+  for (const item of items) {
+    if (item.type === 'route') routes.push(item.route)
+    if (item.type === 'toggle-header') routes.push(...getConfiguredRoutes(item.children))
+  }
+  return routes
+}
+
 // ── Main widget ─────────────────────────────────────────────────────────────
 
 export default function NavigationWidget({ config: rawConfig, onConfigChange }: NavigationWidgetProps) {
@@ -471,11 +483,22 @@ export default function NavigationWidget({ config: rawConfig, onConfigChange }: 
   }
 
   const currentPath = location.pathname
+  const configuredRoutes = getConfiguredRoutes(navConfig.items)
+
+  const overflowMenu = (
+    <NavOverflowMenu
+      configuredRoutes={configuredRoutes}
+      triggerStyle={navConfig.overflowTrigger}
+      position={navConfig.overflowPosition}
+      orientation={orientation}
+    />
+  )
 
   return (
     <div ref={containerRef} className="h-full">
       {orientation === 'vertical' ? (
         <div className="flex flex-col gap-0.5">
+          {navConfig.overflowPosition === 'start' && overflowMenu}
           {navConfig.items.map((item) => (
             <VerticalNavItem
               key={item.id}
@@ -486,9 +509,11 @@ export default function NavigationWidget({ config: rawConfig, onConfigChange }: 
               onCapture={handleCapture}
             />
           ))}
+          {navConfig.overflowPosition === 'end' && overflowMenu}
         </div>
       ) : (
         <div className="flex flex-row gap-1 items-center flex-wrap">
+          {navConfig.overflowPosition === 'start' && overflowMenu}
           {navConfig.items.map((item) => (
             <HorizontalNavItem
               key={item.id}
@@ -498,6 +523,7 @@ export default function NavigationWidget({ config: rawConfig, onConfigChange }: 
               onCapture={handleCapture}
             />
           ))}
+          {navConfig.overflowPosition === 'end' && overflowMenu}
         </div>
       )}
 
