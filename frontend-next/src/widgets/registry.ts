@@ -18,6 +18,9 @@ export interface WidgetStyle {
   preset: 'default' | 'borderless' | 'transparent'
   accent: string | null
   headerVisible: boolean
+  headerSize: 'sm' | 'md' | 'lg'
+  headerDensity: 'compact' | 'normal' | 'spacious'
+  headerIconVisible: boolean
 }
 
 export interface WidgetDefinition {

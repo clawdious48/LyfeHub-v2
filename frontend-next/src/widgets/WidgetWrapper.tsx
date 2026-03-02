@@ -23,6 +23,9 @@ const DEFAULT_STYLE: WidgetStyle = {
   preset: 'default',
   accent: null,
   headerVisible: true,
+  headerSize: 'md',
+  headerDensity: 'normal',
+  headerIconVisible: true,
 }
 
 const PRESET_CLASSES: Record<WidgetStyle['preset'], string> = {
