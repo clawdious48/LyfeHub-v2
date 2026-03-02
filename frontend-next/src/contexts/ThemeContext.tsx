@@ -6,6 +6,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { getUserSettings, saveSettingsKey } from '@/hooks/useUserSettings.js'
 
 type Theme = 'light' | 'dark'
 
@@ -18,6 +19,10 @@ const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'dark'
+  // Try server settings first (if user is logged in)
+  const settings = getUserSettings()
+  if (settings.theme === 'light' || settings.theme === 'dark') return settings.theme
+  // Fall back to localStorage for pre-login state
   const stored = localStorage.getItem('lyfehub-theme')
   if (stored === 'light' || stored === 'dark') return stored
   return window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -34,7 +39,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme])
 
   const toggleTheme = useCallback(() => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
+    setTheme((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark'
+      saveSettingsKey('theme', next)
+      return next
+    })
   }, [])
 
   return (

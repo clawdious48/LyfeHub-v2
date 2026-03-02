@@ -1,22 +1,5 @@
 import { create } from 'zustand'
-
-const STORAGE_KEY = 'lyfehub-mail-ui'
-
-interface PersistedState {
-  readingPanePosition: 'right' | 'bottom'
-}
-
-function loadPersisted(): PersistedState {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch { /* ignore */ }
-  return { readingPanePosition: 'right' }
-}
-
-function savePersisted(state: PersistedState) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-}
+import { getUserSettings, saveSettingsKey } from '@/hooks/useUserSettings.js'
 
 interface MailUiState {
   // Persisted
@@ -40,6 +23,10 @@ interface MailUiState {
   searchQuery: string
   focusZone: 'list' | 'detail'
 
+  // Hydration
+  _hydrated: boolean
+  hydrate: () => void
+
   // Actions
   setReadingPanePosition: (pos: 'right' | 'bottom') => void
   setSelectedMessage: (id: string | null, threadId?: string | null) => void
@@ -50,52 +37,60 @@ interface MailUiState {
   setFocusZone: (zone: 'list' | 'detail') => void
 }
 
-export const useMailUiStore = create<MailUiState>((set) => {
-  const persisted = loadPersisted()
+export const useMailUiStore = create<MailUiState>((set, get) => ({
+  readingPanePosition: 'right',
 
-  return {
-    readingPanePosition: persisted.readingPanePosition,
+  selectedMessageId: null,
+  selectedThreadId: null,
+  composeOpen: false,
+  composeMode: 'new',
+  composeReplyTo: null,
+  activeLabel: 'INBOX',
+  searchQuery: '',
+  focusZone: 'list',
 
-    selectedMessageId: null,
-    selectedThreadId: null,
-    composeOpen: false,
-    composeMode: 'new',
-    composeReplyTo: null,
-    activeLabel: 'INBOX',
-    searchQuery: '',
-    focusZone: 'list',
+  _hydrated: false,
 
-    setReadingPanePosition: (pos) => {
-      set({ readingPanePosition: pos })
-      savePersisted({ readingPanePosition: pos })
-    },
+  hydrate: () => {
+    if (get()._hydrated) return
+    const settings = getUserSettings()
+    const m = settings.mail
+    set({
+      readingPanePosition: m?.readingPanePosition ?? 'right',
+      _hydrated: true,
+    })
+  },
 
-    setSelectedMessage: (id, threadId) => {
-      set({
-        selectedMessageId: id,
-        selectedThreadId: threadId ?? null,
-        focusZone: id ? 'detail' : 'list',
-      })
-    },
+  setReadingPanePosition: (pos) => {
+    set({ readingPanePosition: pos })
+    saveSettingsKey('mail', { readingPanePosition: pos })
+  },
 
-    openCompose: (mode = 'new', replyTo = null) => {
-      set({ composeOpen: true, composeMode: mode, composeReplyTo: replyTo })
-    },
+  setSelectedMessage: (id, threadId) => {
+    set({
+      selectedMessageId: id,
+      selectedThreadId: threadId ?? null,
+      focusZone: id ? 'detail' : 'list',
+    })
+  },
 
-    closeCompose: () => {
-      set({ composeOpen: false, composeReplyTo: null })
-    },
+  openCompose: (mode = 'new', replyTo = null) => {
+    set({ composeOpen: true, composeMode: mode, composeReplyTo: replyTo })
+  },
 
-    setActiveLabel: (label) => {
-      set({ activeLabel: label, selectedMessageId: null, selectedThreadId: null })
-    },
+  closeCompose: () => {
+    set({ composeOpen: false, composeReplyTo: null })
+  },
 
-    setSearchQuery: (q) => {
-      set({ searchQuery: q })
-    },
+  setActiveLabel: (label) => {
+    set({ activeLabel: label, selectedMessageId: null, selectedThreadId: null })
+  },
 
-    setFocusZone: (zone) => {
-      set({ focusZone: zone })
-    },
-  }
-})
+  setSearchQuery: (q) => {
+    set({ searchQuery: q })
+  },
+
+  setFocusZone: (zone) => {
+    set({ focusZone: zone })
+  },
+}))

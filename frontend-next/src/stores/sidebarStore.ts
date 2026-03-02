@@ -1,44 +1,49 @@
 import { create } from 'zustand'
-
-const COLLAPSED_KEY = 'lyfehub-sidebar-collapsed'
-const SECTIONS_KEY = 'lyfehub-sidebar-sections'
-
-function loadCollapsed(): boolean {
-  return localStorage.getItem(COLLAPSED_KEY) === '1'
-}
-
-function loadSections(): Record<string, boolean> {
-  try {
-    return JSON.parse(localStorage.getItem(SECTIONS_KEY) || '{}')
-  } catch {
-    return {}
-  }
-}
+import { getUserSettings, saveSettingsKey } from '@/hooks/useUserSettings.js'
 
 interface SidebarState {
   collapsed: boolean
   sectionStates: Record<string, boolean>
+  _hydrated: boolean
+  hydrate: () => void
   toggleCollapsed: () => void
   toggleSection: (key: string) => void
   isSectionCollapsed: (key: string) => boolean
 }
 
 export const useSidebarStore = create<SidebarState>((set, get) => ({
-  collapsed: loadCollapsed(),
-  sectionStates: loadSections(),
+  collapsed: false,
+  sectionStates: {},
+  _hydrated: false,
+
+  hydrate: () => {
+    if (get()._hydrated) return
+    const settings = getUserSettings()
+    set({
+      collapsed: settings.sidebar?.collapsed ?? false,
+      sectionStates: settings.sidebar?.sections ?? {},
+      _hydrated: true,
+    })
+  },
 
   toggleCollapsed: () => {
-    set(state => {
+    set((state) => {
       const next = !state.collapsed
-      localStorage.setItem(COLLAPSED_KEY, next ? '1' : '0')
+      saveSettingsKey('sidebar', {
+        collapsed: next,
+        sections: state.sectionStates,
+      })
       return { collapsed: next }
     })
   },
 
   toggleSection: (key: string) => {
-    set(state => {
+    set((state) => {
       const next = { ...state.sectionStates, [key]: !state.sectionStates[key] }
-      localStorage.setItem(SECTIONS_KEY, JSON.stringify(next))
+      saveSettingsKey('sidebar', {
+        collapsed: state.collapsed,
+        sections: next,
+      })
       return { sectionStates: next }
     })
   },
