@@ -1,5 +1,5 @@
 // frontend-next/src/pages/calendar/components/views/MonthView.tsx
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import type { CalendarItem } from '../../utils/calendarHelpers.js'
 import { getMonthGridDates, toDateString, isToday, formatTime } from '../../utils/calendarHelpers.js'
@@ -11,10 +11,12 @@ interface MonthViewProps {
   items: CalendarItem[]
   onDayClick?: (date: string) => void
   onItemClick?: (item: CalendarItem) => void
+  onTaskDrop?: (taskId: string, date: string) => void
 }
 
-export function MonthView({ selectedDate, items, onDayClick, onItemClick }: MonthViewProps) {
+export function MonthView({ selectedDate, items, onDayClick, onItemClick, onTaskDrop }: MonthViewProps) {
   const setCurrentView = useCalendarUiStore((s) => s.setCurrentView)
+  const [dropTargetDate, setDropTargetDate] = useState<string | null>(null)
   const setSelectedDate = useCalendarUiStore((s) => s.setSelectedDate)
 
   const selected = new Date(selectedDate + 'T00:00:00')
@@ -70,8 +72,26 @@ export function MonthView({ selectedDate, items, onDayClick, onItemClick }: Mont
                     'border-l border-border first:border-l-0 px-1 py-1 overflow-hidden cursor-pointer',
                     'hover:bg-bg-hover/50 transition-colors duration-100',
                     !inMonth && 'opacity-40',
+                    dropTargetDate === dateStr && 'ring-2 ring-inset ring-purple-500/60 bg-purple-500/10',
                   ].filter(Boolean).join(' ')}
                   onClick={() => onDayClick?.(dateStr)}
+                  onDragOver={(e) => {
+                    if (!e.dataTransfer.types.includes('application/x-task-id')) return
+                    e.preventDefault()
+                    e.dataTransfer.dropEffect = 'move'
+                    setDropTargetDate(dateStr)
+                  }}
+                  onDragLeave={(e) => {
+                    if (e.currentTarget.contains(e.relatedTarget as Node)) return
+                    setDropTargetDate(null)
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    const taskId = e.dataTransfer.getData('application/x-task-id')
+                    if (!taskId) return
+                    setDropTargetDate(null)
+                    onTaskDrop?.(taskId, dateStr)
+                  }}
                 >
                   <div className="flex items-center justify-center mb-0.5">
                     <span className={[
