@@ -1,5 +1,4 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
 const { authMiddleware } = require('../middleware/auth');
 const { requireRole } = require('../middleware/permissions');
 const {

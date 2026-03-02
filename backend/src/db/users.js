@@ -50,6 +50,48 @@ async function createUser({ email, password, name }) {
 }
 
 /**
+ * Find or create a user by Google OAuth credentials.
+ * Tries google_id first (most reliable), then email (first-time linking), then creates new.
+ * @returns {object} Safe user object (no password_hash)
+ */
+async function findOrCreateByGoogle({ googleId, email, name, avatarUrl }) {
+  // Try by google_id first (most reliable)
+  let user = await db.getOne('SELECT * FROM users WHERE google_id = $1', [googleId]);
+  if (user) {
+    // Update name/avatar if changed
+    await db.run(
+      'UPDATE users SET name = $1, avatar_url = $2, updated_at = NOW() WHERE id = $3',
+      [name, avatarUrl, user.id]
+    );
+    user.name = name;
+    user.avatar_url = avatarUrl;
+    return getSafeUser(user);
+  }
+
+  // Try by email (first-time linking for existing account)
+  user = await db.getOne('SELECT * FROM users WHERE email = $1', [email]);
+  if (user) {
+    await db.run(
+      'UPDATE users SET google_id = $1, name = $2, avatar_url = $3, updated_at = NOW() WHERE id = $4',
+      [googleId, name, avatarUrl, user.id]
+    );
+    user.google_id = googleId;
+    user.name = name;
+    user.avatar_url = avatarUrl;
+    return getSafeUser(user);
+  }
+
+  // New user
+  const id = uuidv4();
+  await db.run(
+    `INSERT INTO users (id, email, name, role, google_id, avatar_url, settings, created_at, updated_at)
+     VALUES ($1, $2, $3, 'field_tech', $4, $5, '{}', NOW(), NOW())`,
+    [id, email, name, googleId, avatarUrl]
+  );
+  return getSafeUser({ id, email, name, role: 'field_tech', google_id: googleId, avatar_url: avatarUrl, settings: '{}' });
+}
+
+/**
  * Verify user password (accepts email or username)
  * @returns {object|null} User object if valid, null if invalid
  */
@@ -80,8 +122,14 @@ async function updateUser(id, data) {
   }
 
   if (data.settings !== undefined) {
+    // Merge with existing settings rather than full replace
+    const currentUser = await db.getOne('SELECT settings FROM users WHERE id = $1', [id]);
+    const currentSettings = typeof currentUser?.settings === 'string'
+      ? JSON.parse(currentUser.settings || '{}')
+      : (currentUser?.settings || {});
+    const merged = { ...currentSettings, ...data.settings };
     updates.push(`settings = $${paramIdx++}`);
-    values.push(JSON.stringify(data.settings));
+    values.push(JSON.stringify(merged));
   }
 
   if (updates.length === 0) return await findUserById(id);
@@ -109,6 +157,7 @@ async function changePassword(id, newPassword) {
 
 /**
  * Get safe user object (no password hash)
+ * Ensures avatar_url and google_id are included when present.
  */
 function getSafeUser(user) {
   if (!user) return null;
@@ -121,6 +170,9 @@ function getSafeUser(user) {
   if (!safeUser.role || !VALID_ROLES.includes(safeUser.role)) {
     safeUser.role = 'field_tech';
   }
+  // Ensure Google OAuth fields are present (even if null)
+  if (safeUser.avatar_url === undefined) safeUser.avatar_url = null;
+  if (safeUser.google_id === undefined) safeUser.google_id = null;
   return safeUser;
 }
 
@@ -206,6 +258,7 @@ module.exports = {
   findUserByEmailOrName,
   findUserById,
   createUser,
+  findOrCreateByGoogle,
   verifyPassword,
   updateUser,
   changePassword,
