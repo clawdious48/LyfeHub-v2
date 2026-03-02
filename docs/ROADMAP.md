@@ -2,7 +2,7 @@
 
 A living document tracking feature status across the entire LyfeHub platform. Update this file whenever features are started, completed, or re-scoped.
 
-**Last updated:** 2026-03-01
+**Last updated:** 2026-03-02
 
 ---
 
@@ -30,7 +30,9 @@ A living document tracking feature status across the entire LyfeHub platform. Up
 | shadcn/ui component library | -- | Done | Done |
 | App layout (sidebar + header + outlet) | -- | Done | Done |
 | Sidebar (contextual sections, collapse, Quick Capture) | -- | Done | Done |
-| Dashboard (react-grid-layout, 5 widgets, edit mode) | Done | Done | Done |
+| Dashboard (react-grid-layout, 16 widgets, edit mode) | Done | Done | Done |
+| Dashboard widgets: Clock, Sticky Note, Quick Links, Quote, Weather, News Feed, Pomodoro, Habit Tracker, Base View, Quick Capture, Navigation | -- | Done | Done |
+| Navigation widget (configurable nav, drag-reorder, overflow menu, dock collapse) | -- | Done | Done |
 | Quick Capture (note, task, contact) | Done | Done | Done |
 | Settings page | Done | Not started | Backend Only |
 | Notification system | Not started | Not started | Not Started |
@@ -286,6 +288,9 @@ A living document tracking feature status across the entire LyfeHub platform. Up
 
 | Date | Change | Section |
 |------|--------|---------|
+| 2026-03-02 | Navigation widget complete — configurable nav items (routes, headers, toggle-headers, quick-capture), drag-to-reorder config editor, overflow menu for unconfigured routes, dock-edge detection with collapse/expand, auto-layout persistence | Core Platform |
+| 2026-03-02 | Quick Capture widget complete — Note/Task/Contact buttons, adaptive orientation (horizontal/vertical), inline capture dialog for notes+contacts, task quick-capture modal | Core Platform |
+| 2026-03-02 | Dashboard expanded to 16 widgets total (Wave 1-4: Clock, Sticky Note, Quick Links, Quote, Weather, News Feed, Pomodoro, Habit Tracker, Base View, Quick Capture, Navigation) | Core Platform |
 | 2026-03-01 | Calendar feature complete — 5 views (Month/Week/3-Day/Day/Agenda), event CRUD, unified events+tasks rendering, click-drag time block creation, Google Calendar two-way sync, quick-create popover, framer-motion animations | Calendar |
 | 2026-03-01 | Mail (Gmail Integration) module complete — OAuth, threads, compose, labels, filters, hotkeys, responsive layout, auto-refresh | LyfeHub Personal |
 | 2026-03-01 | Default bases seeded (Tasks, Projects, Notes, Tags, People) with 15 property types, is_default protection, auto-timestamps | Bases |
