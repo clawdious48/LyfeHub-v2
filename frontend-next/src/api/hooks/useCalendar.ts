@@ -77,6 +77,7 @@ export function useCreateCalendarEvent() {
       apiClient.post<CalendarEvent>('/calendar-events', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: calendarKeys.events() })
+      queryClient.invalidateQueries({ queryKey: calendarKeys.lists() })
     },
   })
 }
@@ -88,6 +89,7 @@ export function useUpdateCalendarEvent() {
       apiClient.patch<CalendarEvent>(`/calendar-events/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: calendarKeys.events() })
+      queryClient.invalidateQueries({ queryKey: calendarKeys.lists() })
     },
   })
 }
@@ -99,6 +101,7 @@ export function useDeleteCalendarEvent() {
       apiClient.delete<void>(`/calendar-events/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: calendarKeys.events() })
+      queryClient.invalidateQueries({ queryKey: calendarKeys.lists() })
     },
   })
 }
