@@ -2,7 +2,7 @@
 import { useRef, useEffect, useMemo, useState, useCallback } from 'react'
 import type { CalendarItem } from '../utils/calendarHelpers.js'
 import { toDateString, isToday, computeOverlapLayout, formatTime, minutesToTime } from '../utils/calendarHelpers.js'
-import { HOUR_HEIGHT_PX, SLOT_HEIGHT_PX, SLOTS_PER_DAY, DEFAULT_VISIBLE_START_HOUR, MINUTES_PER_SLOT } from '../utils/calendarConstants.js'
+import { HOUR_HEIGHT_PX, SLOT_HEIGHT_PX, SLOTS_PER_DAY, DEFAULT_VISIBLE_START_HOUR, MINUTES_PER_SLOT, DEFAULT_EVENT_DURATION_MINUTES } from '../utils/calendarConstants.js'
 import { CalendarItemBlock } from './CalendarItemBlock.js'
 import { CurrentTimeIndicator } from './CurrentTimeIndicator.js'
 
@@ -19,14 +19,16 @@ interface TimeGridProps {
   onSlotClick?: (date: string, time: string) => void
   onItemClick?: (item: CalendarItem) => void
   onDragCreate?: (date: string, startTime: string, endTime: string) => void
+  onTaskDrop?: (taskId: string, date: string, startTime: string, endTime: string) => void
 }
 
 const TOTAL_HEIGHT = SLOTS_PER_DAY * SLOT_HEIGHT_PX
 
-export function TimeGrid({ dates, items, onSlotClick, onItemClick, onDragCreate }: TimeGridProps) {
+export function TimeGrid({ dates, items, onSlotClick, onItemClick, onDragCreate, onTaskDrop }: TimeGridProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<DragState>({ active: false, dateStr: '', startY: 0, currentY: 0 })
   const [ghostBlock, setGhostBlock] = useState<{ dateStr: string; top: number; height: number } | null>(null)
+  const [dropIndicator, setDropIndicator] = useState<{ dateStr: string; top: number; height: number } | null>(null)
 
   const snapToSlot = useCallback((y: number) => Math.round(y / SLOT_HEIGHT_PX) * SLOT_HEIGHT_PX, [])
 
@@ -82,6 +84,37 @@ export function TimeGrid({ dates, items, onSlotClick, onItemClick, onDragCreate 
     const endTime = yToTime(maxY)
     onDragCreate?.(dateStr, startTime, endTime)
   }, [yToTime, onDragCreate])
+
+  // HTML5 drop handlers for scheduling unscheduled tasks
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>, dateStr: string) => {
+    if (!e.dataTransfer.types.includes('application/x-task-id')) return
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    const rect = e.currentTarget.getBoundingClientRect()
+    const y = e.clientY - rect.top + (scrollRef.current?.scrollTop || 0)
+    const snappedY = snapToSlot(y)
+    setDropIndicator({ dateStr, top: snappedY, height: HOUR_HEIGHT_PX })
+  }, [snapToSlot])
+
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    // Only clear if leaving the column (not entering a child)
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return
+    setDropIndicator(null)
+  }, [])
+
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>, dateStr: string) => {
+    e.preventDefault()
+    const taskId = e.dataTransfer.getData('application/x-task-id')
+    if (!taskId) return
+    setDropIndicator(null)
+
+    const rect = e.currentTarget.getBoundingClientRect()
+    const y = e.clientY - rect.top + (scrollRef.current?.scrollTop || 0)
+    const startTime = yToTime(y)
+    const startMin = (snapToSlot(y) / SLOT_HEIGHT_PX) * MINUTES_PER_SLOT
+    const endTime = minutesToTime(Math.min(startMin + DEFAULT_EVENT_DURATION_MINUTES, 24 * 60 - MINUTES_PER_SLOT))
+    onTaskDrop?.(taskId, dateStr, startTime, endTime)
+  }, [yToTime, snapToSlot, onTaskDrop])
 
   // Auto-scroll to current time or DEFAULT_VISIBLE_START_HOUR on mount
   useEffect(() => {
@@ -189,6 +222,9 @@ export function TimeGrid({ dates, items, onSlotClick, onItemClick, onDragCreate 
                 onPointerDown={(e) => handlePointerDown(e, dateStr)}
                 onPointerMove={(e) => handlePointerMove(e, dateStr)}
                 onPointerUp={(e) => handlePointerUp(e, dateStr)}
+                onDragOver={(e) => handleDragOver(e, dateStr)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, dateStr)}
               >
                 {/* Hour lines */}
                 {hours.map((hour) => (
@@ -229,6 +265,17 @@ export function TimeGrid({ dates, items, onSlotClick, onItemClick, onDragCreate 
                     style={{
                       top: ghostBlock.top,
                       height: ghostBlock.height,
+                    }}
+                  />
+                )}
+
+                {/* Task drop indicator */}
+                {dropIndicator && dropIndicator.dateStr === dateStr && (
+                  <div
+                    className="absolute left-1 right-1 bg-purple-500/15 border-2 border-dashed border-purple-500/60 rounded-md pointer-events-none"
+                    style={{
+                      top: dropIndicator.top,
+                      height: dropIndicator.height,
                     }}
                   />
                 )}
