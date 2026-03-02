@@ -9,11 +9,24 @@ export type BasePropertyType =
   | 'checkbox'
   | 'url'
   | 'relation'
+  | 'email'
+  | 'phone'
+  | 'files'
+  | 'rich_text'
+  | 'status'
+  | 'created_time'
+  | 'last_edited_time'
 
 export interface SelectOption {
   label: string
   color: string
   value?: string
+}
+
+export interface StatusOption {
+  label: string
+  color: string
+  group: 'todo' | 'in_progress' | 'complete'
 }
 
 export interface RelationOptions {
@@ -24,6 +37,7 @@ export interface RelationOptions {
 
 export type BasePropertyOptions =
   | SelectOption[]
+  | StatusOption[]
   | RelationOptions
   | unknown[]
   | Record<string, unknown>
@@ -38,6 +52,7 @@ export interface BaseProperty {
   options: BasePropertyOptions
   position: number
   width: number
+  is_default?: boolean
   created_at: string
   updated_at: string
 }
@@ -110,6 +125,7 @@ export interface Base {
   user_id: string
   group_id: string | null
   position: number
+  is_default?: boolean
   created_at: string
   updated_at: string
   properties?: BaseProperty[]

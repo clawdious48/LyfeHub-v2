@@ -41,6 +41,7 @@ export type {
 export type {
   BasePropertyType,
   SelectOption,
+  StatusOption,
   RelationOptions,
   BasePropertyOptions,
   BaseProperty,
