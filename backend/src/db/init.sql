@@ -425,6 +425,16 @@ CREATE TABLE IF NOT EXISTS bases (
 );
 CREATE INDEX IF NOT EXISTS idx_bases_user_id ON bases(user_id);
 
+-- Migration: Add is_default to bases
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'bases' AND column_name = 'is_default'
+  ) THEN
+    ALTER TABLE bases ADD COLUMN is_default BOOLEAN DEFAULT FALSE;
+  END IF;
+END $$;
+
 -- ============================================
 -- BASE PROPERTIES (Columns in a base)
 -- ============================================
@@ -440,6 +450,26 @@ CREATE TABLE IF NOT EXISTS base_properties (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_base_properties_base_id ON base_properties(base_id);
+
+-- Migration: Add is_default to base_properties
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'base_properties' AND column_name = 'is_default'
+  ) THEN
+    ALTER TABLE base_properties ADD COLUMN is_default BOOLEAN DEFAULT FALSE;
+  END IF;
+END $$;
+
+-- Migration: Expand property type CHECK constraint from 8 to 15 types
+DO $$ BEGIN
+  ALTER TABLE base_properties DROP CONSTRAINT IF EXISTS base_properties_type_check;
+  ALTER TABLE base_properties ADD CONSTRAINT base_properties_type_check
+    CHECK(type IN ('text','number','select','multi_select','date','checkbox','url','relation',
+                   'email','phone','files','rich_text','status','created_time','last_edited_time'));
+EXCEPTION WHEN OTHERS THEN
+  NULL;
+END $$;
 
 -- ============================================
 -- BASE RECORDS (Rows in a base)
