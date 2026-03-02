@@ -458,8 +458,19 @@ The backend is unchanged. All endpoints require auth. Backend uses PUT for updat
 - Click-drag time block creation with ghost block, 15-min snap
 - Google Calendar two-way sync (OAuth, pull/push, auto-calendar creation)
 
+### Tasks Module (Done)
+- `pages/TasksPage.tsx` — URL-driven view routing (`?view=my-day|important|scheduled|recurring|all|completed|list:{id}`), 4 display modes
+- `pages/tasks/components/list/` — TaskListView, TaskCardsView (S/M/L), TaskBoardView (@dnd-kit), TaskFocusView (triage)
+- `pages/tasks/components/list/` — TaskRow, TaskCard, TaskBoardColumn, TaskInlineAdd, TaskToolbar, TaskCompletedSection
+- `pages/tasks/components/modals/` — TaskDetailModal (two-column: description+subtasks | metadata+relations), TaskQuickCaptureModal, CreateListModal
+- `pages/tasks/components/TasksSidebarContent.tsx` — Smart views with counts, My Lists with color dots
+- `api/hooks/useTasks.ts` — 12 hooks (CRUD, toggle, counts, calendar, schedule/unschedule) with optimistic updates
+- `api/hooks/useTaskLists.ts` — CRUD hooks for user-created lists
+- `stores/tasksUiStore.ts` — displayMode, cardSize, boardGroupBy, sortBy (persisted); selectedTaskId, createModalOpen (ephemeral)
+- `pages/tasks/utils/` — taskConstants.ts (SMART_VIEWS, PRIORITY/ENERGY/LOCATION/RECURRING options), taskHelpers.ts (sort, group, format)
+
 ### Placeholder Pages
-- TasksPage, PeoplePage — stub components
+- PeoplePage — stub component
 
 ---
 
@@ -467,7 +478,7 @@ The backend is unchanged. All endpoints require auth. Backend uses PUT for updat
 
 - **User Profile page** — Facebook-style social feed, linked from sidebar user name
 - **Areas widget content** — Populate Tags base with Area records
-- **Per-page sidebar configs** — Define contextual sections for Tasks, Jobs, People, Calendar, Bases
+- **Per-page sidebar configs** — Define contextual sections for Jobs, People, Calendar, Bases (Tasks sidebar done)
 - **Resources section** — Show Base Views as quick-access links in sidebar
 - **Mobile bottom sheet** — Tap-again on active nav item opens context sheet with section-specific content (filters, views, etc.). iPad landscape renders as sidebar panel instead of sheet.
 - **Task-Calendar deep integration** — Drag unscheduled tasks onto calendar for time blocking
@@ -501,12 +512,15 @@ docker start lyfehub-dev lyfehub-dev-db
 
 ---
 
+## Plans Directory (Non-Negotiable)
+
+**All plans created by superpowers skills MUST be saved to `docs/plans/`.** This includes design docs and implementation plans. Use the naming convention `YYYY-MM-DD-<topic>-design.md` or `YYYY-MM-DD-<topic>-plan.md`.
+
 ## Design Docs (Source of Truth)
 
 These documents contain the original design discussions and decisions. This CLAUDE.md is the consolidated reference — if in doubt, check the source doc.
 
-- `docs/plans/2026-02-26-sidebar-dashboard-design.md` — Approved sidebar + dashboard design
-- `docs/plans/2026-02-26-sidebar-dashboard-plan.md` — Implementation plan for sidebar + dashboard
+- `docs/plans/` — **All design docs and implementation plans live here**
 - `docs/ROADMAP.md` — Full app roadmap: what's built, what's remaining, activity log. **UPDATE THIS FILE** each time a feature is worked on or completed.
 - `CALENDAR-WORKING-DOC.md` — Calendar architecture (events vs tasks decision, ADHD principles)
 - `GROUPS-IMPLEMENTATION.md` — Base groups design (drag-and-drop, collapsible, three assignment methods)

@@ -44,14 +44,19 @@ A living document tracking feature status across the entire LyfeHub platform. Up
 
 | Feature | Backend | Frontend | Status |
 |---------|---------|----------|--------|
-| Task CRUD | Done | Stub | Stub |
-| Task lists | Done | Not started | Backend Only |
-| Subtasks (JSON-in-DB) | Done | Not started | Backend Only |
-| Smart views (My Day, Important, Scheduled, All) | Not started | Not started | Not Started |
-| Task modal (create/edit with full fields) | Done | Not started | Backend Only |
-| Kanban view by status | Done | Not started | Backend Only |
-| Drag-and-drop reorder | Not started | Not started | Not Started |
-| Task scheduling (date, start/end time) | Done | Not started | Backend Only |
+| Task CRUD | Done | Done | Done |
+| Task lists (My Lists with colors) | Done | Done | Done |
+| Subtasks (JSON-in-DB, inline editing) | Done | Done | Done |
+| Smart views (My Day, Important, Scheduled, Recurring, All, Completed) | Done | Done | Done |
+| Task detail modal (two-column layout, progressive disclosure) | Done | Done | Done |
+| Quick capture modal (sidebar) | Done | Done | Done |
+| Inline rapid-fire add | Done | Done | Done |
+| Four display modes (List, Cards S/M/L, Board, Focus) | Done | Done | Done |
+| Board view with drag-and-drop (by priority/energy/list/location) | Done | Done | Done |
+| Focus view (single-card triage: Done/Skip/Reschedule) | -- | Done | Done |
+| Completed tasks section (collapsible) | Done | Done | Done |
+| Task scheduling (date, start/end time) | Done | Done | Done |
+| Toggle My Day / Important (optimistic updates) | Done | Done | Done |
 | Tags | Done | Not started | Backend Only |
 | Acceptance criteria | Done | Not started | Backend Only |
 
@@ -72,7 +77,7 @@ A living document tracking feature status across the entire LyfeHub platform. Up
 | Drag to move/resize events | Not started | Not started | Not Started |
 | Recurring events (RRULE) | Not started | Not started | Not Started |
 | Reminders / notifications | Not started | Not started | Not Started |
-| Task drag from sidebar to grid | Not started | Not started | Not Started |
+| Task drag from sidebar to grid | Done | Done | Done |
 
 ### Mail (Gmail Integration)
 
@@ -96,6 +101,7 @@ A living document tracking feature status across the entire LyfeHub platform. Up
 | Batch operations (multi-select) | Not started | Not started | Not Started |
 | Email signatures | Not started | Not started | Not Started |
 | Snooze | Not started | Not started | Not Started |
+| Attach from Job Documents (browse job docs/photos, attach to email) | Not started | Not started | Not Started |
 
 ### Notes
 
