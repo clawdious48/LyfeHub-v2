@@ -5,6 +5,7 @@ import {
   FileText, Users, Database,
   Wrench, BookOpen,
   HardHat, Contact, Package, FolderOpen, GitBranch, DollarSign, BarChart3,
+  Mail, Inbox, Star, Send, Trash2,
 } from 'lucide-react'
 import { BaseSidebarContent } from '@/pages/bases/components/BaseSidebarContent.js'
 
@@ -47,6 +48,7 @@ const contextualSections: Record<string, SidebarSection[]> = {
       items: [
         { label: 'Calendar', icon: Calendar, to: '/calendar' },
         { label: 'Tasks', icon: CheckSquare, to: '/tasks' },
+        { label: 'Mail', icon: Mail, to: '/mail' },
       ],
     },
     {
@@ -54,6 +56,40 @@ const contextualSections: Record<string, SidebarSection[]> = {
       header: 'Tools',
       icon: Wrench,
       items: [],
+    },
+    {
+      key: 'resources',
+      header: 'Resources',
+      icon: BookOpen,
+      items: [
+        { label: 'Notes', icon: FileText, to: '/notes' },
+        { label: 'People', icon: Users, to: '/people' },
+        { label: 'Bases', icon: Database, to: '/bases' },
+      ],
+    },
+  ],
+  '/mail': [
+    {
+      key: 'mail-nav',
+      header: 'Mail',
+      icon: Mail,
+      items: [
+        { label: 'Inbox', icon: Inbox, to: '/mail?label=INBOX' },
+        { label: 'Starred', icon: Star, to: '/mail?label=STARRED' },
+        { label: 'Sent', icon: Send, to: '/mail?label=SENT' },
+        { label: 'Drafts', icon: FileText, to: '/mail?label=DRAFT' },
+        { label: 'Trash', icon: Trash2, to: '/mail?label=TRASH' },
+      ],
+    },
+    {
+      key: 'productivity',
+      header: 'Productivity',
+      icon: Briefcase,
+      items: [
+        { label: 'Calendar', icon: Calendar, to: '/calendar' },
+        { label: 'Tasks', icon: CheckSquare, to: '/tasks' },
+        { label: 'Mail', icon: Mail, to: '/mail' },
+      ],
     },
     {
       key: 'resources',
@@ -81,6 +117,7 @@ const contextualSections: Record<string, SidebarSection[]> = {
       items: [
         { label: 'Calendar', icon: Calendar, to: '/calendar' },
         { label: 'Tasks', icon: CheckSquare, to: '/tasks' },
+        { label: 'Mail', icon: Mail, to: '/mail' },
       ],
     },
     {

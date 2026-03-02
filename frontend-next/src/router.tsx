@@ -14,6 +14,7 @@ import ApexDocumentsPage from '@/pages/ApexDocumentsPage'
 import ApexWorkflowsPage from '@/pages/ApexWorkflowsPage'
 import ApexAccountingPage from '@/pages/ApexAccountingPage'
 import ApexReportsPage from '@/pages/ApexReportsPage'
+import MailPage from '@/pages/MailPage'
 import type { ReactNode } from 'react'
 
 function AuthGuard({ children }: { children: ReactNode }) {
@@ -50,6 +51,7 @@ export const routes: RouteObject[] = [
       { path: 'jobs', element: <JobsPage /> },
       { path: 'tasks', element: <TasksPage /> },
       { path: 'calendar', element: <CalendarPage /> },
+      { path: 'mail', element: <MailPage /> },
       { path: 'people', element: <PeoplePage /> },
       { path: 'bases', element: <BasesPage /> },
       { path: 'apex/crm', element: <ApexCrmPage /> },
