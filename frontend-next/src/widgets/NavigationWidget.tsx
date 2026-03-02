@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { ChevronRight, ChevronDown, FileText, CheckSquare, UserPlus } from 'lucide-react'
+import {
+  ChevronRight, ChevronDown, ChevronLeft, ChevronUp,
+  FileText, CheckSquare, UserPlus, Menu, MoreVertical, MoreHorizontal,
+} from 'lucide-react'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose,
 } from '@/components/ui/dialog.js'
@@ -13,15 +16,18 @@ import { cn } from '@/lib/utils.js'
 import { getRouteByPath } from '@/layouts/navRoutes.js'
 import { apiClient } from '@/api/client.js'
 import { TaskQuickCaptureModal } from '@/pages/tasks/components/modals/TaskQuickCaptureModal.js'
-import type { NavWidgetConfig, NavItem, NavToggleHeaderItem, NavCaptureItem } from './nav/navTypes.js'
+import type { NavWidgetConfig, NavItem, NavToggleHeaderItem, NavCaptureItem, OverflowTriggerStyle } from './nav/navTypes.js'
 import { DEFAULT_NAV_CONFIG } from './nav/navTypes.js'
 import NavOverflowMenu from './nav/NavOverflowMenu.js'
+import { detectDockEdge, type DockEdge } from './nav/NavDockDetector.js'
 
 type Orientation = 'horizontal' | 'vertical'
 
 interface NavigationWidgetProps {
   config?: Record<string, unknown>
   onConfigChange?: (config: Record<string, unknown>) => void
+  gridPosition?: { x: number; y: number; w: number; h: number }
+  allWidgets?: Array<{ y: number; h: number }>
 }
 
 function parseConfig(raw?: Record<string, unknown>): NavWidgetConfig {
@@ -394,6 +400,33 @@ function HorizontalNavItem({
   }
 }
 
+// ── Dock collapse helpers ────────────────────────────────────────────────────
+
+function getCollapseTriggerIcon(style: OverflowTriggerStyle, edge: DockEdge, collapsed: boolean) {
+  if (style === 'arrow' || style === 'invisible') {
+    if (collapsed) {
+      switch (edge) {
+        case 'left': return ChevronRight
+        case 'right': return ChevronLeft
+        case 'top': return ChevronDown
+        case 'bottom': return ChevronUp
+        default: return ChevronRight
+      }
+    } else {
+      switch (edge) {
+        case 'left': return ChevronLeft
+        case 'right': return ChevronRight
+        case 'top': return ChevronUp
+        case 'bottom': return ChevronDown
+        default: return ChevronLeft
+      }
+    }
+  }
+  if (style === 'hamburger') return Menu
+  if (style === 'ellipsis') return edge === 'left' || edge === 'right' ? MoreVertical : MoreHorizontal
+  return ChevronRight
+}
+
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 function getConfiguredRoutes(items: NavItem[]): string[] {
@@ -407,7 +440,7 @@ function getConfiguredRoutes(items: NavItem[]): string[] {
 
 // ── Main widget ─────────────────────────────────────────────────────────────
 
-export default function NavigationWidget({ config: rawConfig, onConfigChange }: NavigationWidgetProps) {
+export default function NavigationWidget({ config: rawConfig, onConfigChange, gridPosition, allWidgets }: NavigationWidgetProps) {
   const navConfig = parseConfig(rawConfig)
   const containerRef = useRef<HTMLDivElement>(null)
   const [orientation, setOrientation] = useState<Orientation>('vertical')
@@ -418,6 +451,30 @@ export default function NavigationWidget({ config: rawConfig, onConfigChange }: 
   const [captureOpen, setCaptureOpen] = useState(false)
   const [captureType, setCaptureType] = useState<'note' | 'contact'>('note')
   const [taskCaptureOpen, setTaskCaptureOpen] = useState(false)
+
+  // Dock edge detection
+  const dockEdge: DockEdge = gridPosition && allWidgets
+    ? detectDockEdge(gridPosition.x, gridPosition.y, gridPosition.w, gridPosition.h, 24, allWidgets)
+    : null
+
+  // Collapse/expand handlers
+  const handleCollapse = useCallback(() => {
+    if (!onConfigChange || !gridPosition) return
+    onConfigChange({
+      ...rawConfig,
+      collapsed: true,
+      savedW: gridPosition.w,
+      savedH: gridPosition.h,
+    })
+  }, [onConfigChange, rawConfig, gridPosition])
+
+  const handleExpand = useCallback(() => {
+    if (!onConfigChange) return
+    onConfigChange({
+      ...rawConfig,
+      collapsed: false,
+    })
+  }, [onConfigChange, rawConfig])
 
   // Measure container and determine orientation
   useEffect(() => {
@@ -482,6 +539,26 @@ export default function NavigationWidget({ config: rawConfig, onConfigChange }: 
     )
   }
 
+  // Collapsed state — render thin strip with expand trigger
+  if (navConfig.collapsed && dockEdge) {
+    const TriggerIcon = getCollapseTriggerIcon(navConfig.dockCollapseTrigger, dockEdge, true)
+    const isVerticalStrip = dockEdge === 'left' || dockEdge === 'right'
+
+    return (
+      <div
+        ref={containerRef}
+        className={cn(
+          'h-full flex items-center justify-center cursor-pointer hover:bg-bg-hover transition-colors',
+          isVerticalStrip ? 'w-full' : 'h-full',
+        )}
+        onClick={handleExpand}
+        title="Expand navigation"
+      >
+        <TriggerIcon className="size-4 text-text-muted" />
+      </div>
+    )
+  }
+
   const currentPath = location.pathname
   const configuredRoutes = getConfiguredRoutes(navConfig.items)
 
@@ -525,6 +602,20 @@ export default function NavigationWidget({ config: rawConfig, onConfigChange }: 
           ))}
           {navConfig.overflowPosition === 'end' && overflowMenu}
         </div>
+      )}
+
+      {/* Dock collapse trigger */}
+      {dockEdge && !navConfig.collapsed && (
+        <button
+          onClick={handleCollapse}
+          className="flex items-center justify-center p-1 rounded-md text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors mt-auto"
+          title="Collapse navigation"
+        >
+          {(() => {
+            const TriggerIcon = getCollapseTriggerIcon(navConfig.dockCollapseTrigger, dockEdge, false)
+            return <TriggerIcon className="size-3.5" />
+          })()}
+        </button>
       )}
 
       {/* Note / Contact capture dialog */}

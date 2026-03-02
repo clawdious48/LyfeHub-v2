@@ -15,6 +15,8 @@ interface WidgetWrapperProps {
   onRemove: () => void
   onConfigChange?: (config: Record<string, unknown>) => void
   onStyleChange?: (style: WidgetStyle) => void
+  gridPosition?: { x: number; y: number; w: number; h: number }
+  allWidgets?: Array<{ y: number; h: number }>
 }
 
 const DEFAULT_STYLE: WidgetStyle = {
@@ -46,6 +48,8 @@ export default function WidgetWrapper({
   onRemove,
   onConfigChange,
   onStyleChange,
+  gridPosition,
+  allWidgets,
 }: WidgetWrapperProps) {
   const [configOpen, setConfigOpen] = useState(false)
   const definition = widgetRegistry[type]
@@ -133,6 +137,8 @@ export default function WidgetWrapper({
           <WidgetComponent
             config={config}
             {...(onConfigChange ? { onConfigChange } : {})}
+            {...(gridPosition ? { gridPosition } : {})}
+            {...(allWidgets ? { allWidgets } : {})}
           />
         </CardContent>
       </Card>

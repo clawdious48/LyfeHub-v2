@@ -9,6 +9,7 @@ import WidgetWrapper from '@/widgets/WidgetWrapper.js'
 import AddWidgetDialog from '@/widgets/AddWidgetDialog.js'
 import DashboardSettingsDialog from '@/widgets/DashboardSettingsDialog.js'
 import { widgetRegistry } from '@/widgets/registry.js'
+import { detectDockEdge } from '@/widgets/nav/NavDockDetector.js'
 import type { WidgetStyle } from '@/widgets/registry.js'
 import type { DashboardSettings } from '@/api/hooks/index.js'
 
@@ -115,7 +116,30 @@ export default function DashboardPage() {
 
   const handleConfigChange = useCallback((id: string, newConfig: Record<string, unknown>) => {
     setWidgets((prev) =>
-      prev.map((w) => (w.id === id ? { ...w, config: newConfig } : w))
+      prev.map((w) => {
+        if (w.id !== id) return w
+        const updated = { ...w, config: newConfig }
+
+        // Handle Navigation widget collapse/expand
+        if (w.type === 'navigation') {
+          const collapsed = newConfig.collapsed as boolean
+          if (collapsed) {
+            const edge = detectDockEdge(w.x, w.y, w.w, w.h, 24, prev.map((p) => ({ y: p.y, h: p.h })))
+            if (edge === 'left' || edge === 'right') {
+              updated.w = 1
+            } else if (edge === 'top' || edge === 'bottom') {
+              updated.h = 1
+            }
+          } else {
+            const savedW = newConfig.savedW as number | undefined
+            const savedH = newConfig.savedH as number | undefined
+            if (savedW) updated.w = savedW
+            if (savedH) updated.h = savedH
+          }
+        }
+
+        return updated
+      })
     )
   }, [])
 
@@ -195,6 +219,8 @@ export default function DashboardPage() {
                 onRemove={() => handleRemoveWidget(widget.id)}
                 onConfigChange={(newConfig) => handleConfigChange(widget.id, newConfig)}
                 onStyleChange={(newStyle) => handleStyleChange(widget.id, newStyle)}
+                gridPosition={{ x: widget.x, y: widget.y, w: widget.w, h: widget.h }}
+                allWidgets={widgets.map((w) => ({ y: w.y, h: w.h }))}
               />
             </div>
           ))}
