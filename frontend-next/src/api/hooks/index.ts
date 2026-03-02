@@ -129,3 +129,12 @@ export {
   useSaveHotkeys,
   mailKeys,
 } from './useMail.js'
+export { useWeather, weatherKeys } from './useWeather.js'
+export {
+  useFeeds,
+  useAddFeed,
+  useDeleteFeed,
+  useFeedItems,
+  feedKeys,
+} from './useFeeds.js'
+export { useCreateWorkSession } from './useWorkSessions.js'

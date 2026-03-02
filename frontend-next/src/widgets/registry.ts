@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react'
 import type { LucideIcon } from 'lucide-react'
-import { Sun, Calendar, FileText, Inbox, Target, Clock, StickyNote, ExternalLink, Quote } from 'lucide-react'
+import { Sun, Calendar, FileText, Inbox, Target, Clock, StickyNote, ExternalLink, Quote, CloudSun, Rss, Timer, CheckSquare, Database } from 'lucide-react'
 
 export type WidgetCategory = 'productivity' | 'external' | 'data' | 'utility'
 
@@ -44,6 +44,11 @@ import ClockWidget from './ClockWidget.js'
 import StickyNoteWidget from './StickyNoteWidget.js'
 import QuickLinksWidget from './QuickLinksWidget.js'
 import QuoteWidget from './QuoteWidget.js'
+import WeatherWidget from './WeatherWidget.js'
+import NewsFeedWidget from './NewsFeedWidget.js'
+import PomodoroWidget from './PomodoroWidget.js'
+import HabitTrackerWidget from './HabitTrackerWidget.js'
+import BaseViewWidget from './BaseViewWidget.js'
 
 export const widgetRegistry: Record<string, WidgetDefinition> = {
   'my-day': {
@@ -157,5 +162,82 @@ export const widgetRegistry: Record<string, WidgetDefinition> = {
     singleton: true,
     configurable: false,
     minW: 6, minH: 3, defaultW: 8, defaultH: 4,
+  },
+  'weather': {
+    component: WeatherWidget,
+    label: 'Weather',
+    description: 'Current weather and forecast',
+    icon: CloudSun,
+    category: 'external',
+    singleton: true,
+    configurable: true,
+    configSchema: [
+      { key: 'city', label: 'City', type: 'text', default: '', placeholder: 'e.g. Salt Lake City' },
+      {
+        key: 'units', label: 'Units', type: 'select', default: 'imperial',
+        options: [
+          { label: 'Fahrenheit', value: 'imperial' },
+          { label: 'Celsius', value: 'metric' },
+        ],
+      },
+    ],
+    minW: 6, minH: 4, defaultW: 8, defaultH: 6,
+  },
+  'news-feed': {
+    component: NewsFeedWidget,
+    label: 'News Feed',
+    description: 'RSS headlines from your feeds',
+    icon: Rss,
+    category: 'external',
+    singleton: false,
+    configurable: true,
+    configSchema: [
+      { key: 'feedIds', label: 'Feeds', type: 'feeds-editor', default: [] },
+    ],
+    minW: 6, minH: 4, defaultW: 8, defaultH: 6,
+  },
+  'pomodoro': {
+    component: PomodoroWidget,
+    label: 'Pomodoro Timer',
+    description: 'Focus timer with work session logging',
+    icon: Timer,
+    category: 'productivity',
+    singleton: true,
+    configurable: true,
+    configSchema: [
+      { key: 'focusDuration', label: 'Focus (minutes)', type: 'number', default: 25 },
+      { key: 'breakDuration', label: 'Break (minutes)', type: 'number', default: 5 },
+      { key: 'longBreakDuration', label: 'Long break (minutes)', type: 'number', default: 15 },
+      { key: 'sessionsBeforeLongBreak', label: 'Sessions before long break', type: 'number', default: 4 },
+    ],
+    minW: 4, minH: 5, defaultW: 6, defaultH: 7,
+  },
+  'habit-tracker': {
+    component: HabitTrackerWidget,
+    label: 'Habit Tracker',
+    description: 'Daily habits with streak tracking',
+    icon: CheckSquare,
+    category: 'productivity',
+    singleton: true,
+    configurable: true,
+    configSchema: [
+      { key: 'habitsBaseId', label: 'Habits Base', type: 'base-picker' },
+      { key: 'habitLogBaseId', label: 'Habit Log Base', type: 'base-picker' },
+    ],
+    minW: 6, minH: 4, defaultW: 8, defaultH: 6,
+  },
+  'base-view': {
+    component: BaseViewWidget,
+    label: 'Base View',
+    description: 'Any Base + View as a compact data table',
+    icon: Database,
+    category: 'data',
+    singleton: false,
+    configurable: true,
+    configSchema: [
+      { key: 'baseId', label: 'Base', type: 'base-picker' },
+      { key: 'viewId', label: 'View', type: 'view-picker', dependsOn: 'baseId' },
+    ],
+    minW: 6, minH: 4, defaultW: 12, defaultH: 8,
   },
 }
