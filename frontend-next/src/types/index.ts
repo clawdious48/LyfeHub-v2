@@ -75,3 +75,17 @@ export type {
 } from './calendar.js'
 export type { Goal, CreateGoalData, UpdateGoalData } from './goal.js'
 export type { Milestone, CreateMilestoneData, UpdateMilestoneData } from './milestone.js'
+export type {
+  MailStatus,
+  MailMessageSummary,
+  MailMessageFull,
+  MailAttachment,
+  MailThread,
+  MailMessagesResponse,
+  MailLabel,
+  MailContact,
+  MailDraft,
+  MailFilter,
+  SendMailData,
+  CreateFilterData,
+} from './mail.js'
