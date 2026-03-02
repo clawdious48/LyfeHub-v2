@@ -10,6 +10,7 @@ import {
 import { BaseSidebarContent } from '@/pages/bases/components/BaseSidebarContent.js'
 import { MailSidebarContent } from '@/pages/mail/components/MailSidebarContent.js'
 import { CalendarSidebarContent } from '@/pages/calendar/components/sidebar/CalendarSidebarContent.js'
+import { TasksSidebarContent } from '@/pages/tasks/components/TasksSidebarContent.js'
 
 export interface SidebarItem {
   label: string
@@ -77,6 +78,35 @@ const contextualSections: Record<string, SidebarSection[]> = {
       icon: Mail,
       items: [],
       component: MailSidebarContent,
+    },
+    {
+      key: 'productivity',
+      header: 'Productivity',
+      icon: Briefcase,
+      items: [
+        { label: 'Calendar', icon: Calendar, to: '/calendar' },
+        { label: 'Tasks', icon: CheckSquare, to: '/tasks' },
+        { label: 'Mail', icon: Mail, to: '/mail' },
+      ],
+    },
+    {
+      key: 'resources',
+      header: 'Resources',
+      icon: BookOpen,
+      items: [
+        { label: 'Notes', icon: FileText, to: '/notes' },
+        { label: 'People', icon: Users, to: '/people' },
+        { label: 'Bases', icon: Database, to: '/bases' },
+      ],
+    },
+  ],
+  '/tasks': [
+    {
+      key: 'tasks-nav',
+      header: 'Tasks',
+      icon: CheckSquare,
+      items: [],
+      component: TasksSidebarContent,
     },
     {
       key: 'productivity',
