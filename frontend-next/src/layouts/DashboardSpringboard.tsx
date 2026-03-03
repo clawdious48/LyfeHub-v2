@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import DashboardPage from '@/pages/DashboardPage.js'
 import ApexDashboardPage from '@/pages/ApexDashboardPage.js'
 import { useHeaderStore } from '@/stores/headerStore.js'
+import { springboardProgress } from '@/stores/springboardProgress.js'
 
 const dashboards = [
   { id: 'personal', route: '/' },
@@ -24,12 +25,12 @@ export default function DashboardSpringboard() {
     const el = scrollRef.current
     if (!el) return
     const targetX = activeIndex * el.clientWidth
-    // Use instant scroll so there's no visible animation on mount or
-    // when the user clicks an area button (the route change is the intent)
     el.scrollTo({ left: targetX, behavior: 'instant' })
+    // Sync progress immediately so header tabs match on mount
+    springboardProgress.set(activeIndex)
   }, [activeIndex])
 
-  // Detect scroll end and sync route
+  // Real-time scroll progress (drives header tab sliding) + debounced route sync
   useEffect(() => {
     const el = scrollRef.current
     if (!el) return
@@ -37,15 +38,21 @@ export default function DashboardSpringboard() {
     let scrollTimer: ReturnType<typeof setTimeout>
 
     function handleScroll() {
+      if (!el) return
+      // Update progress in real-time (no debounce) — drives header tab animation
+      const width = el.clientWidth || 1
+      const progress = Math.min(1, Math.max(0, el.scrollLeft / width))
+      springboardProgress.set(progress)
+
+      // Debounced route sync — wait for scroll-snap to settle
       clearTimeout(scrollTimer)
       scrollTimer = setTimeout(() => {
-        if (!el) return
-        const index = Math.round(el.scrollLeft / el.clientWidth)
+        const index = Math.round(el.scrollLeft / width)
         const targetRoute = dashboards[index]?.route ?? '/'
         if (targetRoute !== pathname) {
           navigate(targetRoute, { replace: true })
         }
-      }, 100) // debounce — wait for scroll-snap to settle
+      }, 100)
     }
 
     el.addEventListener('scroll', handleScroll, { passive: true })

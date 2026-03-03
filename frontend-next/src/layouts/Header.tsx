@@ -1,13 +1,14 @@
 import { useLocation, useNavigate, NavLink } from 'react-router-dom'
 import { Moon, Sun, LogOut, FileText, CheckSquare, UserPlus, Settings, SlidersHorizontal } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { motion, useTransform } from 'framer-motion'
 import { Button } from '@/components/ui/button.js'
 import { useTheme } from '@/contexts/ThemeContext.js'
 import { useAuth } from '@/hooks/useAuth.js'
 import { useHeaderStore } from '@/stores/headerStore.js'
-import { getAreaForRoute, getAreaConfig, areas } from '@/layouts/headerConfig.js'
+import { getAreaForRoute, personalArea, apexArea, areas } from '@/layouts/headerConfig.js'
 import { useCaptureStore } from '@/stores/captureStore.js'
 import { HeaderTabBar } from '@/layouts/HeaderTabBar.js'
+import { springboardProgress } from '@/stores/springboardProgress.js'
 
 const DISPLAY_MODES = ['icon-label', 'icon-only', 'label-only'] as const
 
@@ -20,17 +21,26 @@ export default function Header() {
   const { tabDisplayMode, personalTabOrder, apexTabOrder } = useHeaderStore()
 
   const activeAreaId = getAreaForRoute(pathname)
-  const activeArea = getAreaConfig(activeAreaId)
-  const tabOrder = activeAreaId === 'personal' ? personalTabOrder : apexTabOrder
+  const isDashboard = pathname === '/' || pathname === '/apex'
 
-  // Sort tabs by their position in the user's tab order. Tabs not in the order go to the end.
-  const sortedTabs = [...activeArea.tabs].sort((a, b) => {
-    const ai = tabOrder.indexOf(a.id)
-    const bi = tabOrder.indexOf(b.id)
-    const posA = ai === -1 ? Infinity : ai
-    const posB = bi === -1 ? Infinity : bi
-    return posA - posB
-  })
+  // Sort helper
+  function sortTabs(tabs: typeof personalArea.tabs, order: string[]) {
+    return [...tabs].sort((a, b) => {
+      const ai = order.indexOf(a.id)
+      const bi = order.indexOf(b.id)
+      return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi)
+    })
+  }
+
+  // Always compute both sorted tab sets (needed for dashboard sliding)
+  const personalSortedTabs = sortTabs(personalArea.tabs, personalTabOrder)
+  const apexSortedTabs = sortTabs(apexArea.tabs, apexTabOrder)
+
+  // For module pages, pick the active set
+  const activeSortedTabs = activeAreaId === 'personal' ? personalSortedTabs : apexSortedTabs
+
+  // Scroll-synced tab sliding: translateX from 0% (personal) to -50% (apex)
+  const tabSlideX = useTransform(springboardProgress, [0, 1], ['0%', '-50%'])
 
   return (
     <header className="h-14 shrink-0 bg-bg-surface border-b border-border flex items-center px-4">
@@ -54,19 +64,25 @@ export default function Header() {
         })}
       </div>
 
-      {/* Center zone -- Module tabs (crossfade on area switch) */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeAreaId}
-          initial={{ opacity: 0, x: activeAreaId === 'apex' ? 20 : -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: activeAreaId === 'apex' ? -20 : 20 }}
-          transition={{ duration: 0.2 }}
-          className="flex-1 flex items-center justify-center gap-1"
-        >
-          <HeaderTabBar tabs={sortedTabs} tabDisplayMode={tabDisplayMode} activeAreaId={activeAreaId} />
-        </motion.div>
-      </AnimatePresence>
+      {/* Center zone -- Module tabs */}
+      {isDashboard ? (
+        /* Dashboard: both tab sets slide in sync with springboard swipe */
+        <div className="flex-1 overflow-hidden flex items-center h-full">
+          <motion.div className="flex w-[200%] h-full" style={{ x: tabSlideX }}>
+            <div className="w-1/2 flex items-center justify-center gap-1">
+              <HeaderTabBar tabs={personalSortedTabs} tabDisplayMode={tabDisplayMode} activeAreaId="personal" />
+            </div>
+            <div className="w-1/2 flex items-center justify-center gap-1">
+              <HeaderTabBar tabs={apexSortedTabs} tabDisplayMode={tabDisplayMode} activeAreaId="apex" />
+            </div>
+          </motion.div>
+        </div>
+      ) : (
+        /* Module page: show the active area's tabs */
+        <div className="flex-1 flex items-center justify-center gap-1">
+          <HeaderTabBar tabs={activeSortedTabs} tabDisplayMode={tabDisplayMode} activeAreaId={activeAreaId} />
+        </div>
+      )}
 
       {/* Right zone -- Actions */}
       <div className="flex items-center gap-1">
