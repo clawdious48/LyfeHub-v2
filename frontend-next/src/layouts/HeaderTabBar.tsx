@@ -15,7 +15,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Settings } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import { useHeaderStore } from '@/stores/headerStore.js'
 import { useDashboardUiStore } from '@/stores/dashboardUiStore.js'
 import { TabStylePopover } from '@/layouts/TabStylePopover.js'
@@ -84,12 +84,16 @@ function SortableTab({
   }
 
   return (
-    <div ref={setNodeRef} style={dndStyle} className="flex items-center group">
-      <div {...attributes} {...listeners} className="cursor-grab px-1">
-        <GripVertical className="size-3 text-text-muted" />
-      </div>
+    <div
+      ref={setNodeRef}
+      style={dndStyle}
+      {...attributes}
+      {...listeners}
+      className="flex items-center group cursor-grab active:cursor-grabbing"
+    >
       <NavLink
         to={tab.to}
+        onClick={(e) => e.preventDefault()}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={({ isActive }) =>

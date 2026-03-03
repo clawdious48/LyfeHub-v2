@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.js'
 import { Button } from '@/components/ui/button.js'
-import { GripVertical, X, Settings } from 'lucide-react'
+import { X, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils.js'
 import { widgetRegistry } from './registry.js'
 import WidgetConfigDialog from './WidgetConfigDialog.js'
@@ -83,11 +83,6 @@ export default function WidgetWrapper({
       <Card className={cn('h-full flex flex-col', presetClass, accentClass)}>
         {showHeader ? (
           <CardHeader className="flex flex-row items-center gap-2 py-3 px-4">
-            {isEditing && (
-              <div className="cursor-grab active:cursor-grabbing widget-drag-handle">
-                <GripVertical className="size-4 text-text-secondary" />
-              </div>
-            )}
             <Icon className="size-4 text-text-secondary" />
             <CardTitle className="text-sm text-text-primary flex-1">{label}</CardTitle>
             {isEditing && configurable && (
@@ -113,9 +108,6 @@ export default function WidgetWrapper({
           </CardHeader>
         ) : isEditing ? (
           <div className="absolute top-1 right-1 z-10 flex items-center gap-0.5 rounded-md bg-bg-surface/80 backdrop-blur-sm border border-border px-1 py-0.5">
-            <div className="cursor-grab active:cursor-grabbing widget-drag-handle p-0.5">
-              <GripVertical className="size-3 text-text-secondary" />
-            </div>
             {configurable && (
               <Button
                 variant="ghost"

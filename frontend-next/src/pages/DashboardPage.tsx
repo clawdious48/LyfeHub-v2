@@ -206,7 +206,7 @@ export default function DashboardPage() {
           cols={COLS}
           rowHeight={ROW_HEIGHT}
           width={width}
-          dragConfig={{ enabled: isEditing, bounded: false, handle: '.widget-drag-handle', threshold: 3 }}
+          dragConfig={{ enabled: isEditing, bounded: false, threshold: 3 }}
           resizeConfig={{ enabled: isEditing, handles: ['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne'] }}
           onLayoutChange={handleLayoutChange}
           compactor={verticalCompactor}

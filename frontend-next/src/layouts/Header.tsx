@@ -67,12 +67,15 @@ export default function Header() {
       {/* Center zone -- Module tabs */}
       {isDashboard ? (
         /* Dashboard: both tab sets slide in sync with springboard swipe */
-        <div className="flex-1 overflow-hidden flex items-center h-full">
-          <motion.div className="flex w-[200%] h-full" style={{ x: tabSlideX }}>
-            <div className="w-1/2 flex items-center justify-center gap-1">
+        <div className="flex-1 relative overflow-hidden min-w-0 h-full">
+          <motion.div
+            className="absolute inset-y-0 left-0 flex"
+            style={{ x: tabSlideX, width: '200%' }}
+          >
+            <div className="w-1/2 h-full flex items-center justify-center gap-1">
               <HeaderTabBar tabs={personalSortedTabs} tabDisplayMode={tabDisplayMode} activeAreaId="personal" />
             </div>
-            <div className="w-1/2 flex items-center justify-center gap-1">
+            <div className="w-1/2 h-full flex items-center justify-center gap-1">
               <HeaderTabBar tabs={apexSortedTabs} tabDisplayMode={tabDisplayMode} activeAreaId="apex" />
             </div>
           </motion.div>
