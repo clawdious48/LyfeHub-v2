@@ -59,11 +59,11 @@ export function JobAccountingSidebar({
         />
         <MetricCard
           label="GP Margin"
-          value={`${accounting.gp_margin.toFixed(1)}%`}
+          value={`${(accounting.gp_margin ?? 0).toFixed(1)}%`}
           className={
-            accounting.gp_margin > 0
+            (accounting.gp_margin ?? 0) > 0
               ? 'text-green-400'
-              : accounting.gp_margin < 0
+              : (accounting.gp_margin ?? 0) < 0
                 ? 'text-red-400'
                 : ''
           }
