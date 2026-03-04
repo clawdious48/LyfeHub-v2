@@ -6,6 +6,9 @@
 # ============================================
 FROM node:20-alpine AS frontend-builder
 
+ARG VITE_GOOGLE_CLIENT_ID
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+
 WORKDIR /build/frontend-next
 
 COPY frontend-next/package*.json ./

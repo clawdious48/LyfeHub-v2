@@ -19,6 +19,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.apm
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
     container_name: apm-production
     restart: unless-stopped
     ports:
