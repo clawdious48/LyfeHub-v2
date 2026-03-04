@@ -216,11 +216,27 @@ async function updateUserStatus(id, status) {
   return await findUserById(id);
 }
 
+/**
+ * Create a user from Google OAuth (no plain-text password needed)
+ */
+async function createUserFromGoogle({ email, name, passwordHash }) {
+  const id = uuidv4();
+  const now = new Date().toISOString();
+
+  await db.run(`
+    INSERT INTO users (id, email, password_hash, name, role, settings, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, $5, '{}', $6, $7)
+  `, [id, email.toLowerCase(), passwordHash, name || email.split('@')[0], 'field_tech', now, now]);
+
+  return await findUserById(id);
+}
+
 module.exports = {
   findUserByEmail,
   findUserByEmailOrName,
   findUserById,
   createUser,
+  createUserFromGoogle,
   verifyPassword,
   updateUser,
   changePassword,

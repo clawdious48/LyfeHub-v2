@@ -9,6 +9,7 @@ const {
 const {
   findUserByEmail,
   createUser,
+  createUserFromGoogle,
   verifyPassword,
   getSafeUser
 } = require('../db/users');
@@ -157,6 +158,58 @@ router.post('/login', loginLimiter, async (req, res) => {
       error: 'Login failed',
       code: 'INTERNAL_ERROR'
     });
+  }
+});
+
+/**
+ * POST /api/auth/google
+ * Login with Google OAuth ID token (from @react-oauth/google)
+ */
+router.post('/google', loginLimiter, async (req, res) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) {
+      return res.status(400).json({ error: 'Credential required', code: 'MISSING_CREDENTIAL' });
+    }
+
+    // Verify Google ID token using googleapis (already a dependency)
+    const { google } = require('googleapis');
+    const client = new google.auth.OAuth2(process.env.GOOGLE_CLIENT_ID);
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    const { email, name } = payload;
+
+    // Find or create user
+    let user = await findUserByEmail(email);
+    if (!user) {
+      const bcrypt = require('bcrypt');
+      const crypto = require('crypto');
+      const randomPassword = crypto.randomBytes(32).toString('hex');
+      const passwordHash = await bcrypt.hash(randomPassword, 12);
+      user = await createUserFromGoogle({ email, name, passwordHash });
+    }
+
+    // Check user status
+    if (user.status === 'suspended') {
+      return res.status(403).json({ error: 'Account suspended', code: 'ACCOUNT_SUSPENDED' });
+    }
+
+    // Generate session
+    const sessionId = `ui:${uuidv4()}`;
+    const token = generateToken(sessionId, user.id, user.email, true);
+    setSessionCookie(res, token, true);
+
+    res.json({
+      success: true,
+      message: 'Logged in with Google',
+      user: await getSafeUser(user),
+    });
+  } catch (err) {
+    console.error('Google login error:', err);
+    res.status(401).json({ error: 'Google login failed', code: 'GOOGLE_AUTH_FAILED' });
   }
 });
 

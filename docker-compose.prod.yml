@@ -32,6 +32,8 @@ services:
       - DB_USER=lyfehub
       - DB_PASSWORD=${DB_PASSWORD:-lyfehub_prod_2026}
       - JWT_SECRET=${JWT_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - NODE_ENV=production
       - PORT=3000
     depends_on:
