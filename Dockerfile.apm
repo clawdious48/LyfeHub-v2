@@ -28,6 +28,10 @@ COPY backend/src/ ./src/
 COPY backend/tsconfig.json ./
 RUN npm run build
 
+# Copy non-TS assets (SQL files, migrations) that tsc doesn't emit
+RUN cp src/db/init.sql dist/db/init.sql 2>/dev/null || true
+RUN if [ -d src/db/migrations ]; then cp -r src/db/migrations dist/db/migrations; fi
+
 # Prune devDependencies for runtime image
 RUN npm prune --omit=dev
 
