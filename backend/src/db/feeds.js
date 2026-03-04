@@ -9,7 +9,7 @@ async function initFeeds() {
   await db.exec(`
     CREATE TABLE IF NOT EXISTS rss_feeds (
       id UUID PRIMARY KEY,
-      user_id UUID NOT NULL REFERENCES users(id),
+      user_id TEXT NOT NULL REFERENCES users(id),
       url TEXT NOT NULL,
       feed_url TEXT NOT NULL,
       title TEXT DEFAULT '',
