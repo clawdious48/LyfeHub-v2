@@ -71,10 +71,10 @@ export function JobAccountingSidebar({
       </div>
 
       {/* Estimate breakdown */}
-      {accounting.estimates.length > 0 && (
+      {(accounting.estimates ?? []).length > 0 && (
         <div className="space-y-1">
           <p className="text-xs text-text-muted font-medium">Estimates</p>
-          {accounting.estimates.map((est) => (
+          {(accounting.estimates ?? []).map((est) => (
             <div key={est.id} className="flex justify-between items-center text-sm">
               <span className="text-text-secondary capitalize">
                 {est.estimate_type}
