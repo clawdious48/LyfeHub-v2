@@ -172,9 +172,9 @@ router.post('/google', loginLimiter, async (req, res) => {
       return res.status(400).json({ error: 'Credential required', code: 'MISSING_CREDENTIAL' });
     }
 
-    // Verify Google ID token using googleapis (already a dependency)
-    const { google } = require('googleapis');
-    const client = new google.auth.OAuth2(process.env.GOOGLE_CLIENT_ID);
+    // Verify Google ID token
+    const { OAuth2Client } = require('google-auth-library');
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
     const ticket = await client.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID,
