@@ -39,6 +39,14 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
+// Health check endpoint (before auth-guarded routes)
+app.get('/api/health', (_req: Request, res: Response) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', tasksRoutes);
@@ -71,14 +79,6 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api', require('./routes/googleCalendar'));
 app.use('/api/weather', require('./routes/weather'));
 app.use('/api/feeds', require('./routes/feeds'));
-
-// Health check endpoint
-app.get('/api/health', (_req: Request, res: Response) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-  });
-});
 
 // Serve static frontend files
 const frontendPath = path.join(__dirname, '../../frontend');
