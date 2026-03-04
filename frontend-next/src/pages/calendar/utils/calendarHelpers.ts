@@ -252,7 +252,7 @@ export function computeOverlapLayout(items: CalendarItem[]): OverlapLayout[] {
   if (timed.length === 0) return []
 
   // Build overlap groups — connected components where items overlap transitively
-  const groups: typeof timed[][] = []
+  const groups: { id: string; start: number; end: number }[][] = []
   let currentGroup = [timed[0]]
 
   for (let i = 1; i < timed.length; i++) {

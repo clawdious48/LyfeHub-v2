@@ -21,7 +21,6 @@ export function useMailHotkeys() {
     activeLabel,
     searchQuery,
     selectedMessageId,
-    composeOpen,
     setSelectedMessage,
     openCompose,
     setActiveLabel,

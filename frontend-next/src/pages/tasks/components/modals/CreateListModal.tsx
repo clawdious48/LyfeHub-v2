@@ -28,7 +28,7 @@ export function CreateListModal({ open, onOpenChange }: CreateListModalProps) {
   const [name, setName] = useState('')
   const [color, setColor] = useState(LIST_COLORS[5].value) // Default blue
   const { base } = useTaskBase()
-  const listOptions = useTaskListOptions()
+  useTaskListOptions() // pre-warm cache
   const updateProperty = useUpdateProperty(base?.id ?? '')
 
   function handleSave() {

@@ -17,7 +17,7 @@ const VIEW_ICONS: { mode: DisplayMode; icon: typeof List; label: string }[] = [
   { mode: 'focus', icon: Target, label: 'Focus' },
 ]
 
-export function TaskToolbar({ activeView, onCreateTask }: TaskToolbarProps) {
+export function TaskToolbar({ activeView: _activeView, onCreateTask }: TaskToolbarProps) {
   const {
     displayMode, setDisplayMode,
     cardSize, setCardSize,

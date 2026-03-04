@@ -19,7 +19,7 @@ import {
   useDeleteCalendarEvent,
 } from '@/api/hooks/useCalendar.js'
 import type { CalendarEvent } from '@/types/calendar.js'
-import { Trash2, MapPin, Clock } from 'lucide-react'
+import { Trash2, MapPin } from 'lucide-react'
 
 interface EventModalProps {
   open: boolean

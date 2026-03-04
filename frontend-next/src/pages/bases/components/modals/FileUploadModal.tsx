@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { Upload, X, FileIcon, Trash2 } from 'lucide-react'
+import { Upload, FileIcon, Trash2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,

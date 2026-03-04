@@ -524,9 +524,9 @@ export async function listDrafts(
       const full = await gmail.users.drafts.get({ userId: 'me', id: d.id! })
       const msg = full.data.message
       return {
+        ...formatMessageSummary(msg || {}),
         id: d.id || '',
         messageId: msg?.id || '',
-        ...formatMessageSummary(msg || {}),
       }
     }),
   )

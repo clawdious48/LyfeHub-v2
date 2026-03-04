@@ -60,7 +60,7 @@ export default function CalendarPage() {
     return { startDate: toDateString(d), endDate: toDateString(addDays(d, 30)) }
   }, [currentView, selectedDate])
 
-  const { items, isLoading } = useCalendarItems(startDate, endDate)
+  const { items } = useCalendarItems(startDate, endDate)
   const updateTaskRecord = useUpdateTaskRecord()
   const [searchParams, setSearchParams] = useSearchParams()
   const queryClient = useQueryClient()

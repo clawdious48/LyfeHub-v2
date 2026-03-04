@@ -75,7 +75,7 @@ export function TimeGrid({ dates, items, onSlotClick, onItemClick, onDragCreate,
     })
   }, [snapToSlot, yToTime])
 
-  const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>, dateStr: string) => {
+  const handlePointerUp = useCallback((_e: React.PointerEvent<HTMLDivElement>, dateStr: string) => {
     if (!dragRef.current.active || dragRef.current.dateStr !== dateStr) return
     const { startY, currentY } = dragRef.current
     dragRef.current = { active: false, dateStr: '', startY: 0, currentY: 0 }

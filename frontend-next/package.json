@@ -1,7 +1,13 @@
 {
-  "name": "frontend-next",
+  "name": "apm",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "Apex Project Management — React frontend",
+  "author": "Jake Rogers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jaker3001/APM.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",

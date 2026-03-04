@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react'
 import { Paperclip, X, Upload } from 'lucide-react'
-import { Button } from '@/components/ui/button.js'
 import { formatFileSize } from '@/pages/mail/utils/mailHelpers.js'
 
 const MAX_TOTAL_SIZE = 25 * 1024 * 1024 // 25MB

@@ -65,8 +65,8 @@ function getSelectColor(prop: BaseProperty, value: unknown): string | null {
   if ((prop.type !== 'select' && prop.type !== 'status') || !value) return null
   const opts = Array.isArray(prop.options) ? prop.options : []
   const match = opts.find(
-    (o: Record<string, unknown>) =>
-      (o.label === value || o.value === value),
+    (o: unknown) =>
+      ((o as Record<string, unknown>).label === value || (o as Record<string, unknown>).value === value),
   )
   return (match as { color?: string } | undefined)?.color ?? null
 }

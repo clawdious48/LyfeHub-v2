@@ -82,7 +82,7 @@ export function WorkOrderModal({
       title: form.title,
       description: form.description,
       budget_amount: budgetAmount,
-      status: form.status,
+      status: form.status as ApexJobWorkOrder['status'],
       phase_id: selectedPhaseId ?? initialData?.phase_id ?? null,
     }
 

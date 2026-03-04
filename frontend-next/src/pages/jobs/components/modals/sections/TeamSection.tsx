@@ -106,7 +106,7 @@ export function TeamSection({
           </h4>
           <div className="space-y-3">
             {TEAM_ROLES.map(role => {
-              const eligible = members.filter(m => role.eligible.includes(m.role))
+              const eligible = members.filter(m => (role.eligible as unknown as string[]).includes(m.role))
               const selected = teamValues[role.key] || []
               return (
                 <div key={role.key} className="space-y-1">

@@ -82,10 +82,10 @@ export function ReceiptModal({
   function handleSave() {
     const payload = {
       amount,
-      expense_category: form.expense_category,
+      expense_category: form.expense_category as ApexJobReceipt['expense_category'],
       description: form.description,
       vendor: form.vendor,
-      paid_by: form.paid_by,
+      paid_by: form.paid_by as ApexJobReceipt['paid_by'],
       reimbursable: form.reimbursable ? 1 : 0,
       expense_date: form.expense_date || null,
       phase_id: selectedPhaseId ?? initialData?.phase_id ?? null,

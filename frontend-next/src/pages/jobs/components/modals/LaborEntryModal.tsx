@@ -90,7 +90,7 @@ export function LaborEntryModal({
       work_date: form.work_date || null,
       hours,
       hourly_rate: rate,
-      work_category: form.work_category,
+      work_category: form.work_category as ApexJobLabor['work_category'],
       description: form.description,
       billable: form.billable ? 1 : 0,
       phase_id: selectedPhaseId ?? initialData?.phase_id ?? null,

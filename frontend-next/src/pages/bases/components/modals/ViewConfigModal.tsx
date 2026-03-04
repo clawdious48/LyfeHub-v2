@@ -24,7 +24,6 @@ import type { BaseView, BaseProperty, FilterConfig, SortConfig, SelectOption } f
 import { useCreateView, useUpdateView, useDeleteView } from '@/api/hooks/index.js'
 import {
   FILTER_OPERATORS,
-  getPropertyTypeLabel,
   getPropertyTypeIcon,
 } from '@/pages/bases/utils/baseConstants.js'
 

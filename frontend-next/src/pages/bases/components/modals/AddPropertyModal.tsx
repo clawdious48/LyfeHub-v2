@@ -15,7 +15,7 @@ import { getPropertyTypeLabel } from '@/pages/bases/utils/baseConstants.js'
 import { PropertyTypeSelect } from './PropertyTypeSelect.js'
 import { SelectOptionsEditor } from './SelectOptionsEditor.js'
 import { RelationConfig } from './RelationConfig.js'
-import type { BasePropertyType, SelectOption } from '@/types/index.js'
+import type { BasePropertyType, BasePropertyOptions, SelectOption } from '@/types/index.js'
 
 interface AddPropertyModalProps {
   open: boolean
@@ -61,7 +61,7 @@ export function AddPropertyModal({ open, onOpenChange, baseId }: AddPropertyModa
   function handleSubmit() {
     if (!selectedType || !name.trim()) return
 
-    const data: { name: string; type: BasePropertyType; options?: unknown; createReverse?: boolean; reverseName?: string } = {
+    const data: { name: string; type: BasePropertyType; options?: BasePropertyOptions; createReverse?: boolean; reverseName?: string } = {
       name: name.trim(),
       type: selectedType,
     }

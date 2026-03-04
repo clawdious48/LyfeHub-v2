@@ -1,5 +1,5 @@
 // frontend-next/src/pages/calendar/components/sidebar/UnscheduledTasksPanel.tsx
-import { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight, GripVertical } from 'lucide-react'
 import { useTaskBase } from '@/api/hooks/useTasksAdapter.js'
@@ -50,12 +50,12 @@ export function UnscheduledTasksPanel() {
                     transition={{ delay: Math.min(idx * 0.05, 0.25) }}
                     className="flex items-center gap-2 px-2 py-1.5 rounded-md text-xs cursor-grab hover:bg-bg-hover transition-colors group"
                     draggable
-                    onDragStart={(e) => {
+                    onDragStart={((e: React.DragEvent<HTMLDivElement>) => {
                       e.dataTransfer.setData('application/x-task-id', task.id)
                       e.dataTransfer.setData('text/plain', task.title)
                       e.dataTransfer.effectAllowed = 'move'
                       setDraggingId(task.id)
-                    }}
+                    }) as unknown as undefined}
                     onDragEnd={() => setDraggingId(null)}
                     style={{ opacity: draggingId === task.id ? 0.4 : 1 }}
                   >

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { ResponsiveGridLayout, useContainerWidth, verticalCompactor } from 'react-grid-layout'
 import type { Layout } from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
@@ -38,8 +38,7 @@ export default function ApexDashboardPage() {
   const { data: layoutData } = useDashboardLayout('apex')
   const saveLayout = useSaveDashboardLayout('apex')
 
-  const initialWidgets = layoutData?.layout?.widgets ?? DEFAULT_APEX_WIDGETS
-  const [widgets, setWidgets] = useState<WidgetItem[]>(initialWidgets)
+  const [widgets, setWidgets] = useState<WidgetItem[]>(DEFAULT_APEX_WIDGETS)
   const [isEditing, setIsEditing] = useState(false)
   const setGlobalEditing = useDashboardUiStore((s) => s.setEditing)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
@@ -49,15 +48,28 @@ export default function ApexDashboardPage() {
     background: 'default',
   })
 
-  // Sync from server when data loads (only if we haven't started editing)
-  const [hasLoadedServer, setHasLoadedServer] = useState(false)
-  if (layoutData?.layout?.widgets && !hasLoadedServer && !isEditing) {
-    setWidgets(layoutData.layout.widgets)
-    if (layoutData.layout.settings) {
-      setSettings(layoutData.layout.settings)
+  // Sync from server when data loads (skip if user is actively editing)
+  const hasHydrated = useRef(false)
+  useEffect(() => {
+    if (layoutData?.layout?.widgets && !isEditing) {
+      setWidgets(layoutData.layout.widgets)
+      if (layoutData.layout.settings) {
+        setSettings(layoutData.layout.settings)
+      }
+      hasHydrated.current = true
     }
-    setHasLoadedServer(true)
-  }
+  }, [layoutData, isEditing])
+
+  // Auto-save widget config/style changes (debounced, outside edit mode)
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  useEffect(() => {
+    if (isEditing || !hasHydrated.current) return
+    clearTimeout(autoSaveTimer.current)
+    autoSaveTimer.current = setTimeout(() => {
+      saveLayout.mutate({ widgets, settings })
+    }, 1000)
+    return () => clearTimeout(autoSaveTimer.current)
+  }, [widgets, settings]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const layouts = useMemo(() => {
     const lgLayout = widgets.map((w) => {

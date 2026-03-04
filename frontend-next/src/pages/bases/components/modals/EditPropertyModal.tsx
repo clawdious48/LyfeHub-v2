@@ -14,7 +14,7 @@ import { useUpdateProperty, useDeleteProperty } from '@/api/hooks/index.js'
 import { parsePropertyOptions } from '@/pages/bases/utils/baseHelpers.js'
 import { PropertyTypeSelect } from './PropertyTypeSelect.js'
 import { SelectOptionsEditor } from './SelectOptionsEditor.js'
-import type { BaseProperty, BasePropertyType, SelectOption } from '@/types/index.js'
+import type { BaseProperty, BasePropertyType, BasePropertyOptions, SelectOption } from '@/types/index.js'
 
 interface EditPropertyModalProps {
   open: boolean
@@ -56,7 +56,7 @@ export function EditPropertyModal({ open, onOpenChange, property, baseId }: Edit
   function handleSave() {
     if (!property || !name.trim()) return
 
-    const data: { propId: string; name?: string; type?: BasePropertyType; width?: number; options?: unknown } = {
+    const data: { propId: string; name?: string; type?: BasePropertyType; width?: number; options?: BasePropertyOptions } = {
       propId: property.id,
       name: name.trim(),
       type: selectedType,

@@ -129,7 +129,7 @@ export function TaskDetailModal({ taskId, open, onOpenChange }: TaskDetailModalP
           for (const sub of pendingSubtasks) {
             createTask.mutate({
               title: sub,
-              parent_task_id: [newRecord.id],
+              parent_task_id: newRecord.id,
             })
           }
         },
@@ -154,7 +154,7 @@ export function TaskDetailModal({ taskId, open, onOpenChange }: TaskDetailModalP
       // Edit mode: create subtask record immediately
       createTask.mutate({
         title: newSubtask.trim(),
-        parent_task_id: [taskId],
+        parent_task_id: taskId,
       })
     } else {
       // Create mode: queue subtask for after parent is saved

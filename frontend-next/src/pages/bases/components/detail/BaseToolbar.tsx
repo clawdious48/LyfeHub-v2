@@ -12,7 +12,7 @@ interface BaseToolbarProps {
   onAddProperty: () => void
 }
 
-export function BaseToolbar({ baseId, properties, onAddProperty }: BaseToolbarProps) {
+export function BaseToolbar({ baseId: _baseId, properties, onAddProperty }: BaseToolbarProps) {
   const [filterModalOpen, setFilterModalOpen] = useState(false)
   const [columnsModalOpen, setColumnsModalOpen] = useState(false)
   const { addFilter, visibleColumns, setVisibleColumns, filters } = useBasesUiStore()

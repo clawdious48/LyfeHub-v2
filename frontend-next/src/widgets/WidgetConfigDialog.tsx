@@ -288,7 +288,7 @@ function ViewPicker({
   onChange: (v: unknown) => void
 }) {
   const { data: base } = useBase(baseId)
-  const views = (base as Record<string, unknown>)?.views as
+  const views = (base as unknown as Record<string, unknown>)?.views as
     | Array<{ id: string; name: string }>
     | undefined
 
